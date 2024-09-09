@@ -45,6 +45,9 @@ form{
 .inputContent div > input{
     height: 100%;
 }
+.status > input[type="submit"]:hover{
+    cursor: pointer;
+}
 
 .footer{
     display: flex;

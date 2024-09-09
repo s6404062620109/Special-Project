@@ -1,10 +1,19 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 
 import style from './css/user.module.css';
-import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
   const navigate = useNavigate();
+  const [dataInput, setDatainput] = useState({
+    email: '',
+    password: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(dataInput);
+  }
 
   return (
     <div className={style.container}>
@@ -15,12 +24,14 @@ function Login() {
         <p>Log in</p>
       </div>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className={style.inputContent}>
           <div>
             <label>E-mail</label>
             <input
               type='text'
+              value={dataInput.email}
+              onChange={(e) => setDatainput({...dataInput, email: e.target.value})}
             />
           </div>
 
@@ -28,6 +39,8 @@ function Login() {
             <label>Password</label>
             <input
               type='password'
+              value={dataInput.password}
+              onChange={(e) => setDatainput({...dataInput, password: e.target.value})}
             />
           </div>
         </div>
@@ -41,7 +54,7 @@ function Login() {
           <div className={style.functions}>
             <Link to='/register'>Don’t have an account ?</Link>
             <div></div>
-            <Link to=''>Forgot password ?</Link>
+            <Link to='/reset'>Forgot password ?</Link>
           </div>
         </div>
       </form>

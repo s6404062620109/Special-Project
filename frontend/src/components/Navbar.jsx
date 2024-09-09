@@ -15,7 +15,7 @@ function Navbar() {
       </div>
 
       <div className={style.functionsContainer}>
-        <Link>COURSES</Link>
+        <Link to='/courses'>COURSES</Link>
         <Link>FAQ</Link>
         <Link>NEWS</Link>
       </div>

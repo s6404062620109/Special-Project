@@ -5,11 +5,16 @@ import Navbar from './components/Navbar';
 import Home from './components/user_contents/Home';
 import Login from './components/Login';
 import Register from './components/Register';
+import Reset from './components/Reset';
+import ResetCode from './components/ResetCode';
+import Setpassword from './components/Setpassword';
+
+import Courses from './components/user_contents/Courses';
 
 function App() {
   const location = useLocation();
 
-  const noNavbarRoutes = ['/login', '/changepassword', '/register'];
+  const noNavbarRoutes = ['/login', '/changepassword', '/register', '/reset', '/resetcode', '/newpassword'];
   const showNavbar = !noNavbarRoutes.includes(location.pathname);
 
   return (
@@ -21,6 +26,11 @@ function App() {
           <Route path='/' element={<Home/>}/>
           <Route path='/login' element={<Login/>}/>
           <Route path='/register' element={<Register/>}/>
+          <Route path='/reset' element={<Reset/>}/>
+          <Route path='/resetcode' element={<ResetCode/>}/>
+          <Route path='/newpassword' element={<Setpassword/>}/>
+          
+          <Route path='/courses' element={<Courses/>}/>
         </Routes>
       </div>
     </div>

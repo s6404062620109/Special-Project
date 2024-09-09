@@ -12,6 +12,6 @@ nav{
     flex: 1;
     background: linear-gradient(180deg, #ffffff 0%, #C4DAFC 50%, #E6F4FD 75%);
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
 }
