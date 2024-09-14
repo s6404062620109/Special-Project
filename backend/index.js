@@ -13,7 +13,8 @@ app.use(cors());
 
 const db = mysql2.createConnection({
     user: "root",
-    host: "127.0.0.1:3306",
+    host: "127.0.0.1",
+    port: 3306,
     password: "Password1234",
     database: "sat-project"
 })
@@ -37,7 +38,6 @@ app.get('/getCourses', (req, res) => {
         res.json(results);
     });
 });
-
 
 
 const port = 3001
