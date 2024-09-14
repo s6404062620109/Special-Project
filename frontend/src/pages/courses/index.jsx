@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 
+import style from './css/courses.module.css'
+
 function Courses() {
   const [data, setData] = useState([]);
 
@@ -25,7 +27,7 @@ function Courses() {
         <div key={item.CourseID}>
           <img
             alt='course icon'
-            src={`./Course_Icon/${item.Icon_id}`}
+            src={`./Course_Assets/${item.Icon_id}.png`}
           />
           <div>
             <h1>{item.Name}</h1>
