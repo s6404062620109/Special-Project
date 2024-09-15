@@ -9,14 +9,18 @@ const app = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: "GET, POST, PUT, DELETE",
+    allowedHeaders: 'Content-Type,Authorization',
+}));
 
 const db = mysql2.createConnection({
     user: "root",
-    host: "127.0.0.1",
+    host: "db",
     port: 3306,
-    password: "Password1234",
-    database: "sat-project"
+    password: "root",
+    database: "SAT"
 })
 
 db.connect((err) => {
@@ -26,8 +30,6 @@ db.connect((err) => {
     }
     console.log('Connected to MySQL database');
 });
-
-
 
 app.get('/getCourses', (req, res) => {
     db.query('SELECT * FROM courses', (err, results) => {
