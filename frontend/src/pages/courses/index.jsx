@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 
 import style from './css/courses.module.css'
+import CourseCard from '../../components/CourseCard';
 
 function Courses() {
   const [data, setData] = useState([]);
@@ -22,18 +23,14 @@ function Courses() {
   }, []);
 
   return (
-    <div>
+    <div className={style.content}>
       {data.map(item => (
-        <div key={item.CourseID}>
-          <img
-            alt='course icon'
-            src={`./Course_Assets/${item.Icon_id}.png`}
-          />
-          <div>
-            <h1>{item.Name}</h1>
-            <p>{item.Detail}</p>
-          </div>
-        </div>
+        <CourseCard
+          key={item.CourseID}
+          name={item.Name}
+          detail={item.Detail}
+          icon_id={item.Icon_id}
+        />
       ))}
     </div>
   )

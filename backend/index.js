@@ -41,6 +41,47 @@ app.get('/getCourses', (req, res) => {
     });
 });
 
+app.post('/register', async (req, res) =>{
+    const { email, password, name } = req.body;
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    if (!email || !password || !name) {
+        return res.status(400).json({ message: "Email, password, and name are required" });
+    }
+    
+    db.query("SELECT * FROM user WHERE email = ?", [email], async (err, results) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database query error" });
+        }
+
+        if (results.length > 0) {
+            return res.status(400).json({ message: "Email already registered" });
+        }
+
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            db.query(
+                "INSERT INTO user (email, password, name, role, OTP) VALUES(?, ?, ?, ?, ?)",
+                [email, hashedPassword, name, 'Student', '-'],
+                (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).json({ message: "Register Failed!!!" });
+                    } else {
+                        return res.status(201).json({ message: "Register Success!!!" });
+                    }
+                }
+            );
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Server error" });
+        }
+    });
+})
+
 
 const port = 3001
 app.listen(port, () =>{
