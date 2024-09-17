@@ -1,36 +1,29 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 
-import style from './css/user.module.css';
+import style from './css/reset.module.css';
 
-function Setpassword() {
+function Reset() {
     const navigate = useNavigate();
 
     const handlesubmit = () =>{
-        navigate('/login')
-    }
+      navigate('/resetcode')
+  }
     return (
       <div className={style.container}>
         <div className={style.heading}>
           <img alt='Back_Burron' 
               src='./Expand_left.svg'
-              onClick={() => navigate('/reset')}/>
+              onClick={() => navigate('/login')}/>
           <p>Recovery Password</p>
         </div>
   
         <form onSubmit={() => handlesubmit()}>
           <div className={style.inputContent}>
             <div>
-              <label>New Password</label>
+              <label>E-mail</label>
               <input
-                type='password'
-              />
-            </div>
-
-            <div>
-              <label>Confirm Password</label>
-              <input
-                type='password'
+                type='text'
               />
             </div>
           </div>
@@ -38,7 +31,7 @@ function Setpassword() {
           <div className={style.footer}>
             <div className={style.status}>
               <p>STATUS</p>
-              <input type='submit' value='Confirm'/>
+              <input type='submit' value='Send Recovery Code'/>
             </div>
   
           </div>
@@ -47,4 +40,4 @@ function Setpassword() {
     )
 }
 
-export default Setpassword
+export default Reset

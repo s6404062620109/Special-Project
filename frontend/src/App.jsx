@@ -4,12 +4,13 @@ import './App.css'
 import Navbar from './components/Navbar';
 
 import Home from './pages/home';
-import Login from './pages/authenticator/Login';
-import Register from './pages/authenticator/Register';
-import Reset from './pages/authenticator/Reset';
-import ResetCode from './pages/authenticator/ResetCode';
-import Setpassword from './pages/authenticator/Setpassword';
 import Courses from './pages/courses';
+
+import Login from './pages/login';
+import Register from './pages/register';
+import Reset from './pages/reset';
+import ResetCode from './pages/resetotp';
+import Setpassword from './pages/newpassword';
 
 function App() {
   const location = useLocation();
