@@ -31,16 +31,7 @@ db.connect((err) => {
     console.log('Connected to MySQL database');
 });
 
-app.get('/getCourses', (req, res) => {
-    db.query('SELECT * FROM courses', (err, results) => {
-        if (err) {
-            res.status(500).send('Database query error');
-            return;
-        }
-        res.json(results);
-    });
-});
-
+/* Authenticator */
 app.post('/register', async (req, res) =>{
     const { email, password, name } = req.body;
     
@@ -81,6 +72,48 @@ app.post('/register', async (req, res) =>{
         }
     });
 })
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password ) {
+        return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    db.query("SELECT * FROM user WHERE email = ?", [email], async (err, result) =>{
+            if(err){
+                return res.status(500).json({ message: "Database query error" });
+            }
+
+            if(result.length === 0) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            
+            if(result.length > 0){
+                const user = result[0];
+                const isPasswordValid = await bcrypt.compare(password, user.Password);
+                if (!isPasswordValid) {
+                    return res.status(401).send({ message: "Invalid password" });
+                }
+                else{
+                    const token = jwt.sign({ email: user.Email, name: user.Name }, 'authToken', { expiresIn: '1h' });
+                    return res.status(201).send({ message: "Login Success" , token:token })
+                }
+            }
+        })
+});
+
+/* Authenticator */ 
+
+app.get('/getCourses', (req, res) => {
+    db.query('SELECT * FROM courses', (err, results) => {
+        if (err) {
+            res.status(500).send('Database query error');
+            return;
+        }
+        res.json(results);
+    });
+});
 
 
 const port = 3001

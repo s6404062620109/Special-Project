@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 import style from './css/login.module.css';
 
@@ -9,10 +10,30 @@ function Login() {
     email: '',
     password: ''
   });
+  const [statusMessage, setStatusMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(dataInput);
+    
+    try { 
+      const response = await axios.post('http://localhost:3001/login', {
+          email: dataInput.email,
+          password: dataInput.password,
+      });
+
+      console.log(response)
+      if (response.status === 201) {
+        setStatusMessage(response.data.message);
+        localStorage.setItem('authToken', response.data.token);
+        setTimeout(() => navigate('/'), 2000);
+      } 
+      else if(response.status === 401) {
+        setStatusMessage(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+      setStatusMessage("Server error, please try again later");
+    }
   }
 
   return (
@@ -47,7 +68,7 @@ function Login() {
 
         <div className={style.footer}>
           <div className={style.status}>
-            <p>STATUS</p>
+            <p>{statusMessage}</p>
             <input type='submit' value='Log in'/>
           </div>
 
