@@ -32,6 +32,7 @@ db.connect((err) => {
 });
 
 /* Authenticator */
+
 app.post('/register', async (req, res) =>{
     const { email, password, name } = req.body;
     
@@ -105,6 +106,8 @@ app.post('/login', (req, res) => {
 
 /* Authenticator */ 
 
+/* Courses */
+
 app.get('/getCourses', (req, res) => {
     db.query('SELECT * FROM courses', (err, results) => {
         if (err) {
@@ -114,7 +117,25 @@ app.get('/getCourses', (req, res) => {
         res.json(results);
     });
 });
+app.get('/updateCourses/:email', (req, res) => {
+    const email = req.params.email;
+    db.query(`SELECT * FROM history WHERE \`User-Email\` = ?`, 
+        [email], 
+        (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Database query error" });
+            }
 
+            if (results.length === 0) {
+                return res.status(404).json({ message: "No courses found for the user"});
+            }
+            
+            res.json(results);
+        });
+});
+
+/* Courses */
 
 const port = 3001
 app.listen(port, () =>{
