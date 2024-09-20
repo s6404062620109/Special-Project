@@ -119,9 +119,13 @@ app.get('/getCourses', (req, res) => {
 });
 app.get('/updateCourses/:email', (req, res) => {
     const email = req.params.email;
-    db.query(`SELECT * FROM history WHERE \`User-Email\` = ?`, 
-        [email], 
-        (err, results) => {
+
+    const query = ` SELECT history.*, subject.\`Course-ID\`
+        FROM history 
+        JOIN subject ON history.\`Subject-ID\` = subject.SubjectID
+        WHERE \`User-Email\` = ? `;
+
+    db.query( query, [email], (err, results) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "Database query error" });

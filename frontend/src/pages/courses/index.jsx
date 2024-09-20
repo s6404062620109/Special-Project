@@ -11,6 +11,7 @@ function Courses() {
     name:''
   })
   const [data, setData] = useState([]);
+  const [updateState, setUpdateState] = useState([]);
 
   const token = localStorage.getItem('authToken');
 
@@ -37,20 +38,30 @@ function Courses() {
   }
 
   useEffect(() => {
+    decodeAuthToken(token)
+  }, [token])
 
+  useEffect(() => {
+    
     const fetchData = async () => {
       try {
         const response = await axios.get('http://localhost:3001/getCourses');
-        // console.log(response.data);
+        const Updateresponse = await axios.get(`http://localhost:3001/updateCourses/${userData.email}`);
+
         setData(response.data);
+        setUpdateState(Updateresponse.data);
       } catch (err) {
         console.log(err);
       }
     };
 
-    decodeAuthToken(token)
     fetchData();
-  }, []);
+  }, [userData.email]);
+
+  const matchingUpdates = (courseId)  => {
+    const states = updateState.filter(update => update['Course-ID'] === courseId);
+    return states
+  };
 
   return (
     <div className={style.content}>
@@ -60,6 +71,7 @@ function Courses() {
           name={item.Name}
           detail={item.Detail}
           icon_id={item.Icon_id}
+          update={matchingUpdates(item.CourseID)}
         />
       ))}
     </div>
