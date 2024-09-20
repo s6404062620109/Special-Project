@@ -46,10 +46,12 @@ function Courses() {
     const fetchData = async () => {
       try {
         const response = await axios.get('http://localhost:3001/getCourses');
-        const Updateresponse = await axios.get(`http://localhost:3001/updateCourses/${userData.email}`);
-
         setData(response.data);
-        setUpdateState(Updateresponse.data);
+
+        if (token) {
+          const Updateresponse = await axios.get(`http://localhost:3001/updateCourses/${userData.email}`);
+          setUpdateState(Updateresponse.data);
+        }
       } catch (err) {
         console.log(err);
       }
@@ -59,6 +61,10 @@ function Courses() {
   }, [userData.email]);
 
   const matchingUpdates = (courseId)  => {
+    if (!token || updateState.length === 0) {
+      return null;
+    }
+
     const states = updateState.filter(update => update['Course-ID'] === courseId);
     return states
   };

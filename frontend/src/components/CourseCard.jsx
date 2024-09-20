@@ -4,9 +4,19 @@ import style from './css/coursecard.module.css'
 
 function CourseCard({name, detail, icon_id, update}) {
 
-  const lastSubject = update.reduce((prev, current) => {
-    return (prev.value > current.value) ? prev : current;
-  }, update[0]);
+  const token = localStorage.getItem('authToken');
+  const lastSubject = Array.isArray(update) && update.length > 0
+  ? update.reduce((prev, current) => (prev.value > current.value ? prev : current), update[0])
+  : null;
+
+  let buttonText = '';
+  if (!token) {
+    buttonText = 'View';
+  } else if (lastSubject) {
+    buttonText = 'Continue';
+  } else {
+    buttonText = 'Start';
+  }
 
   return (
     <div className={style.card}>
@@ -19,12 +29,7 @@ function CourseCard({name, detail, icon_id, update}) {
             <p>{detail}</p>
         </div>
         <div>
-          {lastSubject && (
-            <button>Continue</button>
-          )}
-          {!lastSubject && (
-            <button>Start</button>
-          )}
+          <button >{buttonText}</button>
         </div>
     </div>
   )
