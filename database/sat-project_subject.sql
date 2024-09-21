@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 18, 2024 at 04:51 PM
+-- Generation Time: Sep 21, 2024 at 01:06 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -36,6 +36,17 @@ CREATE TABLE `subject` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 --
+-- Dumping data for table `subject`
+--
+
+INSERT INTO `subject` (`SubjectID`, `Name`, `Content`, `Image_id`, `Course-ID`) VALUES
+(1, 'Subject Test1', '1234567890qwertyuiopasdfghjkl;\'zxcvbnm,.   dgsaiyhcxbviagscygbiusdhaovijisdajfoisoaifhiewhgbdsvooisdafijdf', 'Icon', 1),
+(2, 'Subject 2', 'ฟหัดักหเรีอปผี้ฆฺฏณ๊ฤฌโณ๊ฌ\"๊โฌฎ๊ณฏฆ็ฌฯณ็ฏฆโ+๑๒๓๔ู฿๕๖7523.', 'Icon', 1),
+(3, 'Course 2 Subject 1', 'abcdef TESt 123456789423421245512123', 'Icon', 2),
+(4, 'Course 2 Subject 2', 'abcdef TESt 123456789423421245512123', 'Icon', 2),
+(5, 'Course 2 Subject 3', 'abcdef TESt 123456789423421245512123', 'Icon', 2);
+
+--
 -- Indexes for dumped tables
 --
 
@@ -54,7 +65,7 @@ ALTER TABLE `subject`
 -- AUTO_INCREMENT for table `subject`
 --
 ALTER TABLE `subject`
-  MODIFY `SubjectID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `SubjectID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables

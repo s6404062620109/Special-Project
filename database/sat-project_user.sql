@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 18, 2024 at 04:51 PM
+-- Generation Time: Sep 21, 2024 at 01:06 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -41,6 +41,8 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`Email`, `Password`, `Name`, `Role`, `OTP`, `OTP_EXP`) VALUES
+('AAA', '$2b$10$rvhN7NsLbTUWbQJTM7kSpOyqlb2MQRA7HzlmJVu3ng6kO8Ho8KWN6', 'a', 'Student', '-', NULL),
+('ABC', '$2b$10$HIwLXl6PTS7A0qspbP8agOsSMCI5fpi67RLHz0.IWArmSuHOWHeoe', 'akakak', 'Student', '-', NULL),
 ('Test', '$2b$10$zq.K1KnpA4ugzBMufliFyu/soLUEKgtGv.RLP2Idq7EAVGtEhh5ly', 'asdv', 'Student', '-', NULL),
 ('admin', '$2b$10$4//6S5EIBVirOXvGeS/qHuGnE6jGt6kFZK3tT97vDCeRu44jv0y.a', 'Admin Inwza', 'Admin', '-', NULL);
 
