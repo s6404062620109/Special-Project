@@ -138,6 +138,31 @@ app.get('/updateCourses/:email', (req, res) => {
             res.json(results);
         });
 });
+app.get('/getAllSubject/:courseId', (req, res) => {
+    const courseId = req.params.courseId;
+
+    const query = `SELECT subject.*, 
+        courses.CourseID, 
+        courses.Name AS courseName, 
+        courses.Detail AS courseDetail, 
+        courses.Icon_id AS courseIcon 
+        FROM subject
+        JOIN courses ON subject.\`Course-ID\` = courses.CourseID 
+        WHERE \`Course-ID\` = ?`
+
+    db.query( query, [courseId], (err, results) =>{
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Database query error" });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Not have Subject"});
+        }
+        
+        res.json(results);
+    });
+});
 
 /* Courses */
 

@@ -11,6 +11,7 @@ import Register from './pages/register';
 import Reset from './pages/reset';
 import ResetCode from './pages/resetotp';
 import Setpassword from './pages/newpassword';
+import CourseDetail from './pages/coursedetails';
 
 function App() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function App() {
           <Route path='/newpassword' element={<Setpassword/>}/>
           
           <Route path='/courses' element={<Courses/>}/>
+          <Route path='/course/:courseId' element={<CourseDetail/>}/>
         </Routes>
       </div>
     </div>

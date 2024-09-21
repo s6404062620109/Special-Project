@@ -49,7 +49,7 @@ function Navbar() {
         <div className={style.logoContainer}
           onClick={() => navigate('/')}  
         >
-          <img alt='Logo Image' src='./Navbar_Assets/Logo.svg'/>
+          <img alt='Logo Image' src='/Navbar_Assets/Logo.svg'/>
           <p>SAT</p>
         </div>
 
@@ -72,7 +72,7 @@ function Navbar() {
           )}
           <img 
             alt='Profile Image' 
-            src='./Navbar_Assets/Profile.png'
+            src='/Navbar_Assets/Profile.png'
             onClick={() => setMenuVisible(!menuVisible)}
           />
           {token && (
@@ -84,14 +84,14 @@ function Navbar() {
                       Setting
                       <img
                         alt='Setting Button'
-                        src='./Navbar_Assets/Setting.svg'
+                        src='/Navbar_Assets/Setting.svg'
                       />
                     </li>
                     <li onClick={handleLogout}>
                       Log Out
                       <img
                         alt='LogOut Button'
-                        src='./Navbar_Assets/Sign_out.svg'
+                        src='/Navbar_Assets/Sign_out.svg'
                       />
                     </li>
                   </ul>

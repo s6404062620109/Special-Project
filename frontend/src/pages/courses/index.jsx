@@ -74,6 +74,7 @@ function Courses() {
       {data.map(item => (
         <CourseCard
           key={item.CourseID}
+          id={item.CourseID}
           name={item.Name}
           detail={item.Detail}
           icon_id={item.Icon_id}
