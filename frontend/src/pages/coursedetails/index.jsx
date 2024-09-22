@@ -7,7 +7,8 @@ import style from './css/coursedetails.module.css'
 function CourseDetail() {
     const { courseId } = useParams();
     const [ data, setData ] = useState([]);
-    const [ courseInfo, setCourseInfo ] = useState({
+    const [ courseInfo, setCourseInfo] = useState({
+      id: '',
       name:'',
       details:'',
       icon:''
@@ -17,7 +18,16 @@ function CourseDetail() {
       const fetchData = async () => {
         try {
           const response = await axios.get(`http://localhost:3001/getAllSubject/${courseId}`);
-          setData(response.data);
+          // console.log(response)
+          let responseCourse = response.data.courseInfo[0]
+
+          setCourseInfo({
+            id: responseCourse.CourseID,
+            name: responseCourse.Name,
+            details: responseCourse.Detail,
+            icon: responseCourse.Icon_id
+          });
+          setData(response.data.subject);
         } catch (err) {
           console.log(err);
         }
@@ -25,18 +35,6 @@ function CourseDetail() {
 
       fetchData();
     }, [courseId])
-
-    useEffect(() => {
-      if (data.length > 0) {
-        setCourseInfo({
-          name: data[0].courseName,
-          details: data[0].courseDetail,
-          icon: data[0].courseIcon,
-        });
-      }
-    }, [data]);
-
-    console.log(data)
     
   return (
     <div className={style.container}>
