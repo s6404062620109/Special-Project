@@ -54,7 +54,7 @@ function CourseDetail() {
           {data.map((subject, index) => (
             <Link 
               key={index}
-              to={``} 
+              to={`/course/${courseId}/subject/${subject.SubjectID}`} 
             >
                 {subject.Name}
             </Link>

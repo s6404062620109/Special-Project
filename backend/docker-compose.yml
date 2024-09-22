@@ -8,6 +8,9 @@ services:
       - "3001:3001" 
     depends_on:
       - db
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      
   db:
     image: mysql:latest
     environment:

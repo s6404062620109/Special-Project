@@ -1,5 +1,9 @@
-FROM node:20
+FROM node:latest
 
+#install Docker in node-container
+RUN apt-get update && apt-get install -y docker.io
+
+#directory
 WORKDIR /usr/src/app
 
 COPY ./package.json ./

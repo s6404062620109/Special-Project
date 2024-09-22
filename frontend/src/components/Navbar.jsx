@@ -25,7 +25,7 @@ function Navbar() {
       if (decodedToken.exp < currentTime) {
         localStorage.removeItem('authToken');
         console.log('Token expired. Logging out.');
-        navigate('/login'); 
+        // navigate('/login'); 
       }
       else{
         setData({

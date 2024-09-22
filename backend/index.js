@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const { exec } = require('child_process');
 const app = express();
 
 app.use(express.json());
@@ -162,8 +163,49 @@ app.get('/getAllSubject/:courseId', (req, res) => {
 
     });
 });
+app.get('/getSubject/:courseId/:subjectId', (req, res) => {
+    const courseId = req.params.courseId;
+    const subjectId = req.params.subjectId
+    db.query(`SELECT * FROM subject WHERE SubjectID = ? AND \`course-ID\` = ? `, [subjectId, courseId], (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database subject query error" });
+        }
+        else{
+            return res.status(200).json(result);
+        }
+    });
+});
 
 /* Courses */
+
+/* Lab */
+
+app.post('/createLinuxContainer', (req, res) => {
+    // สั่ง Docker ให้สร้าง container ใหม่พร้อม GUI ผ่าน VNC
+    const containerName = `linux_container_${Date.now()}`;
+    const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
+
+    exec(createContainerCmd, (err, stdout, stderr) => {
+        if (err) {
+            console.error('Error creating container:', err);
+            return res.status(500).json({ message: 'Failed to create container' });
+        }
+
+        // สั่ง Docker เพื่อดึง IP Address ของ container
+        exec(`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
+            if (err) {
+                console.error('Error getting container IP:', err);
+                return res.status(500).json({ message: 'Failed to retrieve container IP' });
+            }
+
+            // ส่ง IP Address กลับไปที่ frontend พร้อม port VNC
+            return res.status(200).json({ ip: ipOutput.trim()});
+        });
+    });
+});
+
+/* Lab */
 
 const port = 3001
 app.listen(port, () =>{
