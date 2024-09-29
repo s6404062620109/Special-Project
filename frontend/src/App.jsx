@@ -6,10 +6,10 @@ import Navbar from './components/Navbar';
 import Home from './pages/home';
 import Courses from './pages/courses';
 
-import Login from './pages/login';
-import Register from './pages/register';
-import Reset from './pages/reset';
-import ResetCode from './pages/resetotp';
+import Login from './pages/authenticate/login';
+import Register from './pages/authenticate/register';
+import Reset from './pages/authenticate/reset';
+import ResetCode from './pages/authenticate/resetotp';
 import Setpassword from './pages/newpassword';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
