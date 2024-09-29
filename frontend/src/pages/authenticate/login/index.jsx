@@ -21,7 +21,6 @@ function Login() {
           password: dataInput.password,
       });
 
-      console.log(response)
       if (response.status === 201) {
         setStatusMessage(response.data.message);
         localStorage.setItem('authToken', response.data.token);

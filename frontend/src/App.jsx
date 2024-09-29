@@ -10,7 +10,7 @@ import Login from './pages/authenticate/login';
 import Register from './pages/authenticate/register';
 import Reset from './pages/authenticate/reset';
 import ResetCode from './pages/authenticate/resetotp';
-import Setpassword from './pages/newpassword';
+import Setpassword from './pages/authenticate/newpassword';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
 

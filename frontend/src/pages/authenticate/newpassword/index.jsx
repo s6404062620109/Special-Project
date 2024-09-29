@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
-import style from './css/resetotp.module.css';
+import style from './css/newpassword.module.css';
 
-function ResetCode() {
-    const [email, setEmail] = useState('');
-    const [otp, setOtp] = useState('');
-    const [statusMessage, setStatusMessage] = useState('');
+function Setpassword() {
     const navigate = useNavigate();
     const token = localStorage.getItem('resetToken');
+    const [statusMessage, setStatusMessage] = useState('');
+    const [data, setData] = useState({
+      email: '',
+      password: '',
+      cpassword: ''
+    });
 
     const decodeAuthToken = (Authtoken) =>{
       if(!Authtoken){
@@ -25,7 +28,7 @@ function ResetCode() {
           console.log('resetToken expired. Logging out.'); 
         }
         else{
-          setEmail(decodedToken.email);
+          setData({...data, email: decodedToken.email});
         }
       }
     }
@@ -37,36 +40,54 @@ function ResetCode() {
     const handlesubmit = async (e) =>{
         e.preventDefault();
         
+        if (data.password !== data.cpassword) {
+          setStatusMessage('Passwords do not match');
+          return;
+        }
+
         try {
-          const response = await axios.post('http://localhost:3001/verifyotp', { email, otp });
-  
-          if (response.status === 200) {
-            console.log(response.data.message);
-            setStatusMessage(response.data.message);
-            setTimeout(() => navigate('/newpassword'), 1000); 
-          }
+            const response = await axios.post('http://localhost:3001/setnewpassword', {
+                email: data.email,
+                password: data.password
+            });
+
+            if (response.status === 200) {
+                setStatusMessage(response.data.message);
+                localStorage.removeItem('resetToken');
+                setTimeout(() => navigate('/login'), 1000);
+            }
         } catch (error) {
-          console.error('Error verifying OTP:', error.response?.data?.message || error.message);
+            console.error('Error setting new password:', error.response?.data?.message || error.message);
+            setStatusMessage('Failed to update password');
         }
     }
-    
     return (
       <div className={style.container}>
         <div className={style.heading}>
           <img alt='Back_Burron' 
               src='./Expand_left.svg'
               onClick={() => navigate('/reset')}/>
-          <p>Recovery Password</p>
+          <p>Set New Password</p>
         </div>
   
         <form onSubmit={handlesubmit}>
           <div className={style.inputContent}>
             <div>
-              <label>Recovery Code</label>
+              <label>New Password</label>
               <input
-                type='text'
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                type='password'
+                value={data.password}
+                onChange={(e) => setData({...data, password:e.target.value})}
+                required
+              />
+            </div>
+
+            <div>
+              <label>Confirm Password</label>
+              <input
+                type='password'
+                value={data.cpassword}
+                onChange={(e) => setData({...data, cpassword:e.target.value})}
                 required
               />
             </div>
@@ -84,4 +105,4 @@ function ResetCode() {
     )
 }
 
-export default ResetCode
+export default Setpassword
