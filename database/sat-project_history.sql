@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 12:05 PM
+-- Generation Time: Sep 30, 2024 at 12:20 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -31,6 +31,7 @@ CREATE TABLE `history` (
   `HistoryID` int NOT NULL,
   `User-Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `Subject-ID` int NOT NULL,
+  `PracticeStatus` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT 'Failed',
   `Status` varchar(255) COLLATE utf8mb3_bin NOT NULL DEFAULT 'Doing',
   `PreScore` int NOT NULL DEFAULT '0',
   `PostScore` int NOT NULL DEFAULT '0'
@@ -40,8 +41,8 @@ CREATE TABLE `history` (
 -- Dumping data for table `history`
 --
 
-INSERT INTO `history` (`HistoryID`, `User-Email`, `Subject-ID`, `Status`, `PreScore`, `PostScore`) VALUES
-(5, 'AAA', 1, 'Doing', 0, 0);
+INSERT INTO `history` (`HistoryID`, `User-Email`, `Subject-ID`, `PracticeStatus`, `Status`, `PreScore`, `PostScore`) VALUES
+(7, 'AAA', 1, 'Failed', 'Doing', 0, 0);
 
 --
 -- Indexes for dumped tables
@@ -63,7 +64,7 @@ ALTER TABLE `history`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Constraints for dumped tables

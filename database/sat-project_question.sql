@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 12:03 PM
+-- Generation Time: Sep 30, 2024 at 12:18 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -31,8 +31,7 @@ CREATE TABLE `question` (
   `QuestionID` int NOT NULL,
   `Question` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `Type` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Subject-ID` int NOT NULL,
-  `Status` varchar(255) COLLATE utf8mb3_bin NOT NULL
+  `Subject-ID` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 --
