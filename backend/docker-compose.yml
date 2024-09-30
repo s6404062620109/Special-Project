@@ -30,7 +30,7 @@ services:
       PMA_USER: root # DB user
       PMA_PASSWORD: root # DB password
     ports:
-      - "8080:80"
+      - "8081:80"
     depends_on:
       - db
 
