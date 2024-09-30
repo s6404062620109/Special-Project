@@ -223,6 +223,7 @@ app.get('/getCourses', (req, res) => {
         res.json(results);
     });
 });
+
 app.get('/updateCourses/:email', (req, res) => {
     const email = req.params.email;
 
@@ -244,6 +245,7 @@ app.get('/updateCourses/:email', (req, res) => {
             res.json(results);
         });
 });
+
 app.get('/getAllSubject/:courseId', (req, res) => {
     const courseId = req.params.courseId;
 
@@ -268,6 +270,7 @@ app.get('/getAllSubject/:courseId', (req, res) => {
 
     });
 });
+
 app.get('/getSubject/:courseId/:subjectId', (req, res) => {
     const courseId = req.params.courseId;
     const subjectId = req.params.subjectId
@@ -289,7 +292,7 @@ app.get('/getSubject/:courseId/:subjectId', (req, res) => {
 app.post('/createLinuxContainer', (req, res) => {
     // สั่ง Docker ให้สร้าง container ใหม่พร้อม GUI ผ่าน VNC
     const containerName = `linux_container_${Date.now()}`;
-    const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
+    const createContainerCmd = `docker run -d -P -p 5900 --expose=5900 -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
 
     exec(createContainerCmd, (err, stdout, stderr) => {
         if (err) {
@@ -297,15 +300,26 @@ app.post('/createLinuxContainer', (req, res) => {
             return res.status(500).json({ message: 'Failed to create container' });
         }
 
-        // สั่ง Docker เพื่อดึง IP Address ของ container
+        // Get the IP address of the container
         exec(`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
             if (err) {
                 console.error('Error getting container IP:', err);
                 return res.status(500).json({ message: 'Failed to retrieve container IP' });
             }
 
-            // ส่ง IP Address กลับไปที่ frontend พร้อม port VNC
-            return res.status(200).json({ ip: ipOutput.trim()});
+            // Get the random VNC port assigned to 5900 in the container
+            exec(`docker port ${containerName} 5900`, (err, portOutput) => {
+                if (err) {
+                    console.error('Error getting VNC port:', err);
+                    return res.status(500).json({ message: 'Failed to retrieve VNC port' });
+                }
+
+                // Extract the port from the output
+                const vncPort = portOutput.split(':')[1].trim();
+
+                // Return the IP and the dynamically assigned VNC port
+                return res.status(200).json({ ip: ipOutput.trim(), port: vncPort });
+            });
         });
     });
 });
