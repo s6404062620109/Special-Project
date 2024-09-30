@@ -60,6 +60,11 @@ function CourseDetail() {
             </Link>
           ))}
         </ul>
+
+        <ul>
+          <Link to={`/course/${courseId}/pretest`}>Pretest</Link>
+          <Link>Posttest</Link>
+        </ul>
       </div>
     </div>
   )

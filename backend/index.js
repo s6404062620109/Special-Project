@@ -287,6 +287,51 @@ app.get('/getSubject/:courseId/:subjectId', (req, res) => {
 
 /* Courses */
 
+/* Test */
+
+app.get('/getPretest/:courseId', (req, res) => {
+    const courseId = req.params.courseId;
+
+    db.query('SELECT SubjectID FROM subject WHERE \`Course-ID\` = ?', [courseId], (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database subject query error" });
+        }
+        
+        else{
+            const subjectList = result.map(item => item.SubjectID);
+            
+            db.query(`SELECT * FROM question WHERE \`Subject-ID\` in (?) `, [subjectList], (err, questionresults) => {
+                if(err) {
+                    console.log(err);
+                    return res.status(500).json({ message: "Database question query error" });
+                }
+
+                else{
+                    const shuffledQuestions = questionresults.sort(() => 0.5 - Math.random());
+                    const randomQuestions = shuffledQuestions.slice(0, 10);
+
+                    const questionIdList = randomQuestions.map(item => item.QuestionID);
+
+                    db.query(`SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`, [questionIdList], (err, ansresults) =>{
+                        if(err) {
+                            console.log(err);
+                            return res.status(500).json({ message: "Database answer query error" });
+                        }
+
+                        else{
+
+                            return res.status(200).json({ Qustions: randomQuestions, Choices: ansresults });
+                        }
+                    });
+                }
+            });
+        }
+    });
+});
+
+/* Post */
+
 /* Lab */
 
 app.post('/createLinuxContainer', (req, res) => {

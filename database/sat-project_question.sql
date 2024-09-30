@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 12:27 PM
+-- Generation Time: Sep 30, 2024 at 04:13 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -39,7 +39,21 @@ CREATE TABLE `question` (
 --
 
 INSERT INTO `question` (`QuestionID`, `Question`, `Type`, `Subject-ID`) VALUES
-(1, 'การโจมตีแบบฟิชชิ่งคืออะไร?', 'pretest', 6);
+(1, 'การโจมตีแบบฟิชชิ่งคืออะไร?', 'pretest', 6),
+(2, 'ฟิชชิ่งคืออะไร?', 'pretest', 6),
+(3, 'สัญญาณที่บ่งบอกว่าอีเมลเป็นฟิชชิ่งคืออะไร?', 'pretest', 6),
+(4, 'ควรทำอย่างไรหากได้รับอีเมลฟิชชิ่ง?', 'pretest', 6),
+(5, 'ฟิชชิ่งสามารถเกิดขึ้นได้ผ่านช่องทางใดบ้าง?', 'pretest', 6),
+(6, 'ทำไมฟิชชิ่งถึงเป็นอันตราย?', 'pretest', 6),
+(7, 'ควรทำอย่างไรหากไม่แน่ใจว่าอีเมลเป็นฟิชชิ่งหรือไม่?', 'pretest', 6),
+(8, 'ฟิชชิ่งมักจะใช้วิธีใดในการหลอกลวงผู้ใช้?', 'pretest', 6),
+(9, 'ควรทำอย่างไรหากคลิกลิงก์ในอีเมลฟิชชิ่งโดยไม่ตั้งใจ?', 'pretest', 6),
+(10, 'ฟิชชิ่งสามารถทำให้เกิดความเสียหายอะไรได้บ้าง?', 'pretest', 6),
+(11, 'ควรทำอย่างไรหากได้รับอีเมลที่ขอข้อมูลส่วนตัว?', 'pretest', 6),
+(12, 'ฟิชชิ่งสามารถเกิดขึ้นได้ในรูปแบบใดบ้าง?', 'pretest', 6),
+(13, 'ควรทำอย่างไรหากได้รับอีเมลที่ดูเหมือนจะมาจากธนาคารแต่ไม่แน่ใจ?', 'pretest', 6),
+(14, 'ฟิชชิ่งมักจะใช้วิธีใดในการหลอกลวงผู้ใช้?', 'pretest', 6),
+(15, 'ควรทำอย่างไรหากคลิกลิงก์ในอีเมลฟิชชิ่งโดยไม่ตั้งใจ?', 'pretest', 6);
 
 --
 -- Indexes for dumped tables
@@ -60,7 +74,7 @@ ALTER TABLE `question`
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
