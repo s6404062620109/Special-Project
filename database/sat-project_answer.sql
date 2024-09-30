@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 12:27 PM
+-- Generation Time: Sep 30, 2024 at 12:36 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -39,7 +39,9 @@ CREATE TABLE `answer` (
 --
 
 INSERT INTO `answer` (`AnswerID`, `result`, `Type`, `QuestionID`) VALUES
-(1, 'ความพยายามที่จะขโมยข้อมูลที่ละเอียดอ่อนเพื่อใช้หรือขายข้อมูลที่ถูกขโมยด้วยการปลอมตัวเป็นแหล่งที่เชื่อถือได้พร้อมกับคำขอที่ล่อลวง', 'ans', 1);
+(1, 'ความพยายามที่จะขโมยข้อมูลที่ละเอียดอ่อนเพื่อใช้หรือขายข้อมูลที่ถูกขโมยด้วยการปลอมตัวเป็นแหล่งที่เชื่อถือได้พร้อมกับคำขอที่ล่อลวง', 'ans', 1),
+(2, 'abcdef TESt 123456789423421245512123', 'choice', 1),
+(3, 'กกกกกกกกกกกไๆหผแปปปปปปปปปปปปปปปปปปปปปป123456789423421245512123', 'choice', 1);
 
 --
 -- Indexes for dumped tables
@@ -60,7 +62,7 @@ ALTER TABLE `answer`
 -- AUTO_INCREMENT for table `answer`
 --
 ALTER TABLE `answer`
-  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
