@@ -292,7 +292,7 @@ app.get('/getSubject/:courseId/:subjectId', (req, res) => {
 app.post('/createLinuxContainer', (req, res) => {
     // สั่ง Docker ให้สร้าง container ใหม่พร้อม GUI ผ่าน VNC
     const containerName = `linux_container_${Date.now()}`;
-    const createContainerCmd = `docker run -d -P -p 5900 --expose=5900 -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
+    const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
 
     exec(createContainerCmd, (err, stdout, stderr) => {
         if (err) {
@@ -300,29 +300,28 @@ app.post('/createLinuxContainer', (req, res) => {
             return res.status(500).json({ message: 'Failed to create container' });
         }
 
-        // Get the IP address of the container
-        exec(`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
+        // สั่ง Docker เพื่อดึง IP Address ของ container
+        exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerName}`, (err, portOutput) => {
             if (err) {
-                console.error('Error getting container IP:', err);
-                return res.status(500).json({ message: 'Failed to retrieve container IP' });
+                console.error('Error getting container port:', err);
+                return res.status(500).json({ message: 'Failed to retrieve container port' });
             }
 
-            // Get the random VNC port assigned to 5900 in the container
-            exec(`docker port ${containerName} 5900`, (err, portOutput) => {
+            const portMatch = portOutput.match(/\d{4,5}/);
+            const port = portMatch ? portMatch[0] : null;
+
+            exec(`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
                 if (err) {
-                    console.error('Error getting VNC port:', err);
-                    return res.status(500).json({ message: 'Failed to retrieve VNC port' });
+                    console.error('Error getting container IP:', err);
+                    return res.status(500).json({ message: 'Failed to retrieve container IP' });
                 }
 
-                // Extract the port from the output
-                const vncPort = portOutput.split(':')[1].trim();
-
-                // Return the IP and the dynamically assigned VNC port
-                return res.status(200).json({ ip: ipOutput.trim(), port: vncPort });
+                // ส่ง IP Address และ port กลับไปที่ frontend
+                return res.status(200).json({ ip: ipOutput.trim(), port: port });
             });
         });
     });
-});
+}); 
 
 /* Lab */
 
