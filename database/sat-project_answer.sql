@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 10:37 AM
+-- Generation Time: Sep 30, 2024 at 12:27 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -30,9 +30,16 @@ SET time_zone = "+00:00";
 CREATE TABLE `answer` (
   `AnswerID` int NOT NULL,
   `result` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Type` int NOT NULL,
+  `Type` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `QuestionID` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `answer`
+--
+
+INSERT INTO `answer` (`AnswerID`, `result`, `Type`, `QuestionID`) VALUES
+(1, 'ความพยายามที่จะขโมยข้อมูลที่ละเอียดอ่อนเพื่อใช้หรือขายข้อมูลที่ถูกขโมยด้วยการปลอมตัวเป็นแหล่งที่เชื่อถือได้พร้อมกับคำขอที่ล่อลวง', 'ans', 1);
 
 --
 -- Indexes for dumped tables
@@ -44,6 +51,16 @@ CREATE TABLE `answer` (
 ALTER TABLE `answer`
   ADD PRIMARY KEY (`AnswerID`),
   ADD KEY `AnswerOfQuestion` (`QuestionID`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `answer`
+--
+ALTER TABLE `answer`
+  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 12:18 PM
+-- Generation Time: Sep 30, 2024 at 12:27 PM
 -- Server version: 9.0.1
 -- PHP Version: 8.2.8
 
@@ -35,6 +35,13 @@ CREATE TABLE `question` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 --
+-- Dumping data for table `question`
+--
+
+INSERT INTO `question` (`QuestionID`, `Question`, `Type`, `Subject-ID`) VALUES
+(1, 'การโจมตีแบบฟิชชิ่งคืออะไร?', 'pretest', 6);
+
+--
 -- Indexes for dumped tables
 --
 
@@ -53,7 +60,7 @@ ALTER TABLE `question`
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
