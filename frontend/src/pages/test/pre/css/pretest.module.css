@@ -1,0 +1,21 @@
+.container{
+    width: 60%;
+    margin: auto;
+}
+
+.container > form{
+    width: 80%;
+    margin: auto;
+    background-color: white;
+    border: .063rem solid;
+    border-radius: 1rem;
+    padding: .625rem;
+}
+
+.testCard{
+    width: 90%;
+    margin: auto;
+}
+.testCard > ul{
+    list-style: none;
+}
