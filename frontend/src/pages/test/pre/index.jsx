@@ -39,7 +39,7 @@ function Pretest() {
         const formattedQuestions = questions.map((question) => {
           let choices = choicesByQuestionId[question.QuestionID] || [];
 
-          const labeledChoices = shuffleArray(choices).map((choice, idx) => ({
+          const labeledChoices = choices.map((choice, idx) => ({
             ...choice,
             label: String.fromCharCode(65 + idx), 
           }));
@@ -52,8 +52,7 @@ function Pretest() {
         });
 
         setQuestionsWithChoices(formattedQuestions);
-      }
-      catch(err){
+      } catch(err){
         console.log(err);
       }
     }
@@ -71,17 +70,17 @@ function Pretest() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(selectedAnswers);
-    // try {
-    //   const payload = {
-    //     courseId,
-    //     answers: selectedAnswers, // Submit selected answers
-    //   };
-    //   const response = await axios.post('http://localhost:3001/submitPretest', payload);
-    //   console.log('Submit response:', response.data);
-    // } catch (err) {
-    //   console.error('Error submitting answers:', err);
-    // }
+    try {
+      const payload = {
+        courseId,
+        answers: selectedAnswers,
+      };
+      const response = await axios.post('http://localhost:3001/submitPretest', {payload: payload});
+      console.log('Submit response:', response.data);
+
+    } catch (err) {
+      console.log('Error submitting answers:', err);
+    }
   };
 
 
@@ -92,7 +91,7 @@ function Pretest() {
       <form onSubmit={handleSubmit}>
         {questionsWithChoices.map((question, index) => (
           <div key={index} className={style.testCard}>
-            <h3>{question.Question}</h3>
+            <h3>{index+1}. {question.Question}</h3>
             <ul>
               {question.choices.map((choice, idx) => (
                 <li key={idx}>
@@ -104,7 +103,7 @@ function Pretest() {
                       checked={selectedAnswers[question.QuestionID] === choice.AnswerID}
                       onChange={() => handleAnswerChange(question.QuestionID, choice.AnswerID)}
                     />
-                    {String.fromCharCode(65 + idx)}.
+                    {choice.label}.
                     {choice.result}
                   </label>
                 </li>

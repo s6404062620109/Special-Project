@@ -330,6 +330,33 @@ app.get('/getPretest/:courseId', (req, res) => {
     });
 });
 
+app.post('/submitPretest', (req, res) => {
+    const { payload } = req.body;
+    const userAnswer = payload.answers;
+    const userAnswerIds = Object.values(userAnswer);
+    const userQuestionIds = Object.keys(userAnswer);
+
+    const query = `SELECT AnswerID, Type, QuestionID FROM answer WHERE AnswerID IN (${userAnswerIds.join(',')}) AND QuestionID IN (${userQuestionIds.join(',')})`;
+
+    db.query(query, (error, result) => {
+        if(error){
+            console.log(error);
+            return res.status(500).json({ message: "Database answer query error" });
+        }
+
+        else{
+            let score = 0;
+            result.map(item => {
+                if(item.Type === 'a'){
+                    score += 1;
+                }
+            });
+            
+            return res.status(200).json({ message: "Submit Sucess.", score: score });
+        }
+    });
+});
+
 /* Post */
 
 /* Lab */
