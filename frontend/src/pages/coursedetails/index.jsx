@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 import style from './css/coursedetails.module.css'
 
 function CourseDetail() {
+
     const { courseId } = useParams();
     const [ data, setData ] = useState([]);
     const [ courseInfo, setCourseInfo] = useState({
@@ -13,7 +15,14 @@ function CourseDetail() {
       details:'',
       icon:''
     });
+    const [userData, setUserdata] = useState({
+      email:'',
+      name:''
+    })
     
+    const token = localStorage.getItem('authToken');
+    const navigate = useNavigate();
+
     useEffect(() => {
       const fetchData = async () => {
         try {
@@ -35,7 +44,41 @@ function CourseDetail() {
 
       fetchData();
     }, [courseId])
+
+    const decodeAuthToken = (Authtoken) =>{
+      if(!Authtoken){
+        console.log('Not authentication.');
+        return
+      }
+      else{
+        const decodedToken = jwtDecode(Authtoken);
+        const currentTime = Date.now() / 1000;
+        if (decodedToken.exp < currentTime) {
+          localStorage.removeItem('authToken');
+          console.log('Token expired. Logging out.');
+          navigate('/login'); 
+        }
+        else{
+          setUserdata({
+            email: decodedToken.email,
+            name: decodedToken.name
+          })
+        }
+      }
+    }
+  
+    useEffect(() => {
+      decodeAuthToken(token)
+    }, [token])
     
+    const handleLinkClick = (e) => {
+      if (!token) {
+        e.preventDefault();
+        alert('Not authenticated. Please log in.');
+        navigate('/login');
+      }
+    }
+
   return (
     <div className={style.container}>
       <div className={style.head}>
@@ -54,7 +97,8 @@ function CourseDetail() {
           {data.map((subject, index) => (
             <Link 
               key={index}
-              to={`/course/${courseId}/subject/${subject.SubjectID}`} 
+              to={`/course/${courseId}/subject/${subject.SubjectID}`}
+              onClick={handleLinkClick} 
             >
                 {subject.Name}
             </Link>
@@ -62,8 +106,17 @@ function CourseDetail() {
         </ul>
 
         <ul>
-          <Link to={`/course/${courseId}/pretest`}>Pretest</Link>
-          <Link>Posttest</Link>
+          <Link 
+            to={`/course/${courseId}/pretest`}
+            onClick={handleLinkClick}
+          >
+            Pretest
+          </Link>
+          <Link
+            onClick={handleLinkClick}  
+          >
+            Posttest
+          </Link>
         </ul>
       </div>
     </div>

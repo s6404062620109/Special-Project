@@ -69,6 +69,7 @@ function Courses() {
     return states
   };
 
+
   return (
     <div className={style.content}>
       {data.map(item => (

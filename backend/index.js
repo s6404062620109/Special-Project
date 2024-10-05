@@ -395,6 +395,21 @@ app.post('/createLinuxContainer', (req, res) => {
     });
 }); 
 
+app.get('/getLabquestion/:subjectId', (req, res) => {
+    const subjectId = req.params.subjectId;
+    
+    db.query(`SELECT * FROM question WHERE Type = ? AND \`Subject-ID\` = ? `, ['lab', subjectId], (err, questionResult) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database question query error" });
+        }
+
+        else{
+            return res.status(200).json({ questionlist: questionResult});
+        }
+    });
+});
+
 /* Lab */
 
 const port = 3001

@@ -15,6 +15,7 @@ function Subject() {
         Image_id: '',
         CourseID: ''
     });
+    const [ useLab, setUseLab ] = useState(true);
 
     useEffect(() => {
         const fetchData = async () =>{
@@ -32,7 +33,16 @@ function Subject() {
             }
             catch(err){
                 console.log(err)
-            }   
+            }
+
+            try {
+                const labresponse = await axios.get(`http://localhost:3001/getLabquestion/${subjectId}`);
+              } catch (err) {
+                if (err.response && err.response.status === 500) {
+                  setUseLab(false);
+                }
+                console.log('Error fetching lab data:', err);
+              }   
         }
         fetchData();
     }, [courseId, subjectId])
@@ -53,7 +63,11 @@ function Subject() {
         </div>
 
         <div className={style.questionBox}>
-            <LabBox/>
+            { useLab &&(
+                <LabBox
+                    subjectId={subjectId}
+                />
+            )}
         </div>
     </div>
   )

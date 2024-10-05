@@ -26,12 +26,12 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     if ( status === 'Continue' ) {
       let subjectId = lastSubject["Subject-ID"]
       console.log(subjectId)
-      navigate('');
+      navigate(`/course/${id}/subject/${update[length]['Subject-ID']}`);
     } 
     else if ( status === 'Start') {
       navigate(`/course/${id}`);
     } else {
-      console.log('view')
+      navigate(`/course/${id}`);
     }
   }
 
