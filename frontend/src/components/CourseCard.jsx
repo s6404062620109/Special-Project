@@ -1,15 +1,43 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 import style from './css/coursecard.module.css'
-import { useNavigate } from 'react-router-dom';
 
 function CourseCard({ id, name, detail, icon_id, update }) {
 
+  const [userData, setUserdata] = useState({
+    email:'',
+    name:''
+  });
   const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
   const lastSubject = Array.isArray(update) && update.length > 0
   ? update.reduce((prev, current) => (prev.value > current.value ? prev : current), update[0])
   : null;
+
+  const decodeAuthToken = (Authtoken) =>{
+    if(!Authtoken){
+      console.log('Not authentication.');
+      return
+    }
+    else{
+      const decodedToken = jwtDecode(Authtoken);
+      const currentTime = Date.now() / 1000;
+      if (decodedToken.exp < currentTime) {
+        localStorage.removeItem('authToken');
+        console.log('Token expired. Logging out.');
+        navigate('/login'); 
+      }
+      else{
+        setUserdata({
+          email: decodedToken.email,
+          name: decodedToken.name
+        })
+      }
+    }
+  }
 
   const [buttonText, setButtonText] = useState('');
   useEffect(() => {
@@ -20,6 +48,8 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     } else {
       setButtonText('Start');
     }
+
+    decodeAuthToken(token);
   }, [token, lastSubject]);
 
   const handleClick = (status) =>{
@@ -27,10 +57,22 @@ function CourseCard({ id, name, detail, icon_id, update }) {
       let subjectId = lastSubject["Subject-ID"]
       console.log(subjectId)
       navigate(`/course/${id}/subject/${update[length]['Subject-ID']}`);
-    } 
+    }
+
     else if ( status === 'Start') {
-      navigate(`/course/${id}`);
-    } else {
+      const postHistory = async () => {
+        try{
+          const response = await axios.post(`http://localhost:3001/postHistory`, {courseId: id, userEmail: userData.email});
+        } catch (err){
+          console.log(err);
+        }
+      }
+
+      postHistory();
+      navigate(`/course/${id}/pretest`);
+    } 
+    
+    else {
       navigate(`/course/${id}`);
     }
   }

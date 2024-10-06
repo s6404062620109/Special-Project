@@ -285,6 +285,32 @@ app.get('/getSubject/:courseId/:subjectId', (req, res) => {
     });
 });
 
+app.post('/postHistory', (req, res) => {
+    const { courseId, userEmail} = req.body;
+    db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ?`, [courseId], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Database subject query error" });
+        }
+        else{
+            let subjectId = result[0].SubjectID;
+
+            db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, PracticeStatus, Status ) VALUES( ?, ?, ?, ? )`,
+                [userEmail, subjectId, 'Failed', 'Doing'], (postErr, postResult) => {
+                    if (postErr){
+                        console.log(postErr);
+                        return res.status(500).json({ message: 'Failed post history.' })
+                    }
+                    else{
+                        return res.status(200).json({ message: 'Success post history' });
+                    }
+                }
+            )
+        }
+
+    });
+});
+
 /* Courses */
 
 /* Test */
