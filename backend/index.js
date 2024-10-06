@@ -285,32 +285,6 @@ app.get('/getSubject/:courseId/:subjectId', (req, res) => {
     });
 });
 
-app.post('/postHistory', (req, res) => {
-    const { courseId, userEmail} = req.body;
-    db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ?`, [courseId], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Database subject query error" });
-        }
-        else{
-            let subjectId = result[0].SubjectID;
-
-            db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, PracticeStatus, Status ) VALUES( ?, ?, ?, ? )`,
-                [userEmail, subjectId, 'Failed', 'Doing'], (postErr, postResult) => {
-                    if (postErr){
-                        console.log(postErr);
-                        return res.status(500).json({ message: 'Failed post history.' })
-                    }
-                    else{
-                        return res.status(200).json({ message: 'Success post history' });
-                    }
-                }
-            )
-        }
-
-    });
-});
-
 /* Courses */
 
 /* Test */
@@ -327,7 +301,7 @@ app.get('/getPretest/:courseId', (req, res) => {
         else{
             const subjectList = result.map(item => item.SubjectID);
             
-            db.query(`SELECT * FROM question WHERE \`Subject-ID\` in (?) `, [subjectList], (err, questionresults) => {
+            db.query(`SELECT * FROM question WHERE \`Subject-ID\` in (?) and Type = ?`, [subjectList, 'pretest'], (err, questionresults) => {
                 if(err) {
                     console.log(err);
                     return res.status(500).json({ message: "Database question query error" });
@@ -357,7 +331,7 @@ app.get('/getPretest/:courseId', (req, res) => {
 });
 
 app.post('/submitPretest', (req, res) => {
-    const { payload } = req.body;
+    const { payload, courseid, email } = req.body;
     const userAnswer = payload.answers;
     const userAnswerIds = Object.values(userAnswer);
     const userQuestionIds = Object.keys(userAnswer);
@@ -378,7 +352,28 @@ app.post('/submitPretest', (req, res) => {
                 }
             });
             
-            return res.status(200).json({ message: "Submit Sucess.", score: score });
+            db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ?`, [courseid], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ message: "Database subject query error" });
+                }
+
+                else{
+                    let subjectId = result[0].SubjectID;
+
+                    db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, PracticeStatus, Status, Prescore ) VALUES( ?, ?, ?, ?, ? )`,
+                        [email, subjectId, 'Failed', 'Doing', score], (postErr, postResult) => {
+                            if (postErr){
+                                console.log(postErr);
+                                return res.status(500).json({ message: 'Failed post history.' })
+                            }
+                            else{
+                                return res.status(200).json({ message: 'Success post history', subjectId });
+                            }
+                        }
+                    );
+                }
+            });
         }
     });
 });

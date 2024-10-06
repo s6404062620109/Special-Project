@@ -1,20 +1,42 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode';
 
 import style from './css/pretest.module.css';
 
 function Pretest() {
   const { courseId } = useParams();
+  const token = localStorage.getItem('authToken');
+  const [userData, setUserdata] = useState({
+    email:'',
+    name:''
+  });
   const [questionsWithChoices, setQuestionsWithChoices] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const navigate = useNavigate();
 
-  const shuffleArray = (array) => {
-    return array
-      .map((value) => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
-  };
+  const decodeAuthToken = (Authtoken) =>{
+    if(!Authtoken){
+      console.log('Not authentication.');
+      return
+    }
+    else{
+      const decodedToken = jwtDecode(Authtoken);
+      const currentTime = Date.now() / 1000;
+      if (decodedToken.exp < currentTime) {
+        localStorage.removeItem('authToken');
+        console.log('Token expired. Logging out.');
+        navigate('/login'); 
+      }
+      else{
+        setUserdata({
+          email: decodedToken.email,
+          name: decodedToken.name
+        })
+      }
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,8 +79,9 @@ function Pretest() {
       }
     }
 
+    decodeAuthToken(token);
     fetchData();
-  }, [courseId])
+  }, [courseId, token])
 
   const handleAnswerChange = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({
@@ -66,6 +89,7 @@ function Pretest() {
       [questionId]: answerId,
     }));
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,12 +99,18 @@ function Pretest() {
         courseId,
         answers: selectedAnswers,
       };
-      const response = await axios.post('http://localhost:3001/submitPretest', {payload: payload});
+
+      const response = await axios.post('http://localhost:3001/submitPretest', {payload: payload, courseid: courseId, email: userData.email});
       console.log('Submit response:', response.data);
 
-    } catch (err) {
+      navigate(`/course/${courseId}/subject/${response.data.subjectId}`);
+    } 
+    catch (err) {
       console.log('Error submitting answers:', err);
+
     }
+
+    
   };
 
 

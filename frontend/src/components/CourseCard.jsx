@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 import style from './css/coursecard.module.css'
@@ -60,15 +59,6 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     }
 
     else if ( status === 'Start') {
-      const postHistory = async () => {
-        try{
-          const response = await axios.post(`http://localhost:3001/postHistory`, {courseId: id, userEmail: userData.email});
-        } catch (err){
-          console.log(err);
-        }
-      }
-
-      postHistory();
       navigate(`/course/${id}/pretest`);
     } 
     
