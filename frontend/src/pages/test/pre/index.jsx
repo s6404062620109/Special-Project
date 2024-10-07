@@ -119,9 +119,11 @@ function Pretest() {
       <h1>Pretest</h1>
 
       <form onSubmit={handleSubmit}>
+
         {questionsWithChoices.map((question, index) => (
           <div key={index} className={style.testCard}>
             <h3>{index+1}. {question.Question}</h3>
+
             <ul>
               {question.choices.map((choice, idx) => (
                 <li key={idx}>
@@ -132,6 +134,7 @@ function Pretest() {
                       value={choice.AnswerID}
                       checked={selectedAnswers[question.QuestionID] === choice.AnswerID}
                       onChange={() => handleAnswerChange(question.QuestionID, choice.AnswerID)}
+                      required
                     />
                     {choice.label}.
                     {choice.result}
@@ -141,7 +144,9 @@ function Pretest() {
             </ul>
           </div>
         ))}
+        
         <button type="submit">Submit Answers</button>
+
       </form>
 
     </div>
