@@ -1,24 +1,15 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 import style from './css/labbox.module.css';
 
 function LabBox({ subjectId }) {
-    const [ipAddress, setIpAddress] = useState('');
+    const [Address, setAddress] = useState({
+        ip:'', port:''
+    });
     const [loading, setLoading] = useState(false);
     const [ questionList, setQuestionList ] = useState([]);
-
-    const handleCreateContainer = async () => {
-        setLoading(true);
-        try {
-            const response = await axios.post('http://localhost:3001/createLinuxContainer');
-            console.log(response)
-            setIpAddress(response.data.ip);
-        } catch (err) {
-            console.error(err);
-        }
-        setLoading(false);
-    };
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -35,7 +26,19 @@ function LabBox({ subjectId }) {
         fetchQuestion();
     }, [subjectId])
 
-    console.log(questionList)
+    const handleCreateContainer = async () => {
+        setLoading(true);
+        let questionID = questionList.map(item => item.QuestionID)
+        try {
+            const response = await axios.post('http://localhost:3001/createLinuxContainer', {subjectId, questionID});
+            console.log(response);
+            setAddress({ ip: response.data.ip, port: response.data.port});
+        } catch (err) {
+            console.error(err);
+        }
+        setLoading(false);
+    };
+
   return (
     <div className={style.container}>
         <h2>Question</h2>
@@ -55,7 +58,7 @@ function LabBox({ subjectId }) {
                 <button onClick={handleCreateContainer} disabled={loading}>
                     {loading ? 'Creating...' : 'Create Linux Container'}
                 </button>
-                {ipAddress && <p>Container IP Address: {ipAddress}</p>}
+                {Address && <Link to={`http://localhost:${Address.port}`}>{Address.ip}</Link>}
             </div>
         </div>
         

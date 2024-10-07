@@ -54,7 +54,6 @@ function CourseCard({ id, name, detail, icon_id, update }) {
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       let subjectId = lastSubject["Subject-ID"]
-      console.log(subjectId)
       navigate(`/course/${id}/subject/${update[length]['Subject-ID']}`);
     }
 

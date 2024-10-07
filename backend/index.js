@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 const multer = require('multer');
 const { exec } = require('child_process');
 const nodemailer = require('nodemailer');
@@ -383,6 +384,7 @@ app.post('/submitPretest', (req, res) => {
 /* Lab */
 
 app.post('/createLinuxContainer', (req, res) => {
+    const { subjectId, questionID } = req.body;
     // สั่ง Docker ให้สร้าง container ใหม่พร้อม GUI ผ่าน VNC
     const containerName = `linux_container_${Date.now()}`;
     const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
@@ -393,25 +395,57 @@ app.post('/createLinuxContainer', (req, res) => {
             return res.status(500).json({ message: 'Failed to create container' });
         }
 
-        // สั่ง Docker เพื่อดึง IP Address ของ container
-        exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerName}`, (err, portOutput) => {
-            if (err) {
-                console.error('Error getting container port:', err);
-                return res.status(500).json({ message: 'Failed to retrieve container port' });
+        db.query(`SELECT result FROM answer WHERE QuestionID in (?) AND Type = ?`, [questionID, 'a'],(error, result) => {
+            if(error){
+                console.log(error);
+                return res.status(500).json({ message: "Database answer query error" });
             }
 
-            const portMatch = portOutput.match(/\d{4,5}/);
-            const port = portMatch ? portMatch[0] : null;
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'No answer found' });
+            }
 
-            exec(`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
-                if (err) {
-                    console.error('Error getting container IP:', err);
-                    return res.status(500).json({ message: 'Failed to retrieve container IP' });
-                }
+            else{
 
-                // ส่ง IP Address และ port กลับไปที่ frontend
-                return res.status(200).json({ ip: ipOutput.trim(), port: port });
-            });
+                const answerResult = result[0].result;
+
+                const htmlContent = `<html>
+                                        <body>
+                                        <h1>Answer Result</h1>
+                                        <p>${answerResult}</p>
+                                        </body>
+                                    </html>`;
+                const htmlFilePath = `/tmp/answer_${Date.now()}.html`;
+
+                fs.writeFileSync(htmlFilePath, htmlContent, { encoding: 'utf8' });
+
+                exec(`docker cp ${htmlFilePath} ${containerName}:/root/answer.html`, (err) => {
+                    if (err) {
+                        console.error('Error copying file into container:', err);
+                        return res.status(500).json({ message: 'Failed to copy HTML file into container' });
+                    }
+
+                        exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerName}`, (err, portOutput) => {
+                            if (err) {
+                                console.error('Error getting container port:', err);
+                                return res.status(500).json({ message: 'Failed to retrieve container port' });
+                            }
+    
+                            const portMatch = portOutput.match(/\d{4,5}/);
+                            const port = portMatch ? portMatch[0] : null;
+    
+                            exec(`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
+                                if (err) {
+                                    console.error('Error getting container IP:', err);
+                                    return res.status(500).json({ message: 'Failed to retrieve container IP' });
+                                }
+
+                                return res.status(200).json({ ip: ipOutput.trim(), port: port });
+                            });
+                        });
+                });
+                
+            }
         });
     });
 }); 
@@ -423,6 +457,10 @@ app.get('/getLabquestion/:subjectId', (req, res) => {
         if (err) {
             console.log(err);
             return res.status(500).json({ message: "Database question query error" });
+        }
+
+        if (questionResult.length === 0) {
+            return res.status(404).json({ message: "No lab questions found for this subject" });
         }
 
         else{
