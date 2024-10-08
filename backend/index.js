@@ -384,17 +384,19 @@ app.post('/submitPretest', (req, res) => {
 
 /* Lab */
 
-app.post('/createLinuxContainer', (req, res) => { 
+app.post('/createLinuxContainer', (req, res) => {
     const questionID = req.body.questionID;
     const containerName = `linux_container_${Date.now()}`;
     const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
 
+    // Step 1: Create the container
     exec(createContainerCmd, (err, stdout, stderr) => {
         if (err) {
             console.error('Error creating container:', err);
             return res.status(500).json({ message: 'Failed to create container' });
         }
 
+        // Step 2: Query the database for the answer
         db.query(`SELECT result FROM answer WHERE QuestionID in (?) AND Type = ?`, [questionID, 'a'], (error, result) => {
             if (error) {
                 console.log(error);
@@ -406,73 +408,80 @@ app.post('/createLinuxContainer', (req, res) => {
             } else {
                 const answerResult = result[0].result;
 
-                const sourceDirPath = path.join(__dirname, `../lab/q${questionID}`); // Path to the folder
-                const tempDirPath = `/tmp/lab_${questionID}_${Date.now()}`; // Temporary folder
+                const sourceDirPath = path.join(__dirname, `../lab/q${questionID}`);
+                const tempDirPath = `/tmp/lab_${questionID}_${Date.now()}`;
 
-                // Read files in the folder
+                // Step 3: Read files from the directory and copy them to the container
                 fs.readdir(sourceDirPath, (err, files) => {
                     if (err) {
                         console.error('Error reading directory:', err);
                         return res.status(500).json({ message: 'Failed to read directory' });
                     }
 
-                    // Copy each file to the container
-                    files.forEach(file => {
+                    let fileCopyPromises = files.map(file => {
                         const sourceFilePath = path.join(sourceDirPath, file);
-
-                        // Create copy command for each file
-                        exec(`docker cp ${sourceFilePath} ${containerName}:/root/${file}`, (err) => {
-                            if (err) {
-                                console.error('Error copying file into container:', err);
-                                return res.status(500).json({ message: 'Failed to copy file into container' });
-                            }
-                        });
-                    });
-                    
-                    // Edit and insert answerResult in index.html
-                    const indexFilePath = path.join(sourceDirPath, 'mail.html'); 
-                    fs.readFile(indexFilePath, 'utf8', (err, data) => {
-                        if (err) {
-                            console.error('Error reading index.html:', err);
-                            return res.status(500).json({ message: 'Failed to read index.html' });
-                        }
-
-                        // Replace placeholder in HTML with answer result
-                        const modifiedHtml = data.replace('<!-- INSERT ANSWER HERE -->', encodeURIComponent(answerResult));
-
-                        // Write modified HTML to a temporary file
-                        const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
-                        fs.writeFileSync(tempHtmlFilePath, modifiedHtml, { encoding: 'utf8' });
-
-                        // Copy the modified HTML file to the container
-                        exec(`docker cp ${tempHtmlFilePath} ${containerName}:/root/mail.html`, (err) => {
-                            if (err) {
-                                console.error('Error copying HTML file into container:', err);
-                                return res.status(500).json({ message: 'Failed to copy HTML file into container' });
-                            }
-
-                            // After copying all files, retrieve IP and Port of the container
-                            exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerName}`, (err, portOutput) => {
+                        return new Promise((resolve, reject) => {
+                            exec(`docker cp ${sourceFilePath} ${containerName}:/root/${file}`, (err) => {
                                 if (err) {
-                                    console.error('Error getting container port:', err);
-                                    return res.status(500).json({ message: 'Failed to retrieve container port' });
+                                    reject(`Failed to copy file ${file}`);
+                                } else {
+                                    resolve();
                                 }
-
-                                const portMatch = portOutput.match(/\d{4,5}/);
-                                const port = portMatch ? portMatch[0] : null;
-
-                                exec(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
-                                    if (err) {
-                                        console.error('Error getting container IP:', err);
-                                        return res.status(500).json({ message: 'Failed to retrieve container IP' });
-                                    }
-
-                                    // Return IP and Port of the container
-                                    return res.status(200).json({ ip: ipOutput.trim(), port: port });
-                                });
                             });
                         });
                     });
+
+                    // Step 4: Wait until all files are copied, then modify and copy the answerResult to HTML
+                    Promise.all(fileCopyPromises)
+                        .then(() => {
+                            const indexFilePath = path.join(sourceDirPath, 'mail.html');
+                            fs.readFile(indexFilePath, 'utf8', (err, data) => {
+                                if (err) {
+                                    console.error('Error reading index.html:', err);
+                                    return res.status(500).json({ message: 'Failed to read index.html' });
+                                }
+
+                                // Replace placeholder with answer result
+                                const modifiedHtml = data.replace('<!-- INSERT ANSWER HERE -->', encodeURIComponent(answerResult));
+
+                                // Write the modified HTML to a temporary file
+                                const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
+                                fs.writeFileSync(tempHtmlFilePath, modifiedHtml, { encoding: 'utf8' });
+
+                                // Step 5: Copy the modified HTML file to the container
+                                exec(`docker cp ${tempHtmlFilePath} ${containerName}:/root/mail.html`, (err) => {
+                                    if (err) {
+                                        console.error('Error copying HTML file into container:', err);
+                                        return res.status(500).json({ message: 'Failed to copy HTML file into container' });
+                                    }
+
+                                    // Step 6: Retrieve the IP and port of the container
+                                    exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerName}`, (err, portOutput) => {
+                                        if (err) {
+                                            console.error('Error getting container port:', err);
+                                            return res.status(500).json({ message: 'Failed to retrieve container port' });
+                                        }
+
+                                        const portMatch = portOutput.match(/\d{4,5}/);
+                                        const port = portMatch ? portMatch[0] : null;
+
+                                        exec(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
+                                            if (err) {
+                                                console.error('Error getting container IP:', err);
+                                                return res.status(500).json({ message: 'Failed to retrieve container IP' });
+                                            }
+
+                                            // Return the IP and port of the container
+                                            return res.status(200).json({ ip: ipOutput.trim(), port: port });
+                                        });
+                                    });
+                                });
+                            });
+                        })
+                        .catch(copyError => {
+                            console.error(copyError);
+                            return res.status(500).json({ message: 'Failed to copy files into container' });
+                        });
                 });
             }
         });
