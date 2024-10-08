@@ -30,7 +30,7 @@ function LabBox({ subjectId }) {
         setLoading(true);
         let questionID = questionList.map(item => item.QuestionID)
         try {
-            const response = await axios.post('http://localhost:3001/createLinuxContainer', {subjectId, questionID});
+            const response = await axios.post('http://localhost:3001/createLinuxContainer', {questionID});
             console.log(response);
             setAddress({ ip: response.data.ip, port: response.data.port});
         } catch (err) {
