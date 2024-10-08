@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import style from './css/labbox.module.css';
@@ -10,6 +10,7 @@ function LabBox({ subjectId }) {
     });
     const [loading, setLoading] = useState(false);
     const [ questionList, setQuestionList ] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -44,21 +45,40 @@ function LabBox({ subjectId }) {
         <h2>Question</h2>
         <div className={style.content}>
             <div className={style.questionBox}>
-                {questionList.map(item => (
-                    <div>
-                        <p>{item.Question}</p>
-                        <input
-                            type='text'
-                        />
+                {questionList.map((item, index) => (
+                    <div 
+                        className={style.question}
+                        key={index}
+                    >
+                        <h3>{index+1}. {item.Question}</h3>
+                        <form>
+                            <input
+                                type='text'
+                            />
+
+                            <input
+                                type='submit'
+                                value='Submit'
+                            />
+                        </form>
                     </div>
                 ))}
             </div>
 
             <div className={style.labBox}>
-                <button onClick={handleCreateContainer} disabled={loading}>
-                    {loading ? 'Creating...' : 'Create Linux Container'}
-                </button>
-                {Address && <Link to={`http://localhost:${Address.port}`}>{Address.ip}</Link>}
+                <div className={style["labWrap"]}>
+                    <button onClick={handleCreateContainer} disabled={loading}>
+                        {loading ? 'Spawnng...' : 'SPAWN'}
+                    </button>
+
+                    <div className={style.address}>
+                        {Address && <p to={`http://localhost:${Address.port}`}>{Address.ip}</p>}
+                    </div>
+
+                    <button onClick={() => window.open(`http://localhost:${Address.port}`, '_blank')}>
+                        START
+                    </button>
+                </div>
             </div>
         </div>
         
