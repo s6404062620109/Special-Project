@@ -10,6 +10,8 @@ function LabBox({ subjectId }) {
     });
     const [loading, setLoading] = useState(false);
     const [ questionList, setQuestionList ] = useState([]);
+    const [ answer, setAnswer ] = useState([]);
+    const [ checkStatus, setCheckStatus ] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -40,6 +42,24 @@ function LabBox({ subjectId }) {
         setLoading(false);
     };
 
+    const handleAnswerChange = (questionId, answer) => {
+        setAnswer((prev) => ({
+          ...prev,
+          [questionId]: answer,
+        }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try{
+            const response = await axios.post('http://localhost:3001/submitLabanswer', answer);
+            setCheckStatus(response.data.message);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
   return (
     <div className={style.container}>
         <h2>Question</h2>
@@ -51,15 +71,20 @@ function LabBox({ subjectId }) {
                         key={index}
                     >
                         <h3>{index+1}. {item.Question}</h3>
-                        <form>
+                        <form onSubmit={(e) => handleSubmit(e)}>
                             <input
                                 type='text'
+                                onChange={(e) => handleAnswerChange(item.QuestionID, e.target.value)}
                             />
 
-                            <input
-                                type='submit'
-                                value='Submit'
-                            />
+                            {!checkStatus ? (
+                                <input
+                                    type='submit'
+                                    value='Submit'
+                                />
+                            ) : (
+                                <p>{checkStatus}</p>
+                            )}
                         </form>
                     </div>
                 ))}

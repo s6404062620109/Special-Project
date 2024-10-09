@@ -507,6 +507,34 @@ app.get('/getLabquestion/:subjectId', (req, res) => {
     });
 });
 
+app.post('/submitLabanswer', (req, res) => {
+    const answer = req.body;
+    const QuestionIds = Object.keys(answer);
+    const answerResults = Object.values(answer);
+
+    db.query('SELECT * FROM answer WHERE QuestionID in (?)', [QuestionIds], (error, result) => {
+        if(error){
+            console.log(error);
+            return res.status(500).json({ message: "Database answer query error" });
+        }
+
+        else{
+            let score = 0;
+            result.map((item, index) => { 
+                if(item.result ===  answerResults[index]){
+                    score++;
+                }
+            });
+            if(score===answerResults.length){
+                return res.status(200).json({ message: "You Pass!" });
+            }
+            else{
+                return res.status(200).json({ message: "You Failed!" });
+            }
+        }
+    });
+});
+
 /* Lab */
 
 const port = 3001
