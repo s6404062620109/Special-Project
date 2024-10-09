@@ -75,6 +75,7 @@ function LabBox({ subjectId }) {
                             <input
                                 type='text'
                                 onChange={(e) => handleAnswerChange(item.QuestionID, e.target.value)}
+                                required
                             />
 
                             {!checkStatus ? (
