@@ -1,0 +1,28 @@
+.Nav-Subject{
+    width: 100%;
+    margin: auto;
+    background: #e7e7e7;
+    border-radius: 12px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
+}
+.Nav-Subject > ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.Nav-Subject ul li{
+    background: white;
+    padding: 10px;
+}
+.Nav-Subject ul > li:nth-child(1){
+    text-align: center;
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 10px;
+}
+
+.testlist-wrap{
+    margin-top: 10px;
+}
+.testlist-wrap > li:nth-child(2){
+    border-radius: 0 0 12px 12px;
+}

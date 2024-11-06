@@ -3,6 +3,10 @@
     margin: 3rem auto;
 }
 
+.container-wrap{
+    display: flex;
+}
+
 .content{
     width: 70%;
     margin: auto;
@@ -16,5 +20,14 @@
 
 .questionBox{
     width: 70%;
+    margin: auto;
+}
+
+.content-wrap{
+    width: 80%;
+}
+
+.navsubject-wrap{
+    width: 25%;
     margin: auto;
 }

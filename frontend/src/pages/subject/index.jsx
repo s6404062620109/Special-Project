@@ -4,6 +4,7 @@ import axios from 'axios';
 
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
+import NavSubject from '../../components/NavSubject';
 
 
 function Subject() {
@@ -23,6 +24,7 @@ function Subject() {
                 const response = await axios.get(`http://localhost:3001/getSubject/${courseId}/${subjectId}`);
 
                 let dataResponse = response.data[0];
+                
                 setData({
                     SubjectID: dataResponse.SubjectID,
                     Name: dataResponse.Name,
@@ -37,6 +39,7 @@ function Subject() {
 
             try {
                 const labresponse = await axios.get(`http://localhost:3001/getLabquestion/${subjectId}`);
+                console.log(labresponse);
               } catch (err) {
                 if (err.response && err.response.status === 500) {
                   setUseLab(false);
@@ -45,30 +48,50 @@ function Subject() {
               }   
         }
         fetchData();
-    }, [courseId, subjectId])
+    }, [courseId, subjectId]);
+
+    const formatContent = (content) => {
+        return content.split("\n").map((str, index) => (
+            <React.Fragment key={index}>
+                {str}
+                <br />
+            </React.Fragment>
+        ));
+    };
 
   return (
     <div className={style.container}>
-        <div className={style.content}>
-            <div className={style.Info}>
-                <h1>{data.Name}</h1>
-                <label>{data.Content}</label>
+        
+        <div className={style["container-wrap"]}>
+
+            <div className={style["content-wrap"]}>
+                <div className={style.content}>
+                    <div className={style.Info}>
+                        <h1>{data.Name}</h1>
+                        <label>{formatContent(data.Content)}</label>
+                    </div>
+                    <div className={style.Picture}>
+                        <img
+                            alt='Content Picture'
+                            src={`/Course_Assets/${data.Image_id}.png`}
+                        />
+                    </div>
+                </div>
+
+                <div className={style.questionBox}>
+                    { useLab &&(
+                        <LabBox
+                            subjectId={subjectId}
+                        />
+                    )}
+                </div>
             </div>
-            <div className={style.Picture}>
-                <img
-                    alt='Content Picture'
-                    src={`/Course_Assets/${data.Image_id}.png`}
-                />
+            
+            <div className={style["navsubject-wrap"]}>
+                <NavSubject courseId={courseId}/>
             </div>
         </div>
 
-        <div className={style.questionBox}>
-            { useLab &&(
-                <LabBox
-                    subjectId={subjectId}
-                />
-            )}
-        </div>
     </div>
   )
 }

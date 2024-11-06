@@ -1,16 +1,20 @@
-FROM node:latest
+FROM node:18
 
-#install Docker in node-container
-RUN apt-get update && apt-get install -y docker.io
+RUN apt-get update && \
+    apt-get install -y docker.io && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-#directory
 WORKDIR /usr/src/app
 
-COPY ./package.json ./
-RUN npm install
+COPY package*.json ./
 
-COPY ./index.js ./
-COPY ./wait-for-it.sh ./
+RUN npm install --production  # Use --production to avoid devDependencies if not needed
+
+COPY index.js ./
+COPY wait-for-it.sh ./
+
+# Make the wait-for-it.sh script executable
 RUN chmod +x wait-for-it.sh
 
 EXPOSE 3001

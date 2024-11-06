@@ -363,8 +363,8 @@ app.post('/submitPretest', (req, res) => {
                 else{
                     let subjectId = result[0].SubjectID;
 
-                    db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, PracticeStatus, Status, Prescore ) VALUES( ?, ?, ?, ?, ? )`,
-                        [email, subjectId, 'Failed', 'Doing', score], (postErr, postResult) => {
+                    db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status ) VALUES( ?, ?, ?, ? )`,
+                        [email, subjectId, score, 'Doing' ], (postErr, postResult) => {
                             if (postErr){
                                 console.log(postErr);
                                 return res.status(500).json({ message: 'Failed post history.' })
