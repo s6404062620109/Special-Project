@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 12:06 PM
--- Server version: 9.0.1
+-- Generation Time: Nov 08, 2024 at 03:54 PM
+-- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -52,7 +52,7 @@ ALTER TABLE `virtual matchine`
 -- AUTO_INCREMENT for table `virtual matchine`
 --
 ALTER TABLE `virtual matchine`
-  MODIFY `VirtualMatchineID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `VirtualMatchineID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- Constraints for dumped tables

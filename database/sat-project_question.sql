@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 30, 2024 at 04:13 PM
--- Server version: 9.0.1
+-- Generation Time: Nov 08, 2024 at 03:54 PM
+-- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -53,7 +53,8 @@ INSERT INTO `question` (`QuestionID`, `Question`, `Type`, `Subject-ID`) VALUES
 (12, 'ฟิชชิ่งสามารถเกิดขึ้นได้ในรูปแบบใดบ้าง?', 'pretest', 6),
 (13, 'ควรทำอย่างไรหากได้รับอีเมลที่ดูเหมือนจะมาจากธนาคารแต่ไม่แน่ใจ?', 'pretest', 6),
 (14, 'ฟิชชิ่งมักจะใช้วิธีใดในการหลอกลวงผู้ใช้?', 'pretest', 6),
-(15, 'ควรทำอย่างไรหากคลิกลิงก์ในอีเมลฟิชชิ่งโดยไม่ตั้งใจ?', 'pretest', 6);
+(15, 'ควรทำอย่างไรหากคลิกลิงก์ในอีเมลฟิชชิ่งโดยไม่ตั้งใจ?', 'pretest', 6),
+(16, 'สมมุติเหตุการณ์ที่มีอีเมลแจ้งเตือนความปลอดภัยถูกส่งมาภายในอีเมลของคุณ โดยมีทั้งจากระบบและจากผู้ไม่หวังดี  จงนำรหัสที่ถูกต้องจากอีเมลที่ไม่ใช่เมล phising มาป้อนลงช่องคำตอบ', 'lab', 6);
 
 --
 -- Indexes for dumped tables
@@ -74,7 +75,7 @@ ALTER TABLE `question`
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- Constraints for dumped tables

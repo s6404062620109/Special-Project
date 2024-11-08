@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import style from './css/labbox.module.css';
 
 function LabBox({ subjectId }) {
     const [Address, setAddress] = useState({
-        ip:'', port:''
+        ip:'', port:'', containerId: ''
     });
     const [loading, setLoading] = useState(false);
     const [ questionList, setQuestionList ] = useState([]);
     const [ answer, setAnswer ] = useState([]);
     const [ checkStatus, setCheckStatus ] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -34,8 +32,7 @@ function LabBox({ subjectId }) {
         let questionID = questionList.map(item => item.QuestionID)
         try {
             const response = await axios.post('http://localhost:3001/createLinuxContainer', {questionID});
-            console.log(response);
-            setAddress({ ip: response.data.ip, port: response.data.port});
+            setAddress({ ip: response.data.ip, port: response.data.port , containerId: response.data.containerId});
         } catch (err) {
             console.error(err);
         }
@@ -60,6 +57,30 @@ function LabBox({ subjectId }) {
             console.log(error);
         }
     }
+
+    const handleStartContainer = () => {
+        const newTab = window.open(`http://localhost:${Address.port}`, '_blank');
+
+        const checkTabClosed = setInterval(async () => {
+            if (newTab.closed) {
+                clearInterval(checkTabClosed);
+
+                try {
+                    const response = await axios.post(`http://localhost:3001/stopContainer`, 
+                        { containerId: Address.containerId, IpAddress: `${Address.ip}:${Address.port}` }
+                    );
+
+                    if(response.status === 200) {
+                        setAddress({ ip: 'Stop lab test', port: '', containerId: '' });
+                    }
+                    
+                } catch (error) {
+                    console.error(`Failed to stop container ${Address.containerId}:`, error);
+                }
+            }
+        }, 2000);
+    };
+
   return (
     <div className={style.container}>
         <h2>Question</h2>
@@ -101,7 +122,7 @@ function LabBox({ subjectId }) {
                         {Address && <p to={`http://localhost:${Address.port}`}>{Address.ip}</p>}
                     </div>
 
-                    <button onClick={() => window.open(`http://localhost:${Address.port}`, '_blank')}>
+                    <button onClick={handleStartContainer} disabled={!Address.port}>
                         START
                     </button>
                 </div>

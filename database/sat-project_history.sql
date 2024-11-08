@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Nov 06, 2024 at 02:36 PM
+-- Generation Time: Nov 08, 2024 at 03:54 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -32,8 +32,16 @@ CREATE TABLE `history` (
   `User-Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `Subject-ID` int NOT NULL,
   `Score` int NOT NULL,
-  `Status` varchar(255) COLLATE utf8mb3_bin NOT NULL DEFAULT 'Doing'
+  `Status` varchar(255) COLLATE utf8mb3_bin NOT NULL DEFAULT 'Doing',
+  `Type` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+
+--
+-- Dumping data for table `history`
+--
+
+INSERT INTO `history` (`HistoryID`, `User-Email`, `Subject-ID`, `Score`, `Status`, `Type`) VALUES
+(25, 'AAA', 6, 8, 'Success', 'Pre');
 
 --
 -- Indexes for dumped tables
@@ -55,7 +63,7 @@ ALTER TABLE `history`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- Constraints for dumped tables

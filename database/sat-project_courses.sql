@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 21, 2024 at 01:06 PM
--- Server version: 9.0.1
+-- Generation Time: Nov 08, 2024 at 03:54 PM
+-- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -41,7 +41,7 @@ CREATE TABLE `courses` (
 INSERT INTO `courses` (`CourseID`, `Name`, `Detail`, `Icon_id`) VALUES
 (1, 'Test1', 'Welcome Course Test 01.', 'Icon'),
 (2, 'Test2', 'Welcome Course Test 02.', 'Icon'),
-(3, 'Test3', 'Welcome Course Test 02.', 'Icon');
+(3, 'Social Engineering', 'Welcome to Social Engineering Course.', 'Icon');
 
 --
 -- Indexes for dumped tables

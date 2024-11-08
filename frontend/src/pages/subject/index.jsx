@@ -39,7 +39,6 @@ function Subject() {
 
             try {
                 const labresponse = await axios.get(`http://localhost:3001/getLabquestion/${subjectId}`);
-                console.log(labresponse);
               } catch (err) {
                 if (err.response && err.response.status === 500) {
                   setUseLab(false);

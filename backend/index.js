@@ -1,543 +1,675 @@
-const express = require('express');
-const mysql2 = require('mysql2');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
-const multer = require('multer');
-const { exec } = require('child_process');
-const nodemailer = require('nodemailer');
-const { error } = require('console');
+const express = require("express");
+const mysql2 = require("mysql2");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+const { exec } = require("child_process");
+const nodemailer = require("nodemailer");
+const { error } = require("console");
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+    allowedHeaders: "Content-Type,Authorization",
+  })
+);
+
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cors({
-    origin: "http://localhost:5173",
-    methods: "GET, POST, PUT, DELETE",
-    allowedHeaders: 'Content-Type,Authorization',
-}));
 
 const db = mysql2.createConnection({
-    user: "root",
-    host: "db",
-    port: 3306,
-    password: "root",
-    database: "SAT"
-})
+  user: "root",
+  host: "db",
+  port: 3306,
+  password: "root",
+  database: "SAT",
+});
 
 db.connect((err) => {
-    if (err) {
-      console.error('Error connecting to the database:', err);
-      return;
-    }
-    console.log('Connected to MySQL database');
+  if (err) {
+    console.error("Error connecting to the database:", err);
+    return;
+  }
+  console.log("Connected to MySQL database");
 });
 
 /* Authenticator */
 
-app.post('/register', async (req, res) =>{
-    const { email, password, name } = req.body;
-    
-    if (!email || !password || !name) {
-        return res.status(400).json({ message: "Email, password, and name are required" });
+app.post("/register", async (req, res) => {
+  const { email, password, name } = req.body;
+
+  if (!email || !password || !name) {
+    return res
+      .status(400)
+      .json({ message: "Email, password, and name are required" });
+  }
+
+  db.query(
+    "SELECT * FROM user WHERE email = ?",
+    [email],
+    async (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Database query error" });
+      }
+
+      if (results.length > 0) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        db.query(
+          "INSERT INTO user (email, password, name, role, OTP) VALUES(?, ?, ?, ?, ?)",
+          [email, hashedPassword, name, "Student", "-"],
+          (err, result) => {
+            if (err) {
+              console.log(err);
+              return res.status(500).json({ message: "Register Failed!!!" });
+            } else {
+              return res.status(201).json({ message: "Register Success!!!" });
+            }
+          }
+        );
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
+      }
     }
-    
-    db.query("SELECT * FROM user WHERE email = ?", [email], async (err, results) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ message: "Database query error" });
-        }
-
-        if (results.length > 0) {
-            return res.status(400).json({ message: "Email already registered" });
-        }
-
-        try {
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            db.query(
-                "INSERT INTO user (email, password, name, role, OTP) VALUES(?, ?, ?, ?, ?)",
-                [email, hashedPassword, name, 'Student', '-'],
-                (err, result) => {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).json({ message: "Register Failed!!!" });
-                    } else {
-                        return res.status(201).json({ message: "Register Success!!!" });
-                    }
-                }
-            );
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ message: "Server error" });
-        }
-    });
+  );
 });
 
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
 
-    if (!email || !password ) {
-        return res.status(400).json({ message: "Email and password are required" });
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  db.query(
+    "SELECT * FROM user WHERE email = ?",
+    [email],
+    async (err, result) => {
+      if (err) {
+        return res.status(500).json({ message: "Database query error" });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (result.length > 0) {
+        const user = result[0];
+        const isPasswordValid = await bcrypt.compare(password, user.Password);
+        if (!isPasswordValid) {
+          return res.status(401).send({ message: "Invalid password" });
+        } else {
+          const token = jwt.sign(
+            { email: user.Email, name: user.Name },
+            "authToken",
+            { expiresIn: "1h" }
+          );
+          return res.status(201).send({ message: "Login Success", token: token });
+        }
+      }
     }
-
-    db.query("SELECT * FROM user WHERE email = ?", [email], async (err, result) =>{
-            if(err){
-                return res.status(500).json({ message: "Database query error" });
-            }
-
-            if(result.length === 0) {
-                return res.status(404).json({ message: "User not found" });
-            }
-            
-            if(result.length > 0){
-                const user = result[0];
-                const isPasswordValid = await bcrypt.compare(password, user.Password);
-                if (!isPasswordValid) {
-                    return res.status(401).send({ message: "Invalid password" });
-                }
-                else{
-                    const token = jwt.sign({ email: user.Email, name: user.Name }, 'authToken', { expiresIn: '1h' });
-                    return res.status(201).send({ message: "Login Success" , token:token })
-                }
-            }
-        })
+  );
 });
 
-app.post('/requestotp', (req, res) => {
-    const { email } = req.body;
+app.post("/requestotp", (req, res) => {
+  const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).send({ message: 'Email is required' });
+  if (!email) {
+    return res.status(400).send({ message: "Email is required" });
+  }
+
+  db.query("SELECT * FROM user WHERE Email = ?", [email], (error, results) => {
+    if (error) {
+      console.error("Database query error:", error);
+      return res.status(500).send({ message: "Database query error" });
     }
 
-    db.query('SELECT * FROM user WHERE Email = ?', [email], (error, results) => {
+    if (results.length === 0) {
+      return res.status(400).send({ message: "Email not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpexp = new Date(Date.now() + 15 * 60 * 1000);
+
+    db.query(
+      "UPDATE user SET OTP = ?, OTP_EXP = ? WHERE Email = ?",
+      [otp, otpexp, email],
+      (error) => {
         if (error) {
-            console.error('Database query error:', error);
-            return res.status(500).send({ message: 'Database query error' });
+          console.error("Error updating OTP in database:", error);
+          return res
+            .status(500)
+            .send({ message: "Error updating OTP in database" });
         }
 
-        if (results.length === 0) {
-            return res.status(400).send({ message: 'Email not found' });
-        }
-
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        const otpexp = new Date(Date.now() + 15 * 60 * 1000); 
-
-        db.query('UPDATE user SET OTP = ?, OTP_EXP = ? WHERE Email = ?', [otp, otpexp, email], (error) => {
-            if (error) {
-                console.error('Error updating OTP in database:', error);
-                return res.status(500).send({ message: 'Error updating OTP in database' });
-            }
-
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                  user: 's6404062620109@email.kmutnb.ac.th',
-                  pass: 'umhv hkky xduh btac'
-                }
-            });
-
-            const mailOptions = {
-                from: 's6404062620109@email.kmutnb.ac.th',
-                to: email,
-                subject: 'Your OTP Code',
-                text: `Your OTP code is: ${otp}`
-            };        
-
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.log(error);
-                    return res.status(500).send({ message: 'Error sending OTP' });
-                } else {
-                    console.log('Email sent: ' + info.response);
-                    const token = jwt.sign({ email: email }, 'resetToken', { expiresIn: '15m' });
-                    res.status(200).send({ message: 'OTP sent successfully', token: token });
-                }
-            });
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "s6404062620109@email.kmutnb.ac.th",
+            pass: "umhv hkky xduh btac",
+          },
         });
-    });
 
-    
+        const mailOptions = {
+          from: "s6404062620109@email.kmutnb.ac.th",
+          to: email,
+          subject: "Your OTP Code",
+          text: `Your OTP code is: ${otp}`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.log(error);
+            return res.status(500).send({ message: "Error sending OTP" });
+          } else {
+            console.log("Email sent: " + info.response);
+            const token = jwt.sign({ email: email }, "resetToken", {
+              expiresIn: "15m",
+            });
+            res
+              .status(200)
+              .send({ message: "OTP sent successfully", token: token });
+          }
+        });
+      }
+    );
+  });
 });
 
-app.post('/verifyotp', (req, res) => {
-    const { email, otp } = req.body; 
-    db.query('SELECT OTP, OTP_EXP FROM user WHERE Email = ?', [email], (error, result) => {
-        if (error) {
-            console.error('Database query error:', error);
-            return res.status(500).send({ message: 'Database query error' });
-        }
+app.post("/verifyotp", (req, res) => {
+  const { email, otp } = req.body;
+  db.query(
+    "SELECT OTP, OTP_EXP FROM user WHERE Email = ?",
+    [email],
+    (error, result) => {
+      if (error) {
+        console.error("Database query error:", error);
+        return res.status(500).send({ message: "Database query error" });
+      }
 
-        if (result.length === 0) {
-            return res.status(400).send({ message: 'Email not found' });
-        }
+      if (result.length === 0) {
+        return res.status(400).send({ message: "Email not found" });
+      }
 
-        const storedOtp = result[0].OTP;
-        const otpExp = result[0].OTP_EXP;
-        const currentTime = new Date();
+      const storedOtp = result[0].OTP;
+      const otpExp = result[0].OTP_EXP;
+      const currentTime = new Date();
 
-        if (currentTime > otpExp) {
-            return res.status(400).send({ message: 'OTP has expired' });
-        }
-        
-        if (storedOtp !== otp) {
-            return res.status(400).send({ message: 'Invalid OTP' });
-        }
+      if (currentTime > otpExp) {
+        return res.status(400).send({ message: "OTP has expired" });
+      }
 
-        return res.status(200).send({ message: 'OTP verified successfully' });
-    });
-});
+      if (storedOtp !== otp) {
+        return res.status(400).send({ message: "Invalid OTP" });
+      }
 
-app.post('/setnewpassword', async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password ) {
-        return res.status(400).json({ message: "Email and password are required" });
+      return res.status(200).send({ message: "OTP verified successfully" });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    db.query('UPDATE user SET Password = ? WHERE Email = ?', [hashedPassword, email], (error) => {
-        if (error) {
-            console.error('Error updating Password in database:', error);
-            return res.status(500).send({ message: 'Error updating Password in database' });
-        }
-        else{
-            return res.status(200).send({ message: 'Update Password Success!' });
-        }
-    });
+  );
 });
 
-/* Authenticator */ 
+app.post("/setnewpassword", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  db.query(
+    "UPDATE user SET Password = ? WHERE Email = ?",
+    [hashedPassword, email],
+    (error) => {
+      if (error) {
+        console.error("Error updating Password in database:", error);
+        return res
+          .status(500)
+          .send({ message: "Error updating Password in database" });
+      } else {
+        return res.status(200).send({ message: "Update Password Success!" });
+      }
+    }
+  );
+});
+
+/* Authenticator */
 
 /* Courses */
 
-app.get('/getCourses', (req, res) => {
-    db.query('SELECT * FROM courses', (err, results) => {
-        if (err) {
-            res.status(500).send('Database query error');
-            return;
-        }
-        res.json(results);
-    });
+app.get("/getCourses", (req, res) => {
+  db.query("SELECT * FROM courses", (err, results) => {
+    if (err) {
+      res.status(500).send("Database query error");
+      return;
+    }
+    res.json(results);
+  });
 });
 
-app.get('/updateCourses/:email', (req, res) => {
-    const email = req.params.email;
+app.get("/updateCourses/:email", (req, res) => {
+  const email = req.params.email;
 
-    const query = ` SELECT history.*, subject.\`Course-ID\`
+  const query = ` SELECT history.*, subject.\`Course-ID\`
         FROM history 
         JOIN subject ON history.\`Subject-ID\` = subject.SubjectID
         WHERE \`User-Email\` = ? `;
 
-    db.query( query, [email], (err, results) => {
+  db.query(query, [email], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database query error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No courses found for the user" });
+    }
+
+    res.json(results);
+  });
+});
+
+app.get("/getAllSubject/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
+
+  db.query(
+    `SELECT * FROM courses WHERE CourseID = ?`,
+    [courseId],
+    (err, courseResult) => {
+      if (err) {
+        console.error(err);
+        return res
+          .status(500)
+          .json({ message: "Database courses query error" });
+      } else {
+        db.query(
+          `SELECT * FROM subject WHERE \`Course-ID\` = ? `,
+          [courseId],
+          (err, subjectResults) => {
             if (err) {
-                console.error(err);
-                return res.status(500).json({ message: "Database query error" });
+              console.error(err);
+              return res
+                .status(500)
+                .json({ message: "Database subject query error" });
+            } else {
+              return res
+                .status(200)
+                .json({ courseInfo: courseResult, subject: subjectResults });
             }
-
-            if (results.length === 0) {
-                return res.status(404).json({ message: "No courses found for the user"});
-            }
-            
-            res.json(results);
-        });
+          }
+        );
+      }
+    }
+  );
 });
 
-app.get('/getAllSubject/:courseId', (req, res) => {
-    const courseId = req.params.courseId;
-
-    db.query( `SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) =>{
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Database courses query error" });
-        }
-        else{
-
-            db.query( `SELECT * FROM subject WHERE \`Course-ID\` = ? `, [courseId], (err, subjectResults) => {
-                if(err) {
-                    console.error(err);
-                    return res.status(500).json({ message: "Database subject query error" });
-                }
-                else{
-                    return res.status(200).json({ courseInfo: courseResult, subject: subjectResults })
-                }
-            });
-
-        }
-
-    });
-});
-
-app.get('/getSubject/:courseId/:subjectId', (req, res) => {
-    const courseId = req.params.courseId;
-    const subjectId = req.params.subjectId
-    db.query(`SELECT * FROM subject WHERE SubjectID = ? AND \`course-ID\` = ? `, [subjectId, courseId], (err, result) => {
-        if(err) {
-            console.log(err);
-            return res.status(500).json({ message: "Database subject query error" });
-        }
-        else{
-            return res.status(200).json(result);
-        }
-    });
+app.get("/getSubject/:courseId/:subjectId", (req, res) => {
+  const courseId = req.params.courseId;
+  const subjectId = req.params.subjectId;
+  db.query(
+    `SELECT * FROM subject WHERE SubjectID = ? AND \`course-ID\` = ? `,
+    [subjectId, courseId],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(500)
+          .json({ message: "Database subject query error" });
+      } else {
+        return res.status(200).json(result);
+      }
+    }
+  );
 });
 
 /* Courses */
 
-/* Test */
+/* Pre-Test */
 
-app.get('/getPretest/:courseId', (req, res) => {
-    const courseId = req.params.courseId;
+app.get("/getPretest/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
 
-    db.query('SELECT SubjectID FROM subject WHERE \`Course-ID\` = ?', [courseId], (err, result) => {
-        if(err) {
-            console.log(err);
-            return res.status(500).json({ message: "Database subject query error" });
-        }
-        
-        else{
-            const subjectList = result.map(item => item.SubjectID);
-            
-            db.query(`SELECT * FROM question WHERE \`Subject-ID\` in (?) and Type = ?`, [subjectList, 'pretest'], (err, questionresults) => {
-                if(err) {
+  db.query(
+    "SELECT SubjectID FROM subject WHERE `Course-ID` = ?",
+    [courseId],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(500)
+          .json({ message: "Database subject query error" });
+      } else {
+        const subjectList = result.map((item) => item.SubjectID);
+
+        db.query(
+          `SELECT * FROM question WHERE \`Subject-ID\` in (?) and Type = ?`,
+          [subjectList, "pretest"],
+          (err, questionresults) => {
+            if (err) {
+              console.log(err);
+              return res
+                .status(500)
+                .json({ message: "Database question query error" });
+            } else {
+              const shuffledQuestions = questionresults.sort(
+                () => 0.5 - Math.random()
+              );
+              const randomQuestions = shuffledQuestions.slice(0, 10);
+
+              const questionIdList = randomQuestions.map(
+                (item) => item.QuestionID
+              );
+
+              db.query(
+                `SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`,
+                [questionIdList],
+                (err, ansresults) => {
+                  if (err) {
                     console.log(err);
-                    return res.status(500).json({ message: "Database question query error" });
+                    return res
+                      .status(500)
+                      .json({ message: "Database answer query error" });
+                  } else {
+                    return res
+                      .status(200)
+                      .json({ Qustions: randomQuestions, Choices: ansresults });
+                  }
                 }
-
-                else{
-                    const shuffledQuestions = questionresults.sort(() => 0.5 - Math.random());
-                    const randomQuestions = shuffledQuestions.slice(0, 10);
-
-                    const questionIdList = randomQuestions.map(item => item.QuestionID);
-
-                    db.query(`SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`, [questionIdList], (err, ansresults) =>{
-                        if(err) {
-                            console.log(err);
-                            return res.status(500).json({ message: "Database answer query error" });
-                        }
-
-                        else{
-
-                            return res.status(200).json({ Qustions: randomQuestions, Choices: ansresults });
-                        }
-                    });
-                }
-            });
-        }
-    });
+              );
+            }
+          }
+        );
+      }
+    }
+  );
 });
 
-app.post('/submitPretest', (req, res) => {
-    const { payload, courseid, email } = req.body;
-    const userAnswer = payload.answers;
-    const userAnswerIds = Object.values(userAnswer);
-    const userQuestionIds = Object.keys(userAnswer);
+app.post("/submitPretest", (req, res) => {
+  const { payload, courseid, email } = req.body;
+  const userAnswer = payload.answers;
+  const userAnswerIds = Object.values(userAnswer);
+  const userQuestionIds = Object.keys(userAnswer);
 
-    const query = `SELECT AnswerID, Type, QuestionID FROM answer WHERE AnswerID IN (${userAnswerIds.join(',')}) AND QuestionID IN (${userQuestionIds.join(',')})`;
+  const query = `SELECT AnswerID, Type, QuestionID FROM answer 
+    WHERE AnswerID IN (${userAnswerIds.join(",")}) 
+    AND QuestionID IN (${userQuestionIds.join(",")})`;
 
-    db.query(query, (error, result) => {
-        if(error){
-            console.log(error);
-            return res.status(500).json({ message: "Database answer query error" });
+  db.query(query, (error, result) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Database answer query error" });
+    } else {
+      let score = 0;
+      result.map((item) => {
+        if (item.Type === "a") {
+          score += 1;
         }
+      });
 
-        else{
-            let score = 0;
-            result.map(item => {
-                if(item.Type === 'a'){
-                    score += 1;
-                }
-            });
-            
-            db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ?`, [courseid], (err, result) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).json({ message: "Database subject query error" });
-                }
+      db.query(
+        `SELECT * FROM subject WHERE \`Course-ID\` = ?`,
+        [courseid],
+        (err, result) => {
+          if (err) {
+            console.error(err);
+            return res
+              .status(500)
+              .json({ message: "Database subject query error" });
+          } else {
+            let subjectId = result[0].SubjectID;
 
-                else{
-                    let subjectId = result[0].SubjectID;
-
-                    db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status ) VALUES( ?, ?, ?, ? )`,
-                        [email, subjectId, score, 'Doing' ], (postErr, postResult) => {
-                            if (postErr){
-                                console.log(postErr);
-                                return res.status(500).json({ message: 'Failed post history.' })
-                            }
-                            else{
-                                return res.status(200).json({ message: 'Success post history', subjectId });
-                            }
-                        }
-                    );
+            db.query(
+              `INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status, Type ) VALUES( ?, ?, ?, ?, ? )`,
+              [email, subjectId, score, "Success", "Pre"],
+              (postErr, postResult) => {
+                if (postErr) {
+                  console.log(postErr);
+                  return res
+                    .status(500)
+                    .json({ message: "Failed post history." });
+                } else {
+                  return res
+                    .status(200)
+                    .json({ message: "Success post history", subjectId });
                 }
-            });
+              }
+            );
+          }
         }
-    });
+      );
+    }
+  });
 });
 
-/* Post */
+/* Pre-Test */
 
 /* Lab */
 
-app.post('/createLinuxContainer', (req, res) => {
-    const questionID = req.body.questionID;
-    const containerName = `linux_container_${Date.now()}`;
-    const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} dorowu/ubuntu-desktop-lxde-vnc`;
+app.post("/createLinuxContainer", (req, res) => {
+  const questionID = req.body.questionID;
+  const containerName = `linux_container_${Date.now()}`;
+  const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} --storage-opt size=256m dorowu/ubuntu-desktop-lxde-vnc`;
 
-    // Step 1: Create the container
+  db.query(`SELECT * FROM \`virtual matchine\``, (error, result) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Database virtual matchine query error" });
+    } else if (result.length > 4) {
+      return res.status(500).json({ message: "Max lab working this time!" });
+    }
+
+    // Create the container and get the container ID
     exec(createContainerCmd, (err, stdout, stderr) => {
-        if (err) {
-            console.error('Error creating container:', err);
-            return res.status(500).json({ message: 'Failed to create container' });
+      if (err) {
+        console.error("Error creating container:", err);
+        return res.status(500).json({ message: "Failed to create container" });
+      }
+
+      const containerId = stdout.trim();
+
+      // Step 2: Query for the answer
+      db.query(`SELECT result FROM answer WHERE QuestionID in (?) AND Type = ?`, [questionID, "a"], (error, result) => {
+        if (error) {
+          console.log(error);
+          return res.status(500).json({ message: "Database answer query error" });
+        } else if (result.length === 0) {
+          return res.status(404).json({ message: "No answer found" });
         }
 
-        // Step 2: Query the database for the answer
-        db.query(`SELECT result FROM answer WHERE QuestionID in (?) AND Type = ?`, [questionID, 'a'], (error, result) => {
-            if (error) {
-                console.log(error);
-                return res.status(500).json({ message: "Database answer query error" });
-            }
+        const answerResult = result[0].result;
+        const sourceDirPath = path.join(__dirname, `../lab/q${questionID}`);
+        const tempDirPath = `/tmp/lab_${questionID}_${Date.now()}`;
 
-            if (result.length === 0) {
-                return res.status(404).json({ message: 'No answer found' });
-            } else {
-                const answerResult = result[0].result;
+        fs.readdir(sourceDirPath, (err, files) => {
+          if (err) {
+            console.error("Error reading directory:", err);
+            return res.status(500).json({ message: "Failed to read directory" });
+          }
 
-                const sourceDirPath = path.join(__dirname, `../lab/q${questionID}`);
-                const tempDirPath = `/tmp/lab_${questionID}_${Date.now()}`;
+          let fileCopyPromises = files.map((file) => {
+            const sourceFilePath = path.join(sourceDirPath, file);
+            return new Promise((resolve, reject) => {
+              exec(`docker cp ${sourceFilePath} ${containerId}:/root/${file}`, (err) => {
+                if (err) {
+                  reject(`Failed to copy file ${file}`);
+                } else {
+                  resolve();
+                }
+              });
+            });
+          });
 
-                // Step 3: Read files from the directory and copy them to the container
-                fs.readdir(sourceDirPath, (err, files) => {
+          Promise.all(fileCopyPromises)
+            .then(() => {
+              const indexFilePath = path.join(sourceDirPath, "mail.html");
+              fs.readFile(indexFilePath, "utf8", (err, data) => {
+                if (err) {
+                  console.error("Error reading index.html:", err);
+                  return res.status(500).json({ message: "Failed to read index.html" });
+                }
+
+                const modifiedHtml = data.replace("<!-- INSERT ANSWER HERE -->", encodeURIComponent(answerResult));
+                const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
+                fs.writeFileSync(tempHtmlFilePath, modifiedHtml, { encoding: "utf8" });
+
+                exec(`docker cp ${tempHtmlFilePath} ${containerId}:/root/mail.html`, (err) => {
+                  if (err) {
+                    console.error("Error copying HTML file into container:", err);
+                    return res.status(500).json({ message: "Failed to copy HTML file into container" });
+                  }
+
+                  exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerId}`, (err, portOutput) => {
                     if (err) {
-                        console.error('Error reading directory:', err);
-                        return res.status(500).json({ message: 'Failed to read directory' });
+                      console.error("Error getting container port:", err);
+                      return res.status(500).json({ message: "Failed to retrieve container port" });
                     }
 
-                    let fileCopyPromises = files.map(file => {
-                        const sourceFilePath = path.join(sourceDirPath, file);
-                        return new Promise((resolve, reject) => {
-                            exec(`docker cp ${sourceFilePath} ${containerName}:/root/${file}`, (err) => {
-                                if (err) {
-                                    reject(`Failed to copy file ${file}`);
-                                } else {
-                                    resolve();
-                                }
-                            });
-                        });
-                    });
+                    const portMatch = portOutput.match(/\d{4,5}/);
+                    const port = portMatch ? portMatch[0] : null;
 
-                    // Step 4: Wait until all files are copied, then modify and copy the answerResult to HTML
-                    Promise.all(fileCopyPromises)
-                        .then(() => {
-                            const indexFilePath = path.join(sourceDirPath, 'mail.html');
-                            fs.readFile(indexFilePath, 'utf8', (err, data) => {
-                                if (err) {
-                                    console.error('Error reading index.html:', err);
-                                    return res.status(500).json({ message: 'Failed to read index.html' });
-                                }
+                    exec(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerId}`, (err, ipOutput) => {
+                      if (err) {
+                        console.error("Error getting container IP:", err);
+                        return res.status(500).json({ message: "Failed to retrieve container IP" });
+                      }
 
-                                // Replace placeholder with answer result
-                                const modifiedHtml = data.replace('<!-- INSERT ANSWER HERE -->', encodeURIComponent(answerResult));
-
-                                // Write the modified HTML to a temporary file
-                                const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
-                                fs.writeFileSync(tempHtmlFilePath, modifiedHtml, { encoding: 'utf8' });
-
-                                // Step 5: Copy the modified HTML file to the container
-                                exec(`docker cp ${tempHtmlFilePath} ${containerName}:/root/mail.html`, (err) => {
-                                    if (err) {
-                                        console.error('Error copying HTML file into container:', err);
-                                        return res.status(500).json({ message: 'Failed to copy HTML file into container' });
-                                    }
-
-                                    // Step 6: Retrieve the IP and port of the container
-                                    exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerName}`, (err, portOutput) => {
-                                        if (err) {
-                                            console.error('Error getting container port:', err);
-                                            return res.status(500).json({ message: 'Failed to retrieve container port' });
-                                        }
-
-                                        const portMatch = portOutput.match(/\d{4,5}/);
-                                        const port = portMatch ? portMatch[0] : null;
-
-                                        exec(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerName}`, (err, ipOutput) => {
-                                            if (err) {
-                                                console.error('Error getting container IP:', err);
-                                                return res.status(500).json({ message: 'Failed to retrieve container IP' });
-                                            }
-
-                                            // Return the IP and port of the container
-                                            return res.status(200).json({ ip: ipOutput.trim(), port: port });
-                                        });
-                                    });
+                      db.query(`SELECT \`Subject-ID\` FROM question WHERE QuestionID in (?)`, [questionID], (error, result) => {
+                        if (error) {
+                          console.log(error);
+                          return res.status(500).json({ message: "Database question query error" });
+                        } else {
+                          db.query(`INSERT INTO \`virtual matchine\` (\`Subject-ID\`, \`IP-Address\`) VALUES(?, ?)`,
+                            [result[0]["Subject-ID"], `${ipOutput.trim()}:${port}`], (error) => {
+                              if (error) {
+                                console.log(error);
+                                return res.status(500).json({ message: "Database virtual matchine post error" });
+                              } else {
+                                return res.status(200).json({
+                                  message: "Success prepare virtual matchine",
+                                  ip: ipOutput.trim(),
+                                  port: port,
+                                  containerId: containerId
                                 });
-                            });
-                        })
-                        .catch(copyError => {
-                            console.error(copyError);
-                            return res.status(500).json({ message: 'Failed to copy files into container' });
-                        });
+                              }
+                            }
+                          );
+                        }
+                      });
+                    });
+                  });
                 });
-            }
-        });
-    });
-});
-
-app.get('/getLabquestion/:subjectId', (req, res) => {
-    const subjectId = req.params.subjectId;
-    
-    db.query(`SELECT * FROM question WHERE Type = ? AND \`Subject-ID\` = ? `, ['lab', subjectId], (err, questionResult) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ message: "Database question query error" });
-        }
-
-        if (questionResult.length === 0) {
-            return res.status(404).json({ message: "No lab questions found for this subject" });
-        }
-
-        else{
-            return res.status(200).json({ questionlist: questionResult});
-        }
-    });
-});
-
-app.post('/submitLabanswer', (req, res) => {
-    const answer = req.body;
-    const QuestionIds = Object.keys(answer);
-    const answerResults = Object.values(answer);
-
-    db.query('SELECT * FROM answer WHERE QuestionID in (?)', [QuestionIds], (error, result) => {
-        if(error){
-            console.log(error);
-            return res.status(500).json({ message: "Database answer query error" });
-        }
-
-        else{
-            let score = 0;
-            result.map((item, index) => { 
-                if(item.result ===  answerResults[index]){
-                    score++;
-                }
+              });
+            })
+            .catch((copyError) => {
+              console.error(copyError);
+              return res.status(500).json({ message: "Failed to copy files into container" });
             });
-            if(score===answerResults.length){
-                return res.status(200).json({ message: "You Pass!" });
-            }
-            else{
-                return res.status(200).json({ message: "You Failed!" });
-            }
-        }
+        });
+      });
     });
+  });
+});
+
+app.post('/stopContainer', (req, res) => {
+  const { containerId, IpAddress } = req.body;
+
+  // Stop the container first
+  exec(`docker stop ${containerId}`, (err) => {
+    if (err) {
+      console.error(`Error stopping container ${containerId}:`, err);
+      return res.status(500).json({ message: 'Failed to stop container' });
+    }
+
+    // Remove the container once it's stopped
+    exec(`docker rm ${containerId}`, (removeErr) => {
+      if (removeErr) {
+        console.error(`Error removing container ${containerId}:`, removeErr);
+        return res.status(500).json({ message: 'Failed to remove container' });
+      }
+      else{
+        db.query(`DELETE FROM \`virtual matchine\` WHERE \`IP-Address\` = ? `, [IpAddress], (error, result) =>{
+          if(error){
+            console.log(error);
+            return res.status(500).json({ message: 'Delete virtual matchine from database Error' });
+          }
+
+          return res.status(200).json({ message: 'Container stopped and removed successfully' });
+        });
+      }
+    });
+  });
+});
+
+app.get("/getLabquestion/:subjectId", (req, res) => {
+  const subjectId = req.params.subjectId;
+
+  db.query(
+    `SELECT * FROM question WHERE Type = ? AND \`Subject-ID\` = ? `,
+    ["lab", subjectId],
+    (err, questionResult) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(500)
+          .json({ message: "Database question query error" });
+      }
+
+      if (questionResult.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No lab questions found for this subject" });
+      } else {
+        return res.status(200).json({ questionlist: questionResult });
+      }
+    }
+  );
+});
+
+app.post("/submitLabanswer", (req, res) => {
+  const answer = req.body;
+  const QuestionIds = Object.keys(answer);
+  const answerResults = Object.values(answer);
+
+  db.query(
+    "SELECT * FROM answer WHERE QuestionID in (?)",
+    [QuestionIds],
+    (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Database answer query error" });
+      } else {
+        let score = 0;
+        result.map((item, index) => {
+          if (item.result === answerResults[index]) {
+            score++;
+          }
+        });
+        if (score === answerResults.length) {
+          return res.status(200).json({ message: "You Pass!" });
+        } else {
+          return res.status(200).json({ message: "You Failed!" });
+        }
+      }
+    }
+  );
 });
 
 /* Lab */
 
-const port = 3001
-app.listen(port, () =>{
-    console.log(`Server is running on port ${port}`);
-})
+const port = 3001;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});

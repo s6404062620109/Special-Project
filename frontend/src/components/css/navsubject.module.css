@@ -10,14 +10,20 @@
     margin: 0;
     padding: 0;
 }
+
 .Nav-Subject ul li{
-    background: white;
     padding: 10px;
 }
+
 .Nav-Subject ul > li:nth-child(1){
     text-align: center;
     border-radius: 12px 12px 0 0;
     margin-bottom: 10px;
+    background: white;
+}
+
+.subjectlist-wrap > li, .testlist-wrap > .testlist{
+    background: white;
 }
 
 .testlist-wrap{
@@ -25,4 +31,10 @@
 }
 .testlist-wrap > li:nth-child(2){
     border-radius: 0 0 12px 12px;
+}
+
+.disable-Pretest{
+    background: #B3B3B3;
+    display: flex;
+    justify-content: space-between;
 }
