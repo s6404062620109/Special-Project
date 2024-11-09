@@ -33,7 +33,7 @@
     border-radius: 0 0 12px 12px;
 }
 
-.disable-Pretest{
+.disable-Pretest, .subjectlist-wrap > .disabled-subject{
     background: #B3B3B3;
     display: flex;
     justify-content: space-between;

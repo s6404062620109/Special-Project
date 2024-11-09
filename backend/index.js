@@ -47,15 +47,10 @@ app.post("/register", async (req, res) => {
   const { email, password, name } = req.body;
 
   if (!email || !password || !name) {
-    return res
-      .status(400)
-      .json({ message: "Email, password, and name are required" });
+    return res.status(400).json({ message: "Email, password, and name are required" });
   }
 
-  db.query(
-    "SELECT * FROM user WHERE email = ?",
-    [email],
-    async (err, results) => {
+  db.query("SELECT * FROM user WHERE email = ?", [email], async (err, results) => {
       if (err) {
         console.log(err);
         return res.status(500).json({ message: "Database query error" });
@@ -68,10 +63,8 @@ app.post("/register", async (req, res) => {
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        db.query(
-          "INSERT INTO user (email, password, name, role, OTP) VALUES(?, ?, ?, ?, ?)",
-          [email, hashedPassword, name, "Student", "-"],
-          (err, result) => {
+        db.query("INSERT INTO user (email, password, name, role, OTP) VALUES(?, ?, ?, ?, ?)", 
+          [email, hashedPassword, name, "Student", "-"], (err, result) => {
             if (err) {
               console.log(err);
               return res.status(500).json({ message: "Register Failed!!!" });
@@ -95,10 +88,7 @@ app.post("/login", (req, res) => {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
-  db.query(
-    "SELECT * FROM user WHERE email = ?",
-    [email],
-    async (err, result) => {
+  db.query("SELECT * FROM user WHERE email = ?", [email], async (err, result) => {
       if (err) {
         return res.status(500).json({ message: "Database query error" });
       }
@@ -113,11 +103,7 @@ app.post("/login", (req, res) => {
         if (!isPasswordValid) {
           return res.status(401).send({ message: "Invalid password" });
         } else {
-          const token = jwt.sign(
-            { email: user.Email, name: user.Name },
-            "authToken",
-            { expiresIn: "1h" }
-          );
+          const token = jwt.sign({ email: user.Email, name: user.Name }, "authToken", { expiresIn: "1h" });
           return res.status(201).send({ message: "Login Success", token: token });
         }
       }
@@ -145,15 +131,10 @@ app.post("/requestotp", (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000);
     const otpexp = new Date(Date.now() + 15 * 60 * 1000);
 
-    db.query(
-      "UPDATE user SET OTP = ?, OTP_EXP = ? WHERE Email = ?",
-      [otp, otpexp, email],
-      (error) => {
+    db.query("UPDATE user SET OTP = ?, OTP_EXP = ? WHERE Email = ?", [otp, otpexp, email], (error) => {
         if (error) {
           console.error("Error updating OTP in database:", error);
-          return res
-            .status(500)
-            .send({ message: "Error updating OTP in database" });
+          return res.status(500).send({ message: "Error updating OTP in database" });
         }
 
         const transporter = nodemailer.createTransport({
@@ -177,12 +158,8 @@ app.post("/requestotp", (req, res) => {
             return res.status(500).send({ message: "Error sending OTP" });
           } else {
             console.log("Email sent: " + info.response);
-            const token = jwt.sign({ email: email }, "resetToken", {
-              expiresIn: "15m",
-            });
-            res
-              .status(200)
-              .send({ message: "OTP sent successfully", token: token });
+            const token = jwt.sign({ email: email }, "resetToken", { expiresIn: "15m" });
+            res.status(200).send({ message: "OTP sent successfully", token: token });
           }
         });
       }
@@ -192,10 +169,7 @@ app.post("/requestotp", (req, res) => {
 
 app.post("/verifyotp", (req, res) => {
   const { email, otp } = req.body;
-  db.query(
-    "SELECT OTP, OTP_EXP FROM user WHERE Email = ?",
-    [email],
-    (error, result) => {
+  db.query("SELECT OTP, OTP_EXP FROM user WHERE Email = ?", [email], (error, result) => {
       if (error) {
         console.error("Database query error:", error);
         return res.status(500).send({ message: "Database query error" });
@@ -230,15 +204,10 @@ app.post("/setnewpassword", async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  db.query(
-    "UPDATE user SET Password = ? WHERE Email = ?",
-    [hashedPassword, email],
-    (error) => {
+  db.query("UPDATE user SET Password = ? WHERE Email = ?", [hashedPassword, email], (error) => {
       if (error) {
         console.error("Error updating Password in database:", error);
-        return res
-          .status(500)
-          .send({ message: "Error updating Password in database" });
+        return res.status(500).send({ message: "Error updating Password in database" });
       } else {
         return res.status(200).send({ message: "Update Password Success!" });
       }
@@ -253,8 +222,7 @@ app.post("/setnewpassword", async (req, res) => {
 app.get("/getCourses", (req, res) => {
   db.query("SELECT * FROM courses", (err, results) => {
     if (err) {
-      res.status(500).send("Database query error");
-      return;
+      return res.status(500).send("Database query error");
     }
     res.json(results);
   });
@@ -285,29 +253,17 @@ app.get("/updateCourses/:email", (req, res) => {
 app.get("/getAllSubject/:courseId", (req, res) => {
   const courseId = req.params.courseId;
 
-  db.query(
-    `SELECT * FROM courses WHERE CourseID = ?`,
-    [courseId],
-    (err, courseResult) => {
+  db.query(`SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) => {
       if (err) {
         console.error(err);
-        return res
-          .status(500)
-          .json({ message: "Database courses query error" });
+        return res.status(500).json({ message: "Database courses query error" });
       } else {
-        db.query(
-          `SELECT * FROM subject WHERE \`Course-ID\` = ? `,
-          [courseId],
-          (err, subjectResults) => {
+        db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ? `, [courseId], (err, subjectResults) => {
             if (err) {
               console.error(err);
-              return res
-                .status(500)
-                .json({ message: "Database subject query error" });
+              return res.status(500).json({ message: "Database subject query error" });
             } else {
-              return res
-                .status(200)
-                .json({ courseInfo: courseResult, subject: subjectResults });
+              return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
             }
           }
         );
@@ -319,15 +275,11 @@ app.get("/getAllSubject/:courseId", (req, res) => {
 app.get("/getSubject/:courseId/:subjectId", (req, res) => {
   const courseId = req.params.courseId;
   const subjectId = req.params.subjectId;
-  db.query(
-    `SELECT * FROM subject WHERE SubjectID = ? AND \`course-ID\` = ? `,
-    [subjectId, courseId],
-    (err, result) => {
+
+  db.query(`SELECT * FROM subject WHERE SubjectID = ? AND \`course-ID\` = ? `, [subjectId, courseId], (err, result) => {
       if (err) {
         console.log(err);
-        return res
-          .status(500)
-          .json({ message: "Database subject query error" });
+        return res.status(500).json({ message: "Database subject query error" });
       } else {
         return res.status(200).json(result);
       }
@@ -342,50 +294,29 @@ app.get("/getSubject/:courseId/:subjectId", (req, res) => {
 app.get("/getPretest/:courseId", (req, res) => {
   const courseId = req.params.courseId;
 
-  db.query(
-    "SELECT SubjectID FROM subject WHERE `Course-ID` = ?",
-    [courseId],
-    (err, result) => {
+  db.query("SELECT SubjectID FROM subject WHERE `Course-ID` = ?", [courseId], (err, result) => {
       if (err) {
         console.log(err);
-        return res
-          .status(500)
-          .json({ message: "Database subject query error" });
+        return res.status(500).json({ message: "Database subject query error" });
       } else {
         const subjectList = result.map((item) => item.SubjectID);
 
-        db.query(
-          `SELECT * FROM question WHERE \`Subject-ID\` in (?) and Type = ?`,
-          [subjectList, "pretest"],
-          (err, questionresults) => {
+        db.query(`SELECT * FROM question WHERE \`Subject-ID\` in (?) and Type = ?`, [subjectList, "pretest"], (err, questionresults) => {
             if (err) {
               console.log(err);
-              return res
-                .status(500)
-                .json({ message: "Database question query error" });
+              return res.status(500).json({ message: "Database question query error" });
             } else {
-              const shuffledQuestions = questionresults.sort(
-                () => 0.5 - Math.random()
-              );
+              const shuffledQuestions = questionresults.sort(() => 0.5 - Math.random());
               const randomQuestions = shuffledQuestions.slice(0, 10);
 
-              const questionIdList = randomQuestions.map(
-                (item) => item.QuestionID
-              );
+              const questionIdList = randomQuestions.map((item) => item.QuestionID);
 
-              db.query(
-                `SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`,
-                [questionIdList],
-                (err, ansresults) => {
+              db.query(`SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`, [questionIdList], (err, ansresults) => {
                   if (err) {
                     console.log(err);
-                    return res
-                      .status(500)
-                      .json({ message: "Database answer query error" });
+                    return res.status(500).json({ message: "Database answer query error" });
                   } else {
-                    return res
-                      .status(200)
-                      .json({ Qustions: randomQuestions, Choices: ansresults });
+                    return res.status(200).json({ Qustions: randomQuestions, Choices: ansresults });
                   }
                 }
               );
@@ -419,31 +350,20 @@ app.post("/submitPretest", (req, res) => {
         }
       });
 
-      db.query(
-        `SELECT * FROM subject WHERE \`Course-ID\` = ?`,
-        [courseid],
-        (err, result) => {
+      db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ?`, [courseid], (err, result) => {
           if (err) {
             console.error(err);
-            return res
-              .status(500)
-              .json({ message: "Database subject query error" });
+            return res.status(500).json({ message: "Database subject query error" });
           } else {
             let subjectId = result[0].SubjectID;
 
-            db.query(
-              `INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status, Type ) VALUES( ?, ?, ?, ?, ? )`,
-              [email, subjectId, score, "Success", "Pre"],
-              (postErr, postResult) => {
+            db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status, Type ) VALUES( ?, ?, ?, ?, ? )`,
+              [email, subjectId, score, "Success", "Pre"], (postErr, postResult) => {
                 if (postErr) {
                   console.log(postErr);
-                  return res
-                    .status(500)
-                    .json({ message: "Failed post history." });
+                  return res.status(500).json({ message: "Failed post history." });
                 } else {
-                  return res
-                    .status(200)
-                    .json({ message: "Success post history", subjectId });
+                  return res.status(200).json({ message: "Success post history", subjectId });
                 }
               }
             );
@@ -455,6 +375,35 @@ app.post("/submitPretest", (req, res) => {
 });
 
 /* Pre-Test */
+
+/* Subject */
+
+app.get('/checkScore/:email/:courseId', (req, res) => {
+  const { email, courseId } = req.params;
+
+  db.query(`SELECT SubjectID From subject WHERE \`Course-ID\` = ?`, [courseId], (subjectError, subjectResult) =>{
+    if(subjectError){
+      console.log(error);
+      return res.status(500).json({ message: "Database subject query failed" });
+    }
+    else{
+      let subjectId = subjectResult.map((value) => value.SubjectID);
+
+      db.query(`SELECT * FROM history WHERE \`User-Email\` = ? AND \`Subject-ID\` in (?)`, [email, subjectId], (error, result) =>{
+        if(error){
+          console.log(error);
+          return res.status(500).json({ message: "Database history query failed" });
+        }
+        else{
+          return res.status(200).json({ result });
+        }
+      });
+      
+    }
+  });
+});
+
+/* Subject */
 
 /* Lab */
 
@@ -618,19 +567,14 @@ app.get("/getLabquestion/:subjectId", (req, res) => {
 
   db.query(
     `SELECT * FROM question WHERE Type = ? AND \`Subject-ID\` = ? `,
-    ["lab", subjectId],
-    (err, questionResult) => {
+    ["lab", subjectId], (err, questionResult) => {
       if (err) {
         console.log(err);
-        return res
-          .status(500)
-          .json({ message: "Database question query error" });
+        return res.status(500).json({ message: "Database question query error" });
       }
 
       if (questionResult.length === 0) {
-        return res
-          .status(404)
-          .json({ message: "No lab questions found for this subject" });
+        return res.status(404).json({ message: "No lab questions found for this subject" });
       } else {
         return res.status(200).json({ questionlist: questionResult });
       }
@@ -639,14 +583,11 @@ app.get("/getLabquestion/:subjectId", (req, res) => {
 });
 
 app.post("/submitLabanswer", (req, res) => {
-  const answer = req.body;
+  const { answer, email } = req.body;
   const QuestionIds = Object.keys(answer);
   const answerResults = Object.values(answer);
 
-  db.query(
-    "SELECT * FROM answer WHERE QuestionID in (?)",
-    [QuestionIds],
-    (error, result) => {
+  db.query( "SELECT * FROM answer WHERE QuestionID in (?)", [QuestionIds], (error, result) => {
       if (error) {
         console.log(error);
         return res.status(500).json({ message: "Database answer query error" });
@@ -656,9 +597,34 @@ app.post("/submitLabanswer", (req, res) => {
           if (item.result === answerResults[index]) {
             score++;
           }
+          else if(item.result !== answerResults[index] && score > 0){
+            score--;
+          }
         });
+
         if (score === answerResults.length) {
-          return res.status(200).json({ message: "You Pass!" });
+
+          db.query(`SELECT \`Subject-ID\` FROM question WHERE QuestionID = ?`, [QuestionIds[0]], (error, result) => {
+            if(error){
+              console.log(error);
+              return res.status(500).json({ message: "Database question query error" });
+            }
+            else{
+
+              db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status, Type ) VALUES( ?, ?, ?, ?, ? ) `,
+                [email, result[0]["Subject-ID"], score, "Success", `lab-${QuestionIds[0]}`], (error, result) => {
+                  if(error){
+                    console.log(error);
+                    return res.status(500).json({ message: "Failed save lab history" });
+                  }
+                  else{
+                    return res.status(200).json({ message: "You Pass!" });
+                  }
+                }
+              );
+            }
+          });
+          
         } else {
           return res.status(200).json({ message: "You Failed!" });
         }

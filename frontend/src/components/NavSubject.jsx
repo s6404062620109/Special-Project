@@ -7,6 +7,7 @@ function NavSubject({ courseId }) {
   const [navlist, setNavlist] = useState({
     subjectIds: [],
     subjectNames: [],
+    subjectDone: [],
     Pretest: `/course/${courseId}/pretest`,
     Posttest: ``,
   });
@@ -41,21 +42,19 @@ function NavSubject({ courseId }) {
   }
 
   useEffect(() => {
+    decodeAuthToken(token);
+  }, [token]);
+
+  useEffect(() => {
     const fetchSubject = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/getAllSubject/${courseId}`
-        );
+        const response = await axios.get( `http://localhost:3001/getAllSubject/${courseId}` );
 
-        const subjectIds = response.data.subject.map(
-          (subject) => subject.SubjectID
-        );
+        const subjectIds = response.data.subject.map( (subject) => subject.SubjectID );
 
-        const subjectNames = response.data.subject.map(
-          (subject) => subject.Name
-        );
-
-        setNavlist((prev) => ({
+        const subjectNames = response.data.subject.map( (subject) => subject.Name );
+        
+        setNavlist((prev) => ({ 
           ...prev,
           subjectIds: subjectIds,
           subjectNames: subjectNames,
@@ -65,33 +64,41 @@ function NavSubject({ courseId }) {
       }
     };
     fetchSubject();
-    decodeAuthToken(token);
-  }, [courseId, token]);
 
-  useEffect(() => {
     const fetchHistory = async () => {
       try{
-        const response = await axios.get(
-          `http://localhost:3001/updateCourses/${userData.email}`
-        );
-        setUserHistories(response.data);
+        const response = await axios.get( `http://localhost:3001/checkScore/${userData.email}/${courseId}` );
+        setUserHistories(response.data.result);
+
       } catch( error ) {
         console.log(error);
       }
     } 
     fetchHistory();
 
-    let courseHistory = userHistories.filter(
-      (history) => history['Course-ID'] === courseId
-    );
+    let courseHistory = userHistories.filter( (history) => history['Course-ID'] === courseId );
     setUserHistories(courseHistory);
-  }, [userData, courseId]);
+    
+  }, [userData,courseId]);
+  
+  useEffect(() => {
+    const disableSubject = userHistories.filter((history) => history.Type.includes("lab"));
+    setNavlist((prev) => ({
+      ...prev, 
+      subjectDone: disableSubject.map((subject) => subject["Subject-ID"])
+    }));
+  }, [userHistories]);
 
   const preTestHistory = userHistories.find(
     (history) => history.Type === "Pre"
   );
   const preTestScore = preTestHistory ? preTestHistory.Score : null;
 
+  const subjectStates = navlist.subjectIds.map((subjectId, index) => ({
+    subjectId,
+    isDone: navlist.subjectDone.includes(subjectId),
+    name: navlist.subjectNames[index]
+  }));
 
   return (
     <div className={style["Nav-Subject"]}>
@@ -99,17 +106,22 @@ function NavSubject({ courseId }) {
         <li>All Subject</li>
 
         <div className={style["subjectlist-wrap"]}>
-            {navlist.subjectNames.map((name, ind) => (
-            <li key={ind}>
-                <a
-                onClick={() =>
-                    (window.location.href = `/course/${courseId}/subject/${navlist.subjectIds[ind]}`)
+          {subjectStates.map((subject, ind) => (
+            <li
+              key={ind}
+              onClick={() => {
+                if (!subject.isDone) {
+                  window.location.href = `/course/${courseId}/subject/${subject.subjectId}`;
                 }
-                >
-                {name}
-                </a>
+              }}
+              className={subject.isDone ? style["disabled-subject"] : ""}
+            >
+              <a>{subject.name}</a>
+              <a>{subject.isDone && (
+                <>PASS</>
+              )}</a>
             </li>
-            ))}
+          ))}
         </div>
 
         <div className={style["testlist-wrap"]}>
@@ -125,7 +137,7 @@ function NavSubject({ courseId }) {
               >
                 Pre-Test
               </li>
-            )}
+            )} 
               
             <li 
               className={style.testlist}

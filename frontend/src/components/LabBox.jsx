@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 import style from './css/labbox.module.css';
 
@@ -11,6 +12,33 @@ function LabBox({ subjectId }) {
     const [ questionList, setQuestionList ] = useState([]);
     const [ answer, setAnswer ] = useState([]);
     const [ checkStatus, setCheckStatus ] = useState('');
+    const [userData, setUserdata] = useState({
+        email:'',
+        name:''
+    });
+    const token = localStorage.getItem('authToken');
+
+    const decodeAuthToken = (Authtoken) =>{
+        if(!Authtoken){
+        console.log('Not authentication.');
+        return
+        }
+        else{
+        const decodedToken = jwtDecode(Authtoken);
+        const currentTime = Date.now() / 1000;
+        if (decodedToken.exp < currentTime) {
+            localStorage.removeItem('authToken');
+            console.log('Token expired. Logging out.');
+            navigate('/login'); 
+        }
+        else{
+            setUserdata({
+            email: decodedToken.email,
+            name: decodedToken.name
+            })
+        }
+        }
+    }
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -25,7 +53,8 @@ function LabBox({ subjectId }) {
         }
 
         fetchQuestion();
-    }, [subjectId])
+        decodeAuthToken(token);
+    }, [subjectId, token]);
 
     const handleCreateContainer = async () => {
         setLoading(true);
@@ -50,7 +79,9 @@ function LabBox({ subjectId }) {
         e.preventDefault();
 
         try{
-            const response = await axios.post('http://localhost:3001/submitLabanswer', answer);
+            const response = await axios.post('http://localhost:3001/submitLabanswer', 
+                { answer: answer, email: userData.email 
+            });
             setCheckStatus(response.data.message);
 
         } catch (error) {
