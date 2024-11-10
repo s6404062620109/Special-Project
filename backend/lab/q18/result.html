@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail Page</title>
+    <style>
+        body {
+            background: #f0f0f0;
+        }
+        .spam-topic, .spam-sol {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mail Details</h1>
+    <h2 id="topic"></h2>
+
+    <div id="content"></div>
+
+    <script>
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        const topic = getQueryParameter('topic');
+
+        if (topic) {
+            document.getElementById('topic').textContent = `Subject: ${decodeURIComponent(topic)}`;
+        } else {
+            document.getElementById('topic').textContent = 'No subject found';
+        }
+
+        const contentDiv = document.getElementById('content');
+
+        function generateRandomCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        if (topic === 'Your Account Has Been Suspended – Immediate Action Required!') {
+            const randomCode = generateRandomCode();
+
+            contentDiv.innerHTML += `
+                <div class="spam-sol">
+                    <h3>Dear Mr.Steve Johnsan,</h3>
+                    <p>We noticed unusual activity in your account. As a precaution, your account has been temporarily suspended. To restore access, please verify your information immediately by</p>
+                </div>
+            `;
+
+            contentDiv.innerHTML += `
+                <div class="spam-sol">
+                    <p>clicking the link below:</p>
+                    <a href="#" id="verify-link">Verify Your Account</a>
+                    <p><strong>Warning:</strong> Failure to verify may result in account closure.</p>
+                </div>
+            `;
+
+            // Add event listener to the link to display the random code when clicked
+            const verifyLink = document.getElementById('verify-link');
+            verifyLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent the default action
+
+                // Display the random code inside the `.spam-sol` element
+                contentDiv.innerHTML += `<h4>Your answer here: ${randomCode}</h4>`;
+            });
+
+        }
+
+        else if (topic === 'Congratulations! You’ve Won a $500 Gift Card!') {
+            const randomCode = generateRandomCode();
+
+            contentDiv.innerHTML += `
+                <div class="spam-sol">
+                    <h3>Dear Mr.Steve Johnsan,</h3>
+                    <p>Congratulations! You are one of the lucky winners of a $500 gift card. Claim your prize now by</p>
+                    <p>entering your details. All you have to do is click the button below and fill out the form to receive your gift.</p>
+                </div>
+            `;
+
+            contentDiv.innerHTML += `
+                <div class="spam-sol">
+                    <p>clicking the link below:</p>
+                    <a href="#" id="verify-link">Claim My Gift Card</a>
+                    <p>
+                        <strong>This is a limited-time offer, so act fast!</strong> 
+                        Best of luck, Rewards Team
+                    </p>
+                </div>
+            `;
+
+            // Add event listener to the link to display the random code when clicked
+            const verifyLink = document.getElementById('verify-link');
+            verifyLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent the default action
+
+                // Display the random code inside the `.spam-sol` element
+                contentDiv.innerHTML += `<h4>Your answer here: ${randomCode}</h4>`;
+            });
+
+        }
+
+        else if (topic === 'Verify your identity – Please Action in 1 hr!') {
+            contentDiv.innerHTML += `
+                <div class="normal">
+                    <h3>Verify your identity</h3>
+                    <p>Hello Mr.Steve Johnsan,</p>
+                    <p>We identified unusual activity in a recent sign in attempt from your account</p>
+                    <p>If you initiated the request to sign in please enter the following code.</p>
+                    <div>
+                        <h3>Your answer here:</h3>
+                        <h4><!-- INSERT ANSWER HERE --></h4>
+                    </div>
+                    <p>If you have any questions, concerns, or require assistance, please do not hesitate to contact<br>Security Support Team</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

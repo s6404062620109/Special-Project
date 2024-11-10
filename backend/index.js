@@ -245,7 +245,7 @@ app.get("/updateCourses/:email", (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ message: "No courses found for the user" });
     }
-
+    
     res.json(results);
   });
 });
@@ -351,25 +351,31 @@ app.post("/submitPretest", (req, res) => {
       });
 
       db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ?`, [courseid], (err, result) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Database subject query error" });
-          } else {
-            let subjectId = result[0].SubjectID;
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Database subject query error" });
+        } else {
+          let insertCount = 0; 
+          const totalInserts = result.length;
 
+          for(let i=0; i<totalInserts; i++){
             db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status, Type ) VALUES( ?, ?, ?, ?, ? )`,
-              [email, subjectId, score, "Success", "Pre"], (postErr, postResult) => {
+              [email, result[i].SubjectID, score, "Success", "Pre"], (postErr, postResult) => {
                 if (postErr) {
                   console.log(postErr);
                   return res.status(500).json({ message: "Failed post history." });
                 } else {
-                  return res.status(200).json({ message: "Success post history", subjectId });
+                  insertCount++;
+
+                  if(insertCount === totalInserts){
+                    return res.status(200).json({ message: "Success post history", subjectId: result[0].SubjectID });
+                  }
                 }
               }
             );
           }
         }
-      );
+      });
     }
   });
 });
@@ -378,7 +384,7 @@ app.post("/submitPretest", (req, res) => {
 
 /* Subject */
 
-app.get('/checkScore/:email/:courseId', (req, res) => {
+app.get('/updateHistory/:email/:courseId', (req, res) => {
   const { email, courseId } = req.params;
 
   db.query(`SELECT SubjectID From subject WHERE \`Course-ID\` = ?`, [courseId], (subjectError, subjectResult) =>{
@@ -463,7 +469,7 @@ app.post("/createLinuxContainer", (req, res) => {
 
           Promise.all(fileCopyPromises)
             .then(() => {
-              const indexFilePath = path.join(sourceDirPath, "mail.html");
+              const indexFilePath = path.join(sourceDirPath, "result.html");
               fs.readFile(indexFilePath, "utf8", (err, data) => {
                 if (err) {
                   console.error("Error reading index.html:", err);
@@ -474,7 +480,7 @@ app.post("/createLinuxContainer", (req, res) => {
                 const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
                 fs.writeFileSync(tempHtmlFilePath, modifiedHtml, { encoding: "utf8" });
 
-                exec(`docker cp ${tempHtmlFilePath} ${containerId}:/root/mail.html`, (err) => {
+                exec(`docker cp ${tempHtmlFilePath} ${containerId}:/root/result.html`, (err) => {
                   if (err) {
                     console.error("Error copying HTML file into container:", err);
                     return res.status(500).json({ message: "Failed to copy HTML file into container" });

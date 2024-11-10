@@ -12,9 +12,27 @@ function CourseCard({ id, name, detail, icon_id, update }) {
   });
   const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
-  const lastSubject = Array.isArray(update) && update.length > 0
-  ? update.reduce((prev, current) => (prev.value > current.value ? prev : current), update[0])
-  : null;
+  const lastSubject = Array.isArray(update) && update.length > 0 
+    ? (() => {
+        const filterPretests = update.filter(subject => !subject.Type.toLowerCase().includes('lab'));
+        const filteredlabs = update.filter(subject => subject.Type.toLowerCase().includes('lab'));
+
+        if (filteredlabs.length === 0) {
+          return update.find(subject => subject.Type === 'Pre') || update[0];
+        }
+
+        else{
+
+          const uniquePretests = filterPretests.filter(pretest =>
+            !filteredlabs.some(lab => lab["Subject-ID"] === pretest["Subject-ID"])
+          );
+
+          return uniquePretests.reduce((prev, current) => 
+            (prev["Subject-ID"] > current["Subject-ID"] ? prev : current), uniquePretests[0]
+          );
+        }
+      })()
+    : null;
 
   const decodeAuthToken = (Authtoken) =>{
     if(!Authtoken){
@@ -54,7 +72,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       let subjectId = lastSubject["Subject-ID"]
-      navigate(`/course/${id}/subject/${update[length]['Subject-ID']}`);
+      navigate(`/course/${id}/subject/${subjectId}`);
     }
 
     else if ( status === 'Start') {

@@ -67,7 +67,7 @@ function NavSubject({ courseId }) {
 
     const fetchHistory = async () => {
       try{
-        const response = await axios.get( `http://localhost:3001/checkScore/${userData.email}/${courseId}` );
+        const response = await axios.get( `http://localhost:3001/updateHistory/${userData.email}/${courseId}` );
         setUserHistories(response.data.result);
 
       } catch( error ) {
