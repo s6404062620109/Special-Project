@@ -601,14 +601,14 @@ app.post("/submitLabanswer", (req, res) => {
         let score = 0;
         result.map((item, index) => {
           if (item.result === answerResults[index]) {
-            score++;
+            score = score+10;
           }
           else if(item.result !== answerResults[index] && score > 0){
-            score--;
+            score = score-10;
           }
         });
 
-        if (score === answerResults.length) {
+        if (score === answerResults.length*10) {
 
           db.query(`SELECT \`Subject-ID\` FROM question WHERE QuestionID = ?`, [QuestionIds[0]], (error, result) => {
             if(error){
