@@ -3,16 +3,17 @@
     justify-content: space-around;
     align-items: center;
     background-color: white;
-    width: 50%;
+    width: 80%;
     margin: 2rem auto;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .content{
+    width: 40%;
     display: flex;
 }
 
 .infoContent > p{
-    font-size: 20px;
+    font-size: 16px;
     font-weight: normal;
 }

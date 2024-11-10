@@ -250,28 +250,6 @@ app.get("/updateCourses/:email", (req, res) => {
   });
 });
 
-app.get("/getAllSubject/:courseId", (req, res) => {
-  const courseId = req.params.courseId;
-
-  db.query(`SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Database courses query error" });
-      } else {
-        db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ? `, [courseId], (err, subjectResults) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ message: "Database subject query error" });
-            } else {
-              return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
-            }
-          }
-        );
-      }
-    }
-  );
-});
-
 app.get("/getSubject/:courseId/:subjectId", (req, res) => {
   const courseId = req.params.courseId;
   const subjectId = req.params.subjectId;
@@ -383,6 +361,28 @@ app.post("/submitPretest", (req, res) => {
 /* Pre-Test */
 
 /* Subject */
+
+app.get("/getAllSubject/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
+
+  db.query(`SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database courses query error" });
+      } else {
+        db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ? `, [courseId], (err, subjectResults) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "Database subject query error" });
+            } else {
+              return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
+            }
+          }
+        );
+      }
+    }
+  );
+});
 
 app.get('/updateHistory/:email/:courseId', (req, res) => {
   const { email, courseId } = req.params;

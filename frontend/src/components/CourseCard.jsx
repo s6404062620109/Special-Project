@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
 import style from './css/coursecard.module.css'
+import Processbar from './Processbar';
 
 function CourseCard({ id, name, detail, icon_id, update }) {
 
@@ -97,6 +98,11 @@ function CourseCard({ id, name, detail, icon_id, update }) {
               <p>{detail}</p>
           </div>
         </div>
+
+        <Processbar
+          courseId={id}
+          histories={update}
+        />
 
         <div>
           <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
