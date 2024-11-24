@@ -267,34 +267,93 @@ app.get("/getSubject/:courseId/:subjectId", (req, res) => {
 
 /* Courses */
 
+/* Subject */
+
+app.get("/getAllSubject/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
+
+  db.query(`SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database courses query error" });
+      } else {
+        db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ? `, [courseId], (err, subjectResults) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "Database subject query error" });
+            } else {
+              return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
+            }
+          }
+        );
+      }
+    }
+  );
+});
+
+app.get('/updateHistory/:email/:courseId', (req, res) => {
+  const { email, courseId } = req.params;
+
+  db.query(`SELECT SubjectID From subject WHERE \`Course-ID\` = ?`, [courseId], (subjectError, subjectResult) =>{
+    if(subjectError){
+      console.log(error);
+      return res.status(500).json({ message: "Database subject query failed" });
+    }
+    else{
+      let subjectId = subjectResult.map((value) => value.SubjectID);
+
+      db.query(`SELECT * FROM history WHERE \`User-Email\` = ? AND \`Subject-ID\` in (?)`, [email, subjectId], (error, result) =>{
+        if(error){
+          console.log(error);
+          return res.status(500).json({ message: "Database history query failed" });
+        }
+        else{
+          return res.status(200).json({ result });
+        }
+      });
+      
+    }
+  });
+});
+
+/* Subject */
+
 /* Pre-Test */
 
 app.get("/getPretest/:courseId", (req, res) => {
   const courseId = req.params.courseId;
 
-  db.query("SELECT SubjectID FROM subject WHERE `Course-ID` = ?", [courseId], (err, result) => {
+  db.query("SELECT SubjectID FROM subject WHERE `CourseID` = ?", [courseId], (err, result) => {
       if (err) {
         console.log(err);
         return res.status(500).json({ message: "Database subject query error" });
       } else {
         const subjectList = result.map((item) => item.SubjectID);
 
-        db.query(`SELECT * FROM question WHERE \`Subject-ID\` in (?) and Type = ?`, [subjectList, "pretest"], (err, questionresults) => {
+        db.query(`SELECT * FROM question WHERE SubjectID in (?) and Type = ?`, [subjectList, "Pre"], (err, questionResults) => {
             if (err) {
               console.log(err);
               return res.status(500).json({ message: "Database question query error" });
             } else {
-              const shuffledQuestions = questionresults.sort(() => 0.5 - Math.random());
-              const randomQuestions = shuffledQuestions.slice(0, 10);
+              
+              const randomQuestionsMap = {};
 
-              const questionIdList = randomQuestions.map((item) => item.QuestionID);
+              const shuffledQuestions = questionResults.sort(() => Math.random() - 0.5);
+              shuffledQuestions.forEach((question) => {
+                if (!randomQuestionsMap[question.SubjectID]) {
+                  randomQuestionsMap[question.SubjectID] = question;
+                }
+              });
 
-              db.query(`SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`, [questionIdList], (err, ansresults) => {
+              const uniqueQuestions = Object.values(randomQuestionsMap);
+              const questionIdList = uniqueQuestions.map((item) => item.QuestionID);
+
+              db.query(`SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`, [questionIdList], (err, ansResults) => {
                   if (err) {
                     console.log(err);
                     return res.status(500).json({ message: "Database answer query error" });
                   } else {
-                    return res.status(200).json({ Qustions: randomQuestions, Choices: ansresults });
+                    return res.status(200).json({ Qustions: uniqueQuestions, Choices: ansResults });
                   }
                 }
               );
@@ -359,57 +418,6 @@ app.post("/submitPretest", (req, res) => {
 });
 
 /* Pre-Test */
-
-/* Subject */
-
-app.get("/getAllSubject/:courseId", (req, res) => {
-  const courseId = req.params.courseId;
-
-  db.query(`SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Database courses query error" });
-      } else {
-        db.query(`SELECT * FROM subject WHERE \`Course-ID\` = ? `, [courseId], (err, subjectResults) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ message: "Database subject query error" });
-            } else {
-              return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
-            }
-          }
-        );
-      }
-    }
-  );
-});
-
-app.get('/updateHistory/:email/:courseId', (req, res) => {
-  const { email, courseId } = req.params;
-
-  db.query(`SELECT SubjectID From subject WHERE \`Course-ID\` = ?`, [courseId], (subjectError, subjectResult) =>{
-    if(subjectError){
-      console.log(error);
-      return res.status(500).json({ message: "Database subject query failed" });
-    }
-    else{
-      let subjectId = subjectResult.map((value) => value.SubjectID);
-
-      db.query(`SELECT * FROM history WHERE \`User-Email\` = ? AND \`Subject-ID\` in (?)`, [email, subjectId], (error, result) =>{
-        if(error){
-          console.log(error);
-          return res.status(500).json({ message: "Database history query failed" });
-        }
-        else{
-          return res.status(200).json({ result });
-        }
-      });
-      
-    }
-  });
-});
-
-/* Subject */
 
 /* Lab */
 
@@ -640,6 +648,39 @@ app.post("/submitLabanswer", (req, res) => {
 });
 
 /* Lab */
+
+/* History */
+
+app.get(`/getUserHistory/:email`, (req, res) => {
+  const email = req.params.email;
+
+  db.query(`SELECT * FROM history WHERE \`User-Email\` = ?`, [email], (err, resultHistories) => {
+    if(err) {
+      console.log(err);
+      return res.status(500).json({ message: "Database history query error" });
+    }
+    else{
+      const subjectIds = resultHistories.map((value) => (value[`Subject-ID`]));
+      
+      db.query(`SELECT \`Course-ID\` FROM subject WHERE SubjectID in (?)`, [subjectIds], (err, resultFilterCourse) => {
+        if(err) {
+          console.log(err);
+          return res.status(500).json({ message: "Database subject query error" });
+        }
+        else{
+          const uniqueCourseIDs = [...new Set(resultFilterCourse.map((value) => value['Course-ID']))];
+
+          return res.status(200).json({
+            CourseIDs: uniqueCourseIDs,
+            History: resultHistories,
+          });
+        }
+      });
+    }
+  });
+});
+
+/* History */
 
 const port = 3001;
 app.listen(port, () => {

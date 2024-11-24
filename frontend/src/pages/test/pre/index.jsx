@@ -42,7 +42,7 @@ function Pretest() {
     const fetchData = async () => {
       try{
         const response = await axios.get(`http://localhost:3001/getPretest/${courseId}`);
-        console.log(response);
+        console.log(response)
 
         let questions = response.data.Qustions;
         let choices = response.data.Choices;
