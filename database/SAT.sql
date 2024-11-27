@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Nov 24, 2024 at 12:40 PM
+-- Generation Time: Nov 27, 2024 at 07:15 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -157,24 +157,44 @@ INSERT INTO `courses` (`CourseID`, `Name`, `Detail`, `Icon_id`) VALUES
 CREATE TABLE `history` (
   `HistoryID` int NOT NULL,
   `Status` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT 'Failed',
-  `Successful` int NOT NULL,
+  `Successful` int NOT NULL DEFAULT '0',
   `CourseID` int NOT NULL,
   `Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `history`
+--
+
+INSERT INTO `history` (`HistoryID`, `Status`, `Successful`, `CourseID`, `Email`) VALUES
+(75, 'Failed', 0, 5, 'AAA');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Progress`
+-- Table structure for table `progress`
 --
 
-CREATE TABLE `Progress` (
+CREATE TABLE `progress` (
   `ProgressID` int NOT NULL,
   `Score` int NOT NULL DEFAULT '0',
   `QuestionID` int NOT NULL,
   `SubjectID` int NOT NULL,
   `HistoryID` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `progress`
+--
+
+INSERT INTO `progress` (`ProgressID`, `Score`, `QuestionID`, `SubjectID`, `HistoryID`) VALUES
+(440, 0, 21, 9, 75),
+(441, 0, 26, 10, 75),
+(442, 0, 31, 11, 75),
+(443, 0, 34, 12, 75),
+(444, 0, 35, 13, 75),
+(445, 0, 38, 14, 75),
+(446, 0, 40, 15, 75);
 
 -- --------------------------------------------------------
 
@@ -274,10 +294,10 @@ INSERT INTO `user` (`Email`, `Password`, `Name`, `Role`, `OTP`, `OTP_EXP`) VALUE
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Virtual Machine`
+-- Table structure for table `virtual_machine`
 --
 
-CREATE TABLE `Virtual Machine` (
+CREATE TABLE `virtual_machine` (
   `Virtual_MachineID` int NOT NULL,
   `IP_Address` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
@@ -310,9 +330,9 @@ ALTER TABLE `history`
   ADD KEY `HistoryOfUser` (`Email`);
 
 --
--- Indexes for table `Progress`
+-- Indexes for table `progress`
 --
-ALTER TABLE `Progress`
+ALTER TABLE `progress`
   ADD PRIMARY KEY (`ProgressID`),
   ADD KEY `ProgressOfHistory` (`HistoryID`),
   ADD KEY `Progress_Subject` (`SubjectID`),
@@ -339,9 +359,9 @@ ALTER TABLE `user`
   ADD PRIMARY KEY (`Email`);
 
 --
--- Indexes for table `Virtual Machine`
+-- Indexes for table `virtual_machine`
 --
-ALTER TABLE `Virtual Machine`
+ALTER TABLE `virtual_machine`
   ADD PRIMARY KEY (`Virtual_MachineID`),
   ADD KEY `VM_User` (`Email`),
   ADD KEY `VM_Subject` (`SubjectID`);
@@ -366,13 +386,13 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
--- AUTO_INCREMENT for table `Progress`
+-- AUTO_INCREMENT for table `progress`
 --
-ALTER TABLE `Progress`
-  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `progress`
+  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=447;
 
 --
 -- AUTO_INCREMENT for table `question`
@@ -387,9 +407,9 @@ ALTER TABLE `subject`
   MODIFY `SubjectID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
--- AUTO_INCREMENT for table `Virtual Machine`
+-- AUTO_INCREMENT for table `virtual_machine`
 --
-ALTER TABLE `Virtual Machine`
+ALTER TABLE `virtual_machine`
   MODIFY `Virtual_MachineID` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -410,9 +430,9 @@ ALTER TABLE `history`
   ADD CONSTRAINT `HistoryOfUser` FOREIGN KEY (`Email`) REFERENCES `user` (`Email`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `Progress`
+-- Constraints for table `progress`
 --
-ALTER TABLE `Progress`
+ALTER TABLE `progress`
   ADD CONSTRAINT `Progress_Question` FOREIGN KEY (`QuestionID`) REFERENCES `question` (`QuestionID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `Progress_Subject` FOREIGN KEY (`SubjectID`) REFERENCES `subject` (`SubjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `ProgressOfHistory` FOREIGN KEY (`HistoryID`) REFERENCES `history` (`HistoryID`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -430,9 +450,9 @@ ALTER TABLE `subject`
   ADD CONSTRAINT `Couese-ID` FOREIGN KEY (`CourseID`) REFERENCES `courses` (`CourseID`);
 
 --
--- Constraints for table `Virtual Machine`
+-- Constraints for table `virtual_machine`
 --
-ALTER TABLE `Virtual Machine`
+ALTER TABLE `virtual_machine`
   ADD CONSTRAINT `VM_Subject` FOREIGN KEY (`SubjectID`) REFERENCES `subject` (`SubjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `VM_User` FOREIGN KEY (`Email`) REFERENCES `user` (`Email`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;

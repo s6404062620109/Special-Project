@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import style from './css/pretest.module.css';
 
 function Pretest() {
-  const { courseId } = useParams();
+  const { courseId, historyId } = useParams();
   const token = localStorage.getItem('authToken');
   const [userData, setUserdata] = useState({
     email:'',
@@ -38,14 +38,21 @@ function Pretest() {
     }
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try{
-        const response = await axios.get(`http://localhost:3001/getPretest/${courseId}`);
-        console.log(response)
+  const handleAnswerChange = (questionId, answerId) => {
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionId]: answerId,
+    }));
+  };
 
-        let questions = response.data.Qustions;
-        let choices = response.data.Choices;
+  useEffect(() => {
+    const fetchQuestionData = async () => {
+      try {
+        decodeAuthToken(token);
+
+        const response = await axios.get(`http://localhost:3001/getPretest/${courseId}/${historyId}`);
+        const questions = response.data.Qustions;
+        const choices = response.data.Choices;
 
         const choicesByQuestionId = choices.reduce((acc, choice) => {
           if (!acc[choice.QuestionID]) {
@@ -63,7 +70,7 @@ function Pretest() {
 
           const labeledChoices = choices.map((choice, idx) => ({
             ...choice,
-            label: String.fromCharCode(65 + idx), 
+            label: String.fromCharCode(65 + idx),
           }));
 
           return {
@@ -74,45 +81,39 @@ function Pretest() {
         });
 
         setQuestionsWithChoices(formattedQuestions);
-      } catch(err){
-        console.log(err);
+
+        const questionIdList = formattedQuestions.map((item) => item.QuestionID);
+
+        if (questionIdList.length > 0 && historyId === '-') {
+          const registerProgressResponse = await axios.post(`http://localhost:3001/registerTestProgress`, {
+            questionIdList,
+            courseId,
+            email: userData.email,
+          });
+          console.log(registerProgressResponse);
+        }
+      } catch (err) {
+        console.error('Error fetching question data:', err);
       }
-    }
+    };
 
-    decodeAuthToken(token);
-    fetchData();
-  }, [courseId, token])
-
-  const handleAnswerChange = (questionId, answerId) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: answerId,
-    }));
-  };
-
+    fetchQuestionData();
+  }, [courseId, token, userData.email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const payload = {
-        courseId,
-        answers: selectedAnswers,
-      };
+      const response = await axios.post('http://localhost:3001/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
+      console.log(response.data);
 
-      const response = await axios.post('http://localhost:3001/submitPretest', {payload: payload, courseid: courseId, email: userData.email});
-      console.log('Submit response:', response.data);
-
-      navigate(`/course/${courseId}/subject/${response.data.subjectId}`);
+      // navigate(`/course/${courseId}/subject/${response.data.subjectId}`);
     } 
     catch (err) {
-      console.log('Error submitting answers:', err);
-
+      console.log(err);
     }
-
     
   };
-
 
   return (
     <div className={style.container}>

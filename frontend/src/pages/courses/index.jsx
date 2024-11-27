@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 
 import style from './css/courses.module.css'
 import CourseCard from '../../components/CourseCard';
+import { useNavigate } from 'react-router-dom';
 
 function Courses() {
   const [userData, setUserdata] = useState({
@@ -12,7 +13,7 @@ function Courses() {
   })
   const [data, setData] = useState([]);
   const [updateState, setUpdateState] = useState([]);
-
+  const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
 
   const decodeAuthToken = (Authtoken) =>{
@@ -38,7 +39,7 @@ function Courses() {
   }
 
   useEffect(() => {
-    decodeAuthToken(token)
+    decodeAuthToken(token);
   }, [token])
 
   useEffect(() => {
@@ -49,8 +50,8 @@ function Courses() {
         setData(response.data);
 
         if (token) {
-          const Updateresponse = await axios.get(`http://localhost:3001/updateCourses/${userData.email}`);
-          setUpdateState(Updateresponse.data);
+          const courseProgressResponse = await axios.get(`http://localhost:3001/checkCoursesProgress/${userData.email}`);
+          setUpdateState(courseProgressResponse.data.results);
         }
       } catch (err) {
         console.log(err);
@@ -58,17 +59,12 @@ function Courses() {
     };
 
     fetchData();
-  }, [userData.email]);
-
-  const matchingUpdates = (courseId)  => {
-    if (!token || updateState.length === 0) {
-      return null;
-    }
-
-    const states = updateState.filter(update => update['Course-ID'] === courseId);
-    return states
+  }, [userData]);
+  
+  const getUpdateStateForCourse = (courseID) => {
+    const courseUpdate = updateState.find((state) => state.CourseID === courseID);
+    return courseUpdate ? courseUpdate.HistoryID : null;
   };
-
 
   return (
     <div className={style.content}>
@@ -79,7 +75,7 @@ function Courses() {
           name={item.Name}
           detail={item.Detail}
           icon_id={item.Icon_id}
-          update={matchingUpdates(item.CourseID)}
+          update={getUpdateStateForCourse(item.CourseID)}
         />
       ))}
     </div>
