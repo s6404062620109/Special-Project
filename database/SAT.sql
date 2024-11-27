@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Nov 27, 2024 at 07:15 AM
+-- Generation Time: Nov 27, 2024 at 03:46 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -167,7 +167,7 @@ CREATE TABLE `history` (
 --
 
 INSERT INTO `history` (`HistoryID`, `Status`, `Successful`, `CourseID`, `Email`) VALUES
-(75, 'Failed', 0, 5, 'AAA');
+(96, 'Failed', 0, 5, 'AAA');
 
 -- --------------------------------------------------------
 
@@ -188,13 +188,13 @@ CREATE TABLE `progress` (
 --
 
 INSERT INTO `progress` (`ProgressID`, `Score`, `QuestionID`, `SubjectID`, `HistoryID`) VALUES
-(440, 0, 21, 9, 75),
-(441, 0, 26, 10, 75),
-(442, 0, 31, 11, 75),
-(443, 0, 34, 12, 75),
-(444, 0, 35, 13, 75),
-(445, 0, 38, 14, 75),
-(446, 0, 40, 15, 75);
+(545, 0, 23, 9, 96),
+(546, 0, 28, 10, 96),
+(547, 0, 31, 11, 96),
+(548, 0, 34, 12, 96),
+(549, 0, 36, 13, 96),
+(550, 0, 38, 14, 96),
+(551, 0, 40, 15, 96);
 
 -- --------------------------------------------------------
 
@@ -386,13 +386,13 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=447;
+  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=552;
 
 --
 -- AUTO_INCREMENT for table `question`

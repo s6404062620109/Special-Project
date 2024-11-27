@@ -266,7 +266,6 @@ app.get("/getLatestProgress/:historyId", (req, res) => {
           }
           else{
             const lastest = latestResult[0].Type;
-            console.log(lastest)
             if(lastest === "Pre"){
               inProgress = `pretest/${historyId}`;
             }
@@ -351,51 +350,92 @@ app.get("/getAllSubject/:courseId", (req, res) => {
 
 /* Pre-Test */
 
-app.get("/getPretest/:courseId/:historyId", (req, res) => {
-  const { courseId, historyId } = req.params;
+app.get("/getPretest/:courseId/:historyId/:email", (req, res) => {
+  const { courseId, historyId, email } = req.params;
 
-  if( historyId === '-' ){
-    db.query("SELECT SubjectID FROM subject WHERE CourseID = ?", [courseId], (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Database subject query error" });
-      } else {
-        const subjectList = result.map((item) => item.SubjectID);
+  if (historyId === '-') {
+    // Step 1: Check if a HistoryID exists in the 'history' table for the given courseId and email
+    db.query("SELECT HistoryID FROM history WHERE CourseID = ? AND Email = ?", [courseId, email], (error, checkResult) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Database history query error." });
+      }
 
-        db.query(`SELECT * FROM question WHERE SubjectID in (?) and Type = ?`, [subjectList, "Pre"], (err, questionResults) => {
+      if (checkResult.length > 0) {
+        // Step 2: If HistoryID exists, check if there are any progress entries for that HistoryID
+        db.query("SELECT * FROM progress WHERE HistoryID = ?", [checkResult[0].HistoryID], (error, progressResult) => {
+          if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Database progress query error" });
+          }
+
+          if (progressResult.length > 0) {
+            // If progress exists, return the existing history ID
+            return res.status(200).json({ history: checkResult[0].HistoryID });
+          }
+
+          // Step 3: If no progress entry exists, fetch questions and create progress entries
+          db.query("SELECT SubjectID FROM subject WHERE CourseID = ?", [courseId], (err, subjects) => {
             if (err) {
-              console.log(err);
-              return res.status(500).json({ message: "Database question query error" });
-            } else {
-              
-              const randomQuestionsMap = {};
+              console.error(err);
+              return res.status(500).json({ message: "Database subject query error" });
+            }
+            const subjectList = subjects.map((item) => item.SubjectID);
 
-              const shuffledQuestions = questionResults.sort(() => Math.random() - 0.5);
-              shuffledQuestions.forEach((question) => {
-                if (!randomQuestionsMap[question.SubjectID]) {
-                  randomQuestionsMap[question.SubjectID] = question;
+            // Fetch Pre-test questions related to the subjects
+            db.query("SELECT * FROM question WHERE SubjectID IN (?) AND Type = ?", [subjectList, "Pre"], (err, questionResults) => {
+              if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Database question query error." });
+              }
+
+              // Step 4: Deduplicate questions based on SubjectID
+              const uniqueQuestions = Array.from(
+                new Map(questionResults.map((q) => [q.SubjectID, q])).values()
+              );
+
+              const questionIdList = uniqueQuestions.map((q) => q.QuestionID);
+
+              // Step 5: Fetch answers for the unique questions
+              db.query("SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID IN (?)", [questionIdList], (error, answerResults) => {
+                if (error) {
+                  console.error(error);
+                  return res.status(500).json({ message: "Database answer query error." });
+                }
+
+                // Step 6: Create new progress entries for each question
+                const progressHistoryId =  checkResult[0].HistoryID;
+                const progressQuestionID = uniqueQuestions.map((q) => q.QuestionID);
+                const progressSubjectID = uniqueQuestions.map((q) => q.SubjectID);
+
+                for(let i=0; i<progressQuestionID.length; i++){
+                  db.query("INSERT INTO progress (HistoryID, QuestionID, SubjectID) VALUES ( ?, ?, ? )", [progressHistoryId, progressQuestionID[i], progressSubjectID[i]], (err) => {
+                    if (err) {
+                      console.error(err);
+                      return res.status(500).json({ message: "Database progress insert error" });
+                    }
+  
+                    // Step 7: Return the questions and answers (Choices) after progress creation
+                    if(i===progressQuestionID.length-1){
+                      return res.status(200).json({
+                        Questions: uniqueQuestions,
+                        Choices: answerResults,
+                        history: checkResult[0].HistoryID,
+                      });
+                    }
+                  });
                 }
               });
+            });
+          });
+        });
+      } 
 
-              const uniqueQuestions = Object.values(randomQuestionsMap);
-              const questionIdList = uniqueQuestions.map((item) => item.QuestionID);
-
-              db.query(`SELECT AnswerID, result, QuestionID FROM answer WHERE QuestionID in (?)`, [questionIdList], (err, ansResults) => {
-                  if (err) {
-                    console.log(err);
-                    return res.status(500).json({ message: "Database answer query error" });
-                  } else {
-                    return res.status(200).json({ Qustions: uniqueQuestions, Choices: ansResults });
-                  }
-                }
-              );
-            }
-          }
-        );
+      else {
+        return res.status(404).json({ message: "History not found for the given course and email" });
       }
     });
-  }
-
+  } 
   else{
     const parsedHistoryId = parseInt(historyId, 10);
 
@@ -430,7 +470,6 @@ app.get("/getPretest/:courseId/:historyId", (req, res) => {
         }
       });
   }
-  
 });
 
 app.post("/submitPretest", (req, res) => {
@@ -438,41 +477,55 @@ app.post("/submitPretest", (req, res) => {
   const userAnswerIds = Object.values(answer);
   const userQuestionIds = Object.keys(answer);
 
-  db.query(`SELECT * FROM history WHERE CourseID = ? AND Email = ?`, [courseId, email], (error, result) => {
-    if (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Database history query error" });
-    }
-    else{
-      const historyId = result[0].HistoryID;
-      db.query(`SELECT AnswerID, Type, QuestionID FROM answer 
-        WHERE AnswerID IN (${userAnswerIds.join(",")}) 
-        AND QuestionID IN (${userQuestionIds.join(",")})`, (error, result) => {
-        if (error) {
-          console.log(error);
-          return res.status(500).json({ message: "Database answer query error" });
-        } 
-        else {
-          result.map((item, index) => {
-            if (item.Type === "a") {
-              db.query(`UPDATE progress SET Score = Score+1 WHERE QuestionID IN (${userQuestionIds.join(",")}) AND HistoryID = ?`, [historyId], (error, updateResult) => {
-                if (error) {
-                  console.log(error);
-                  return res.status(500).json({ message: "Update progress error" });
-                }
-                else{
-                  if(index === result.length){
-                    return res.status(200).json({ message: "Update progress success" });
-                  }
-                }
-              });
-            }
-          });
+  db.query(`SELECT * FROM history WHERE CourseID = ? AND Email = ?`,
+    [courseId, email], (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Database history query error" });
+      } 
+      else {
+        const historyId = result[0]?.HistoryID;
+        if (!historyId) {
+          return res.status(404).json({ message: "History not found" });
         }
-      });
-    }
-  });
 
+        db.query(`SELECT AnswerID, Type, QuestionID FROM answer WHERE AnswerID IN (?) AND QuestionID IN (?)`,
+          [userAnswerIds, userQuestionIds], (error, answers) => {
+            if (error) {
+              console.log(error);
+              return res.status(500).json({ message: "Database answer query error" });
+            }
+
+            const validAnswers = answers.filter((answer) => answer.Type === "a");
+
+            const updatePromises = validAnswers.map((answer) => {
+              return new Promise((resolve, reject) => {
+                db.query( `UPDATE progress SET Score = 1 WHERE QuestionID = ? AND HistoryID = ?`,
+                  [answer.QuestionID, historyId], (error, updateResult) => {
+                    if (error) {
+                      console.log(error);
+                      reject(error);
+                    } else {
+                      resolve(updateResult);
+                    }
+                  }
+                );
+              });
+            });
+
+            Promise.all(updatePromises)
+              .then(() => {
+                res.status(200).json({ message: "Update progress success" });
+              })
+              .catch((err) => {
+                console.log(err);
+                res.status(500).json({ message: "Update progress error" });
+              });
+          }
+        );
+      }
+    }
+  );
 });
 
 /* Pre-Test */

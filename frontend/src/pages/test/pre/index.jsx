@@ -50,7 +50,14 @@ function Pretest() {
       try {
         decodeAuthToken(token);
 
-        const response = await axios.get(`http://localhost:3001/getPretest/${courseId}/${historyId}`);
+        const response = await axios.get(`http://localhost:3001/getPretest/${courseId}/${historyId}/${userData.email}`);
+
+        if (response.data.history) {
+          navigate(`/course/${courseId}/pretest/${response.data.history}`);
+          window.location.reload();
+          return;
+        }
+
         const questions = response.data.Qustions;
         const choices = response.data.Choices;
 
