@@ -256,22 +256,23 @@ app.get("/getLatestProgress/:historyId", (req, res) => {
       let inProgress = '';
       const latestQuestion = result[result.length-1].QuestionID;
 
-      db.query(
-        `SELECT progress.QuestionID, question.Type FROM progress 
+      db.query(`SELECT progress.QuestionID, question.Type, question.SubjectID FROM progress 
         INNER JOIN question ON progress.QuestionID = question.QuestionID 
-        WHERE progress.QuestionID = ? AND progress.Score = ?`, [latestQuestion, 0], (error, latestResult) => {
+        WHERE progress.QuestionID = ? AND progress.Score = ?`, 
+        [latestQuestion, 0], (error, latestResult) => {
           if (error) {
             console.error(error);
             return res.status(500).json({ message: "Database progress query error" });
           }
           else{
-            const lastest = latestResult[0].Type;
-            if(lastest === "Pre"){
+            const lastestType = latestResult[0].Type;
+            const latestSubject = latestResult[0].SubjectID;
+            if(lastestType === "Pre"){
               inProgress = `pretest/${historyId}`;
             }
-            if(lastest === "Lab"){
+            if(lastestType === "Lab"){
 
-              inProgress = `subject/`;
+              inProgress = `subject/${latestSubject}`;
             }
             return res.status(200).json({ inProgress });
           }
@@ -477,53 +478,103 @@ app.post("/submitPretest", (req, res) => {
   const userAnswerIds = Object.values(answer);
   const userQuestionIds = Object.keys(answer);
 
-  db.query(`SELECT * FROM history WHERE CourseID = ? AND Email = ?`,
+  db.query(`SELECT HistoryID FROM history WHERE CourseID = ? AND Email = ?`,
     [courseId, email], (error, result) => {
       if (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Database history query error" });
-      } 
-      else {
-        const historyId = result[0]?.HistoryID;
-        if (!historyId) {
-          return res.status(404).json({ message: "History not found" });
+      }
+
+      const historyId = result[0]?.HistoryID;
+      if (!historyId) {
+        return res.status(404).json({ message: "History not found" });
+      }
+
+      db.query(`SELECT SubjectID FROM question WHERE QuestionID IN (?)`, [userQuestionIds], (error, SubjectIds) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ message: "Database question query error" });
         }
+        else{
+          const SubjectIdList = SubjectIds.map(item => item.SubjectID);
 
-        db.query(`SELECT AnswerID, Type, QuestionID FROM answer WHERE AnswerID IN (?) AND QuestionID IN (?)`,
-          [userAnswerIds, userQuestionIds], (error, answers) => {
-            if (error) {
-              console.log(error);
-              return res.status(500).json({ message: "Database answer query error" });
-            }
+          db.query(`SELECT AnswerID, Type, QuestionID FROM answer WHERE AnswerID IN (?) AND QuestionID IN (?)`,
+            [userAnswerIds, userQuestionIds], (error, answers) => {
+              if (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Database answer query error" });
+              }
 
-            const validAnswers = answers.filter((answer) => answer.Type === "a");
+              const validAnswers = answers.filter((answer) => answer.Type === "a");
 
-            const updatePromises = validAnswers.map((answer) => {
-              return new Promise((resolve, reject) => {
+              // Update progress for valid answers using a loop
+              if (validAnswers.length === 0) {
+                return res.status(200).json({ message: "No valid answers to update", SubjectIDs: [] });
+              }
+
+              let updateCount = 0;
+              const totalToUpdate = validAnswers.length;
+              
+              validAnswers.forEach((answer) => {
                 db.query( `UPDATE progress SET Score = 1 WHERE QuestionID = ? AND HistoryID = ?`,
-                  [answer.QuestionID, historyId], (error, updateResult) => {
+                  [answer.QuestionID, historyId], (error) => {
                     if (error) {
-                      console.log(error);
-                      reject(error);
-                    } else {
-                      resolve(updateResult);
+                      console.error(error);
+                      return res.status(500).json({ message: "Update progress error" });
+                    }
+
+                    updateCount++;
+                    if (updateCount === totalToUpdate) {
+                      // After all updates*
+                      const subjectIdlabs = [];
+                      let subjectCounter = 0;
+
+                      SubjectIdList.forEach((subjectId) => {
+                        db.query(`SELECT QuestionID, SubjectID FROM question WHERE SubjectID = ? AND Type = ?`,
+                          [subjectId, "Lab"], (error, questionLabs) => {
+                            if (error) {
+                              console.error(error);
+                              return res.status(500).json({ message: "Database question error" });
+                            }
+                            
+                            else{
+
+                              subjectIdlabs.push(...questionLabs.map(q => ({ QuestionID: q.QuestionID, SubjectID: subjectId })));
+                              subjectCounter++;
+
+                              if (subjectCounter === SubjectIdList.length) {
+                                // All subjectIdlabs collected, now insert into progress
+                                if (subjectIdlabs.length === 0) {
+                                  return res.status(200).json({ message: "Progress updated success not Insert", SubjectIDs: SubjectIdList });
+                                }
+  
+                                const labProgressRows = subjectIdlabs.map(lab => [historyId, lab.QuestionID, lab.SubjectID]);
+  
+                                db.query(`INSERT INTO progress (HistoryID, QuestionID, SubjectID) VALUES ?`,
+                                  [labProgressRows], (error) => {
+                                    if (error) {
+                                      console.error(error);
+                                      return res.status(500).json({ message: "Insert progress lab error" });
+                                    }
+  
+                                    return res.status(200).json({ message: "Progress updated successfully", SubjectID: SubjectIdList[0] });
+                                  });
+                              }
+                            }
+                          }
+                        );
+                      });
+
                     }
                   }
                 );
               });
-            });
+            }
+          );
 
-            Promise.all(updatePromises)
-              .then(() => {
-                res.status(200).json({ message: "Update progress success" });
-              })
-              .catch((err) => {
-                console.log(err);
-                res.status(500).json({ message: "Update progress error" });
-              });
-          }
-        );
-      }
+        }
+      });
+
     }
   );
 });

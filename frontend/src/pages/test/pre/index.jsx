@@ -112,9 +112,11 @@ function Pretest() {
 
     try {
       const response = await axios.post('http://localhost:3001/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
-      console.log(response.data);
 
-      // navigate(`/course/${courseId}/subject/${response.data.subjectId}`);
+      if(response.status === 200 && response.data.message === "Progress updated successfully"){
+        navigate(`/course/${courseId}/subject/${response.data.SubjectID}`);
+      }
+      
     } 
     catch (err) {
       console.log(err);
