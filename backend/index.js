@@ -258,8 +258,8 @@ app.get("/getLatestProgress/:historyId", (req, res) => {
 
       db.query(`SELECT progress.QuestionID, question.Type, question.SubjectID FROM progress 
         INNER JOIN question ON progress.QuestionID = question.QuestionID 
-        WHERE progress.QuestionID = ? AND progress.Score = ?`, 
-        [latestQuestion, 0], (error, latestResult) => {
+        WHERE progress.QuestionID = ? AND progress.Status = ?`, 
+        [latestQuestion, 'Failed'], (error, latestResult) => {
           if (error) {
             console.error(error);
             return res.status(500).json({ message: "Database progress query error" });
@@ -507,13 +507,13 @@ app.post("/submitPretest", (req, res) => {
 
               const validAnswers = answers.filter((answer) => answer.Type === "a");
 
-              // Update progress for valid answers using a loop
               if (validAnswers.length === 0) {
                 return res.status(200).json({ message: "No valid answers to update", SubjectIDs: [] });
               }
 
               let updateCount = 0;
               const totalToUpdate = validAnswers.length;
+              console.log(userQuestionIds);
               
               validAnswers.forEach((answer) => {
                 db.query( `UPDATE progress SET Score = 1 WHERE QuestionID = ? AND HistoryID = ?`,
@@ -522,56 +522,64 @@ app.post("/submitPretest", (req, res) => {
                       console.error(error);
                       return res.status(500).json({ message: "Update progress error" });
                     }
-
+                    
                     updateCount++;
                     if (updateCount === totalToUpdate) {
-                      // After all updates*
-                      const subjectIdlabs = [];
-                      let subjectCounter = 0;
 
-                      SubjectIdList.forEach((subjectId) => {
-                        db.query(`SELECT QuestionID, SubjectID FROM question WHERE SubjectID = ? AND Type = ?`,
-                          [subjectId, "Lab"], (error, questionLabs) => {
-                            if (error) {
-                              console.error(error);
-                              return res.status(500).json({ message: "Database question error" });
-                            }
-                            
-                            else{
-
-                              subjectIdlabs.push(...questionLabs.map(q => ({ QuestionID: q.QuestionID, SubjectID: subjectId })));
-                              subjectCounter++;
-
-                              if (subjectCounter === SubjectIdList.length) {
-                                // All subjectIdlabs collected, now insert into progress
-                                if (subjectIdlabs.length === 0) {
-                                  return res.status(200).json({ message: "Progress updated success not Insert", SubjectIDs: SubjectIdList });
-                                }
-  
-                                const labProgressRows = subjectIdlabs.map(lab => [historyId, lab.QuestionID, lab.SubjectID]);
-  
-                                db.query(`INSERT INTO progress (HistoryID, QuestionID, SubjectID) VALUES ?`,
-                                  [labProgressRows], (error) => {
-                                    if (error) {
-                                      console.error(error);
-                                      return res.status(500).json({ message: "Insert progress lab error" });
-                                    }
-  
-                                    return res.status(200).json({ message: "Progress updated successfully", SubjectID: SubjectIdList[0] });
-                                  });
-                              }
-                            }
+                      db.query(`UPDATE progress SET Status = 'Done' WHERE HistoryID = ?`,
+                        [historyId], (error) => {
+                          if (error) {
+                            console.error(error);
+                            return res.status(500).json({ message: "Update progress status error" });
                           }
-                        );
-                      });
 
+                          const subjectIdlabs = [];
+                          let subjectCounter = 0;
+
+                          SubjectIdList.forEach((subjectId) => {
+                            db.query(`SELECT QuestionID, SubjectID FROM question WHERE SubjectID = ? AND Type = ?`,
+                              [subjectId, "Lab"], (error, questionLabs) => {
+                                if (error) {
+                                  console.error(error);
+                                  return res.status(500).json({ message: "Database question error" });
+                                }
+
+                                subjectIdlabs.push(...questionLabs.map((q) => ({ QuestionID: q.QuestionID, SubjectID: subjectId, })));
+                                subjectCounter++;
+
+                                if (subjectCounter === SubjectIdList.length) {
+                                  if (subjectIdlabs.length === 0) {
+                                    return res.status(200).json({
+                                      message: "Progress updated successfully (no labs inserted)",
+                                      SubjectIDs: SubjectIdList,
+                                    });
+                                  }
+
+                                  const labProgressRows = subjectIdlabs.map((lab) => [ historyId, lab.QuestionID, lab.SubjectID, ]);
+
+                                  db.query(`INSERT INTO progress (HistoryID, QuestionID, SubjectID) VALUES ?`,
+                                    [labProgressRows], (error) => {
+                                      if (error) {
+                                        console.error(error);
+                                        return res.status(500).json({ message: "Insert progress lab error" });
+                                      }
+
+                                      return res.status(200).json({ message: "Progress updated successfully", SubjectID: SubjectIdList[0] });
+                                    }
+                                  );
+                                }
+                              }
+                            );
+                          });
+                        }
+                      );
                     }
                   }
                 );
               });
+
             }
           );
-
         }
       });
 
