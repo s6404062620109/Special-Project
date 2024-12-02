@@ -1,31 +1,39 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 import style from './css/resetotp.module.css';
 
 function ResetCode() {
-    const [email, setEmail] = useState('');
+    const [data, setData] = useState({
+      email:'',
+      name:'',
+      role:'',
+    })
     const [otp, setOtp] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
     const navigate = useNavigate();
     const token = localStorage.getItem('resetToken');
 
-    const decodeAuthToken = (Authtoken) =>{
-      if(!Authtoken){
+    const decodeAuthToken = async (token) => {
+      if(!token){
         console.log('Not authentication.');
         return
       }
       else{
-        const decodedToken = jwtDecode(Authtoken);
-        const currentTime = Date.now() / 1000;
-        if (decodedToken.exp < currentTime) {
-          localStorage.removeItem('resetToken');
-          console.log('resetToken expired. Logging out.'); 
-        }
-        else{
-          setEmail(decodedToken.email);
+        try{
+          const response = await axios.get('http://localhost:3001/autherizationotp', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            } 
+          });
+  
+          if(response.status === 200){
+            setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          }
+  
+        } catch (error) {
+          console.log(error);
         }
       }
     }
@@ -38,7 +46,7 @@ function ResetCode() {
         e.preventDefault();
         
         try {
-          const response = await axios.post('http://localhost:3001/verifyotp', { email, otp });
+          const response = await axios.post('http://localhost:3001/verifyotp', { email: data.email, otp });
   
           if (response.status === 200) {
             console.log(response.data.message);

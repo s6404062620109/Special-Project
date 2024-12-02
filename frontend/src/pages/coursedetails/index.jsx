@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 
 import style from './css/coursedetails.module.css'
 
@@ -15,9 +14,10 @@ function CourseDetail() {
       details:'',
       icon:''
     });
-    const [userData, setUserdata] = useState({
+    const [userData, setUserData] = useState({
       email:'',
-      name:''
+      name:'',
+      role:'',
     })
     
     const token = localStorage.getItem('authToken');
@@ -45,24 +45,25 @@ function CourseDetail() {
       fetchData();
     }, [courseId])
 
-    const decodeAuthToken = (Authtoken) =>{
-      if(!Authtoken){
+    const decodeAuthToken = async (token) => {
+      if(!token){
         console.log('Not authentication.');
         return
       }
       else{
-        const decodedToken = jwtDecode(Authtoken);
-        const currentTime = Date.now() / 1000;
-        if (decodedToken.exp < currentTime) {
-          localStorage.removeItem('authToken');
-          console.log('Token expired. Logging out.');
-          navigate('/login'); 
-        }
-        else{
-          setUserdata({
-            email: decodedToken.email,
-            name: decodedToken.name
-          })
+        try{
+          const response = await axios.get('http://localhost:3001/authorization', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            } 
+          });
+  
+          if(response.status === 200){
+            setUserData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          }
+  
+        } catch (error) {
+          console.log(error);
         }
       }
     }

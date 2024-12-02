@@ -1,42 +1,46 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { jwtDecode } from 'jwt-decode';
 
 import style from './css/navbar.module.css';
+import axios from 'axios';
 
 
 function Navbar() {
   const [data, setData] = useState({
     email:'',
-    name:''
+    name:'',
+    role:'',
   })
   const [menuVisible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
-  
-  useEffect(() => {
+
+  const decodeAuthToken = async (token) => {
     if(!token){
       console.log('Not authentication.');
       return
     }
     else{
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        localStorage.removeItem('authToken');
-        console.log('Token expired. Logging out.');
-        // navigate('/login'); 
-      }
-      else{
-        setData({
-          email: decodedToken.email,
-          name: decodedToken.name
-        })
+      try{
+        const response = await axios.get('http://localhost:3001/authorization', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          } 
+        });
+
+        if(response.status === 200){
+          setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+        }
+
+      } catch (error) {
+        console.log(error);
       }
     }
-    
-    // console.log('Decoded Token:', decodedToken);
-  }, []);
+  }
+  
+  useEffect(() => {
+    decodeAuthToken(token);
+  }, [token])
 
   const handleLogout = () =>{
     localStorage.removeItem('authToken');

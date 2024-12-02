@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 import style from './css/home.module.css';
@@ -11,26 +10,27 @@ function Home() {
     name:''
   });
   const token = localStorage.getItem('authToken');
-  const decodeAuthToken = (Authtoken) =>{
-      if(!Authtoken){
-        console.log('Not authentication.');
-        return
-      }
-      else{
-        const decodedToken = jwtDecode(Authtoken);
-        const currentTime = Date.now() / 1000;
-        if (decodedToken.exp < currentTime) {
-          localStorage.removeItem('authToken');
-          console.log('Token expired. Logging out.');
-          navigate('/login'); 
+  const decodeAuthToken = async (token) => {
+    if(!token){
+      console.log('Not authentication.');
+      return
+    }
+    else{
+      try{
+        const response = await axios.get('http://localhost:3001/authorization', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          } 
+        });
+
+        if(response.status === 200){
+          setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
         }
-        else{
-          setUserdata({
-            email: decodedToken.email,
-            name: decodedToken.name
-          })
-        }
+
+      } catch (error) {
+        console.log(error);
       }
+    }
   }
   
   useEffect(() => {

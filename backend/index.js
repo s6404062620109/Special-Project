@@ -15,10 +15,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
-    allowedHeaders: "Content-Type,Authorization",
+    allowedHeaders: [ "Content-Type", "Authorization" ],
   })
 );
 
@@ -103,12 +103,35 @@ app.post("/login", (req, res) => {
         if (!isPasswordValid) {
           return res.status(401).send({ message: "Invalid password." });
         } else {
-          const token = jwt.sign({ email: user.Email, name: user.Name }, "authToken", { expiresIn: "1h" });
+          const token = jwt.sign({ email: user.Email }, "authToken", { expiresIn: "1h" });
           return res.status(201).send({ message: "Login Success.", token: token });
         }
       }
     }
   );
+});
+
+app.get("/authorization", (req, res) => {
+  const authToken = req.headers['authorization'];
+  let authtokenvalue = ''
+  if ( authToken ){
+    authtokenvalue = authToken.split(' ')[1];
+  }
+  
+  const user = jwt.verify(authtokenvalue, "authToken");
+  if(user){
+    const email = user.email;
+    db.query('SELECT Email, Name, Role FROM user WHERE Email = ?', [email], (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Database user query error." });
+      } else{ 
+        return res.status(200).json({ result });
+      }
+    });
+  } else {
+    return res.status(403).json({ message: "Authorization error!" });
+  }
 });
 
 app.post("/requestotp", (req, res) => {
@@ -165,6 +188,29 @@ app.post("/requestotp", (req, res) => {
       }
     );
   });
+});
+
+app.get("/autherizationotp", (req, res) => {
+  const authToken = req.headers['authorization'];
+  let authtokenvalue = ''
+  if ( authToken ){
+    authtokenvalue = authToken.split(' ')[1];
+  }
+  
+  const user = jwt.verify(authtokenvalue, "resetToken");
+  if(user){
+    const email = user.email;
+    db.query('SELECT Email, Name, Role FROM user WHERE Email = ?', [email], (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Database user query error." });
+      } else{ 
+        return res.status(200).json({ result });
+      }
+    });
+  } else {
+    return res.status(403).json({ message: "Authorization error!" });
+  }
 });
 
 app.post("/verifyotp", (req, res) => {

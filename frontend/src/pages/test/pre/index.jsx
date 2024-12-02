@@ -1,7 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { jwtDecode } from 'jwt-decode';
 
 import style from './css/pretest.module.css';
 
@@ -10,30 +9,32 @@ function Pretest() {
   const token = localStorage.getItem('authToken');
   const [userData, setUserdata] = useState({
     email:'',
-    name:''
+    name:'',
+    role:'',
   });
   const [questionsWithChoices, setQuestionsWithChoices] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const navigate = useNavigate();
 
-  const decodeAuthToken = (Authtoken) =>{
-    if(!Authtoken){
+  const decodeAuthToken = async (token) => {
+    if(!token){
       console.log('Not authentication.');
       return
     }
     else{
-      const decodedToken = jwtDecode(Authtoken);
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        localStorage.removeItem('authToken');
-        console.log('Token expired. Logging out.');
-        navigate('/login'); 
-      }
-      else{
-        setUserdata({
-          email: decodedToken.email,
-          name: decodedToken.name
-        })
+      try{
+        const response = await axios.get('http://localhost:3001/authorization', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          } 
+        });
+
+        if(response.status === 200){
+          setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+        }
+
+      } catch (error) {
+        console.log(error);
       }
     }
   }

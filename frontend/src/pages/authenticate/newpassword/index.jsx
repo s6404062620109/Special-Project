@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 import style from './css/newpassword.module.css';
@@ -15,20 +14,25 @@ function Setpassword() {
       cpassword: ''
     });
 
-    const decodeAuthToken = (Authtoken) =>{
-      if(!Authtoken){
+    const decodeAuthToken = async (token) => {
+      if(!token){
         console.log('Not authentication.');
         return
       }
       else{
-        const decodedToken = jwtDecode(Authtoken);
-        const currentTime = Date.now() / 1000;
-        if (decodedToken.exp < currentTime) {
-          localStorage.removeItem('resetToken');
-          console.log('resetToken expired. Logging out.'); 
-        }
-        else{
-          setData({...data, email: decodedToken.email});
+        try{
+          const response = await axios.get('http://localhost:3001/autherizationotp', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            } 
+          });
+  
+          if(response.status === 200){
+            setData({ ...data, email: response.data.result[0].Email })
+          }
+  
+        } catch (error) {
+          console.log(error);
         }
       }
     }
@@ -39,7 +43,8 @@ function Setpassword() {
 
     const handlesubmit = async (e) =>{
         e.preventDefault();
-        
+        console.log(data)
+
         if (data.password !== data.cpassword) {
           setStatusMessage('Passwords do not match');
           return;
