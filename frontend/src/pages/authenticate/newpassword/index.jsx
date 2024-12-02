@@ -21,7 +21,7 @@ function Setpassword() {
       }
       else{
         try{
-          const response = await axios.get('http://localhost:3001/autherizationotp', {
+          const response = await axios.get('http://localhost:3001/auth/autherizationotp', {
             headers: {
               'Authorization': `Bearer ${token}`
             } 
@@ -51,7 +51,7 @@ function Setpassword() {
         }
 
         try {
-            const response = await axios.post('http://localhost:3001/setnewpassword', {
+            const response = await axios.post('http://localhost:3001/auth/setnewpassword', {
                 email: data.email,
                 password: data.password
             });

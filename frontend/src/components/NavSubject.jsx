@@ -25,7 +25,7 @@ function NavSubject({ courseId }) {
     }
     else{
       try{
-        const response = await axios.get('http://localhost:3001/authorization', {
+        const response = await axios.get('http://localhost:3001/auth/authorization', {
           headers: {
             'Authorization': `Bearer ${token}`
           } 

@@ -22,7 +22,7 @@ function ResetCode() {
       }
       else{
         try{
-          const response = await axios.get('http://localhost:3001/autherizationotp', {
+          const response = await axios.get('http://localhost:3001/auth/autherizationotp', {
             headers: {
               'Authorization': `Bearer ${token}`
             } 
@@ -46,7 +46,7 @@ function ResetCode() {
         e.preventDefault();
         
         try {
-          const response = await axios.post('http://localhost:3001/verifyotp', { email: data.email, otp });
+          const response = await axios.post('http://localhost:3001/auth/verifyotp', { email: data.email, otp });
   
           if (response.status === 200) {
             console.log(response.data.message);

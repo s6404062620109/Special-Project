@@ -13,7 +13,7 @@ function Reset() {
       e.preventDefault(); 
       
       try {
-        const response = await axios.post('http://localhost:3001/requestotp', { email });
+        const response = await axios.post('http://localhost:3001/auth/requestotp', { email });
         if (response.status === 200) {
           localStorage.setItem('resetToken', response.data.token);
           setStatusMessage(response.data.message);
