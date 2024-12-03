@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 import style from './css/register.module.css';
+import backend from '../../../api/backend';
 
 function Register() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function Register() {
     }
 
     try { 
-      const response = await axios.post('http://localhost:3001/auth/register', {
+      const response = await backend.post('/auth/register', {
           email: data.email,
           password: data.password,
           name: data.name,

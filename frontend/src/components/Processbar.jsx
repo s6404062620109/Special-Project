@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios';
 
 import style from './css/processbar.module.css';
+import backend from '../api/backend';
 
 /* Cal Percent */
 
@@ -18,7 +18,7 @@ function Processbar({ courseId, histories }) {
     useEffect(() => {
         const fetchSubject = async () =>{
             try{
-                const response = await axios.get(`http://localhost:3001/getAllSubject/${courseId}`);
+                const response = await backend.get(`/getAllSubject/${courseId}`);
                 let subjectIds = response.data.subject.map(subject => subject.SubjectID);
                 setSubjectList(subjectIds);
             } catch (error) {

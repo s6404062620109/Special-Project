@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios';
 
 import style from './css/labbox.module.css';
+import backend from '../api/backend';
 
 function LabBox({ subjectId }) {
     const [Address, setAddress] = useState({
@@ -25,14 +25,14 @@ function LabBox({ subjectId }) {
         }
         else{
           try{
-            const response = await axios.get('http://localhost:3001/auth/authorization', {
+            const response = await backend.get('/auth/authorization', {
               headers: {
                 'Authorization': `Bearer ${token}`
               } 
             });
     
             if(response.status === 200){
-              setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+              setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
             }
     
           } catch (error) {
@@ -44,7 +44,7 @@ function LabBox({ subjectId }) {
     useEffect(() => {
         const fetchQuestion = async () => {
             try{
-                const response = await axios.get(`http://localhost:3001/getLabquestion/${subjectId}`);
+                const response = await backend.get(`/getLabquestion/${subjectId}`);
 
                 setQuestionList(response.data.questionlist);
 
@@ -61,7 +61,7 @@ function LabBox({ subjectId }) {
         setLoading(true);
         let questionID = questionList.map(item => item.QuestionID)
         try {
-            const response = await axios.post('http://localhost:3001/createLinuxContainer', {questionID});
+            const response = await backend.post('/createLinuxContainer', {questionID});
             setAddress({ ip: response.data.ip, port: response.data.port , containerId: response.data.containerId});
         } catch (err) {
             console.error(err);
@@ -80,7 +80,7 @@ function LabBox({ subjectId }) {
         e.preventDefault();
 
         try{
-            const response = await axios.post('http://localhost:3001/submitLabanswer', 
+            const response = await backend.post('/submitLabanswer', 
                 { answer: answer, email: userData.email 
             });
             setCheckStatus(response.data.message);
@@ -98,7 +98,7 @@ function LabBox({ subjectId }) {
                 clearInterval(checkTabClosed);
 
                 try {
-                    const response = await axios.post(`http://localhost:3001/stopContainer`, 
+                    const response = await backend.post(`/stopContainer`, 
                         { containerId: Address.containerId, IpAddress: `${Address.ip}:${Address.port}` }
                     );
 

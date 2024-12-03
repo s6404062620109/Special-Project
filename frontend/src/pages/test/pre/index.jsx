@@ -1,8 +1,8 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import style from './css/pretest.module.css';
+import backend from '../../../api/backend';
 
 function Pretest() {
   const { courseId, historyId } = useParams();
@@ -23,7 +23,7 @@ function Pretest() {
     }
     else{
       try{
-        const response = await axios.get('http://localhost:3001/auth/authorization', {
+        const response = await backend.get('/auth/authorization', {
           headers: {
             'Authorization': `Bearer ${token}`
           } 
@@ -51,7 +51,7 @@ function Pretest() {
       try {
         decodeAuthToken(token);
 
-        const response = await axios.get(`http://localhost:3001/getPretest/${courseId}/${historyId}/${userData.email}`);
+        const response = await backend.get(`/getPretest/${courseId}/${historyId}/${userData.email}`);
 
         if (response.data.history) {
           navigate(`/course/${courseId}/pretest/${response.data.history}`);
@@ -93,7 +93,7 @@ function Pretest() {
         const questionIdList = formattedQuestions.map((item) => item.QuestionID);
 
         if (questionIdList.length > 0 && historyId === '-') {
-          const registerProgressResponse = await axios.post(`http://localhost:3001/registerTestProgress`, {
+          const registerProgressResponse = await backend.post(`/registerTestProgress`, {
             questionIdList,
             courseId,
             email: userData.email,
@@ -112,7 +112,7 @@ function Pretest() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:3001/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
+      const response = await backend.post('/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
 
       if(response.status === 200 && response.data.message === "Progress updated successfully"){
         navigate(`/course/${courseId}/subject/${response.data.SubjectID}`);

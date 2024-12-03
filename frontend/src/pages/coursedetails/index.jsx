@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios';
 
 import style from './css/coursedetails.module.css'
+import backend from '../../api/backend';
 
 function CourseDetail() {
 
@@ -26,7 +26,7 @@ function CourseDetail() {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get(`http://localhost:3001/getAllSubject/${courseId}`);
+          const response = await backend.get(`/getAllSubject/${courseId}`);
           // console.log(response)
           let responseCourse = response.data.courseInfo[0]
 
@@ -52,7 +52,7 @@ function CourseDetail() {
       }
       else{
         try{
-          const response = await axios.get('http://localhost:3001/auth/authorization', {
+          const response = await backend.get('/auth/authorization', {
             headers: {
               'Authorization': `Bearer ${token}`
             } 

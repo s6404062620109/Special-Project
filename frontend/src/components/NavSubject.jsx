@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+
 import style from "./css/navsubject.module.css";
-import axios from "axios";
+import backend from '../api/backend';
 
 function NavSubject({ courseId }) {
   const [navlist, setNavlist] = useState({
@@ -25,14 +26,14 @@ function NavSubject({ courseId }) {
     }
     else{
       try{
-        const response = await axios.get('http://localhost:3001/auth/authorization', {
+        const response = await backend.get('/auth/authorization', {
           headers: {
             'Authorization': `Bearer ${token}`
           } 
         });
 
         if(response.status === 200){
-          setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
         }
 
       } catch (error) {
@@ -48,7 +49,7 @@ function NavSubject({ courseId }) {
   useEffect(() => {
     const fetchSubject = async () => {
       try {
-        const response = await axios.get( `http://localhost:3001/getAllSubject/${courseId}` );
+        const response = await backend.get( `/getAllSubject/${courseId}` );
 
         const subjectIds = response.data.subject.map( (subject) => subject.SubjectID );
 
@@ -67,7 +68,7 @@ function NavSubject({ courseId }) {
 
     const fetchHistory = async () => {
       try{
-        const response = await axios.get( `http://localhost:3001/updateHistory/${userData.email}/${courseId}` );
+        const response = await backend.get(`/updateHistory/${userData.email}/${courseId}`);
         setUserHistories(response.data.result);
 
       } catch( error ) {

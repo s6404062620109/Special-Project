@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
 import NavSubject from '../../components/NavSubject';
+import backend from '../../api/backend';
 
 
 function Subject() {
@@ -21,7 +21,7 @@ function Subject() {
     useEffect(() => {
         const fetchData = async () =>{
             try{
-                const response = await axios.get(`http://localhost:3001/getSubject/${courseId}/${subjectId}`);
+                const response = await backend.get(`/getSubject/${courseId}/${subjectId}`);
 
                 let dataResponse = response.data[0];
                 
@@ -38,7 +38,7 @@ function Subject() {
             }
 
             try {
-                const labresponse = await axios.get(`http://localhost:3001/getLabquestion/${subjectId}`);
+                const labresponse = await backend.get(`/getLabquestion/${subjectId}`);
               } catch (err) {
                 if (err.response && err.response.status === 500) {
                   setUseLab(false);

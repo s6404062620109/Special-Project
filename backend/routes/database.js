@@ -6,7 +6,7 @@ const db = mysql2.createConnection({
     port: 3306,
     password: "root",
     database: "SAT",
-  });
+});
   
 db.connect((err) => {
     if (err) {

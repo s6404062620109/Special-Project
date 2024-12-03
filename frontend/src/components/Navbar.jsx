@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import style from './css/navbar.module.css';
-import axios from 'axios';
+import backend from '../api/backend';
 
 
 function Navbar() {
@@ -22,7 +22,7 @@ function Navbar() {
     }
     else{
       try{
-        const response = await axios.get('http://localhost:3001/auth/authorization', {
+        const response = await backend.get('/auth/authorization', {
           headers: {
             'Authorization': `Bearer ${token}`
           } 

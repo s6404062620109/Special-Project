@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 import style from './css/resetotp.module.css';
+import backend from '../../../api/backend';
 
 function ResetCode() {
     const [data, setData] = useState({
@@ -22,7 +22,7 @@ function ResetCode() {
       }
       else{
         try{
-          const response = await axios.get('http://localhost:3001/auth/autherizationotp', {
+          const response = await backend.get('/auth/autherizationotp', {
             headers: {
               'Authorization': `Bearer ${token}`
             } 
@@ -46,7 +46,7 @@ function ResetCode() {
         e.preventDefault();
         
         try {
-          const response = await axios.post('http://localhost:3001/auth/verifyotp', { email: data.email, otp });
+          const response = await backend.post('/auth/verifyotp', { email: data.email, otp });
   
           if (response.status === 200) {
             console.log(response.data.message);

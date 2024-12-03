@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 import style from './css/login.module.css';
+import backend from '../../../api/backend';
 
 function Login() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ function Login() {
     e.preventDefault();
     
     try { 
-      const response = await axios.post('http://localhost:3001/auth/login', {
+      const response = await backend.post('/auth/login', {
           email: dataInput.email,
           password: dataInput.password,
       });

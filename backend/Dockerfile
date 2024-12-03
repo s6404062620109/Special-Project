@@ -13,7 +13,7 @@ RUN npm install --production  # Use --production to avoid devDependencies if not
 
 COPY index.js ./
 COPY wait-for-it.sh ./
-COPY router/ ./router/
+COPY routes/ ./routes/
 
 # Make the wait-for-it.sh script executable
 RUN chmod +x wait-for-it.sh

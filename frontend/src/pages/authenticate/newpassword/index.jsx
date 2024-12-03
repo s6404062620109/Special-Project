@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 import style from './css/newpassword.module.css';
+import backend from '../../../api/backend';
 
 function Setpassword() {
     const navigate = useNavigate();
@@ -21,7 +21,7 @@ function Setpassword() {
       }
       else{
         try{
-          const response = await axios.get('http://localhost:3001/auth/autherizationotp', {
+          const response = await backend.get('/auth/autherizationotp', {
             headers: {
               'Authorization': `Bearer ${token}`
             } 
@@ -51,7 +51,7 @@ function Setpassword() {
         }
 
         try {
-            const response = await axios.post('http://localhost:3001/auth/setnewpassword', {
+            const response = await backend.post('/auth/setnewpassword', {
                 email: data.email,
                 password: data.password
             });

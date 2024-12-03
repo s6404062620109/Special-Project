@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const db = require("./router/database");
-const authenticator = require("./router/authenticator");
+const db = require("./routes/database");
+const authenticator = require("./routes/authenticator");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
@@ -324,7 +324,6 @@ app.post("/submitPretest", (req, res) => {
 
               let updateCount = 0;
               const totalToUpdate = validAnswers.length;
-              console.log(userQuestionIds);
               
               validAnswers.forEach((answer) => {
                 db.query( `UPDATE progress SET Score = 1 WHERE QuestionID = ? AND HistoryID = ?`,

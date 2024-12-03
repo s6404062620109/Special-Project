@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios';
 
 import style from './css/courses.module.css'
 import CourseCard from '../../components/CourseCard';
 import { useNavigate } from 'react-router-dom';
+import backend from '../../api/backend';
 
 function Courses() {
   const [userData, setUserdata] = useState({
@@ -23,7 +23,7 @@ function Courses() {
     }
     else{
       try{
-        const response = await axios.get('http://localhost:3001/auth/authorization', {
+        const response = await backend.get('/auth/authorization', {
           headers: {
             'Authorization': `Bearer ${token}`
           } 
@@ -47,11 +47,11 @@ function Courses() {
     
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/getCourses');
+        const response = await backend.get('/getCourses');
         setData(response.data);
 
         if (token) {
-          const courseProgressResponse = await axios.get(`http://localhost:3001/checkCoursesProgress/${userData.email}`);
+          const courseProgressResponse = await backend.get(`/checkCoursesProgress/${userData.email}`);
           setUpdateState(courseProgressResponse.data.results);
         }
       } catch (err) {

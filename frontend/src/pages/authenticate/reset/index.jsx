@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 import style from './css/reset.module.css';
+import backend from '../../../api/backend';
 
 function Reset() {
     const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ function Reset() {
       e.preventDefault(); 
       
       try {
-        const response = await axios.post('http://localhost:3001/auth/requestotp', { email });
+        const response = await backend.post('/auth/requestotp', { email });
         if (response.status === 200) {
           localStorage.setItem('resetToken', response.data.token);
           setStatusMessage(response.data.message);

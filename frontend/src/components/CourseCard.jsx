@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import style from './css/coursecard.module.css'
 import Processbar from './Processbar';
-import axios from 'axios';
+import backend from '../api/backend';
 
 function CourseCard({ id, name, detail, icon_id, update }) {
 
@@ -16,27 +16,6 @@ function CourseCard({ id, name, detail, icon_id, update }) {
   const [latestProgress, setLastestProgress]= useState('');
   const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
-  // const lastSubject = Array.isArray(update) && update.length > 0 
-  //   ? (() => {
-  //       const filterPretests = update.filter(subject => !subject.Type.toLowerCase().includes('lab'));
-  //       const filteredlabs = update.filter(subject => subject.Type.toLowerCase().includes('lab'));
-
-  //       if (filteredlabs.length === 0) {
-  //         return update.find(subject => subject.Type === 'Pre') || update[0];
-  //       }
-
-  //       else{
-
-  //         const uniquePretests = filterPretests.filter(pretest =>
-  //           !filteredlabs.some(lab => lab["Subject-ID"] === pretest["Subject-ID"])
-  //         );
-
-  //         return uniquePretests.reduce((prev, current) => 
-  //           (prev["Subject-ID"] > current["Subject-ID"] ? prev : current), uniquePretests[0]
-  //         );
-  //       }
-  //     })()
-  //   : null;
 
   const decodeAuthToken = async (token) => {
     if(!token){
@@ -45,7 +24,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     }
     else{
       try{
-        const response = await axios.get('http://localhost:3001/auth/authorization', {
+        const response = await backend.get('/auth/authorization', {
           headers: {
             'Authorization': `Bearer ${token}`
           } 
@@ -79,7 +58,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
         try{
-          const response = await axios.get(`http://localhost:3001/getLatestProgress/${update}`);
+          const response = await backend.get(`/getLatestProgress/${update}`);
 
           if(response.status === 200){
             navigate(`/course/${id}/${response.data.inProgress}`);
@@ -95,7 +74,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     else if ( status === 'Start') {
       const registerHistory = async () =>{
         try{
-          const response = await axios.post(`http://localhost:3001/registerHistory`, {courseId: id, email: userData.email});
+          const response = await backend.post(`/registerHistory`, {courseId: id, email: data.email});
           
           if(response.status === 200){
             navigate(`/course/${id}/pretest/-`);
