@@ -21,7 +21,7 @@ function Subject() {
     useEffect(() => {
         const fetchData = async () =>{
             try{
-                const response = await backend.get(`/getSubject/${courseId}/${subjectId}`);
+                const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`);
 
                 let dataResponse = response.data[0];
                 
@@ -38,7 +38,7 @@ function Subject() {
             }
 
             try {
-                const labresponse = await backend.get(`/getLabquestion/${subjectId}`);
+                const labresponse = await backend.get(`/lab/getLabquestion/${subjectId}`);
               } catch (err) {
                 if (err.response && err.response.status === 500) {
                   setUseLab(false);

@@ -58,7 +58,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
         try{
-          const response = await backend.get(`/getLatestProgress/${update}`);
+          const response = await backend.get(`/progress/getLatestProgress/${update}`);
 
           if(response.status === 200){
             navigate(`/course/${id}/${response.data.inProgress}`);
@@ -74,7 +74,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     else if ( status === 'Start') {
       const registerHistory = async () =>{
         try{
-          const response = await backend.post(`/registerHistory`, {courseId: id, email: data.email});
+          const response = await backend.post(`/history/registerHistory`, {courseId: id, email: data.email});
           
           if(response.status === 200){
             navigate(`/course/${id}/pretest/-`);

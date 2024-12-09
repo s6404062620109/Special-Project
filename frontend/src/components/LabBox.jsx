@@ -44,7 +44,7 @@ function LabBox({ subjectId }) {
     useEffect(() => {
         const fetchQuestion = async () => {
             try{
-                const response = await backend.get(`/getLabquestion/${subjectId}`);
+                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
 
                 setQuestionList(response.data.questionlist);
 
@@ -61,7 +61,7 @@ function LabBox({ subjectId }) {
         setLoading(true);
         let questionID = questionList.map(item => item.QuestionID)
         try {
-            const response = await backend.post('/createLinuxContainer', {questionID});
+            const response = await backend.post('/lab/createLinuxContainer', {questionID});
             setAddress({ ip: response.data.ip, port: response.data.port , containerId: response.data.containerId});
         } catch (err) {
             console.error(err);
@@ -80,7 +80,7 @@ function LabBox({ subjectId }) {
         e.preventDefault();
 
         try{
-            const response = await backend.post('/submitLabanswer', 
+            const response = await backend.post('/lab/submitLabanswer', 
                 { answer: answer, email: userData.email 
             });
             setCheckStatus(response.data.message);
@@ -98,7 +98,7 @@ function LabBox({ subjectId }) {
                 clearInterval(checkTabClosed);
 
                 try {
-                    const response = await backend.post(`/stopContainer`, 
+                    const response = await backend.post(`/lab/stopContainer`, 
                         { containerId: Address.containerId, IpAddress: `${Address.ip}:${Address.port}` }
                     );
 

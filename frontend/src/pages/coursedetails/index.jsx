@@ -26,7 +26,7 @@ function CourseDetail() {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await backend.get(`/getAllSubject/${courseId}`);
+          const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
           // console.log(response)
           let responseCourse = response.data.courseInfo[0]
 

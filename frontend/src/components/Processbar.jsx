@@ -18,7 +18,7 @@ function Processbar({ courseId, histories }) {
     useEffect(() => {
         const fetchSubject = async () =>{
             try{
-                const response = await backend.get(`/getAllSubject/${courseId}`);
+                const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
                 let subjectIds = response.data.subject.map(subject => subject.SubjectID);
                 setSubjectList(subjectIds);
             } catch (error) {

@@ -51,7 +51,7 @@ function Pretest() {
       try {
         decodeAuthToken(token);
 
-        const response = await backend.get(`/getPretest/${courseId}/${historyId}/${userData.email}`);
+        const response = await backend.get(`/pretest/getPretest/${courseId}/${historyId}/${userData.email}`);
 
         if (response.data.history) {
           navigate(`/course/${courseId}/pretest/${response.data.history}`);
@@ -93,7 +93,7 @@ function Pretest() {
         const questionIdList = formattedQuestions.map((item) => item.QuestionID);
 
         if (questionIdList.length > 0 && historyId === '-') {
-          const registerProgressResponse = await backend.post(`/registerTestProgress`, {
+          const registerProgressResponse = await backend.post(`/progress/registerTestProgress`, {
             questionIdList,
             courseId,
             email: userData.email,
@@ -112,7 +112,7 @@ function Pretest() {
     e.preventDefault();
 
     try {
-      const response = await backend.post('/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
+      const response = await backend.post('/pretest/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
 
       if(response.status === 200 && response.data.message === "Progress updated successfully"){
         navigate(`/course/${courseId}/subject/${response.data.SubjectID}`);

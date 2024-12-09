@@ -49,7 +49,7 @@ function NavSubject({ courseId }) {
   useEffect(() => {
     const fetchSubject = async () => {
       try {
-        const response = await backend.get( `/getAllSubject/${courseId}` );
+        const response = await backend.get( `/subjects/getAllSubject/${courseId}` );
 
         const subjectIds = response.data.subject.map( (subject) => subject.SubjectID );
 
@@ -65,35 +65,8 @@ function NavSubject({ courseId }) {
       }
     };
     fetchSubject();
-
-    const fetchHistory = async () => {
-      try{
-        const response = await backend.get(`/updateHistory/${userData.email}/${courseId}`);
-        setUserHistories(response.data.result);
-
-      } catch( error ) {
-        console.log(error);
-      }
-    } 
-    fetchHistory();
-
-    let courseHistory = userHistories.filter( (history) => history['Course-ID'] === courseId );
-    setUserHistories(courseHistory);
     
   }, [userData,courseId]);
-  
-  useEffect(() => {
-    const disableSubject = userHistories.filter((history) => history.Type.includes("lab"));
-    setNavlist((prev) => ({
-      ...prev, 
-      subjectDone: disableSubject.map((subject) => subject["Subject-ID"])
-    }));
-  }, [userHistories]);
-
-  const preTestHistory = userHistories.find(
-    (history) => history.Type === "Pre"
-  );
-  const preTestScore = preTestHistory ? preTestHistory.Score : null;
 
   const subjectStates = navlist.subjectIds.map((subjectId, index) => ({
     subjectId,
@@ -126,26 +99,19 @@ function NavSubject({ courseId }) {
         </div>
 
         <div className={style["testlist-wrap"]}>
-            {preTestHistory ? (
-              <li className={style["disable-Pretest"]}>
-                <label>Pretest</label>
-                <label>{preTestScore}</label>
-              </li>
-            ) : (
-              <li 
-                className={style.testlist}
-                onClick={() => (window.location.href = navlist.Pretest)}
-              >
-                Pre-Test
-              </li>
-            )} 
+          <li 
+            className={style.testlist}
+            onClick={() => (window.location.href = navlist.Pretest)}
+          >
+            Pre-Test
+          </li>
               
-            <li 
-              className={style.testlist}
-              onClick={() => (window.location.href = navlist.Posttest)}
-            >
+          <li 
+            className={style.testlist}
+            onClick={() => (window.location.href = navlist.Posttest)}
+          >
             Post-Test
-            </li>
+          </li>
         </div>
       </ul>
     </div>

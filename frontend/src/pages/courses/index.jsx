@@ -47,11 +47,11 @@ function Courses() {
     
     const fetchData = async () => {
       try {
-        const response = await backend.get('/getCourses');
+        const response = await backend.get('/courses/getCourses');
         setData(response.data);
 
         if (token) {
-          const courseProgressResponse = await backend.get(`/checkCoursesProgress/${userData.email}`);
+          const courseProgressResponse = await backend.get(`/progress/checkCoursesProgress/${userData.email}`);
           setUpdateState(courseProgressResponse.data.results);
         }
       } catch (err) {
