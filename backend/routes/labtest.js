@@ -6,7 +6,7 @@ const { exec } = require("child_process");
 const router = express.Router();
 
 router.post("/createLinuxContainer", (req, res) => {
-    const [ Email, questionID ] = req.body;
+    const { Email, questionID } = req.body;
     const containerName = `linux_container_${Date.now()}`;
     const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} --storage-opt size=256m dorowu/ubuntu-desktop-lxde-vnc`;
   
