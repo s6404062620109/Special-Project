@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Nov 29, 2024 at 04:06 PM
+-- Generation Time: Dec 13, 2024 at 09:34 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -126,7 +126,9 @@ INSERT INTO `answer` (`AnswerID`, `result`, `Type`, `QuestionID`) VALUES
 (151, '\"คอมพิวเตอร์ของคุณติดไวรัส! คลิกที่นี่เพื่อแก้ไข\"', 'a', 40),
 (152, '\"บัญชีของคุณถูกล็อก กรุณาอัปเดตข้อมูล\"', 'c', 40),
 (153, '\"คุณได้รับรางวัล! กรุณาคลิกที่นี่\"', 'c', 40),
-(154, '\"รีบดาวน์โหลดแอปพลิเคชันใหม่เพื่อป้องกันข้อมูลของคุณ\"', 'c', 40);
+(154, '\"รีบดาวน์โหลดแอปพลิเคชันใหม่เพื่อป้องกันข้อมูลของคุณ\"', 'c', 40),
+(155, 'zaza57319', 'a', 41),
+(156, 'h131asdf5s', 'a', 42);
 
 -- --------------------------------------------------------
 
@@ -167,7 +169,7 @@ CREATE TABLE `history` (
 --
 
 INSERT INTO `history` (`HistoryID`, `Status`, `Successful`, `CourseID`, `Email`) VALUES
-(129, 'Failed', 7, 5, 'AAA');
+(134, 'Failed', 7, 5, 'AAA');
 
 -- --------------------------------------------------------
 
@@ -189,16 +191,16 @@ CREATE TABLE `progress` (
 --
 
 INSERT INTO `progress` (`ProgressID`, `Score`, `Status`, `QuestionID`, `SubjectID`, `HistoryID`) VALUES
-(844, 1, 'Done', 23, 9, 129),
-(845, 1, 'Done', 28, 10, 129),
-(846, 0, 'Done', 31, 11, 129),
-(847, 1, 'Done', 34, 12, 129),
-(848, 1, 'Done', 36, 13, 129),
-(849, 1, 'Done', 38, 14, 129),
-(850, 1, 'Done', 40, 15, 129),
-(851, 0, 'Failed', 41, 9, 129),
-(852, 0, 'Failed', 42, 9, 129),
-(853, 0, 'Failed', 43, 10, 129);
+(894, 1, 'Done', 23, 9, 134),
+(895, 1, 'Done', 28, 10, 134),
+(896, 0, 'Done', 31, 11, 134),
+(897, 0, 'Done', 34, 12, 134),
+(898, 1, 'Done', 36, 13, 134),
+(899, 1, 'Done', 38, 14, 134),
+(900, 1, 'Done', 40, 15, 134),
+(901, 0, 'Failed', 41, 9, 134),
+(902, 0, 'Failed', 42, 9, 134),
+(903, 0, 'Failed', 43, 10, 134);
 
 -- --------------------------------------------------------
 
@@ -295,7 +297,7 @@ INSERT INTO `user` (`Email`, `Password`, `Name`, `Role`, `OTP`, `OTP_EXP`) VALUE
 ('ABC', '$2b$10$HIwLXl6PTS7A0qspbP8agOsSMCI5fpi67RLHz0.IWArmSuHOWHeoe', 'akakak', 'Student', '-', NULL),
 ('Test', '$2b$10$zq.K1KnpA4ugzBMufliFyu/soLUEKgtGv.RLP2Idq7EAVGtEhh5ly', 'asdv', 'Student', '-', NULL),
 ('admin', '$2b$10$4//6S5EIBVirOXvGeS/qHuGnE6jGt6kFZK3tT97vDCeRu44jv0y.a', 'Admin Inwza', 'Admin', '-', NULL),
-('arcarnupab@gmail.com', '$2b$10$2k5dhsEK8ZVeTXl4sz6kZeeTmFjO3F7dWC3Cj.IYWKppwlWWh0MmG', 'Arc', 'Student', '759528', '2024-09-29 18:23:05'),
+('arcarnupab@gmail.com', '$2b$10$zU7RvUS.Mg7kj6lQkDq2p.bl.pGCjUsViJ6ObWUW5PZvLTraYTQwu', 'Arc', 'Student', '802794', '2024-12-02 10:25:09'),
 ('pikul874@gmail.com', '$2b$10$b.18HfiWgNeN4riRhRWcQeG0r04j7f2zfku/QWQlAE58BaJujnGYi', 'Pao', 'Student', '510467', '2024-11-17 16:46:18');
 
 -- --------------------------------------------------------
@@ -381,7 +383,7 @@ ALTER TABLE `virtual_machine`
 -- AUTO_INCREMENT for table `answer`
 --
 ALTER TABLE `answer`
-  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
+  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
 
 --
 -- AUTO_INCREMENT for table `courses`
@@ -393,13 +395,13 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
+  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=139;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=854;
+  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=904;
 
 --
 -- AUTO_INCREMENT for table `question`
@@ -417,7 +419,7 @@ ALTER TABLE `subject`
 -- AUTO_INCREMENT for table `virtual_machine`
 --
 ALTER TABLE `virtual_machine`
-  MODIFY `Virtual_MachineID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `Virtual_MachineID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables
