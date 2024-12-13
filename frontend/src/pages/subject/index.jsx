@@ -16,6 +16,7 @@ function Subject() {
         Image_id: '',
         CourseID: ''
     });
+    const [ questionList, setQuestionList ] = useState([]);
     const [ useLab, setUseLab ] = useState(true);
 
     useEffect(() => {
@@ -49,6 +50,24 @@ function Subject() {
         fetchData();
     }, [courseId, subjectId]);
 
+    useEffect(() => {
+        const fetchQuestion = async () => {
+            try{
+                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
+
+                if(response.status === 200){
+                    setQuestionList(response.data.questionResult)
+                }
+
+            } catch(error){
+                console.log(error);
+            }
+        }
+
+        fetchQuestion();
+    }, [subjectId]);
+
+    console.log(questionList)
     const formatContent = (content) => {
         return content.split("\n").map((str, index) => (
             <React.Fragment key={index}>
@@ -78,11 +97,13 @@ function Subject() {
                 </div>
 
                 <div className={style.questionBox}>
-                    { useLab &&(
+                    { useLab && questionList.map((item, ind) => (
                         <LabBox
-                            subjectId={subjectId}
+                            no={ind+1}
+                            id={item.QuestionID}
+                            question={item.Question}
                         />
-                    )}
+                    ))}
                 </div>
             </div>
             

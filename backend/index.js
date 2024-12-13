@@ -1,14 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const path = require("path");
 const multer = require("multer");
 
 const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [ "http://localhost:5173" ],
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     credentials: true,
     allowedHeaders: [ "Content-Type", "Authorization" ],

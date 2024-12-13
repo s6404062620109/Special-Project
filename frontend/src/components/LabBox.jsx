@@ -3,18 +3,17 @@ import React, { useEffect, useState } from 'react'
 import style from './css/labbox.module.css';
 import backend from '../api/backend';
 
-function LabBox({ subjectId }) {
+function LabBox({ no, id, question }) {
     const [Address, setAddress] = useState({
-        ip:'', port:'', containerId: ''
+        ip:'', port:'', containerId: '', url:''
     });
     const [loading, setLoading] = useState(false);
-    const [ questionList, setQuestionList ] = useState([]);
     const [ answer, setAnswer ] = useState([]);
     const [ checkStatus, setCheckStatus ] = useState('');
     const [userData, setUserdata] = useState({
         email:'',
         name:'',
-        role:'',
+        role:''
     });
     const token = localStorage.getItem('authToken');
 
@@ -42,27 +41,19 @@ function LabBox({ subjectId }) {
     }
 
     useEffect(() => {
-        const fetchQuestion = async () => {
-            try{
-                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
-
-                setQuestionList(response.data.questionlist);
-
-            } catch(error){
-                console.log(error);
-            }
-        }
-
-        fetchQuestion();
         decodeAuthToken(token);
-    }, [subjectId, token]);
+
+    }, [token]);
 
     const handleCreateContainer = async () => {
         setLoading(true);
-        let questionID = questionList.map(item => item.QuestionID)
+
         try {
-            const response = await backend.post('/lab/createLinuxContainer', {questionID});
-            setAddress({ ip: response.data.ip, port: response.data.port , containerId: response.data.containerId});
+            const response = await backend.post('/lab/createLinuxContainer', { Email:userData.email , questionID: id });
+            if(response.status === 200){    
+                setAddress({ ip: response.data.ip, port: response.data.port , containerId: response.data.containerId, url: response.data.url});
+            }
+            
         } catch (err) {
             console.error(err);
         }
@@ -90,58 +81,70 @@ function LabBox({ subjectId }) {
         }
     }
 
-    const handleStartContainer = () => {
+    const handleStartContainer = async () => {
         const newTab = window.open(`http://localhost:${Address.port}`, '_blank');
-
+    
         const checkTabClosed = setInterval(async () => {
             if (newTab.closed) {
                 clearInterval(checkTabClosed);
-
+    
                 try {
-                    const response = await backend.post(`/lab/stopContainer`, 
-                        { containerId: Address.containerId, IpAddress: `${Address.ip}:${Address.port}` }
-                    );
-
-                    if(response.status === 200) {
+                    const response = await backend.post('/lab/stopContainer', { 
+                        containerId: Address.containerId, 
+                        IpAddress: `${Address.ip}:${Address.port}` 
+                    });
+    
+                    if (response.status === 200) {
                         setAddress({ ip: 'Stop lab test', port: '', containerId: '' });
                     }
-                    
+    
                 } catch (error) {
                     console.error(`Failed to stop container ${Address.containerId}:`, error);
                 }
             }
         }, 2000);
-    };
 
+        try {
+            const response = await backend.post('/lab/startContainer', {
+                containerId: Address.containerId,
+                port: Address.port,
+            });
+            
+            if (response.status === 200) {
+                console.log('Firefox started successfully');
+            }
+        } catch (error) {
+            console.error('Error starting Firefox:', error);
+        }
+    };
+    
   return (
     <div className={style.container}>
-        <h2>Question</h2>
+        <h2>Lab Question</h2>
         <div className={style.content}>
             <div className={style.questionBox}>
-                {questionList.map((item, index) => (
-                    <div 
-                        className={style.question}
-                        key={index}
-                    >
-                        <h3>{index+1}. {item.Question}</h3>
-                        <form onSubmit={(e) => handleSubmit(e)}>
-                            <input
-                                type='text'
-                                onChange={(e) => handleAnswerChange(item.QuestionID, e.target.value)}
-                                required
-                            />
+                
+                <div 
+                    className={style.question}
+                >
+                    <h3>{no}. {question}</h3>
+                    <form onSubmit={(e) => handleSubmit(e)}>
+                        <input
+                            type='text'
+                            onChange={(e) => handleAnswerChange(id, e.target.value)}
+                            required
+                        />
 
-                            {!checkStatus ? (
-                                <input
-                                    type='submit'
-                                    value='Submit'
-                                />
-                            ) : (
-                                <p>{checkStatus}</p>
-                            )}
-                        </form>
-                    </div>
-                ))}
+                        {!checkStatus ? (
+                            <input
+                                type='submit'
+                                value='Submit'
+                            />
+                        ) : (
+                            <p>{checkStatus}</p>
+                        )}
+                    </form>
+                </div>
             </div>
 
             <div className={style.labBox}>
@@ -151,7 +154,7 @@ function LabBox({ subjectId }) {
                     </button>
 
                     <div className={style.address}>
-                        {Address && <p to={`http://localhost:${Address.port}`}>{Address.ip}</p>}
+                        {Address && <p to={`${Address.url}`}>{Address.ip}</p>}
                     </div>
 
                     <button onClick={handleStartContainer} disabled={!Address.port}>
