@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import style from './css/home.module.css';
 import backend from '../../api/backend';
-
+import Login from '../authenticate/login';
 
 function Home() {
   const [userData, setUserdata] = useState({
@@ -41,9 +41,19 @@ function Home() {
 
   return (
     <div className={style.container}>
-      <p>
-        Security Awareness Training
-      </p>
+      <div className={style["container-wrap"]}>
+        <div className={style.content}>
+          <p className={style.title}> 
+            Security <br /> Awareness Training 
+          </p>
+          <p className={style["sub-title"]}>
+            การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง <br/>
+            ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+          </p>
+        </div>
+
+        <Login/>
+      </div>
     </div>
   )
 }

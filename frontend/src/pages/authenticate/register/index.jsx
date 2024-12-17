@@ -31,7 +31,7 @@ function Register() {
 
       if (response.status === 201) {
         setStatusMessage(response.data.message);
-        setTimeout(() => navigate('/login'), 2000);
+        setTimeout(() => navigate('/'), 2000);
       } else {
         setStatusMessage(response.data.message);
       }
@@ -47,7 +47,7 @@ function Register() {
       <div className={style.heading}>
         <img alt='Back_Burron' 
             src='./Expand_left.svg'
-            onClick={() => navigate('/login')}/>
+            onClick={() => navigate('/')}/>
         <p>Sign Up</p>
       </div>
 

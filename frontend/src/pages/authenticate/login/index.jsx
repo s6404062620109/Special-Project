@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import style from './css/login.module.css';
 import backend from '../../../api/backend';
 
 function Login() {
-  const navigate = useNavigate();
   const [dataInput, setDatainput] = useState({
     email: '',
     password: ''
@@ -24,7 +23,7 @@ function Login() {
       if (response.status === 201) {
         setStatusMessage(response.data.message);
         localStorage.setItem('authToken', response.data.token);
-        setTimeout(() => navigate('/'), 2000);
+        setTimeout(() => window.location.reload(), 2000);
       } 
       else if(response.status === 401) {
         setStatusMessage(response.data.message);
@@ -38,27 +37,26 @@ function Login() {
   return (
     <div className={style.container}>
       <div className={style.heading}>
-        <img alt='Back_Burron' 
-            src='./Expand_left.svg'
-            onClick={() => navigate('/')}/>
-        <p>Log in</p>
+        <p>LOG IN</p>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className={style.inputContent}>
           <div>
-            <label>E-mail</label>
+            <label>EMAIL</label>
             <input
               type='text'
+              placeholder='EMAIL'
               value={dataInput.email}
               onChange={(e) => setDatainput({...dataInput, email: e.target.value})}
             />
           </div>
 
           <div>
-            <label>Password</label>
+            <label>PASSWORD</label>
             <input
               type='password'
+              placeholder='PASSWORD'
               value={dataInput.password}
               onChange={(e) => setDatainput({...dataInput, password: e.target.value})}
             />

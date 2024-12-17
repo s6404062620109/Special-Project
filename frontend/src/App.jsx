@@ -18,7 +18,7 @@ import Pretest from './pages/test/pre';
 function App() {
   const location = useLocation();
 
-  const noNavbarRoutes = ['/login', '/changepassword', '/register', '/reset', '/resetcode', '/newpassword'];
+  const noNavbarRoutes = [];
   const showNavbar = !noNavbarRoutes.includes(location.pathname);
 
   return (
@@ -28,7 +28,6 @@ function App() {
       <div className='content'>
         <Routes>
           <Route path='/' element={<Home/>}/>
-          <Route path='/login' element={<Login/>}/>
           <Route path='/register' element={<Register/>}/>
           <Route path='/reset' element={<Reset/>}/>
           <Route path='/resetcode' element={<ResetCode/>}/>

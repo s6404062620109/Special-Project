@@ -87,8 +87,9 @@ router.post("/createLinuxContainer", (req, res) => {
                   return res.status(500).json({ message: "Failed to read index.html" });
                 }
 
-                const modifiedHtml = data.replace("<!-- INSERT ANSWER HERE -->", encodeURIComponent(answerResult));
+                const modifiedHtml = data.replace("<!-- INSERT ANSWER HERE -->", encodeURIComponent(answerResult)).replace("<head>", '<head><meta charset="UTF-8">');
                 const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
+
                 fs.writeFileSync(tempHtmlFilePath, modifiedHtml, { encoding: "utf8" });
 
                 exec(`docker cp ${tempHtmlFilePath} ${containerId}:/root/result.html`, (err) => {

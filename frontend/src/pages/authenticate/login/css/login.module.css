@@ -1,15 +1,16 @@
 .container{
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    background: white;
-    padding: 20px;
     border-radius: 15px;
-    width: 300px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 410px;
+}
+
+.container p,
+.container label,
+.container a{
+    color: white;
 }
 
 .heading{
@@ -25,8 +26,7 @@
 }
 .heading > p{
     font-size: 24px;
-    font-weight: bold;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Kdam Thmor', sans-serif;
 }
 
 form{
@@ -43,10 +43,12 @@ form{
     display: flex;
     flex-direction: column;
     width: 100%;
+    height: 60px;
     margin-bottom: 5%;
 }
 .inputContent div > input{
     height: 100%;
+    border-radius: 6px;
 }
 .status > input[type="submit"]:hover{
     cursor: pointer;
@@ -70,26 +72,51 @@ form{
     width: 100%;
     padding: 10px;
     border: none;
-    background: #3D6CB4;
+    border-radius: 6px;
+    background:  linear-gradient(to right, #21D4FD , #2152FF);;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     color: white;
 }
 .status > p{
     font-size: 16px;
     font-weight: 300;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Kdam Thmor', sans-serif;
 }
 .functions{
     display: flex;
     align-items: center;
 }
+
 .functions > a{
+    opacity: 0.5;
     font-size: 12px;
-    font-weight: bold;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Kdam Thmor', sans-serif;
+    text-decoration: none; 
+    position: relative;
 }
+.functions > a:hover {
+    opacity: 1;
+}
+
+/* functions Link hover animation */
+.functions > a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px; 
+    width: 0; 
+    height: 2px; 
+    background-color: white; 
+    transition: width 0.3s ease-in-out; /* Smooth animation for width */
+}
+.functions > a:hover::after {
+    width: 100%; 
+}
+/* functions Link hover animation */
+
 .functions > div{
     width: 2px;
     height: 20px;
-    background: black;
+    background: white;
     margin: 0px 10px;
 }

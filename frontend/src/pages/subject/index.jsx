@@ -67,7 +67,6 @@ function Subject() {
         fetchQuestion();
     }, [subjectId]);
 
-    console.log(questionList)
     const formatContent = (content) => {
         return content.split("\n").map((str, index) => (
             <React.Fragment key={index}>

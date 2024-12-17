@@ -63,47 +63,44 @@ function Navbar() {
           <Link>NEWS</Link>
         </div>
 
-        <div className={style.userAuth}>
-          {token ? (
+        {token && (
+          <div className={style.userAuth}>  
             <div className={style.userInfo}>
               <div>
                 <p>Name:</p>
                 <label>{data.name}</label>
               </div>
+
+              <img 
+                alt='Profile Image' 
+                src='/Navbar_Assets/Profile.png'
+                onClick={() => setMenuVisible(!menuVisible)}
+              />
             </div>
-          ) : (
-            <Link to='/login'>Log in</Link>
-          )}
-          <img 
-            alt='Profile Image' 
-            src='/Navbar_Assets/Profile.png'
-            onClick={() => setMenuVisible(!menuVisible)}
-          />
-          {token && (
-            <>
-              {menuVisible && (
-                <div className={style.functions}>
-                  <ul>
-                    <li>
-                      Setting
-                      <img
-                        alt='Setting Button'
-                        src='/Navbar_Assets/Setting.svg'
-                      />
-                    </li>
-                    <li onClick={handleLogout}>
-                      Log Out
-                      <img
-                        alt='LogOut Button'
-                        src='/Navbar_Assets/Sign_out.svg'
-                      />
-                    </li>
-                  </ul>
-                </div>
-              )} 
-            </>
-          )}
-        </div>
+
+            {menuVisible && ( 
+              <div className={style.functions}>
+                <ul>
+                  <li>
+                    Setting
+                    <img
+                      alt='Setting Button'
+                      src='/Navbar_Assets/Setting.svg'
+                    />
+                  </li>
+                    
+                  <li onClick={handleLogout}>
+                    Log Out
+                    <img
+                      alt='LogOut Button'
+                      src='/Navbar_Assets/Sign_out.svg'
+                    />
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </nav>
     </div>
   )

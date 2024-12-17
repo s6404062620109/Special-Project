@@ -6,7 +6,6 @@
 nav{
     display: flex;
     justify-content: space-between;
-    border-bottom: 4px solid transparent;
     padding: 16px 0px;
     width: 80%;
     margin: auto;
@@ -64,7 +63,6 @@ a{
 
 .userInfo{
     display: flex;
-    flex-direction: column;
 }
 .userInfo > div{
     display: flex;

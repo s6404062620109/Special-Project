@@ -29,7 +29,7 @@ function Reset() {
         <div className={style.heading}>
           <img alt='Back_Burron' 
               src='./Expand_left.svg'
-              onClick={() => navigate('/login')}/>
+              onClick={() => navigate('/')}/>
           <p>Recovery Password</p>
         </div>
   

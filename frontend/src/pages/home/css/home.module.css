@@ -4,8 +4,21 @@
     align-items: center;
     height: 100%;
 }
+.container-wrap{
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+}
 
-.container > p {
-    font-size: 80px;
-    font-weight: bold;
+.content > p {
+    margin: 0;
+    font-family: 'Kdam Thmor', sans-serif;
+    color: white;
+}
+.content > .title{
+    font-size: 64px;
+}
+.content > .sub-title{
+    font-size: 24px;
+    opacity: 0.5;
 }
