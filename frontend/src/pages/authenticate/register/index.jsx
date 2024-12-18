@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import style from './css/register.module.css';
 import backend from '../../../api/backend';
@@ -45,45 +45,46 @@ function Register() {
   return (
     <div className={style.container}>
       <div className={style.heading}>
-        <img alt='Back_Burron' 
-            src='./Expand_left.svg'
-            onClick={() => navigate('/')}/>
-        <p>Sign Up</p>
+        <p>CREATE A NEW ACCOUNT</p>
       </div>
 
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className={style.inputContent}>
           <div>
-            <label>E-mail</label>
+            <label>EMAIL</label>
             <input
               type='text'
+              placeholder='EMAIL'
               value={data.email}
               onChange={(e) => setData({ ...data, email:e.target.value })}
             />
           </div>
 
           <div>
-            <label>Password</label>
+            <label>PASSWORD</label>
             <input
               type='password'
+              placeholder='PASSWORD'
               value={data.password}
               onChange={(e) => setData({ ...data, password:e.target.value })}
             />
           </div>
 
           <div>
-            <label>Confirm Password</label>
+            <label>CONFIRM PASSWORD</label>
             <input
               type='password'
+              placeholder='CONFIRM PASSWORD'
               value={data.cpassword}
               onChange={(e) => setData({ ...data, cpassword:e.target.value })}
             />
           </div>
 
           <div>
-            <label>Name</label>
+            <label>NAME</label>
             <input
               type='text'
+              placeholder='NAME'
               value={data.name}
               onChange={(e) => setData({ ...data, name:e.target.value })}
             />
@@ -94,6 +95,10 @@ function Register() {
           <div className={style.status}>
             <p>{statusMessage}</p>
             <input type='submit' value='Register'/>
+          </div>
+
+          <div className={style.functions}>
+            <Link to='/'>Do you already have an account ?</Link>
           </div>
         </div>
       </form>

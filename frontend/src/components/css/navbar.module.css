@@ -6,8 +6,8 @@
 nav{
     display: flex;
     justify-content: space-between;
-    padding: 16px 0px;
     width: 80%;
+    height: 100px;
     margin: auto;
 }
 
@@ -23,6 +23,7 @@ nav{
 .logoContainer > p{
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
     font-size: 28px;
+    margin: 0;
 }
 .logoContainer:hover{
     cursor: pointer;
@@ -101,10 +102,3 @@ a{
     background-color: #f0f0f0;
     cursor: pointer;
   }
-
-@media screen and (max-width: 1024px) {
-    .functionsContainer{
-        display: none;
-    }
-    
-}
