@@ -94,6 +94,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
 
   return (
     <div className={style.card}>
+      <div className={style["card-wrap"]}>
         <div className={style.content}>
           <img
             alt='Icon Image'
@@ -111,9 +112,8 @@ function CourseCard({ id, name, detail, icon_id, update }) {
           histories={update}
         />
 
-        <div>
-          <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
-        </div>
+        <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
+      </div>
     </div>
   )
 }

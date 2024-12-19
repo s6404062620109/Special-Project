@@ -2,14 +2,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: white;
     padding: 20px;
     border-radius: 15px;
-    width: 300px;
+    width: 480PX;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.container p,
+.container label,
+.container a{
+    color: white;
 }
 
 .heading{
@@ -25,8 +30,6 @@
 }
 .heading > p{
     font-size: 24px;
-    font-weight: bold;
-    font-family: Arial, Helvetica, sans-serif;
 }
 
 form{
@@ -43,10 +46,13 @@ form{
     display: flex;
     flex-direction: column;
     width: 100%;
+    height: 66px;
     margin-bottom: 5%;
 }
 .inputContent div > input{
     height: 100%;
+    border-radius: 6px;
+    box-shadow: inset gray 0px 2px 5px;
 }
 .status > input[type="submit"]:hover{
     cursor: pointer;
@@ -68,15 +74,15 @@ form{
 }
 .status > input[type="submit"]{
     width: 100%;
-    padding: 10px;
+    padding: 16px;
     border: none;
-    background: #3D6CB4;
+    border-radius: 6px;
+    background:  linear-gradient(to right, #21D4FD , #2152FF);
     color: white;
 }
 .status > p{
     font-size: 16px;
     font-weight: 300;
-    font-family: Arial, Helvetica, sans-serif;
 }
 .functions{
     display: flex;
@@ -84,9 +90,31 @@ form{
 }
 .functions > a{
     font-size: 12px;
-    font-weight: bold;
-    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    opacity: 0.5;
+    text-decoration: none;
+    position: relative;
 }
+.functions > a:hover {
+    opacity: 1;
+}
+
+/* functions Link hover animation */
+.functions > a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px; 
+    width: 0; 
+    height: 2px; 
+    background-color: white; 
+    transition: width 0.3s ease-in-out; /* Smooth animation for width */
+}
+.functions > a:hover::after {
+    width: 100%; 
+}
+/* functions Link hover animation */
+
 .functions > div{
     width: 2px;
     height: 20px;

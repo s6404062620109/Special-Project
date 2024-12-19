@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import style from './css/resetotp.module.css';
 import backend from '../../../api/backend';
@@ -85,7 +85,10 @@ function ResetCode() {
               <p>{statusMessage}</p>
               <input type='submit' value='Confirm'/>
             </div>
-  
+
+            <div className={style.functions}>
+              <Link to='/reset'>You don't have a reset code ?</Link>
+            </div>
           </div>
         </form>
       </div>

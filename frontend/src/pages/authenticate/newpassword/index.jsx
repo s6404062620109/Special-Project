@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import style from './css/newpassword.module.css';
 import backend from '../../../api/backend';
@@ -103,7 +103,10 @@ function Setpassword() {
               <p>{statusMessage}</p>
               <input type='submit' value='Confirm'/>
             </div>
-  
+
+            <div className={style.functions}>
+              <Link to='/'>Do you already have an account ?</Link>
+            </div>
           </div>
         </form>
       </div>

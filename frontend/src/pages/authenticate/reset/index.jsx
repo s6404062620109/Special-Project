@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import style from './css/reset.module.css';
 import backend from '../../../api/backend';
@@ -27,9 +27,6 @@ function Reset() {
     return (
       <div className={style.container}>
         <div className={style.heading}>
-          <img alt='Back_Burron' 
-              src='./Expand_left.svg'
-              onClick={() => navigate('/')}/>
           <p>Recovery Password</p>
         </div>
   
@@ -51,7 +48,10 @@ function Reset() {
               <p>{statusMessage}</p>
               <input type='submit' value='Send Recovery Code'/>
             </div>
-  
+
+            <div className={style.functions}>
+              <Link to='/'>Do you already have an account ?</Link>
+            </div>
           </div>
         </form>
       </div>

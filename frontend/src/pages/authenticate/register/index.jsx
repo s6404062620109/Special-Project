@@ -94,7 +94,7 @@ function Register() {
         <div className={style.footer}>
           <div className={style.status}>
             <p>{statusMessage}</p>
-            <input type='submit' value='Register'/>
+            <input type='submit' value='SIGN UP'/>
           </div>
 
           <div className={style.functions}>

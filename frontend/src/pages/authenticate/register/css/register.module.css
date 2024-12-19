@@ -11,6 +11,12 @@
     transform: translate(-50%, -50%);
 }
 
+.container p,
+.container label,
+.container a{
+    color: white;
+}
+
 .heading{
     display: flex;
 
@@ -24,11 +30,6 @@
 }
 .heading > p{
     font-size: 24px;
-}
-
-.heading > p, 
-.inputContent div > label{
-    color: white;
 }
 
 form{
@@ -73,8 +74,9 @@ form{
 }
 .status > input[type="submit"]{
     width: 100%;
-    padding: 10px;
+    padding: 16px;
     border: none;
+    border-radius: 6px;
     background:  linear-gradient(to right, #21D4FD , #2152FF);
     color: white;
 }

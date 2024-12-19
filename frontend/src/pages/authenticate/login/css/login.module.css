@@ -70,7 +70,7 @@ form{
 }
 .status > input[type="submit"]{
     width: 100%;
-    padding: 10px;
+    padding: 16px;
     border: none;
     border-radius: 6px;
     background:  linear-gradient(to right, #21D4FD , #2152FF);
