@@ -67,7 +67,7 @@ function Navbar() {
           <div className={style.userAuth}>  
             <div className={style.userInfo}>
               <div>
-                <p>Name:</p>
+                <p>Welcome, </p>
                 <label>{data.name}</label>
               </div>
 

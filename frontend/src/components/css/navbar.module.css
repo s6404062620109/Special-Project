@@ -6,7 +6,7 @@
 nav{
     display: flex;
     justify-content: space-between;
-    width: 80%;
+    width: 90%;
     height: 100px;
     margin: auto;
 }
@@ -34,55 +34,47 @@ nav{
     width: 31%;
     justify-content: space-between;
     align-items: center;
-}
-a{
-    color: black;
-    text-decoration: none;
-    font-weight: bold;
+    a{
+        color: black;
+        text-decoration: none;
+    }
 }
 
 .userAuth{
-    width: 10%;
-    justify-content: space-around;
+    width: 12%;
+    height: 100%;
     display: flex;
     position: relative;
 }
-.userAuth > img{
-    width: 50px;
-    height: 50px;
-}
-.userAuth > img:hover{
-    cursor: pointer;
-}
-.userAuth > p{
-    font-size: 24px;
-    font-weight: bold;
-}
-.userAuth > p:hover{
-    cursor: pointer;
-}
 
 .userInfo{
+    width: 100%;
     display: flex;
-}
-.userInfo > div{
-    display: flex;
-    align-items: baseline;
-}
-.userInfo div > p{
-    font-size: 20px;
+    justify-content: space-between;
+    div{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        p{
+            font-size: 20px;
+            margin: 0;
+        }
+    }
+    img:hover{
+        cursor: pointer;
+    }
 }
 
 .functions {
     position: absolute;
-    top: 90%;
+    top: 100%;
     right: 0%;
     background: white;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     padding: .625rem;
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 80%;
 }
   
   .functions > ul {

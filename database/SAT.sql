@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Dec 13, 2024 at 09:34 AM
+-- Generation Time: Dec 20, 2024 at 10:09 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -285,20 +285,21 @@ CREATE TABLE `user` (
   `Name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `Role` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT 'User',
   `OTP` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `OTP_EXP` datetime DEFAULT NULL
+  `OTP_EXP` datetime DEFAULT NULL,
+  `ProfileIMG` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`Email`, `Password`, `Name`, `Role`, `OTP`, `OTP_EXP`) VALUES
-('AAA', '$2b$10$rvhN7NsLbTUWbQJTM7kSpOyqlb2MQRA7HzlmJVu3ng6kO8Ho8KWN6', 'a', 'Student', '-', NULL),
-('ABC', '$2b$10$HIwLXl6PTS7A0qspbP8agOsSMCI5fpi67RLHz0.IWArmSuHOWHeoe', 'akakak', 'Student', '-', NULL),
-('Test', '$2b$10$zq.K1KnpA4ugzBMufliFyu/soLUEKgtGv.RLP2Idq7EAVGtEhh5ly', 'asdv', 'Student', '-', NULL),
-('admin', '$2b$10$4//6S5EIBVirOXvGeS/qHuGnE6jGt6kFZK3tT97vDCeRu44jv0y.a', 'Admin Inwza', 'Admin', '-', NULL),
-('arcarnupab@gmail.com', '$2b$10$zU7RvUS.Mg7kj6lQkDq2p.bl.pGCjUsViJ6ObWUW5PZvLTraYTQwu', 'Arc', 'Student', '802794', '2024-12-02 10:25:09'),
-('pikul874@gmail.com', '$2b$10$b.18HfiWgNeN4riRhRWcQeG0r04j7f2zfku/QWQlAE58BaJujnGYi', 'Pao', 'Student', '510467', '2024-11-17 16:46:18');
+INSERT INTO `user` (`Email`, `Password`, `Name`, `Role`, `OTP`, `OTP_EXP`, `ProfileIMG`) VALUES
+('AAA', '$2b$10$rvhN7NsLbTUWbQJTM7kSpOyqlb2MQRA7HzlmJVu3ng6kO8Ho8KWN6', 'a', 'Student', '-', NULL, ''),
+('ABC', '$2b$10$HIwLXl6PTS7A0qspbP8agOsSMCI5fpi67RLHz0.IWArmSuHOWHeoe', 'akakak', 'Student', '-', NULL, ''),
+('Test', '$2b$10$zq.K1KnpA4ugzBMufliFyu/soLUEKgtGv.RLP2Idq7EAVGtEhh5ly', 'asdv', 'Student', '-', NULL, ''),
+('admin', '$2b$10$4//6S5EIBVirOXvGeS/qHuGnE6jGt6kFZK3tT97vDCeRu44jv0y.a', 'Admin Inwza', 'Admin', '-', NULL, ''),
+('arcarnupab@gmail.com', '$2b$10$8d92WA2ybi9BZ.8hcWvSqO5b7Z5DP3WP32JrMAADL1ImtO44ibq9i', 'Arc', 'Student', '994695', '2024-12-19 10:14:42', ''),
+('pikul874@gmail.com', '$2b$10$b.18HfiWgNeN4riRhRWcQeG0r04j7f2zfku/QWQlAE58BaJujnGYi', 'Pao', 'Student', '510467', '2024-11-17 16:46:18', '');
 
 -- --------------------------------------------------------
 
