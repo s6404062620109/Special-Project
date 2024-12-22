@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phishing Attack Lab</title>
+    <title>Phishing Email Lab</title>
     <style>
         body {
             background: #d9d9d9;
@@ -21,14 +21,14 @@
     </style>
 </head>
 <body>
-    <h1>คุณได้รับอีเมลแจ้งเตือน</h1>
+    <h1>You Have Received Emails</h1>
     <div class='mailContainer'>
-        <div data-href="./result.html" data-topic="ตรวจพบธุรกรรมที่น่าสงสัยในบัญชีของคุณ">ตรวจพบธุรกรรมที่น่าสงสัยในบัญชีของคุณ</div>
-        <div data-href="./result.html" data-topic="แจ้งเตือนการโจมตีจากบุคคลที่สามในบัญชีของคุณ">แจ้งเตือนการโจมตีจากบุคคลที่สามในบัญชีของคุณ</div>
+        <div data-href="./result.html" data-topic="Suspicious activity detected on your account">Suspicious activity detected on your account</div>
+        <div data-href="./result.html" data-topic="Your account has been compromised">Your account has been compromised</div>
+        <div data-href="./result.html" data-topic="Verification required to access your code">Verification required to access your code</div>
     </div>
 
     <script>
-
         document.querySelectorAll('.mailContainer > div').forEach(div => {
             div.addEventListener('click', function() {
                 const href = this.getAttribute('data-href');

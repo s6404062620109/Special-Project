@@ -85,8 +85,12 @@ function Subject() {
                 <div className={style.content}>
                     <div className={style.Info}>
                         <h1>{data.Name}</h1>
-                        <label>{formatContent(data.Content)}</label>
+
+                        <div className={style["lecture-wrap"]}>
+                            <label>{formatContent(data.Content)}</label>
+                        </div>
                     </div>
+
                     <div className={style.Picture}>
                         <img
                             alt='Content Picture'
