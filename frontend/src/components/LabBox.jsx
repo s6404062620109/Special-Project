@@ -8,6 +8,7 @@ function LabBox({ no, id, question }) {
         ip:'', port:'', containerId: '', url:''
     });
     const [loading, setLoading] = useState(false);
+    const [focus, setFocus] = useState(false);
     const [ answer, setAnswer ] = useState([]);
     const [ checkStatus, setCheckStatus ] = useState('');
     const [userData, setUserdata] = useState({
@@ -51,7 +52,12 @@ function LabBox({ no, id, question }) {
         try {
             const response = await backend.post('/lab/createLinuxContainer', { Email:userData.email , questionID: id });
             if(response.status === 200){    
-                setAddress({ ip: response.data.ip, port: response.data.port , containerId: response.data.containerId, url: response.data.url});
+                setAddress({ 
+                    ip: response.data.ip, 
+                    port: response.data.port , 
+                    containerId: response.data.containerId, 
+                    url: response.data.url
+                });
             }
             
         } catch (err) {
@@ -103,19 +109,6 @@ function LabBox({ no, id, question }) {
                 }
             }
         }, 2000);
-
-        try {
-            const response = await backend.post('/lab/startContainer', {
-                containerId: Address.containerId,
-                port: Address.port,
-            });
-            
-            if (response.status === 200) {
-                console.log('Firefox started successfully');
-            }
-        } catch (error) {
-            console.error('Error starting Firefox:', error);
-        }
     };
     
   return (
@@ -132,7 +125,10 @@ function LabBox({ no, id, question }) {
                         <input
                             type='text'
                             onChange={(e) => handleAnswerChange(id, e.target.value)}
+                            onFocus={() => setFocus(true)}
+                            onBlur={() => setFocus(false)}
                             required
+                            className={`${style.inputText} ${focus ? style.focusInput : ''}`}
                         />
 
                         {!checkStatus ? (
@@ -148,8 +144,11 @@ function LabBox({ no, id, question }) {
             </div>
 
             <div className={style.labBox}>
-                <div className={style["labWrap"]}>
-                    <button onClick={handleCreateContainer} disabled={loading}>
+                <div className={style["lab-wrap"]}>
+                    <button 
+                        onClick={handleCreateContainer} 
+                        disabled={loading}
+                    >
                         {loading ? 'Spawnng...' : 'SPAWN'}
                     </button>
 
@@ -159,6 +158,13 @@ function LabBox({ no, id, question }) {
 
                     <button onClick={handleStartContainer} disabled={!Address.port}>
                         START
+                    </button>
+                    <button>
+                        <img 
+                            src='/Course_Assets/Skip forward.svg'
+                            alt='Skip Icon'
+                        />
+                        SKIP
                     </button>
                 </div>
             </div>
