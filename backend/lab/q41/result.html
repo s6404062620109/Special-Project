@@ -6,100 +6,167 @@
     <title>Mail Page</title>
     <style>
         body {
-            background: #f0f0f0;
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        header {
+            background: #0073e6;
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: -20px -20px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+
         .phishing, .phishing-hack {
             background: #fff;
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin: 20px 0;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
             border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .normal {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        form label {
+            font-weight: bold;
+        }
+
+        form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        form button {
+            padding: 10px;
+            background: #0073e6;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        form button:hover {
+            background: #005bb5;
         }
     </style>
 </head>
 <body>
-    <h1>Mail Details</h1>
-    <h2 id="topic"></h2>
+    <div class="container">
+        <header>Mail Details</header>
+        <h2 id="topic"></h2>
 
-    <div id="content"></div>
+        <div id="content"></div>
 
-    <script>
-        function getQueryParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
+        <script>
+            function getQueryParameter(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
 
-        const topic = getQueryParameter('topic');
+            const topic = getQueryParameter('topic');
 
-        if (topic) {
-            document.getElementById('topic').textContent = `Subject: ${decodeURIComponent(topic)}`;
-        } else {
-            document.getElementById('topic').textContent = 'No subject found';
-        }
+            if (topic) {
+                document.getElementById('topic').textContent = `Subject: ${decodeURIComponent(topic)}`;
+            } else {
+                document.getElementById('topic').textContent = 'No subject found';
+            }
 
-        const contentDiv = document.getElementById('content');
+            const contentDiv = document.getElementById('content');
 
-        function generateRandomCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
+            function generateRandomCode() {
+                return Math.floor(100000 + Math.random() * 900000).toString();
+            }
 
-        // Show phishing-like content for "Suspicious transaction detected on your account"
-        if (topic === 'Suspicious transaction detected on your account') {
-            const randomCode = generateRandomCode();
+            // Show phishing-like content for "Suspicious transaction detected on your account"
+            if (topic === 'Suspicious transaction detected on your account') {
+                const randomCode = generateRandomCode();
 
-            contentDiv.innerHTML += `
-                <div class="phishing">
-                    <h3>Security Alert from Your Bank</h3>
-                    <p>Your bank has detected suspicious activity on your account. Please verify your identity to view the code.</p>
-                </div>
-            `;
-
-            // Show verification form
-            contentDiv.innerHTML += `
-                <div class="phishing-hack">
-                    <h3>Urgent Verification Required!</h3>
-                    <p>Please verify your details below:</p>
-                    <form id="phishing-form">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" required><br>
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" required><br>
-                        <button type="submit">Verify</button>
-                    </form>
-                    <p><strong>Warning:</strong> Failure to verify may result in account closure.</p>
-                </div>
-            `;
-
-            // Handle form submission
-            const form = document.getElementById('phishing-form');
-            form.addEventListener('submit', (event) => {
-                event.preventDefault(); // Prevent actual submission
-                alert("Your information has been submitted. Thank you for your cooperation.");
-
-                // Display the random code after verification
                 contentDiv.innerHTML += `
-                    <div>
-                        <h3>Your code here:</h3>
-                        <h4>${randomCode}</h4>
+                    <div class="phishing">
+                        <h3>Security Alert from Your Bank</h3>
+                        <p>Your bank has detected suspicious activity on your account. Please verify your identity to view the code.</p>
                     </div>
                 `;
-            });
 
-        }
-        // Show normal content for "Third-party attack alert on your account"
-        else if (topic === 'Third-party attack alert on your account') {
-            contentDiv.innerHTML += `
-                <div class="normal">
-                    <h3>Third-party Attack Alert</h3>
-                    <p>We have detected an attempt to access your account from a third party. If this wasn't you, please change your password immediately.</p>
-                    <div>
-                        <h3>Your code here:</h3>
-                        <h4><!-- INSERT ANSWER HERE --></h4>
+                // Show verification form
+                contentDiv.innerHTML += `
+                    <div class="phishing-hack">
+                        <h3>Urgent Verification Required!</h3>
+                        <p>Please verify your details below:</p>
+                        <form id="phishing-form">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" required><br>
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" required><br>
+                            <button type="submit">Verify</button>
+                        </form>
+                        <p><strong>Warning:</strong> Failure to verify may result in account closure.</p>
                     </div>
-                    <p>Thank you for your cooperation.<br>Security Support Team</p>
-                </div>
-            `;
-        }
-    </script>
+                `;
+
+                // Handle form submission
+                const form = document.getElementById('phishing-form');
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault(); // Prevent actual submission
+                    alert("Your information has been submitted. Thank you for your cooperation.");
+
+                    // Display the random code after verification
+                    contentDiv.innerHTML += `
+                        <div>
+                            <h3>Your code here:</h3>
+                            <h4>${randomCode}</h4>
+                        </div>
+                    `;
+                });
+
+            }
+            // Show normal content for "Third-party attack alert on your account"
+            else if (topic === 'Third-party attack alert on your account') {
+                contentDiv.innerHTML += `
+                    <div class="normal">
+                        <h3>Third-party Attack Alert</h3>
+                        <p>We have detected an attempt to access your account from a third party. If this wasn't you, please change your password immediately.</p>
+                        <div>
+                            <h3>Your code here:</h3>
+                            <h4><!-- INSERT ANSWER HERE --></h4>
+                        </div>
+                        <p>Thank you for your cooperation.<br>Security Support Team</p>
+                    </div>
+                `;
+            }
+        </script>
+    </div>
 </body>
 </html>

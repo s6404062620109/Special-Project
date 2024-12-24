@@ -6,29 +6,65 @@
     <title>Phishing Attack Lab</title>
     <style>
         body {
-            background: #d9d9d9;
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        header {
+            background: #0073e6;
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         .mailContainer {
-            background-color: white;
+            background-color: #fff;
         }
+
         .mailContainer > div {
-            border-bottom: 1px solid;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
         }
+
         .mailContainer > div:hover {
             cursor: pointer;
+            background-color: #f1f9ff;
+        }
+
+        .footer {
+            background: #f4f4f4;
+            color: #555;
+            font-size: 14px;
+            padding: 10px 20px;
+            text-align: center;
+            border-top: 1px solid #ddd;
         }
     </style>
 </head>
 <body>
-    <h1>You have received a notification email</h1>
-    <div class='mailContainer'>
-        <div data-href="./result.html" data-topic="Suspicious transaction detected on your account">Suspicious transaction detected on your account</div>
-        <div data-href="./result.html" data-topic="Third-party attack alert on your account">Third-party attack alert on your account</div>
+    <div class="container">
+        <header>Email Notifications</header>
+        <div class="mailContainer">
+            <div data-href="./result.html" data-topic="Suspicious transaction detected on your account">Suspicious transaction detected on your account</div>
+            <div data-href="./result.html" data-topic="Third-party attack alert on your account">Third-party attack alert on your account</div>
+        </div>
+        <div class="footer">&copy; 2024 Phishing Attack Lab | All Rights Reserved</div>
     </div>
 
     <script>
-
         document.querySelectorAll('.mailContainer > div').forEach(div => {
             div.addEventListener('click', function() {
                 const href = this.getAttribute('data-href');

@@ -165,7 +165,7 @@ function LabBox({ no, id, question }) {
                             src='/Course_Assets/Skip forward.svg'
                             alt='Skip Icon'
                         />
-                        SKIP
+                        NEXT
                     </button>
                 </div>
             </div>

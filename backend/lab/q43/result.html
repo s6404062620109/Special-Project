@@ -156,7 +156,7 @@
             }
             return result;
         }
-    
+
         if (topic === 'Suspicious activity detected on your account') {
             contentDiv.innerHTML += `
                 <div class="phishing">
@@ -212,6 +212,27 @@
                     <h4><!-- INSERT ANSWER HERE --></h4>
                 </div>
             `;
+        } else if (topic === 'Congratulations! You\'ve won a $1000 gift card') {
+            contentDiv.innerHTML += `
+                <div class="phishing">
+                    <h3>Claim Your Reward</h3>
+                    <p>Enter your details to receive your gift card.</p>
+                    <form id="phishing-form-3">
+                        <label>Name:</label>
+                        <input type="text" required>
+                        <label>Email:</label>
+                        <input type="email" required>
+                        <button type="submit">Claim</button>
+                    </form>
+                    <p id="congratulations-message" style="color: green; margin-top: 10px; display: none;">Congratulations! Your gift card claim has been processed successfully.</p>
+                </div>
+            `;
+
+            const form = document.getElementById('phishing-form-3');
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                document.getElementById('congratulations-message').style.display = 'block';
+            });
         }
     </script>
 </body>

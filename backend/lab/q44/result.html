@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .header {
+            background: #0073e6;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .content h3 {
+            color: #0073e6;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 15px;
+            background: #f1f1f1;
+            font-size: 14px;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .legitimate h4 {
+            color: #333;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            text-align: center;
+            border-radius: 4px;
+            font-family: monospace;
+            display: inline-block;
+        }
+
+        .phishing-hack, .phishing {
+            border-left: 5px solid red;
+            padding-left: 15px;
+        }
+
+        .legitimate {
+            border-left: 5px solid green;
+            padding-left: 15px;
+        }
+
+        .success-message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            Email Details
+        </div>
+        <div class="content">
+            <h3 id="topic">Subject</h3>
+            <div id="content"></div>
+        </div>
+        <div class="footer">
+            This is a simulated email for educational purposes.
+        </div>
+    </div>
+
+    <script>
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        const topic = getQueryParameter('topic');
+        const contentDiv = document.getElementById('content');
+        const topicDisplay = document.getElementById('topic');
+        topicDisplay.textContent = topic ? decodeURIComponent(topic) : 'No subject found';
+
+        function generateRandomCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        // Handle different email topics
+        if (topic === 'Verification required to access your code') {
+            let ans = `<!-- INSERT ANSWER HERE -->`; 
+
+            contentDiv.innerHTML = `
+                <div class="legitimate">
+                    <h3>Verification Code downloaded successfully</h3>
+                    <p>Thank you for your request. Use the code after download successfully.</p>
+                </div>`;
+
+            const enterpriseText = `${ans}`;  
+            const blob = new Blob([enterpriseText], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'file.txt';
+            link.click();
+
+        } else if (topic === 'Suspicious activity detected on your account') {
+            contentDiv.innerHTML = `
+                <div class="phishing">
+                    <h3>Security Alert</h3>
+                    <p>Your account has been flagged due to suspicious activity. Please verify your information below to secure your account.</p>
+                    <form id="phishing-form">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+                        <button type="submit">Verify</button>
+                    </form>
+                    <p id="random-string" style="color: red; margin-top: 10px; display: none;"></p>
+                    <p class="success-message" id="success-message" style="display: none;">Success! Your file is downloading...</p>
+                </div>`;
+
+            const form = document.getElementById('phishing-form');
+            const successMessage = document.getElementById('success-message');
+            
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                
+                successMessage.style.display = 'block';
+                
+                const fakeText = generateRandomString(6 + Math.floor(Math.random() * 5)); 
+                const blob = new Blob([fakeText], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'file.txt';
+                link.click();
+            });
+
+        } else if (topic === 'Your account has been compromised') {
+            contentDiv.innerHTML = `
+                <div class="phishing">
+                    <h3>Account Compromise Alert</h3>
+                    <p>Your account has been compromised. Please follow the instructions below to secure your account.</p>
+                    <form id="phishing-form">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+                        <button type="submit">Secure Account</button>
+                    </form>
+                    <p id="random-string" style="color: red; margin-top: 10px; display: none;"></p>
+                    <p class="success-message" id="success-message" style="display: none;">Success! Your file is downloading...</p>
+                </div>`;
+
+            const form = document.getElementById('phishing-form');
+            const successMessage = document.getElementById('success-message');
+            
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                
+                successMessage.style.display = 'block';
+                
+                const fakeText = generateRandomString(6 + Math.floor(Math.random() * 5)); 
+                const blob = new Blob([fakeText], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'file.txt';
+                link.click();
+            });
+
+        } else {
+            contentDiv.innerHTML = `
+                <div class="phishing">
+                    <h3>Unknown Topic</h3>
+                    <p>The topic you selected is unknown or not recognized.</p>
+                </div>`;
+        }
+    </script>
+</body>
+</html>
