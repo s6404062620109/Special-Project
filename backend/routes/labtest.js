@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
 const db = require("./database");
+const { error } = require("console");
 
 const router = express.Router();
 
@@ -222,49 +223,70 @@ router.post("/submitLabanswer", (req, res) => {
   const QuestionIds = Object.keys(answer);
   const answerResults = Object.values(answer);
 
-  db.query("SELECT * FROM answer WHERE QuestionID in (?)",
-    [QuestionIds], (error, result) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Database answer query error" });
-      } else {
-        let score = 0;
-        result.map((item, index) => {
-          if (item.result === answerResults[index]) {
-            score = score + 10;
-          } else if (item.result !== answerResults[index] && score > 0) {
-            score = score - 10;
+  db.query(`
+    SELECT question.SubjectID, subject.CourseID 
+    FROM question 
+    INNER JOIN subject ON question.SubjectID=subject.SubjectID
+    WHERE QuestionID = ?
+  `, [QuestionIds], (error, result) => {
+    if(error){
+      console.log(error);
+      return res.status(500).send({ message: "Database question query error" });
+    }
+    else{
+      const subjectId = result[0].SubjectID;
+      const courseId = result[0].CourseID;
+
+      db.query(`SELECT HistoryID FROM history WHERE CourseID = ? AND Email = ?`,
+        [courseId, email], (error, historyResult) => {
+          if(error) {
+            console.log(error);
+            return res.status(500).send({ message: "Database history query error" });
+          }
+
+          else{
+            const historyId = historyResult[0].HistoryID;
+
+            db.query(`SELECT * FROM answer WHERE QuestionID = ? AND Type = ?`,
+              [QuestionIds, "a"], (error, resultCheck) => {
+                if(error) {
+                  console.log(error);
+                  return res.status(500).send({ message: "Database history query error" });
+                }
+
+                else{
+                  const Ref_answer = resultCheck[0].result;
+                  const User_answer = answerResults[0];
+                  let score = 0;
+
+                  if( Ref_answer === User_answer ){
+                    score++;
+                  }
+                  
+                  if( score === 0 ){
+                    return res.status(200).send({ message: "You Failed!!!" });
+                  }
+
+                  if( score > 0 ){
+                    db.query(`UPDATE progress SET Score = ${score}, Status = 'Done' WHERE QuestionID = ? AND SubjectID = ? AND HistoryID = ?`, 
+                      [QuestionIds, subjectId, historyId], (error) => {
+                        if(error) {
+                          console.log(error);
+                          return res.status(500).send({ message: "Update progress lab error" });
+                        }
+  
+                        else{
+                          return res.status(200).send({ message: "You Pass!!!" });
+                        }
+                    })
+                  }
+                  
+                }
+              });
           }
         });
-
-        if (score === answerResults.length * 10) {
-          db.query(`SELECT SubjectID FROM question WHERE QuestionID = ?`,
-            [QuestionIds[0]], (error, result) => {
-              if (error) {
-                console.log(error);
-                return res.status(500).json({ message: "Database question query error" });
-              } 
-              else {
-                db.query(`INSERT INTO history ( \`User-Email\`, \`Subject-ID\`, Score, Status, Type ) VALUES( ?, ?, ?, ?, ? ) `,
-                  [email, result[0]["Subject-ID"], score, "Success", `lab-${QuestionIds[0]}`], (error, result) => {
-                    if (error) {
-                      console.log(error);
-                      return res.status(500).json({ message: "Failed save lab history" });
-                    } 
-                    else {
-                      return res.status(200).json({ message: "You Pass!" });
-                    }
-                  }
-                );
-              }
-            }
-          );
-        } else {
-          return res.status(200).json({ message: "You Failed!" });
-        }
-      }
     }
-  );
+  });
 });
 
 module.exports = router;

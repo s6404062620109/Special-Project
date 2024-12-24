@@ -77,8 +77,9 @@ function LabBox({ no, id, question }) {
         e.preventDefault();
 
         try{
-            const response = await backend.post('/lab/submitLabanswer', 
-                { answer: answer, email: userData.email 
+            const response = await backend.post('/lab/submitLabanswer', { 
+                answer: answer, 
+                email: userData.email, 
             });
             setCheckStatus(response.data.message);
 
