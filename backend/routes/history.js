@@ -18,4 +18,19 @@ router.post('/registerHistory', (req, res) => {
     });
 });
 
+router.get("/checkCoursesHistory/:email", (req, res) => {
+  const email = req.params.email;
+  
+  db.query(`SELECT * FROM history WHERE Email = ?`, [email], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database history query error" });
+    }
+  
+    else{
+      return res.status(200).json({ results });
+    }
+  });
+});
+
 module.exports = router;

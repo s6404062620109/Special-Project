@@ -45,6 +45,9 @@ app.use("/progress", Progress);
 const Labtest = require("./routes/labtest");
 app.use("/lab", Labtest);
 
+const Question = require("./routes/questions");
+app.use("/question", Question);
+
 const port = 3001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

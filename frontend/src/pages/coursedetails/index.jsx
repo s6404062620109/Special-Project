@@ -76,7 +76,7 @@ function CourseDetail() {
       if (!token) {
         e.preventDefault();
         alert('Not authenticated. Please log in.');
-        navigate('/login');
+        navigate('/');
       }
     }
 

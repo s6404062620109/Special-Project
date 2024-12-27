@@ -9,7 +9,7 @@ router.get("/getCourses", (req, res) => {
         return res.status(500).send("Database query error");
       }
       else{
-        return res.status(201).send(results);
+        return res.status(200).send(results);
       }
     });
 });

@@ -48,11 +48,16 @@ function Courses() {
     const fetchData = async () => {
       try {
         const response = await backend.get('/courses/getCourses');
-        setData(response.data);
+
+        if(response.status === 200){
+          setData(response.data);
+        }
 
         if (token) {
-          const courseProgressResponse = await backend.get(`/progress/checkCoursesProgress/${userData.email}`);
-          setUpdateState(courseProgressResponse.data.results);
+          const response = await backend.get(`/history/checkCoursesHistory/${userData.email}`);
+          if(response.status === 200){
+            setUpdateState(response.data.results);
+          }
         }
       } catch (err) {
         console.log(err);
@@ -60,7 +65,7 @@ function Courses() {
     };
 
     fetchData();
-  }, [userData]);
+  }, [userData, token]);
   
   const getUpdateStateForCourse = (courseID) => {
     const courseUpdate = updateState.find((state) => state.CourseID === courseID);
@@ -76,7 +81,7 @@ function Courses() {
           name={item.Name}
           detail={item.Detail}
           icon_id={item.Icon_id}
-          update={getUpdateStateForCourse(item.CourseID)}
+          HistoryId={getUpdateStateForCourse(item.CourseID)}
         />
       ))}
     </div>

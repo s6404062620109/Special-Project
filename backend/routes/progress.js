@@ -41,26 +41,26 @@ router.post('/registerTestProgress', (req, res) => {
       }
     });
 });
+
+router.get("/checkCourseProgress/:historyId", (req, res) => {
+  const historyId = req.params.historyId;
+
+  db.query(`SELECT * FROM progress WHERE HistoryID = ?`, [historyId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database progress query error" });
+    }
   
-router.get("/checkCoursesProgress/:email", (req, res) => {
-    const email = req.params.email;
-  
-    db.query(`SELECT * FROM history WHERE Email = ?`, [email], (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Database history query error" });
-      }
-  
-      else{
-       return res.status(200).json({ results });
-      }
-    });
+    else{
+      return res.status(200).json({ results });
+    }
+  });
 });
   
 router.get("/getLatestProgress/:historyId", (req, res) => {
    const historyId = req.params.historyId;
   
-   db.query(`SELECT * FROM progress WHERE HistoryID = ?`, [historyId], (error, result) => {
+   db.query(`SELECT * FROM progress WHERE HistoryID = ? AND Status = ?`, [historyId, 'Failed'], (error, result) => {
      if (error) {
        console.error(error);
        return res.status(500).json({ message: "Database progress query error" });
@@ -68,7 +68,7 @@ router.get("/getLatestProgress/:historyId", (req, res) => {
   
      else{
        let inProgress = '';
-       const latestQuestion = result[result.length-1].QuestionID;
+       const latestQuestion = result[0].QuestionID;
   
        db.query(`SELECT progress.QuestionID, question.Type, question.SubjectID FROM progress 
          INNER JOIN question ON progress.QuestionID = question.QuestionID 

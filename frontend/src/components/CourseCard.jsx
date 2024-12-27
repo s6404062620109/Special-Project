@@ -5,7 +5,7 @@ import style from './css/coursecard.module.css'
 import Processbar from './Processbar';
 import backend from '../api/backend';
 
-function CourseCard({ id, name, detail, icon_id, update }) {
+function CourseCard({ id, name, detail, icon_id, HistoryId }) {
 
   const [data, setData] = useState({
     email:'',
@@ -44,7 +44,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     if (!token) {
       setButtonText('View');
     } 
-    else if (update) {
+    else if (HistoryId) {
       setButtonText('Continue');
     } 
     else {
@@ -52,13 +52,13 @@ function CourseCard({ id, name, detail, icon_id, update }) {
     }
 
     decodeAuthToken(token);
-  }, [token, update]);
+  }, [token, HistoryId]);
 
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
         try{
-          const response = await backend.get(`/progress/getLatestProgress/${update}`);
+          const response = await backend.get(`/progress/getLatestProgress/${HistoryId}`);
 
           if(response.status === 200){
             navigate(`/course/${id}/${response.data.inProgress}`);
@@ -91,7 +91,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
       navigate(`/course/${id}`);
     }
   }
-
+  
   return (
     <div className={style.card}>
       <div className={style["card-wrap"]}>
@@ -109,7 +109,7 @@ function CourseCard({ id, name, detail, icon_id, update }) {
 
         <Processbar
           courseId={id}
-          histories={update}
+          historyId={HistoryId}
         />
 
         <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
