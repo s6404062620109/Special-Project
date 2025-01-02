@@ -13,7 +13,8 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
     role:'',
   })
   const [buttonText, setButtonText] = useState('');
-  const [latestProgress, setLastestProgress]= useState('');
+  const [latestProgress, setLastestProgress] = useState('');
+  const [ imgPath, setImgPath ] = useState('');
   const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
 
@@ -41,6 +42,20 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
   }
 
   useEffect(() => {
+    const fetchIcon = async () => {
+        try {
+            const response = await backend.get(`/imgrender/getIcon/${id}/${icon_id}`);
+            if (response.status === 200) {
+                setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
+            }
+        } catch (err) {
+            console.log("Error fetching icon:", err);
+        }
+    };
+    fetchIcon();
+}, [id, icon_id]);
+
+  useEffect(() => {
     if (!token) {
       setButtonText('View');
     } 
@@ -53,7 +68,7 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
 
     decodeAuthToken(token);
   }, [token, HistoryId]);
-
+  console.log(imgPath)
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
@@ -91,14 +106,14 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
       navigate(`/course/${id}`);
     }
   }
-  
+
   return (
     <div className={style.card}>
       <div className={style["card-wrap"]}>
         <div className={style.content}>
           <img
             alt='Icon Image'
-            src={`./Course_Assets/${icon_id}.png`}
+            src={imgPath}
           />
           
           <div className={style.infoContent}>

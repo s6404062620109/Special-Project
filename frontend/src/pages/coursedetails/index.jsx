@@ -18,7 +18,8 @@ function CourseDetail() {
       email:'',
       name:'',
       role:'',
-    })
+    });
+    const [ imgPath, setImgPath ] = useState('');
     
     const token = localStorage.getItem('authToken');
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ function CourseDetail() {
       };
 
       fetchData();
-    }, [courseId])
+    }, [courseId]);
 
     const decodeAuthToken = async (token) => {
       if(!token){
@@ -70,7 +71,23 @@ function CourseDetail() {
   
     useEffect(() => {
       decodeAuthToken(token)
-    }, [token])
+    }, [token]);
+
+    useEffect(() => {
+      const fetchIcon = async () => {
+    
+        try {
+          const response = await backend.get(`/imgrender/getIcon/${courseId}/${courseInfo.icon}`);
+          if (response.status === 200) {
+            setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
+          }
+        } catch (err) {
+          console.log("Error fetching icon:", err);
+        }
+      };
+    
+      fetchIcon();
+    }, [courseId, courseInfo.icon]);
     
     const handleLinkClick = (e) => {
       if (!token) {
@@ -85,7 +102,7 @@ function CourseDetail() {
       <div className={style.head}>
         <img
           alt='Course Icon Image'
-          src={`/Course_Assets/${courseInfo.icon}.png`}
+          src={imgPath}
         />
         <div className={style.infoContent}>
           <h1>{courseInfo.name}</h1>
