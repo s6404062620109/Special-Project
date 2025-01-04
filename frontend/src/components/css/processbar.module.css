@@ -1,7 +1,8 @@
 .container{
     position: relative;
-    width: 30%;
+    width: 80%;
     height: 1rem;
+    margin: auto;
     border: 1px solid;
     border-radius: 15px;
 }

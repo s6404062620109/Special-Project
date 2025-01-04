@@ -1,3 +1,15 @@
 .content{
-    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    width: 80%;
+    margin: auto;
+    border-radius: 12px;
+}
+
+.head{
+    font-size: 24px;
 }

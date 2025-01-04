@@ -13,9 +13,9 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
     role:'',
   })
   const [buttonText, setButtonText] = useState('');
-  const [latestProgress, setLastestProgress] = useState('');
   const [ imgPath, setImgPath ] = useState('');
   const navigate = useNavigate();
+  const [ history, setHistory ] = useState([]);
   const token = localStorage.getItem('authToken');
 
   const decodeAuthToken = async (token) => {
@@ -53,7 +53,8 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
         }
     };
     fetchIcon();
-}, [id, icon_id]);
+
+  }, [id, icon_id]);
 
   useEffect(() => {
     if (!token) {
@@ -68,7 +69,22 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
 
     decodeAuthToken(token);
   }, [token, HistoryId]);
-  console.log(imgPath)
+
+  useEffect(() => {
+    
+    const fetchHistory = async () => {
+      try {
+          const response = await backend.get(`/history/checkCoursesHistory/${data.email}`);
+          if (response.status === 200) {
+            setHistory(response.data.results);
+          }
+      } catch (err) {
+          console.log("Error fetching icon:", err);
+      }
+    };
+    fetchHistory();
+  }, [data])
+
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
@@ -107,29 +123,31 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
     }
   }
 
+  const matchedHistory = history.find((item) => item.CourseID === id)?.Status;
+
   return (
-    <div className={style.card}>
-      <div className={style["card-wrap"]}>
-        <div className={style.content}>
-          <img
-            alt='Icon Image'
-            src={imgPath}
-          />
-          
-          <div className={style.infoContent}>
-              <h1>{name}</h1>
-              <p>{detail}</p>
-          </div>
+    <tr className={style.card}>
+      <td className={style.content}>
+        <img alt="Icon Image" src={imgPath} />
+
+        <div className={style.infoContent}>
+          <h1>{name}</h1>
+          <p>{detail}</p>
         </div>
+      </td>
 
-        <Processbar
-          courseId={id}
-          historyId={HistoryId}
-        />
+      <td>
+        <p>{matchedHistory}</p>
+      </td>
 
+      <td>
+        <Processbar courseId={id} historyId={HistoryId} />
+      </td>
+
+      <td>
         <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
-      </div>
-    </div>
+      </td>
+    </tr>
   )
 }
 
