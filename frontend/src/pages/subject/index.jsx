@@ -16,6 +16,7 @@ function Subject() {
         Image_id: '',
         CourseID: ''
     });
+    const [ imgPath, setImgPath ] = useState('');
     const [ questionList, setQuestionList ] = useState([]);
     const [ useLab, setUseLab ] = useState(true);
 
@@ -49,6 +50,20 @@ function Subject() {
         }
         fetchData();
     }, [courseId, subjectId]);
+
+    useEffect(() => {
+        const fetchImage = async () => {
+            try {
+                const response = await backend.get(`/imgrender/getContentImage/${courseId}/${subjectId}/${data.Image_id}`);
+                if (response.status === 200) {
+                    setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
+                }
+            } catch (err) {
+                console.log("Error fetching icon:", err);
+            }
+        };
+        fetchImage();
+    }, [ courseId, subjectId, data]);
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -94,7 +109,7 @@ function Subject() {
                     <div className={style.Picture}>
                         <img
                             alt='Content Picture'
-                            src={`/Course_Assets/${data.Image_id}.png`}
+                            src={imgPath}
                         />
                     </div>
                 </div>

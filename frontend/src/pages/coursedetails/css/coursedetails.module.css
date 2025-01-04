@@ -7,9 +7,13 @@
 }
 
 .head{
-    width: 80%;
+    width: 100%;
     margin: 2rem auto;
     display: flex;
+
+    img{
+        width: 40%;
+    }
 }
 
 .content ul{

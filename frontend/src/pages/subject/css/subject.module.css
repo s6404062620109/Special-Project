@@ -30,6 +30,17 @@
     }
 }
 
+.Picture{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25%;
+
+    img{
+        width: 100%;
+    }
+}
+
 .lecture-wrap {
     max-height: 250px; 
     overflow-y: auto;
