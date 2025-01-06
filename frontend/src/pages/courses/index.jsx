@@ -75,28 +75,31 @@ function Courses() {
   return (
     <div className={style.content}>
       <div className={style.head}>COURSES</div>
-      <table className={style.courseTable}>
-        <thead>
-          <tr>
-            <th width={'60%'}>Course</th>
-            <th>Status</th>
-            <th width={'30%'}>Completion</th>
-            <th>Button</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <CourseCard
-              key={item.CourseID}
-              id={item.CourseID}
-              name={item.Name}
-              detail={item.Detail}
-              icon_id={item.Icon_id}
-              HistoryId={getUpdateStateForCourse(item.CourseID)}
-            />
-          ))}
-        </tbody>
-      </table>
+
+      <div className={style.courseTable}>
+        <table>
+          <thead>
+            <tr>
+              <th width={'60%'}>Course</th>
+              <th>Status</th>
+              <th width={'30%'}>Completion</th>
+              <th>Button</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item) => (
+              <CourseCard
+                key={item.CourseID}
+                id={item.CourseID}
+                name={item.Name}
+                detail={item.Detail}
+                icon_id={item.Icon_id}
+                HistoryId={getUpdateStateForCourse(item.CourseID)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

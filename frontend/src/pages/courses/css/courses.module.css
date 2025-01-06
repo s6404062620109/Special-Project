@@ -6,10 +6,16 @@
     background: white;
     border-radius: 12px;
     width: 80%;
+    height: 550px;
     margin: auto;
     border-radius: 12px;
 }
 
 .head{
     font-size: 24px;
+}
+
+.courseTable{
+    height: 520px;
+    overflow-y: auto;
 }

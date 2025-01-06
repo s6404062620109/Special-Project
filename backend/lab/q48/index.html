@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scareware Simulation Lab</title>
+    <style>
+        body {
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        header {
+            background: #d9534f;
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .notificationContainer {
+            background-color: #fff;
+        }
+
+        .notificationContainer > div {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
+        }
+
+        .notificationContainer > div:hover {
+            cursor: pointer;
+            background-color: #ffe6e6;
+        }
+
+        .footer {
+            background: #f4f4f4;
+            color: #555;
+            font-size: 14px;
+            padding: 10px 20px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>Scareware Notifications</header>
+        <div class="notificationContainer">
+            <div data-href="./result.html" data-topic="Critical System Error Detected">Critical System Error Detected</div>
+            <div data-href="./result.html" data-topic="Your Computer is Infected">Your Computer is Infected</div>
+            <div data-href="./result.html" data-topic="Urgent Software Update Required">Urgent Software Update Required</div>
+            <div data-href="./result.html" data-topic="High-Risk Threat Found">High-Risk Threat Found</div>
+            <div data-href="./result.html" data-topic="Virus Detected Notification">Virus Detected Notification</div>
+        </div>
+        <div class="footer">&copy; 2024 Scareware Simulation Lab | All Rights Reserved</div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.notificationContainer > div').forEach(div => {
+            div.addEventListener('click', function() {
+                const href = this.getAttribute('data-href');
+                const topic = encodeURIComponent(this.getAttribute('data-topic'));
+                window.location.href = `${href}?topic=${topic}`;
+            });
+        });
+    </script>
+</body>
+</html>

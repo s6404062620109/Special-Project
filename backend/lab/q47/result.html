@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .header {
+            background: #ff6600;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .content h3 {
+            color: #ff6600;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 15px;
+            background: #f1f1f1;
+            font-size: 14px;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .phishing {
+            border-left: 5px solid red;
+            padding-left: 15px;
+        }
+
+        .legitimate {
+            border-left: 5px solid green;
+            padding-left: 15px;
+        }
+
+        .success-message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            Email Details
+        </div>
+        <div class="content">
+            <h3 id="topic">Subject</h3>
+            <div id="content"></div>
+        </div>
+        <div class="footer">
+            This is a simulated email for educational purposes.
+        </div>
+    </div>
+
+    <script>
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        const topic = getQueryParameter('topic');
+        const contentDiv = document.getElementById('content');
+        const topicDisplay = document.getElementById('topic');
+        topicDisplay.textContent = topic ? decodeURIComponent(topic) : 'No subject found';
+
+        function generateRandomCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        if (topic === 'System Error Detected on Your PC') {
+            let ans = `<!-- INSERT ANSWER HERE -->`;
+            ans = decodeURIComponent(ans);
+
+            contentDiv.innerHTML = 
+                `<div class="phishing">
+                    ${ans}
+                    <button id="fix-button">Fix Now</button>
+                    <p class="success-message" id="success-message" style="display: none;">Success! Your file is downloading...</p>
+                </div>`;
+
+            const fixButton = document.getElementById('fix-button');
+            const successMessage = document.getElementById('success-message');
+            
+            fixButton.addEventListener('click', () => {
+                successMessage.style.display = 'block';
+                const fakeText = generateRandomString(6 + Math.floor(Math.random() * 5)); 
+                const blob = new Blob([fakeText], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'fixfile.txt';
+                link.click();
+            });
+        } else if (topic === 'Urgent Action Required: Security Breach') {
+            contentDiv.innerHTML = 
+                `<div class="phishing">
+                    <h3>Urgent Security Breach</h3>
+                    <p>Your account has been compromised! Click the link below to secure your account:</p>
+                    <a href="https://example.com/phishing-link" target="_blank">Secure My Account</a>
+                </div>`;
+        } else if (topic === 'Technical Support Alert: Immediate Help Needed') {
+            contentDiv.innerHTML = 
+                `<div class="phishing">
+                    <h3>Critical Alert from Support</h3>
+                    <p>Your system requires immediate help. Please call our technical support number at <strong>1-800-555-1234</strong> to resolve this issue.</p>
+                </div>`;
+        } else if (topic === 'Your Subscription Is About to Expire: Support Needed') {
+            contentDiv.innerHTML = 
+                `<div class="phishing">
+                    <h3>Subscription Expiration Alert</h3>
+                    <p>Your subscription is about to expire. Please click below to renew your subscription:</p>
+                    <button id="renew-button">Renew Now</button>
+                </div>`;
+            
+            const renewButton = document.getElementById('renew-button');
+            renewButton.addEventListener('click', () => {
+                alert('You are being redirected to a fake renewal page.');
+            });
+        }
+    </script>
+</body>
+</html>

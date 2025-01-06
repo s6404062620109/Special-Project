@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Jan 04, 2025 at 09:31 AM
+-- Generation Time: Jan 06, 2025 at 07:59 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -131,7 +131,9 @@ INSERT INTO `answer` (`AnswerID`, `result`, `Type`, `QuestionID`) VALUES
 (157, 'Pa55w0rd55', 'a', 43),
 (158, 'Se0ur1ty777', 'a', 44),
 (159, 'Your IT administrator has verified your details successfully.', 'a', 45),
-(160, '<h3>Password Reset Successful</h3><p>Your password has been reset successfully. You may now log in with your new password.</p>', 'a', 46);
+(160, '<h3>Password Reset Successful</h3><p>Your password has been reset successfully. You may now log in with your new password.</p>', 'a', 46),
+(161, '<h3>Critical System Error</h3><p>Your computer has encountered a serious error. Please click the button below to fix the issue and protect your system.</p>', 'a', 47),
+(162, 'This is a security file download for eliminate viruses.', 'a', 48);
 
 -- --------------------------------------------------------
 
@@ -172,7 +174,7 @@ CREATE TABLE `history` (
 --
 
 INSERT INTO `history` (`HistoryID`, `Status`, `Successful`, `CourseID`, `Email`) VALUES
-(147, 'Failed', 7, 5, 'AAA');
+(148, 'Failed', 7, 5, 'AAA');
 
 -- --------------------------------------------------------
 
@@ -194,18 +196,20 @@ CREATE TABLE `progress` (
 --
 
 INSERT INTO `progress` (`ProgressID`, `Score`, `Status`, `QuestionID`, `SubjectID`, `HistoryID`) VALUES
-(951, 1, 'Done', 23, 9, 147),
-(952, 1, 'Done', 28, 10, 147),
-(953, 0, 'Done', 31, 11, 147),
-(954, 1, 'Done', 34, 12, 147),
-(955, 1, 'Done', 36, 13, 147),
-(956, 1, 'Done', 38, 14, 147),
-(957, 1, 'Done', 40, 15, 147),
-(958, 0, 'Failed', 41, 9, 147),
-(959, 0, 'Failed', 43, 10, 147),
-(960, 0, 'Failed', 44, 11, 147),
-(961, 0, 'Failed', 45, 12, 147),
-(962, 1, 'Done', 46, 13, 147);
+(963, 1, 'Done', 23, 9, 148),
+(964, 1, 'Done', 28, 10, 148),
+(965, 0, 'Done', 31, 11, 148),
+(966, 0, 'Done', 34, 12, 148),
+(967, 1, 'Done', 36, 13, 148),
+(968, 1, 'Done', 38, 14, 148),
+(969, 1, 'Done', 40, 15, 148),
+(970, 0, 'Failed', 41, 9, 148),
+(971, 0, 'Failed', 43, 10, 148),
+(972, 0, 'Failed', 44, 11, 148),
+(973, 1, 'Done', 45, 12, 148),
+(974, 1, 'Done', 46, 13, 148),
+(975, 0, 'Failed', 47, 14, 148),
+(976, 0, 'Failed', 48, 15, 148);
 
 -- --------------------------------------------------------
 
@@ -251,7 +255,9 @@ INSERT INTO `question` (`QuestionID`, `Question`, `Type`, `SubjectID`) VALUES
 (43, 'จงหารหัสคำตอบจาก Email ที่ถูกส่งมาโดยมีรูปแบบที่ไม่ใช่ Email Spam\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 10),
 (44, 'จงหาคำตอบจากไฟล์ที่ได้จาก Email และค้นหาคำตอบจากไฟล์ที่ไม่ใช่ Baiting \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 11),
 (45, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความจาก Email ที่คาดว่าเป็น Pretexting\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 12),
-(46, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่ไม่เป็น Impersonation\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 13);
+(46, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่ไม่เป็น Impersonation\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html\r\nรูปแบบคำตอบคือ <h3>___หัวข้อ___</h3><p>___ข้อความ___</p>', 'Lab', 13),
+(47, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่คาดว่าเป็น Technical Support Scams\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html \r\nรูปแบบคำตอบคือ <h3>___หัวข้อ___</h3><p>___ข้อความ___</p>', 'Lab', 14),
+(48, 'จงหาคำตอบจากไฟล์ที่ได้จากการดาวน์โหลดใน Email จากหน้า Notifications \r\nโดยนำข้อความจากไฟล์ที่คาดว่าไม่เป็น Scareware มาตอบลงในช่องตอบคำถาม\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html ', 'Lab', 15);
 
 -- --------------------------------------------------------
 
@@ -391,31 +397,31 @@ ALTER TABLE `virtual_machine`
 -- AUTO_INCREMENT for table `answer`
 --
 ALTER TABLE `answer`
-  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=161;
+  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
 
 --
 -- AUTO_INCREMENT for table `courses`
 --
 ALTER TABLE `courses`
-  MODIFY `CourseID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `CourseID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
+  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=963;
+  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=977;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `subject`
@@ -427,7 +433,7 @@ ALTER TABLE `subject`
 -- AUTO_INCREMENT for table `virtual_machine`
 --
 ALTER TABLE `virtual_machine`
-  MODIFY `Virtual_MachineID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `Virtual_MachineID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- Constraints for dumped tables
