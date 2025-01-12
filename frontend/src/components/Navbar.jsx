@@ -12,6 +12,7 @@ function Navbar() {
     role:'',
   })
   const [menuVisible, setMenuVisible] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem('authToken');
 
@@ -57,10 +58,27 @@ function Navbar() {
           <p>SAT</p>
         </div>
 
+        <div className={style["logo-mobile"]}
+           onClick={() => setSidebarVisible(!sidebarVisible)}
+        >
+          <img alt='Logo Image' src='/Navbar_Assets/Logo.svg'/>
+          <p>SAT</p>
+        </div>
+
         <div className={style.functionsContainer}>
           <Link to='/courses'>COURSES</Link>
           <Link>FAQ</Link>
           <Link>NEWS</Link>
+        </div>
+
+        <div 
+          className={`${style["functionsContainer-mobile"]} ${sidebarVisible ? style.showSidebar : ''}`}
+          onClick={() => setSidebarVisible(!sidebarVisible)}
+        >
+          <div onClick={() => navigate('/')}>Home</div>
+          <div onClick={() => navigate('/courses')}>COURSES</div>
+          <div>FAQ</div>
+          <div>NEWS</div>
         </div>
 
         {token && (

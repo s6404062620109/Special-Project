@@ -10,6 +10,7 @@ function Home() {
     name:'',
     role:'',
   });
+  const [loginEnable, setLoginEnable] = useState(false);
   const token = localStorage.getItem('authToken');
   
   const decodeAuthToken = async (token) => {
@@ -38,21 +39,41 @@ function Home() {
   useEffect(() => {
     decodeAuthToken(token);
   }, [token]);
-
+  
   return (
     <div className={style.container}>
       <div className={style["container-wrap"]}>
-        <div className={style.content}>
-          <p className={style.title}> 
-            Security <br /> Awareness Training 
-          </p>
-          <p className={style["sub-title"]}>
-            การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง <br/>
-            ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+        {loginEnable === true ? (
+          <div className={style["login-tablet"]}>
+            <Login/>
+          </div>
+        ):(
+          <div className={style.content}>
+            <p className={style.title}> 
+              Security <br /> Awareness Training 
+            </p>
+            <p className={style["sub-title"]}>
+              การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
+              ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+            </p>
+          </div>
+        )}
+        
+
+        <div className={style["login-wrap"]}>
+          <Login/>
+        </div>
+        
+        <div className={style["login-nav"]}>
+          <p onClick={() => setLoginEnable(!loginEnable)} >
+            {loginEnable === true ? (
+              <>{'<-'} Get Back</>
+            ) : (  
+              <>Do you want join members for study?</>
+            )}
           </p>
         </div>
 
-        <Login/>
       </div>
     </div>
   )
