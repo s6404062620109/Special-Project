@@ -64,15 +64,17 @@ function Home() {
           <Login/>
         </div>
         
-        <div className={style["login-nav"]}>
-          <p onClick={() => setLoginEnable(!loginEnable)} >
-            {loginEnable === true ? (
-              <>{'<-'} Get Back</>
-            ) : (  
-              <>Do you want join members for study?</>
-            )}
-          </p>
-        </div>
+        {!token && (
+          <div className={style["login-nav"]}>
+            <p onClick={() => setLoginEnable(!loginEnable)} >
+              {loginEnable === true ? (
+                <>{'<-'} Get Back</>
+              ) : (  
+                <>Do you want join members for study?</>
+              )}
+            </p>
+          </div>
+        )}
 
       </div>
     </div>

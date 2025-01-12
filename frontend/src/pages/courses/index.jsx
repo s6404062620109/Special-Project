@@ -88,6 +88,15 @@ function Courses() {
           </thead>
           <tbody>
             {data.map((item) => (
+              <tr
+                className={style["course-name"]}
+                key={item.CourseID}
+              >
+                {item.Name}
+              </tr>
+            ))}
+
+            {data.map((item) => (
               <CourseCard
                 key={item.CourseID}
                 id={item.CourseID}

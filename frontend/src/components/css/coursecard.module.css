@@ -1,68 +1,87 @@
 .card {
-    border-radius: 10px;
-    width: 90%;
-    margin: 0 auto;
-  }
+  border-radius: 10px;
+  width: 90%;
+  margin: 0 auto;
+}
   
-  .card-wrap {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-  }
+.card-wrap {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
   
-  button {
-    position: relative;
-    overflow: hidden;
-    padding: 10px 20px;
-    background: linear-gradient(to right, #21D4FD, #2152FF);
-    color: white;
-    border: 2px solid transparent;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    outline: none;
-  }
+button {
+  position: relative;
+  overflow: hidden;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #21D4FD, #2152FF);
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+}
   
-  button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #42FF00, #088500);
+  color: white;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-in-out;
+}
+  
+button:hover::before {
+  transform: scaleX(2);
+  transform-origin: bottom left;
+}
+  
+button:hover {
+  border-color: white;
+}
+  
+.content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 40px;
+}
+  
+.content > img {
+  width: 84px;
+  height: 84px;
+}
+  
+.infoContent {
+  h1 {
+    margin: 0;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .content > img{
+    display: none;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .card > td:nth-child(2){
+    display: none;
+  }
+  .card > td:nth-child(3){
     width: 100%;
-    height: 100%;
-    background: linear-gradient(to right, #42FF00, #088500);
-    color: white;
-    transform: scaleX(0);
-    transform-origin: bottom right;
-    transition: transform 0.3s ease-in-out;
   }
-  
-  button:hover::before {
-    transform: scaleX(2);
-    transform-origin: bottom left;
-  }
-  
-  button:hover {
-    border-color: white;
-  }
-  
-  .content {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 40px;
-  }
-  
-  .content > img {
-    width: 84px;
-    height: 84px;
-  }
-  
-  .infoContent {
-    h1 {
-      margin: 0;
-    }
-    p {
-      margin: 0;
-    }
-  }
+
+  .content{
+    display: none;
+  }  
+}

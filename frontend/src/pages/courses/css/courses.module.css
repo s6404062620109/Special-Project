@@ -1,8 +1,8 @@
 .content{
     position: absolute;
-    top: 50%;
+    top: 60%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -60%);
     background: white;
     border-radius: 12px;
     width: 80%;
@@ -18,4 +18,21 @@
 .courseTable{
     height: 520px;
     overflow-y: auto;
+}
+
+.course-name{
+    display: none;
+}
+
+@media screen and (max-width: 640px) {  
+    .head{
+        text-align: center;
+    }
+    .courseTable table > thead{
+        display: none;
+    }
+
+    .course-name{
+        display: block;
+    }
 }
