@@ -38,3 +38,20 @@
     display: flex;
     justify-content: space-between;
 }
+
+@media screen and (max-width: 1024px) {
+    .Nav-Subject{
+        width: 240px;
+    }
+    .Nav-Subject ul > li:nth-child(1){
+        margin-bottom: 0;
+    }
+
+    .subjectlist-wrap{
+        border-top: 1px solid;
+    }
+
+    .testlist-wrap{
+        margin-top: 0;
+    }
+}

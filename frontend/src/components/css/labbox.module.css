@@ -54,6 +54,7 @@
     button{
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
         margin: auto 1rem;
         padding: 10px 25px;

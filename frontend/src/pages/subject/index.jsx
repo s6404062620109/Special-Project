@@ -19,6 +19,7 @@ function Subject() {
     const [ imgPath, setImgPath ] = useState('');
     const [ questionList, setQuestionList ] = useState([]);
     const [ useLab, setUseLab ] = useState(true);
+    const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
 
     useEffect(() => {
         const fetchData = async () =>{
@@ -98,6 +99,21 @@ function Subject() {
 
             <div className={style["content-wrap"]}>
                 <div className={style.content}>
+                    <div 
+                        className={style["burger-icon"]}
+                        onClick={() => setNavsubjectMobile(!navsubjectMobile)}
+                    >
+                        <img
+                            alt='burger Icon'
+                            src={navsubjectMobile ? '/Navbar_Assets/Close_round_light.svg' : '/Navbar_Assets/burger.svg'}
+                        /> 
+                    </div>
+                    {navsubjectMobile && 
+                        <div className={style["navsubjectm-wrap"]}>
+                            <NavSubject courseId={courseId}/>
+                        </div>
+                    }  
+
                     <div className={style.Info}>
                         <h1>{data.Name}</h1>
 
