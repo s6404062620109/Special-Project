@@ -43,8 +43,8 @@
 }
 
 .lecture-wrap {
-    max-height: 250px; 
-    overflow-y: auto;
+    /* max-height: 250px; 
+    overflow-y: auto; */
 }
 
 .questionBox{
@@ -58,7 +58,7 @@
 
 .navsubject-wrap{
     width: 25%;
-    margin: auto;
+    margin: 0 auto;
 }
 
 .burger-icon{
