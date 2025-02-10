@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Jan 06, 2025 at 07:59 AM
+-- Generation Time: Feb 10, 2025 at 01:22 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -28,153 +28,41 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `answer` (
-  `AnswerID` int NOT NULL,
-  `result` longtext NOT NULL,
-  `Type` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT 'c',
-  `QuestionID` int NOT NULL
+  `id` int NOT NULL,
+  `content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `type` int NOT NULL,
+  `questionId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `answer`
---
-
-INSERT INTO `answer` (`AnswerID`, `result`, `Type`, `QuestionID`) VALUES
-(67, 'ส่งข้อความแจ้งเตือนให้เข้าสู่ระบบเพื่อเปลี่ยนรหัสผ่าน', 'c', 19),
-(68, 'ใช้ชื่อโดเมนที่แตกต่างเล็กน้อยจากของจริง', 'c', 19),
-(69, 'ขอข้อมูลส่วนตัว เช่น รหัสผ่าน หรือข้อมูลบัตรเครดิต', 'c', 19),
-(70, 'ถูกทุกข้อ', 'a', 19),
-(71, 'ตรวจสอบเบอร์ผู้ส่งข้อความ', 'c', 20),
-(72, 'หลีกเลี่ยงการคลิกลิงก์ในข้อความที่น่าสงสัย', 'c', 20),
-(73, 'เข้าแอปพลิเคชันหรือเว็บไซต์ขององค์กรโดยตรง', 'c', 20),
-(74, 'ถูกทุกข้อ', 'a', 20),
-(75, 'มุ่งเป้าหมายเฉพาะบุคคลหรือกลุ่มเล็ก', 'c', 21),
-(76, 'ใช้ข้อมูลส่วนตัวของเหยื่อเพื่อเพิ่มความน่าเชื่อถือ', 'c', 21),
-(77, 'เป็นอีเมลทั่วไปที่ส่งถึงคนจำนวนมาก', 'c', 21),
-(78, 'A และ B', 'a', 21),
-(79, 'โทรมาหลอกว่าเป็นธนาคารเพื่อขอข้อมูลบัตรเครดิต', 'a', 22),
-(80, 'ส่งข้อความแจ้งเตือนผ่าน SMS', 'c', 22),
-(81, 'สร้างเว็บไซต์ปลอมเพื่อขโมยข้อมูล', 'c', 22),
-(82, 'ปลอมเป็นแหล่งข่าวเพื่อเผยแพร่ข้อมูลปลอม', 'c', 22),
-(83, 'มีข้อผิดพลาดในการสะกดคำ', 'c', 23),
-(84, 'ใช้ชื่อผู้ส่งที่ใกล้เคียงกับแหล่งที่น่าเชื่อถือ', 'c', 23),
-(85, 'มีการแนบลิงก์ที่ไม่ปลอดภัย', 'c', 23),
-(86, 'ถูกทุกข้อ', 'a', 23),
-(87, 'ข้อความที่ส่งโฆษณาจำนวนมากโดยไม่ได้รับอนุญาต', 'c', 24),
-(88, 'อีเมลที่มีเนื้อหาไม่เกี่ยวข้องกับผู้รับ', 'c', 24),
-(89, 'ข้อความที่ส่งถึงผู้รับหลายคนโดยไม่มีความเกี่ยวข้อง', 'c', 24),
-(90, 'ถูกทุกข้อ', 'a', 24),
-(91, 'ส่งข้อมูลที่เป็นอันตรายหรือหลอกลวง', 'c', 25),
-(92, 'ถูกส่งจำนวนมากไปยังผู้รับที่ไม่เกี่ยวข้อง', 'c', 25),
-(93, 'ใช้ข้อความที่มีลิงก์ไปยังเว็บไซต์ปลอม', 'c', 25),
-(94, 'A และ B', 'a', 25),
-(95, 'ใช้ตัวกรอง SPAM ในอีเมล', 'c', 26),
-(96, 'หลีกเลี่ยงการเปิดอีเมลจากแหล่งที่ไม่รู้จัก', 'c', 26),
-(97, 'ไม่คลิกลิงก์ในอีเมลที่ไม่ได้ร้องขอ', 'c', 26),
-(98, 'ถูกทุกข้อ', 'a', 26),
-(99, 'ตอบกลับเพื่อขอให้หยุดส่ง', 'c', 27),
-(100, 'ลบอีเมลทิ้งและตั้งค่าตัวกรอง SPAM', 'a', 27),
-(101, 'ส่งต่อให้เพื่อนเพื่อขอความเห็น', 'c', 27),
-(102, 'เปิดลิงก์เพื่อตรวจสอบ', 'c', 27),
-(103, 'ทำให้ข้อมูลส่วนตัวถูกขโมย', 'c', 28),
-(104, 'เสียเวลาและทรัพยากร', 'c', 28),
-(105, 'นำไปสู่การโจมตีทางไซเบอร์อื่น ๆ', 'c', 28),
-(106, 'ถูกทุกข้อ', 'a', 28),
-(107, 'แจกของฟรี เช่น ไฟล์เพลง หรือโปรแกรม', 'a', 29),
-(108, 'ใช้ข้อความสร้างความเร่งด่วนให้เหยื่อดำเนินการ', 'c', 29),
-(109, 'ส่งข้อความแจ้งเตือนเกี่ยวกับความปลอดภัยของบัญชี', 'c', 29),
-(110, 'ปลอมเป็นคนรู้จักเพื่อขอข้อมูลส่วนตัว', 'c', 29),
-(111, 'หลีกเลี่ยงการดาวน์โหลดไฟล์จากแหล่งที่ไม่น่าเชื่อถือ', 'c', 30),
-(112, 'ไม่เสียบแฟลชไดรฟ์ที่ไม่รู้แหล่งที่มา', 'c', 30),
-(113, 'ใช้ซอฟต์แวร์ป้องกันไวรัสที่อัปเดต', 'c', 30),
-(114, 'ถูกทุกข้อ', 'a', 30),
-(115, 'ใช้ของล่อ เช่น ของฟรีหรือของรางวัล', 'a', 31),
-(116, 'สร้างเว็บไซต์ปลอมเพื่อหลอกลวง', 'c', 31),
-(117, 'ใช้ข้อความที่เร่งด่วนหรือหลอกล่อ', 'c', 31),
-(118, 'A และ C', 'c', 31),
-(119, 'การส่งอีเมลปลอมเพื่อหลอกลวง', 'c', 32),
-(120, 'การสร้างสถานการณ์ปลอมเพื่อลวงข้อมูล', 'a', 32),
-(121, 'การส่งข้อความ SMS เพื่อขโมยข้อมูล', 'c', 32),
-(122, 'การหลอกให้ติดตั้งซอฟต์แวร์ปลอม', 'c', 32),
-(123, 'เจ้าหน้าที่ธนาคารโทรขอเลขบัญชีเพื่อตรวจสอบ', 'a', 33),
-(124, 'เว็บไซต์หลอกให้กรอกข้อมูลบัตรเครดิต', 'c', 33),
-(125, 'การส่งข้อความแจ้งพัสดุไม่สำเร็จ', 'c', 33),
-(126, 'การแจ้งเตือนให้อัปเดตซอฟต์แวร์', 'c', 33),
-(127, 'ใช้ซอฟต์แวร์ป้องกันไวรัส', 'c', 34),
-(128, 'ไม่เปิดเผยข้อมูลกับบุคคลที่ไม่แน่ใจ', 'a', 34),
-(129, 'ตรวจสอบที่อยู่ลิงก์ในอีเมล', 'c', 34),
-(130, 'ใช้ VPN ในการเชื่อมต่ออินเทอร์เน็ต', 'c', 34),
-(131, 'สร้างเว็บไซต์ปลอมที่ดูคล้ายกับองค์กร', 'c', 35),
-(132, 'อ้างว่าเป็นบุคคลที่เป้าหมายไว้วางใจ', 'a', 35),
-(133, 'ส่งข้อความแจ้งเตือนว่ามีปัญหากับบัญชี', 'c', 35),
-(134, 'ใช้ไวรัสเพื่อดักข้อมูล', 'c', 35),
-(135, 'ตรวจสอบข้อมูลบุคคลที่ติดต่อมาอย่างละเอียด', 'a', 36),
-(136, 'ติดตั้งซอฟต์แวร์ป้องกันไวรัส', 'c', 36),
-(137, 'ใช้การยืนยันตัวตนแบบสองขั้นตอน', 'c', 36),
-(138, 'หลีกเลี่ยงการเปิดอีเมลจากผู้ส่งที่ไม่รู้จัก', 'c', 36),
-(139, 'มีการขอข้อมูลสำคัญทางอีเมล', 'c', 37),
-(140, 'แจ้งเตือนให้รีบอัปเดตซอฟต์แวร์ผ่านลิงก์', 'c', 37),
-(141, 'อ้างว่าคอมพิวเตอร์ของเหยื่อมีไวรัสและต้องแก้ไข', 'a', 37),
-(142, 'ข้อความ SMS ที่อ้างว่าได้รับรางวัล', 'c', 37),
-(143, 'ใช้การสร้างสถานการณ์เร่งด่วน', 'c', 38),
-(144, 'แอบอ้างเป็นผู้เชี่ยวชาญด้านเทคนิค', 'a', 38),
-(145, 'ใช้เว็บไซต์ที่ดูเหมือนจริง', 'c', 38),
-(146, 'ใช้ข้อความที่เป็นทางการ', 'c', 38),
-(147, 'ส่งอีเมลแจ้งเตือนว่าบัญชีถูกล็อก', 'c', 39),
-(148, 'แสดงป๊อปอัพแจ้งเตือนว่าคอมพิวเตอร์มีไวรัส', 'a', 39),
-(149, 'โทรศัพท์ปลอมตัวเป็นเจ้าหน้าที่ธนาคาร', 'c', 39),
-(150, 'ส่งข้อความ SMS แจ้งว่าพัสดุไม่สำเร็จ', 'c', 39),
-(151, '\"คอมพิวเตอร์ของคุณติดไวรัส! คลิกที่นี่เพื่อแก้ไข\"', 'a', 40),
-(152, '\"บัญชีของคุณถูกล็อก กรุณาอัปเดตข้อมูล\"', 'c', 40),
-(153, '\"คุณได้รับรางวัล! กรุณาคลิกที่นี่\"', 'c', 40),
-(154, '\"รีบดาวน์โหลดแอปพลิเคชันใหม่เพื่อป้องกันข้อมูลของคุณ\"', 'c', 40),
-(155, 'zaza57319', 'a', 41),
-(157, 'Pa55w0rd55', 'a', 43),
-(158, 'Se0ur1ty777', 'a', 44),
-(159, 'Your IT administrator has verified your details successfully.', 'a', 45),
-(160, '<h3>Password Reset Successful</h3><p>Your password has been reset successfully. You may now log in with your new password.</p>', 'a', 46),
-(161, '<h3>Critical System Error</h3><p>Your computer has encountered a serious error. Please click the button below to fix the issue and protect your system.</p>', 'a', 47),
-(162, 'This is a security file download for eliminate viruses.', 'a', 48);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `courses`
+-- Table structure for table `course`
 --
 
-CREATE TABLE `courses` (
-  `CourseID` int NOT NULL,
-  `Name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `Detail` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
-  `Icon_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-
---
--- Dumping data for table `courses`
---
-
-INSERT INTO `courses` (`CourseID`, `Name`, `Detail`, `Icon_id`) VALUES
-(5, 'Social Engineering', 'Social Engineering หรือ วิศวกรรมทางสังคม เป็นเทคนิคการโจมตีโดยอาศัยการหลอกลวงโน้มน้าวจิตใจของเป้าหมายโดยใช้วิธีการทางจิตวิทยา ', 'Icon.png');
+CREATE TABLE `course` (
+  `id` int NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `detail` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `icon_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `teacherId` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `history`
+-- Table structure for table `enrollment`
 --
 
-CREATE TABLE `history` (
-  `HistoryID` int NOT NULL,
-  `Status` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT 'Failed',
-  `Successful` int NOT NULL DEFAULT '0',
-  `CourseID` int NOT NULL,
-  `Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
+CREATE TABLE `enrollment` (
+  `id` int NOT NULL,
+  `courseId` int NOT NULL,
+  `pretest_complete` tinyint(1) NOT NULL,
+  `posttest_complete` tinyint(1) NOT NULL,
+  `completed_labs` int NOT NULL,
+  `total_labs` int NOT NULL,
+  `userId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `history`
---
-
-INSERT INTO `history` (`HistoryID`, `Status`, `Successful`, `CourseID`, `Email`) VALUES
-(148, 'Failed', 7, 5, 'AAA');
 
 -- --------------------------------------------------------
 
@@ -183,33 +71,12 @@ INSERT INTO `history` (`HistoryID`, `Status`, `Successful`, `CourseID`, `Email`)
 --
 
 CREATE TABLE `progress` (
-  `ProgressID` int NOT NULL,
-  `Score` int NOT NULL DEFAULT '0',
-  `Status` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT 'Failed',
-  `QuestionID` int NOT NULL,
-  `SubjectID` int NOT NULL,
-  `HistoryID` int NOT NULL
+  `id` int NOT NULL,
+  `is_completed` tinyint(1) NOT NULL,
+  `score` int NOT NULL,
+  `questionId` int NOT NULL,
+  `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `progress`
---
-
-INSERT INTO `progress` (`ProgressID`, `Score`, `Status`, `QuestionID`, `SubjectID`, `HistoryID`) VALUES
-(963, 1, 'Done', 23, 9, 148),
-(964, 1, 'Done', 28, 10, 148),
-(965, 0, 'Done', 31, 11, 148),
-(966, 0, 'Done', 34, 12, 148),
-(967, 1, 'Done', 36, 13, 148),
-(968, 1, 'Done', 38, 14, 148),
-(969, 1, 'Done', 40, 15, 148),
-(970, 0, 'Failed', 41, 9, 148),
-(971, 0, 'Failed', 43, 10, 148),
-(972, 0, 'Failed', 44, 11, 148),
-(973, 1, 'Done', 45, 12, 148),
-(974, 1, 'Done', 46, 13, 148),
-(975, 0, 'Failed', 47, 14, 148),
-(976, 0, 'Failed', 48, 15, 148);
 
 -- --------------------------------------------------------
 
@@ -218,46 +85,11 @@ INSERT INTO `progress` (`ProgressID`, `Score`, `Status`, `QuestionID`, `SubjectI
 --
 
 CREATE TABLE `question` (
-  `QuestionID` int NOT NULL,
-  `Question` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Type` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `SubjectID` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-
---
--- Dumping data for table `question`
---
-
-INSERT INTO `question` (`QuestionID`, `Question`, `Type`, `SubjectID`) VALUES
-(19, 'ข้อใดเป็นลักษณะของ Email Phishing?', 'Pre', 9),
-(20, 'วิธีใดช่วยป้องกันการตกเป็นเหยื่อ Smishing Phishing?', 'Pre', 9),
-(21, 'Spear Phishing แตกต่างจาก Phishing ทั่วไปอย่างไร?', 'Pre', 9),
-(22, 'ตัวอย่างของ Voice Phishing คืออะไร?', 'Pre', 9),
-(23, 'ลักษณะใดที่ช่วยระบุว่าอีเมลอาจเป็น Phishing?', 'Pre', 9),
-(24, 'ข้อความใดที่ถือว่าเป็น SPAM?', 'Pre', 10),
-(25, 'ลักษณะเด่นของ SPAM คืออะไร?', 'Pre', 10),
-(26, 'วิธีใดช่วยป้องกัน SPAM?', 'Pre', 10),
-(27, 'หากได้รับอีเมลโฆษณาจำนวนมากโดยไม่ต้องการ ควรทำอย่างไร?', 'Pre', 10),
-(28, 'SPAM มีความเสี่ยงอะไรบ้าง?', 'Pre', 10),
-(29, 'การโจมตีแบบ Baiting มักใช้วิธีใด?', 'Pre', 11),
-(30, 'วิธีป้องกันการตกเป็นเหยื่อ Baiting คืออะไร?', 'Pre', 11),
-(31, 'การโจมตีแบบ Baiting แตกต่างจาก Phishing อย่างไร?', 'Pre', 11),
-(32, 'ข้อใดคือลักษณะของ Pretexting?', 'Pre', 12),
-(33, 'ในสถานการณ์ใดที่ Pretexting มักจะถูกใช้?', 'Pre', 12),
-(34, 'วิธีการป้องกัน Pretexting คืออะไร?', 'Pre', 12),
-(35, 'ผู้โจมตีที่ใช้ Impersonation มักใช้วิธีใดเพื่อให้ได้ข้อมูล?', 'Pre', 13),
-(36, 'วิธีใดสามารถป้องกัน Impersonation ได้ดีที่สุด?', 'Pre', 13),
-(37, 'สัญญาณใดที่บ่งบอกว่าอาจเป็น Technical Support Scams?', 'Pre', 14),
-(38, 'ทำไม Technical Support Scams ถึงมีความน่าเชื่อถือ?', 'Pre', 14),
-(39, 'Scareware มักใช้วิธีใดเพื่อหลอกลวงเหยื่อ?', 'Pre', 15),
-(40, 'ข้อใดเป็นตัวอย่างของ Scareware?', 'Pre', 15),
-(41, 'จงหารหัสคำตอบจาก Email ที่ไม่ใช่รูปแบบของ Email Phishing \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 9),
-(43, 'จงหารหัสคำตอบจาก Email ที่ถูกส่งมาโดยมีรูปแบบที่ไม่ใช่ Email Spam\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 10),
-(44, 'จงหาคำตอบจากไฟล์ที่ได้จาก Email และค้นหาคำตอบจากไฟล์ที่ไม่ใช่ Baiting \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 11),
-(45, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความจาก Email ที่คาดว่าเป็น Pretexting\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'Lab', 12),
-(46, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่ไม่เป็น Impersonation\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html\r\nรูปแบบคำตอบคือ <h3>___หัวข้อ___</h3><p>___ข้อความ___</p>', 'Lab', 13),
-(47, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่คาดว่าเป็น Technical Support Scams\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html \r\nรูปแบบคำตอบคือ <h3>___หัวข้อ___</h3><p>___ข้อความ___</p>', 'Lab', 14),
-(48, 'จงหาคำตอบจากไฟล์ที่ได้จากการดาวน์โหลดใน Email จากหน้า Notifications \r\nโดยนำข้อความจากไฟล์ที่คาดว่าไม่เป็น Scareware มาตอบลงในช่องตอบคำถาม\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html ', 'Lab', 15);
+  `id` int NOT NULL,
+  `content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `type` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `subjectId` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -266,25 +98,12 @@ INSERT INTO `question` (`QuestionID`, `Question`, `Type`, `SubjectID`) VALUES
 --
 
 CREATE TABLE `subject` (
-  `SubjectID` int NOT NULL,
-  `Name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `Content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
-  `Image_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `CourseID` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-
---
--- Dumping data for table `subject`
---
-
-INSERT INTO `subject` (`SubjectID`, `Name`, `Content`, `Image_id`, `CourseID`) VALUES
-(9, 'Phishing', 'Phishing คือ วิธีการที่นิยมและพบได้บ่อยที่สุด เป็นการหลอกลวงขโมยข้อมูลส่วนบุคคลของเป้าหมาย จากการสร้างสถานการณ์ เช่น การส่งข้อความ SMS , Email หรือ การ Fake website ที่ทำให้ดูมีความน่าเชื่อถือเพื่อหลอกล่อให้เป้าหมายเชื่อ แล้วทำการกรอกข้อมูลส่วนบุคคล เช่น เลขบัตรประชาชน รหัสผ่าน OTP หรือ เลขที่ Passport รวมถึงให้ทำธุรกรรมต่างๆตามที่ผู้โจมตีต้องการเพื่อขโมยข้อมูลของเป้าหมายมาใช้ประโยชน์ โดยที่ข้อมูลนั้นไม่ได้รับอนุญาตจากเจ้าของข้อมูล โดยคำว่า Phishing มาจากคำว่า Fishing ที่แปลว่า ตกปลา ประเภทของการโจมตี Phishing ที่พบบ่อย มีดังนี้\r\n		1 Email Phishing \r\n			Email Phishing คือการส่งข้อความหลอกลวงผ่านทางอีเมล เป็นการโจมตีรูปแบบหนึ่งที่นิยมและพบบ่อยมาตั้งแต่ยุคแรกๆ โดยผู้โจมตีจะ ส่งอีเมลหลอกลวงโดยอ้างว่ามาจากแหล่งที่น่าเชื่อถือ เพื่อหลอกให้บุคคลเปิดเผยข้อมูลที่ละเอียดอ่อนหรือดำเนินการบางอย่าง โดยอาจจะใช้ความสัมพันธ์ของบุคคล สถาบันการเงิน หรือองค์กรที่สังกัด เพื่อให้ดูน่าเชื่อถือ ซึ่งเนื้อหาใน Email นั้น อาจบอกถึงความจำเป็นเร่งด่วน ที่จะต้องกรอกข้อมูล หรือแจ้งการให้ข้อมูลส่วนบุคคล เช่น Username  \r\nและ Password สำหรับเข้าระบบขององค์กร เป็นต้น หากผู้ใช้งานมีความระมัดระวังและหมั่นสังเกตความแตกต่างระหว่างอีเมลหลอกลวงกับอีเมลจริงก็จะช่วยลดความเสี่ยงในการตกเป็นเหยื่อภัยคุกคามต่างๆ ได้ โดยวิธีการสามารถสังเกตุ ได้ดังนี้\r\n			1.1 เมื่อได้รับอีเมลตรวจสอบข้อมูลผู้ส่งให้แน่ใจเสียก่อนว่าถูกต้องหรือไม่ \r\n				  ผู้ส่งมักใช้ชื่ออีเมลที่คล้ายหรือใกล้เคียงกับชื่อบุคคล สถาบันการเงิน หรือองค์กร ที่ใช้ส่งมาหลอกลวง และถึงแม้จะเป็นผู้ส่งที่เรารู้จักหรือเคยติดต่อหากไม่เป็นการเสียเวลาก็ควรตรวจสอบที่อยู่อีเมลของผู้ส่งทุกครั้งว่าถูกต้องหรือไม่ เพราะอีเมลหลอกลวงส่วนใหญ่มักจะใช้คำสะกดที่ใกล้เคียงหรือคล้ายกับชื่อที่อยู่อีเมลของผู้ส่งตัวจริง \r\n			1.2 ตรวจสอบลักษณะเนื้อหาของอีเมล\r\n				  มีการใช้ข้อความแจ้งให้รีบดำเนินการ เช่น เข้าสู่ระบบ (login) เพื่อเปลี่ยนแปลงบัญชีผู้ใช้งาน หรืออัปเดตข้อมูลเพื่อรักษาความปลอดภัยของบัญชี และ ขอข้อมูลสำคัญ เช่น รายละเอียดบัญชีธนาคาร ชื่อผู้ใช้งาน (Username) หรือรหัสผ่าน (Password) โดยในความเป็นจริงแล้วผู้ให้บริการส่วนใหญ่จะไม่มีนโยบายในการขอข้อมูลเหล่านี้ ดังนั้นห้ามตอบกลับอีเมลที่มีเนื้อหาลักษณะดังกล่าวเด็ดขาด หากไม่แน่ใจให้ทำการสอบถามจากผู้ให้บริการโดยตรง \r\n			1.3 ตรวจสอบลิงก์เชื่อมโยงเอกสารหรือไฟล์แนบที่แนบมาในอีเมล\r\n				  มีการแนบลิงก์เชื่อมโยงหรือเว็บไซต์มาในอีเมล โดยลิงก์ดังกล่าวอาจเชื่อมโยงไปยังเว็บไซต์ปลอมและถึงแม้ว่าจะขึ้นต้นด้วย https:// ก็ควรตรวจสอบก่อนว่า URL หรือชื่อเว็บไซค์เป็นของธนาคารหรือหน่วยงานนั้นจริงๆ ในส่วนของเอกสารหรือไฟล์แนบ อีเมลส่วนใหญ่จะมีไฟล์แนบเป็นลิงก์ให้กดเข้าไปอ่าน เมื่อกดแล้วจะเข้าสู่การดาวน์โหลดไฟล์อันตรายหรือเข้าไปที่เว็บไซต์ Phishing ซึ่งวิธีสังเกตคือให้ลองเอาเม้าส์ไปวางที่ลิงก์นั้นโดยไม่ต้องกด จะเห็นข้อความขึ้นเป็นเส้นทางลิงก์ปลายทาง จะพบว่าลิงก์ปลายทาง ไม่ใช่เว็บไซต์ทางการ แต่เป็นเว็บอื่น \r\n		2 Web Phishing\r\n			Web Phishing หรือการหลอกล่อให้ผู้ใช้งานคลิกเข้าไปในเว็บไซต์ที่เป็นสแปม โดยผู้โจมตี จะสร้างเว็บไซต์ขึ้นมาหน้าหนึ่ง แล้วปรับแต่งให้ดูคล้าย ๆ กับเว็บไซต์ขององค์กรที่มีอยู่จริงเพื่อตบตาเหยื่อ วิธีสังเกตคือ URL จะมีส่วนที่ ต่างกันนิดหน่อย เช่น จาก primal.co.th ก็ปลอมแปลงเป็น primal.com ซึ่งถ้าหากไม่ระมัดระวัง พลาดกดเข้าไป ก็อาจกลายเป็นผู้เสียหายได้เลย โดยจุดประสงค์ของเว็บไซต์เหล่านี้คือ การหลอกเอาข้อมูลของผู้ใช้งาน เช่น ยูเซอร์เนม พาสเวิร์ด บัตรประชาชน บัตรเครดิต หรือข้อมูลส่วนตัวอื่น ๆ \r\n		3  Spear Phishing \r\n			 Spear phishing คือการหลอกลวงทางไซเบอร์ที่พุ่งเป้าไปยังกลุ่มเป้าหมายหรือบุคคลเฉพาะเจาะจง โดยผู้โจมตีมักเป็นแฮกเกอร์มืออาชีพที่เก็บข้อมูลส่วนตัวของเหยื่อ หรืออาจแฝงตัวเข้าถึงข้อมูลในองค์กร เพื่อให้เนื้อหาในอีเมลดูน่าเชื่อถือยิ่งขึ้น เช่น ใช้ชื่อและอีเมลที่คล้ายกับบุคคลที่เหยื่อรู้จัก เพื่อสร้างความน่าเชื่อถือ ทำให้เหยื่อไม่ทันระวัง ตัวอย่างเช่น อาชญากรอาจส่งอีเมลปลอมที่ดูเหมือนส่งจากเพื่อนร่วมงาน โดยใช้อีเมล \"primal@gmail.com\" แทนที่จะเป็นอีเมลบริษัทจริง ๆ เพื่อให้เหยื่อตกหลุมพราง\r\nการโจมตีแบบ Spear phishing ใช้เทคนิคที่ซับซ้อนกว่าฟิชชิงทั่วไป ผู้โจมตีจะศึกษาข้อมูลพฤติกรรมและข้อมูลส่วนตัวของเหยื่อเพื่อปรับเนื้อหาในอีเมลให้สอดคล้องกับสิ่งที่เหยื่อสนใจ เช่น หัวข้ออีเมลเกี่ยวกับงาน โครงการ หรือบุคคลที่เหยื่อรู้จัก ทำให้เหยื่อรู้สึกว่าอีเมลนั้นน่าเชื่อถือและเปิดลิงก์หรือไฟล์แนบโดยไม่ทันระวัง โดยสามารถป้องกันการโจมตี ได้ดังนี้\r\n			3.1 ตรวจสอบที่อยู่อีเมลผู้ส่ง อย่างละเอียด อย่าไว้ใจอีเมลที่มาจากแหล่งที่ไม่คุ้นเคยหรืออีเมลที่คล้ายกัน   \r\n			3.2 สังเกตรูปแบบการเขียนและเนื้อหา หากพบการใช้ภาษาที่ผิดปกติ ควรสงสัยไว้ก่อน\r\n			3.3 อย่าคลิกลิงก์หรือดาวน์โหลดไฟล์ทันที โดยเฉพาะอีเมลที่อ้างถึงเหตุการณ์เร่งด่วนหรือการร้องขอข้อมูลสำคัญ  \r\n			3.4 ใช้การยืนยันตัวตนแบบหลายขั้นตอน (Multi-Factor Authentication - MFA) เพื่อลดความเสี่ยงหากข้อมูลบัญชีถูกขโมย\r\n			3.5 อบรมพนักงานให้รู้จักภัยคุกคามและวิธีระบุ Spear phishing เพื่อป้องกันการตกเป็นเหยื่อ\r\n		4 Smishing Phishing\r\n			Smishing หรือ SMS Phishing เป็นการหลอกลวงผ่านข้อความ SMS วิธีสังเกต ข้อความเหล่านี้จะถูกส่งมาจากเบอร์แปลกที่เป็นเบอร์ส่วนตัวของบุคคลทั่วไป อ้างว่าส่งมาจากองค์กรใหญ่ ๆ ซึ่งไม่สมเหตุสมผล บางทีเป็นข้อความที่ใช้ภาษาไม่เป็นทางการ พิมพ์ผิด หรือเป็นข้อความที่อ้างว่าเราได้รางวัล หรือทำให้งงงวย เช่น “พัสดุของคุณจัดส่งไม่สำเร็จ กรุณาคลิกลิงก์เพื่อดำเนินการจัดส่งต่อ” คนที่สั่งของออนไลน์บ่อย ๆ ก็อาจจะหลงกลแล้วคลิกเข้าไป กรอกข้อมูลต่าง ๆ เพราะคิดว่าเป็น SMS จากขนส่งจริง หรืออาจจะเป็น SMS ที่หลอกล่อให้เราคลิกเข้าไปในเว็บไซต์ปลอมที่มิจฉาชีพสร้างขึ้นก็ได้ โดยสามารถป้องกันการโจมตี ได้ดังนี้\r\n			4.1 ตรวจสอบเบอร์ผู้ส่ง หากเป็นเบอร์แปลกหรือส่วนตัว อย่าเพิ่งเชื่อถือ โดยเฉพาะหากข้อความอ้างถึงองค์กรขนาดใหญ่\r\n			4.2 ระมัดระวังข้อความที่สร้างความเร่งด่วนหรือเสนอผลประโยชน์ เพราะมักเป็นกลยุทธ์ที่มิจฉาชีพใช้หลอกลวง\r\n			4.3 ไม่ควรคลิกลิงก์ในข้อความ SMS จากแหล่งที่ไม่คุ้นเคย หากต้องการตรวจสอบสถานะพัสดุหรือข้อมูลใด ๆ ควรเข้าเว็บไซต์หรือแอปพลิเคชันขององค์กรนั้นโดยตรง\r\n			4.4 ไม่ควรให้ข้อมูลส่วนตัวผ่านลิงก์ในข้อความ SMS โดยเฉพาะข้อมูลที่สำคัญเช่น เลขบัตรประชาชน รหัสผ่าน หรือเลขบัตรเครดิต\r\n		5 Voice Phishing \r\n			คือการหลอกลวงทางไซเบอร์ในรูปแบบเสียง โดยผู้โจมตีมักใช้การโทรศัพท์เพื่อหลอกล่อให้เหยื่อเปิดเผยข้อมูลส่วนตัวหรือโอนเงินให้ ซึ่งในปัจจุบันเป็นที่รู้จักในชื่อ \"แก๊งคอลเซ็นเตอร์\" ตัวอย่างวิธีการ Vishing เช่น อ้างว่าโทรมาจากองค์กรสำคัญ ปลอมเป็นคนรู้จัก อ้างว่าเหยื่อได้รับรางวัลหรือของสมนาคุณ เป็นต้น เมื่อเหยื่อตกหลุมพราง ผู้โจมตีมักขอข้อมูลสำคัญ เช่น หมายเลขบัตรประชาชน เลขบัญชีธนาคาร หรืออาจขอให้โอนเงินเข้าไปในบัญชีของพวกเขา โดยสามารถป้องกันการโจมตี ได้ดังนี้\r\n			5.1 ให้วางสายทันที หากได้รับสายที่อ้างตัวจากองค์กรหรือหน่วยงานที่ไม่ชัดเจน โดยเฉพาะหากขอข้อมูลสำคัญของเรา\r\n			5.2 หลีกเลี่ยงการให้ข้อมูลส่วนตัวทางโทรศัพท์ ไม่ว่าจะเป็นข้อมูลบัตรประชาชน เลขบัญชี หรือข้อมูลการเงินอื่น ๆ\r\n			5.3 ตรวจสอบหมายเลขผู้โทร หากสงสัยสามารถโทรไปยังหมายเลขติดต่อขององค์กรนั้นโดยตรงเพื่อยืนยัน\r\n', 'image.png', 5),
-(10, 'SPAM', 'Spam (สแปม) คือ อีเมลที่มีข้อความโฆษณาหรือเนื้อหาที่ส่งให้ผู้รับโดยไม่ได้รับอนุญาต มักไม่ระบุชื่อผู้ส่งที่ชัดเจนหรือมีการแอบอ้าง ทำให้ก่อความรำคาญแก่ผู้รับ มักจะเป็นข้อความโฆษณา, การเสนอขายผลิตภัณฑ์หรือบริการ, หรือการหลอกลวง ประเภทของ Spam มีดังนี้ \r\n		1 Email Spam \r\n			โดยจะส่งผ่านทางอีเมล อีเมล Spam สามารถมีลิงก์ที่อาจนำไปสู่เว็บไซต์ที่อันตรายหรือมีการแอบอ้างเป็นองค์กรที่เชื่อถือได้\r\n		2 SMS Spam\r\n			 ข้อความ Spam ที่ส่งผ่านทาง SMS โดยมักจะเป็นข้อความที่เสนอขายผลิตภัณฑ์หรือบริการที่ไม่เกี่ยวข้อง หรือข้อความที่มีลิงก์เพื่อหลอกให้ผู้รับคลิก\r\n		3 Application Spam\r\n			Spam ที่ถูกส่งผ่านทางแอปพลิเคชันแชท เช่น WhatsApp หรือ Facebook Messenger ซึ่งมักจะเป็นข้อความที่ไม่พึงประสงค์หรือโฆษณาที่ไม่เกี่ยวข้อง\r\nSpam คือ ข้อความที่ไม่พึงประสงค์ที่ถูกส่งไปยังผู้ใช้จำนวนมาก ซึ่งมักสร้างความรำคาญและอาจเสี่ยงต่อความปลอดภัย การป้องกันสามารถทำได้โดยการใช้ฟิลเตอร์สแปม, หลีกเลี่ยงการให้ข้อมูลส่วนบุคคล, และไม่คลิกลิงก์หรือเปิดไฟล์แนบที่ไม่รู้จัก การรายงานสแปมสามารถช่วยลดปริมาณและผลกระทบของสแปมได้อย่างมีประสิทธิภาพ\r\n', 'image.png', 5),
-(11, 'Baiting', 'Baiting เป็นหนึ่งในภัยคุกคามทางไซเบอร์ที่พบได้บ่อยบนอินเทอร์เน็ต โดยเป็นเทคนิคที่แฮกเกอร์ใช้ในการแพร่กระจายมัลแวร์และขโมยข้อมูลของผู้ใช้ โดยใช้กลวิธีล่อลวงเพื่อดึงดูดให้เหยื่อคลิกหรือดาวน์โหลดไฟล์ที่ติดมัลแวร์ ซึ่งมีความคล้ายคลึงกับการโจมตีแบบฟิชชิง แต่ต่างกันที่ Baiting มุ่งเน้นการดึงดูดด้วยสิ่งที่ทำให้ผู้ใช้สนใจ เช่น การดาวน์โหลดไฟล์หรือโปรแกรมฟรี โดยปกติจะเป็นไฟล์ เสนอ สินค้าราคาถูกหรือน่าสนใจอย่างที่เรากล่าวไป แต่พวกเขายังสามารถเล่นกับความกลัวด้วยความเร็ว ทำให้ผู้ใช้เห็นว่าต้องคลิกอย่างรวดเร็วเพื่อแก้ปัญหาเพื่อรับข้อมูลบางประเภท แทนที่จะหลอกให้กรอกข้อมูลสำคัญในเว็บไซต์ปลอมอย่างฟิชชิง ตัวอย่างการ Baiting ที่พบบ่อย เช่น แฟลชไดรฟ์ที่ติดไวรัสวางในที่สาธารณะ และ โฆษณาหลอกลวงที่ให้ดาวน์โหลดโปรแกรมฟรี  โดยสามารถป้องกันการโจมตี ได้ดังนี้\r\n	        1 ระมัดระวังการเชื่อมต่ออุปกรณ์แปลกปลอม เช่น แฟลชไดรฟ์ที่ไม่รู้แหล่งที่มา\r\n	         2 ดาวน์โหลดเฉพาะจากแหล่งที่เชื่อถือได้ หลีกเลี่ยงการดาวน์โหลดจากเว็บไซต์ที่ไม่น่าเชื่อถือหรือโฆษณาที่ดูน่าสงสัย\r\n	         3 ไม่ควรคลิกลิงก์หรือแบนเนอร์โฆษนาที่ดูไม่น่าไว้วางใจ โดยเฉพาะลิงก์ที่แจกของฟรีไม่คิดเงิน\r\n', 'image.png', 5),
-(12, 'Pretexting', 'Pretexting คือ เทคนิควิศวกรรมทางสังคม มีจุดมุ่งหมายเพื่อสร้างความไว้วางใจระหว่างผู้โจมตีและเป้าหมาย เพื่อเข้าถึงข้อมูลส่วนบุคคล หรือข้อมูลพิเศษอื่น ๆ ตัวอย่างเช่น นักต้มตุ๋นอาจสวมรอยเป็นผู้ให้บริการบุคคลที่สาม โดยบอกว่าพวกเขาว่าเราจำเป็นต้องทราบชื่อและนามสกุลของคุณ เพื่อยืนยันตัวตนของคุณ จากนั้นจะนำข้อมูลที่ได้ไปต่อยอดในการโจมตีถัดไป	 โดยสามารถป้องกันการโจมตี ได้ดังนี้\r\n		1 ไม่ให้ข้อมูลสำคัญทางโทรศัพท์หรืออีเมล หากไม่ได้เป็นการติดต่อผ่านช่องทางที่ได้รับการยืนยันจากองค์กรนั้นจริง ๆ\r\n		2 ตรวจสอบข้อเท็จจริงก่อนให้ข้อมูล เช่น โทรกลับไปยังหน่วยงานที่อ้างถึงเพื่อยืนยันว่าเป็นการติดต่อที่แท้จริง\r\n 	        3 ระมัดระวังสงสัยทุกครั้งที่ถูกขอข้อมูลสำคัญ โดยเฉพาะข้อมูลส่วนบุคคล รหัสผ่าน หรือข้อมูลทางการเงิน\r\n', 'image.png', 5),
-(13, 'Impersonation', '                            การข่มเหงรังแกทางโลกไซเบอร์ เป็นพฤติกรรมการใช้เครื่องมืออิเล็กทรอนิกส์ในการคุกคาม ล่อลวง และรังแกผู้อื่นโดยเจตนา โดยมีการกระทำซ้ำ ๆ และผู้ถูกกระทำไม่สามารถแก้ตัวหรือปกป้องได้ บุคคลหรือกลุ่มบุคคลมักสื่อสารด้วยความรุนแรงหรือก้าวร้าว โดยตั้งใจที่จะทำร้ายหรือสร้างความไม่สบายใจแก่ผู้อื่น ผู้รังแกมีแรงจูงใจในการก่อการข่มเหงรังแกทางโลกไซเบอร์โดยส่วนใหญ่เกิดจากความสะดวกและรวดเร็วในการข่มเหงรังแก ที่ทำให้เกิดความพึงพอใจในหลาย ๆ ด้าน ไม่ว่าจะเป็น ด้านความมีอำนาจ ศักดิ์ศรี การได้แสดงออกถึงความก้าวร้าว การแก้แค้น ความอิจฉา การได้รับความสนใจ ดูเจ๋ง ดูแข็งกร้าว เป็นที่เกรงกลัวจากผู้จนโดยทั้งหมดนี้สามารถทำได้สำเร็จและไม่ค่อยถูกจับได้\r\n\r\n                              การปลอมตัวเป็นบุคคลอื่น (Impersonation) คือ การแอบอ้างเป็นบุคคลหนึ่งและกระทำสิ่งที่สร้างความเสื่อมเสียให้กับบุคคลนั้น เช่น ใช้ถ้อยคำหยาบคายด่าว่ากล่าวผู้อื่น เผยแพร่ข้อมูลที่ไม่เหมาะสมให้กับผู้อื่น ข่มเหงรังแกบุคคลอื่น เป็นต้น การปลอมตัวเป็นบุคคลอื่นสามารถทำโดยการสร้างตัวตนเลี่ยนแบบบุคคลนั้นขึ้นมาใหม่ หรือขโมยรหัสผ่านของบุคคลนั้นเพื่อใช้ตัวตนบนโลกออนไลน์ของบุคคลนั้นทำสิ่งที่ไม่เหมาะสม ตัวอย่างของ Impersonation เช่น ปลอมเป็นเจ้านายหรือเพื่อนร่วมงาน  แฮกเกอร์อาจส่งอีเมลหรือข้อความปลอมที่ดูเหมือนมาจากเจ้านายหรือเพื่อนร่วมงาน โดยขอให้เหยื่อโอนเงินหรือให้ข้อมูลสำคัญ หรือ ปลอมเป็นหน่วยงานทางการ  ผู้โจมตีอาจอ้างตัวเป็นหน่วยงานรัฐ เช่น กรมสรรพากรหรือธนาคาร และขอข้อมูลส่วนบุคคลหรือการยืนยันข้อมูลทางการเงิน เป็นต้น โดยสามารถป้องกันการโจมตี ได้ คือ ตรวจสอบผู้ส่งหรือหมายเลขโทรศัพท์ ก่อนที่จะให้ข้อมูลหรือทำการโอนเงิน โดยเฉพาะหากการติดต่อเกิดขึ้นผ่านช่องทางที่ไม่คุ้นเคย ติดต่อกลับด้วยวิธีที่เชื่อถือได้ เช่น โทรศัพท์ไปยังหมายเลขที่รู้จักหรือเข้าเว็บไซต์ทางการขององค์กรเพื่อยืนยันข้อมูล ไม่ให้ข้อมูลส่วนตัวผ่านทางโทรศัพท์หรืออีเมล หากไม่แน่ใจเกี่ยวกับการติดต่อ หรือหากการขอข้อมูลดูไม่น่าเชื่อถือ ', 'image.png', 5),
-(14, 'Technical Support Scams', '                                      การใช้กลยุทธ์ทางด้านเทคนิคต่างๆ มาหลอกเหยื่อ โดยจะให้เหยื่อจ่ายเงินสนับสนุน สำหรับการทำงาน ทั้งๆที่แท้จริงแล้ว การทำงานนั้น ไม่มีความจำเป็นที่จะต้องเสียค่าใช้จ่ายเพื่อให้ได้มา โดยมันจะทำการหลอกลวงว่า ซอฟแวร์ หรือระบบ ในเครื่องคอมพิวเตอร์ของเหยื่อกำลังประสบปัญหา หลังจากนั้นจะหลอกให้เหยื่อจ่ายเงินเพื่อทำการแก้ไข  เช่น จากบริษัทซอฟต์แวร์หรือผู้ให้บริการอินเทอร์เน็ต โดยบอกว่าคอมพิวเตอร์ของคุณมีปัญหาและขอเข้าถึงระยะไกลเพื่อแก้ไข แต่จริงๆ แล้วกลับติดตั้งมัลแวร์หรือขโมยข้อมูล วิธีป้องกันคือไม่ให้การเข้าถึงระยะไกลแก่บุคคลที่ไม่น่าเชื่อถือ และติดต่อฝ่ายสนับสนุนของบริษัทโดยตรงเสมอ ', 'image.png', 5),
-(15, 'Scareware', '                                   เป็นภัยคุกคามด้านความปลอดภัยซอฟต์แวร์ที่เป็นอันตรายเพื่อหลอกลวงผู้ใช้ให้กลัวว่าเครื่องคอมพิวเตอร์หรืออุปกรณ์ของพวกเขามีไวรัสหรือภัยคุกคามด้านความปลอดภัยที่ร้ายแรง ถูกหลอกให้ดาวน์โหลดซอฟต์แวร์ที่แท้จริงแล้วเป็นมัลแวร์ หรือจ่ายเงินเพื่อ \"แก้ไข\" ปัญหาที่ไม่จริง โดยทั่วไป Scareware มักจะสร้างข้อความปลอมขึ้นมา เช่น \"คอมพิวเตอร์ของคุณถูกแฮ็ก\" หรือ \"พบไวรัสในระบบ\" และขอให้เหยื่อดาวน์โหลดซอฟต์แวร์หรือชำระค่าบริการเพื่อการกำจัดไวรัส โดยสามารถป้องกันการโจมตี ได้ดังนี้\r\n		1 ไม่คลิกที่ลิงก์หรือโฆษณาที่ดูไม่น่าเชื่อถือ โดยเฉพาะที่แสดงข้อความเตือนเกี่ยวกับไวรัสหรือภัยคุกคามต่าง ๆ\r\n		2 ใช้งานซอฟต์แวร์ป้องกันไวรัสที่เชื่อถือได้ และตรวจสอบความปลอดภัยของระบบอย่างสม่ำเสมอ\r\n		3 ตรวจสอบแหล่งที่มาของโปรแกรม ก่อนที่จะดาวน์โหลดหรือติดตั้งโปรแกรมใด ๆ จากอินเทอร์เน็ต\r\n		4 ไม่ให้ข้อมูลการชำระเงิน หรือดาวน์โหลดซอฟต์แวร์จากเว็บไซต์ที่คุณไม่รู้จักหรือไม่ไว้วางใจ\r\n', 'image.png', 5);
+  `id` int NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `images` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `courseId` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -293,39 +112,14 @@ INSERT INTO `subject` (`SubjectID`, `Name`, `Content`, `Image_id`, `CourseID`) V
 --
 
 CREATE TABLE `user` (
-  `Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Role` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT 'User',
-  `OTP` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `OTP_EXP` datetime DEFAULT NULL,
-  `ProfileIMG` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
+  `id` int NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `role` char(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `profile_img` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `verified_key` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-
---
--- Dumping data for table `user`
---
-
-INSERT INTO `user` (`Email`, `Password`, `Name`, `Role`, `OTP`, `OTP_EXP`, `ProfileIMG`) VALUES
-('AAA', '$2b$10$rvhN7NsLbTUWbQJTM7kSpOyqlb2MQRA7HzlmJVu3ng6kO8Ho8KWN6', 'a', 'Student', '-', NULL, ''),
-('ABC', '$2b$10$HIwLXl6PTS7A0qspbP8agOsSMCI5fpi67RLHz0.IWArmSuHOWHeoe', 'akakak', 'Student', '-', NULL, ''),
-('Test', '$2b$10$zq.K1KnpA4ugzBMufliFyu/soLUEKgtGv.RLP2Idq7EAVGtEhh5ly', 'asdv', 'Student', '-', NULL, ''),
-('admin', '$2b$10$4//6S5EIBVirOXvGeS/qHuGnE6jGt6kFZK3tT97vDCeRu44jv0y.a', 'Admin Inwza', 'Admin', '-', NULL, ''),
-('arcarnupab@gmail.com', '$2b$10$8d92WA2ybi9BZ.8hcWvSqO5b7Z5DP3WP32JrMAADL1ImtO44ibq9i', 'Arc', 'Student', '994695', '2024-12-19 10:14:42', ''),
-('pikul874@gmail.com', '$2b$10$b.18HfiWgNeN4riRhRWcQeG0r04j7f2zfku/QWQlAE58BaJujnGYi', 'Pao', 'Student', '510467', '2024-11-17 16:46:18', '');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `virtual_machine`
---
-
-CREATE TABLE `virtual_machine` (
-  `Virtual_MachineID` int NOT NULL,
-  `IP_Address` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `Email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `SubjectID` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Indexes for dumped tables
@@ -335,59 +129,51 @@ CREATE TABLE `virtual_machine` (
 -- Indexes for table `answer`
 --
 ALTER TABLE `answer`
-  ADD PRIMARY KEY (`AnswerID`),
-  ADD KEY `AnswerOfQuestion` (`QuestionID`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `answer_question` (`questionId`);
 
 --
--- Indexes for table `courses`
+-- Indexes for table `course`
 --
-ALTER TABLE `courses`
-  ADD PRIMARY KEY (`CourseID`);
+ALTER TABLE `course`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `teach_course` (`teacherId`);
 
 --
--- Indexes for table `history`
+-- Indexes for table `enrollment`
 --
-ALTER TABLE `history`
-  ADD PRIMARY KEY (`HistoryID`),
-  ADD KEY `HistoryOfCourse` (`CourseID`),
-  ADD KEY `HistoryOfUser` (`Email`);
+ALTER TABLE `enrollment`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `owner` (`userId`),
+  ADD KEY `enroll_course` (`courseId`);
 
 --
 -- Indexes for table `progress`
 --
 ALTER TABLE `progress`
-  ADD PRIMARY KEY (`ProgressID`),
-  ADD KEY `ProgressOfHistory` (`HistoryID`),
-  ADD KEY `Progress_Subject` (`SubjectID`),
-  ADD KEY `Progress_Question` (`QuestionID`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `enrol_progress` (`enrollmentId`),
+  ADD KEY `question_progress` (`questionId`);
 
 --
 -- Indexes for table `question`
 --
 ALTER TABLE `question`
-  ADD PRIMARY KEY (`QuestionID`),
-  ADD KEY `Subject-ID_idx` (`SubjectID`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `in_subject` (`subjectId`);
 
 --
 -- Indexes for table `subject`
 --
 ALTER TABLE `subject`
-  ADD PRIMARY KEY (`SubjectID`),
-  ADD KEY `Couese-ID_idx` (`CourseID`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `in_course` (`courseId`);
 
 --
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`Email`);
-
---
--- Indexes for table `virtual_machine`
---
-ALTER TABLE `virtual_machine`
-  ADD PRIMARY KEY (`Virtual_MachineID`),
-  ADD KEY `VM_User` (`Email`),
-  ADD KEY `VM_Subject` (`SubjectID`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -397,43 +183,43 @@ ALTER TABLE `virtual_machine`
 -- AUTO_INCREMENT for table `answer`
 --
 ALTER TABLE `answer`
-  MODIFY `AnswerID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `courses`
+-- AUTO_INCREMENT for table `course`
 --
-ALTER TABLE `courses`
-  MODIFY `CourseID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+ALTER TABLE `course`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `history`
+-- AUTO_INCREMENT for table `enrollment`
 --
-ALTER TABLE `history`
-  MODIFY `HistoryID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
+ALTER TABLE `enrollment`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `ProgressID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=977;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `QuestionID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `subject`
 --
 ALTER TABLE `subject`
-  MODIFY `SubjectID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `virtual_machine`
+-- AUTO_INCREMENT for table `user`
 --
-ALTER TABLE `virtual_machine`
-  MODIFY `Virtual_MachineID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+ALTER TABLE `user`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -443,41 +229,39 @@ ALTER TABLE `virtual_machine`
 -- Constraints for table `answer`
 --
 ALTER TABLE `answer`
-  ADD CONSTRAINT `AnswerOfQuestion` FOREIGN KEY (`QuestionID`) REFERENCES `question` (`QuestionID`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `answer_question` FOREIGN KEY (`questionId`) REFERENCES `question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `history`
+-- Constraints for table `course`
 --
-ALTER TABLE `history`
-  ADD CONSTRAINT `HistoryOfCourse` FOREIGN KEY (`CourseID`) REFERENCES `courses` (`CourseID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `HistoryOfUser` FOREIGN KEY (`Email`) REFERENCES `user` (`Email`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `course`
+  ADD CONSTRAINT `teach_course` FOREIGN KEY (`teacherId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `enrollment`
+--
+ALTER TABLE `enrollment`
+  ADD CONSTRAINT `enroll_course` FOREIGN KEY (`courseId`) REFERENCES `course` (`id`),
+  ADD CONSTRAINT `owner` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `progress`
 --
 ALTER TABLE `progress`
-  ADD CONSTRAINT `Progress_Question` FOREIGN KEY (`QuestionID`) REFERENCES `question` (`QuestionID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `Progress_Subject` FOREIGN KEY (`SubjectID`) REFERENCES `subject` (`SubjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `ProgressOfHistory` FOREIGN KEY (`HistoryID`) REFERENCES `history` (`HistoryID`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `enrol_progress` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `question_progress` FOREIGN KEY (`questionId`) REFERENCES `question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `question`
 --
 ALTER TABLE `question`
-  ADD CONSTRAINT `Ques_Subject-ID` FOREIGN KEY (`SubjectID`) REFERENCES `subject` (`SubjectID`);
+  ADD CONSTRAINT `in_subject` FOREIGN KEY (`subjectId`) REFERENCES `subject` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `subject`
 --
 ALTER TABLE `subject`
-  ADD CONSTRAINT `Couese-ID` FOREIGN KEY (`CourseID`) REFERENCES `courses` (`CourseID`);
-
---
--- Constraints for table `virtual_machine`
---
-ALTER TABLE `virtual_machine`
-  ADD CONSTRAINT `VM_Subject` FOREIGN KEY (`SubjectID`) REFERENCES `subject` (`SubjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `VM_User` FOREIGN KEY (`Email`) REFERENCES `user` (`Email`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `in_course` FOREIGN KEY (`courseId`) REFERENCES `course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
