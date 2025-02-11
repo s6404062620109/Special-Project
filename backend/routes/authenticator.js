@@ -2,15 +2,17 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const db = require("./database");
+require('dotenv').config();
 
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-    const { email, password, name } = req.body;
+    const { email, name } = req.body;
   
-    if (!email || !password || !name) {
-      return res.status(400).json({ message: "Email, password, and name are required." });
+    if (!email || !name) {
+      return res.status(400).json({ message: "Email and name are required." });
     }
   
     db.query("SELECT * FROM user WHERE email = ?", [email], async (err, results) => {
@@ -23,16 +25,48 @@ router.post("/register", async (req, res) => {
           return res.status(400).json({ message: "Email already registered." });
         }
   
-        try {
-          const hashedPassword = await bcrypt.hash(password, 10);
-  
-          db.query("INSERT INTO user (email, password, name, role, OTP) VALUES(?, ?, ?, ?, ?)", 
-            [email, hashedPassword, name, "Student", "-"], (err, result) => {
+        try {  
+          const verifiedKey = crypto.randomBytes(32).toString("hex");
+          const verificationToken = jwt.sign({ email }, verifiedKey, { expiresIn: '1h' });
+
+          const verifiedExpired = new Date(Date.now() + 60 * 60 * 1000);
+
+          db.query("INSERT INTO user (email, name, role, verified_key, verified_expired) VALUES(?, ?, ?, ?, ?)", 
+            [email, name, "s", verifiedKey, verifiedExpired], (err, result) => {
               if (err) {
                 console.log(err);
                 return res.status(500).json({ message: "Register Failed!!!" });
               } else {
-                return res.status(201).json({ message: "Register Success!!!" });
+                const resetLink = `${process.env.FRONTEND_URL}/set-password?token=${verificationToken}&email=${email}`;
+
+                const transporter = nodemailer.createTransport({
+                  service: 'gmail', 
+                  auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                  },
+                });
+
+                const mailOptions = {
+                  from: process.env.EMAIL_USER,
+                  to: email,
+                  subject: "Set Your Password",
+                  html: `
+                      <p>Hello ${name},</p>
+                      <p>Click the link below to set your password. This link will expire in 1 hour.</p>
+                      <a href="${resetLink}">${resetLink}</a>
+                      <p>If you didn't register, please ignore this email.</p>
+                  `,
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                  if (error) {
+                      console.error("Email sending failed:", error);
+                      return res.status(500).json({ message: "Failed to send email." });
+                  } else {
+                      return res.status(201).json({ message: "Registered successfully. Please check your email to set your password." });
+                  }
+                });
               }
             }
           );
@@ -41,6 +75,70 @@ router.post("/register", async (req, res) => {
           return res.status(500).json({ message: "Server error." });
         }
     });
+});
+
+router.put("/register_password", async (req, res) => {
+  const { token, email, newPassword } = req.body;
+
+  if (!token || !email || !newPassword) {
+      return res.status(400).json({ message: "Token, email, and password are required." });
+  }
+
+  try {
+      db.query("SELECT * FROM user WHERE email = ?", [email], async (err, results) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database user query error." });
+          }
+
+          if (results.length === 0) {
+            return res.status(404).json({ message: "User not found." });
+          }
+
+          const user = results[0];
+
+          if(user.password !== null){
+            return res.status(400).json({ message: "User already have password." });
+          }
+
+          jwt.verify(token, user.verified_key, (err, decoded) => {
+              if (err) {
+                  console.error("Token verification failed:", err);
+                  return res.status(400).json({ message: "Invalid or expired token." });
+              }
+
+              if (decoded.email !== email) {
+                  return res.status(400).json({ message: "Email does not match the token." });
+              }
+
+              if (new Date() > new Date(user.verified_expired)) {
+                  return res.status(400).json({ message: "Token has expired." });
+              }
+
+              const saltRounds = 10;
+              bcrypt.hash(newPassword, saltRounds, (err, hash) => {
+                  if (err) {
+                      console.error("Password hashing failed:", err);
+                      return res.status(500).json({ message: "Password hashing failed." });
+                  }
+
+                  db.query("UPDATE user SET password = ?, verified_key = NULL, verified_expired = NULL WHERE email = ?", 
+                      [hash, email], (err, result) => {
+                          if (err) {
+                              console.error("Password update failed:", err);
+                              return res.status(500).json({ message: "Password update failed." });
+                          }
+
+                          return res.status(200).json({ message: "Password updated successfully." });
+                      }
+                  );
+              });
+          });
+      });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error." });
+  }
 });
 
 const authenUserKey = `SAT_Authen_User`

@@ -12,6 +12,7 @@ COPY package*.json ./
 RUN npm install --production  # Use --production to avoid devDependencies if not needed
 
 COPY index.js ./
+COPY .env ./
 COPY wait-for-it.sh ./
 COPY lab/ ./lab/
 COPY routes/ ./routes/

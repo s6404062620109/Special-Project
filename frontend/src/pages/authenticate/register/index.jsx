@@ -8,8 +8,6 @@ function Register() {
   const navigate = useNavigate();
   const [data, setData] = useState({
     email: '',
-    password: '',
-    cpassword: '',
     name: ''
   })
   const [statusMessage, setStatusMessage] = useState('');
@@ -17,15 +15,9 @@ function Register() {
   const handleSubmit = async (e) =>{
     e.preventDefault();
 
-    if (data.password !== data.cpassword) {
-      setStatusMessage("Passwords do not match");
-      return;
-    }
-
     try { 
       const response = await backend.post('/auth/register', {
           email: data.email,
-          password: data.password,
           name: data.name,
       });
 
@@ -57,26 +49,6 @@ function Register() {
               placeholder='EMAIL'
               value={data.email}
               onChange={(e) => setData({ ...data, email:e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label>PASSWORD</label>
-            <input
-              type='password'
-              placeholder='PASSWORD'
-              value={data.password}
-              onChange={(e) => setData({ ...data, password:e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label>CONFIRM PASSWORD</label>
-            <input
-              type='password'
-              placeholder='CONFIRM PASSWORD'
-              value={data.cpassword}
-              onChange={(e) => setData({ ...data, cpassword:e.target.value })}
             />
           </div>
 

@@ -6,14 +6,14 @@ import Navbar from './components/Navbar';
 import Home from './pages/home';
 import Courses from './pages/courses';
 
-import Login from './pages/authenticate/login';
 import Register from './pages/authenticate/register';
 import Reset from './pages/authenticate/reset';
 import ResetCode from './pages/authenticate/resetotp';
-import Setpassword from './pages/authenticate/newpassword';
+import Netpassword from './pages/authenticate/newpassword';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
+import SetPassword from './pages/authenticate/register/Setpassword';
 
 function App() {
   const location = useLocation();
@@ -29,9 +29,10 @@ function App() {
         <Routes>
           <Route path='/' element={<Home/>}/>
           <Route path='/register' element={<Register/>}/>
+          <Route path='/set-password' element={<SetPassword/>}/>
           <Route path='/reset' element={<Reset/>}/>
           <Route path='/resetcode' element={<ResetCode/>}/>
-          <Route path='/newpassword' element={<Setpassword/>}/>
+          <Route path='/newpassword' element={<Netpassword/>}/>
           
           <Route path='/courses' element={<Courses/>}/>
           <Route path='/course/:courseId' element={<CourseDetail/>}/>
