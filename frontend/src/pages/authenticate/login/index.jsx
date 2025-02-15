@@ -72,7 +72,7 @@ function Login() {
           <div className={style.functions}>
             <Link to='/register'>Don’t have an account ?</Link>
             <div></div>
-            <Link to='/reset'>Forgot password ?</Link>
+            <Link to='/forgot-password'>Forgot password ?</Link>
           </div>
         </div>
       </form>

@@ -12,6 +12,7 @@ import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
 import SetPassword from './pages/authenticate/register/Setpassword';
+import Forgot from './pages/authenticate/forgot';
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function App() {
           <Route path='/' element={<Home/>}/>
           <Route path='/register' element={<Register/>}/>
           <Route path='/set-password' element={<SetPassword/>}/>
+          <Route path='/forgot-password' element={<Forgot/>}/>
           <Route path='/reset-password' element={<Reset/>}/>
           
           <Route path='/courses' element={<Courses/>}/>

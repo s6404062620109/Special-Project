@@ -41,7 +41,7 @@ function Reset() {
       } catch (error) {
           setStatusMessage(error.response?.data?.message || 'Failed to reset password.');
       }
-  };
+    };
 
     return (
       <div className={style.container}>
