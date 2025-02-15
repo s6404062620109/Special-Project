@@ -18,11 +18,11 @@ function Login() {
       const response = await backend.post('/auth/login', {
           email: dataInput.email,
           password: dataInput.password,
-      });
+      }, { withCredentials: true });
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         setStatusMessage(response.data.message);
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('email', dataInput.email);
         setTimeout(() => window.location.reload(), 2000);
       } 
       else if(response.status === 401) {

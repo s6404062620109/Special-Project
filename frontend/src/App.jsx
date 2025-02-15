@@ -8,8 +8,6 @@ import Courses from './pages/courses';
 
 import Register from './pages/authenticate/register';
 import Reset from './pages/authenticate/reset';
-import ResetCode from './pages/authenticate/resetotp';
-import Netpassword from './pages/authenticate/newpassword';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
@@ -30,9 +28,7 @@ function App() {
           <Route path='/' element={<Home/>}/>
           <Route path='/register' element={<Register/>}/>
           <Route path='/set-password' element={<SetPassword/>}/>
-          <Route path='/reset' element={<Reset/>}/>
-          <Route path='/resetcode' element={<ResetCode/>}/>
-          <Route path='/newpassword' element={<Netpassword/>}/>
+          <Route path='/reset-password' element={<Reset/>}/>
           
           <Route path='/courses' element={<Courses/>}/>
           <Route path='/course/:courseId' element={<CourseDetail/>}/>

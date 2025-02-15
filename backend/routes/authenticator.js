@@ -3,10 +3,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const cookieParser = require("cookie-parser");
 const db = require("./database");
 require('dotenv').config();
 
 const router = express.Router();
+router.use(cookieParser());
 
 router.post("/register", async (req, res) => {
     const { email, name } = req.body;
@@ -141,7 +143,6 @@ router.put("/register_password", async (req, res) => {
   }
 });
 
-const authenUserKey = `SAT_Authen_User`
 router.post("/login", (req, res) => {
     const { email, password } = req.body;
   
@@ -158,168 +159,175 @@ router.post("/login", (req, res) => {
           return res.status(404).json({ message: "User not found." });
         }
   
-        if (result.length > 0) {
-          const user = result[0];
-          const isPasswordValid = await bcrypt.compare(password, user.Password);
-          if (!isPasswordValid) {
-            return res.status(401).send({ message: "Invalid password." });
-          } else {
-            const token = jwt.sign({ email: user.Email }, authenUserKey, { expiresIn: "1h" });
-            return res.status(201).send({ message: "Login Success.", token: token });
-          }
+        const user = result[0];
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid password." });
         }
+
+        const verifiedKey = crypto.randomBytes(32).toString("hex");
+        const verifiedExpired = new Date(Date.now() + 60 * 60 * 1000);
+
+        db.query("UPDATE user SET verified_key = ?, verified_expired = ? WHERE email = ?", 
+          [verifiedKey, verifiedExpired, email],
+            (error) => {
+                if (error) {
+                    return res.status(500).json({ message: "Error updating verification details." });
+                }
+
+                const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "1h" });
+
+                res.cookie("authToken", token, {
+                  maxAge: 3600000,
+                  secure: true,
+                  httpOnly: true,
+                  sameSite: 'none',
+                });
+
+                return res.status(200).json({ message: "Login Success." });
+            }
+        );
     });
-});
-  
-router.get("/authorization", (req, res) => {
-    const authToken = req.headers['authorization'];
-    let authtokenvalue = ''
-    if ( authToken ){
-      authtokenvalue = authToken.split(' ')[1];
-    }
-    
-    const user = jwt.verify(authtokenvalue, authenUserKey);
-    if(user){
-      const email = user.email;
-      db.query('SELECT Email, Name, Role FROM user WHERE Email = ?', [email], (error, result) => {
-        if (error) {
-          console.log(error);
-          return res.status(500).json({ message: "Database user query error." });
-        } else{ 
-          return res.status(200).json({ result });
-        }
-      });
-    } else {
-      return res.status(403).json({ message: "Authorization error!" });
-    }
 });
 
-const authenRequestotpKey = `SAT_Reset_OTP`
-router.post("/requestotp", (req, res) => {
-    const { email } = req.body;
+router.post("/logout", (req, res) => {
+  res.clearCookie("authToken");
+  return res.status(200).json({ message: "Logged out successfully." });
+});
   
-    if (!email) {
+router.get("/authorization/:email", (req, res) => {
+  const authToken = req.cookies.authToken;
+  const { email } = req.params;
+
+  if (!authToken) {
+      return res.status(403).json({ message: "Authorization error! No token provided." });
+  }
+
+  db.query("SELECT id, email, name, role, profile_img, verified_key FROM user WHERE email = ?", 
+    [email], (err, users) => {
+      if (err) {
+          return res.status(500).json({ message: "Database error while fetching user data." });
+      }
+
+      if (users.length === 0) {
+        return res.status(404).json({ message: "User not found." });
+      }
+      
+      const user = users[0];
+
+      try {
+        const decoded = jwt.verify(authToken, user.verified_key);
+        if (decoded.id === user.id) {
+          return res.status(200).json({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            profile_img: user.profile_img,
+          });
+        }
+      } catch (error) {
+        console.log("Invalid token for user:", user.email);
+        return res.status(403).json({ message: "Invalid or expired token." });
+      }
+
+      return res.status(403).json({ message: "Invalid or expired token." });
+    }
+  );
+});
+
+router.post("/forgot_password", (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
       return res.status(400).send({ message: "Email is required." });
-    }
-  
-    db.query("SELECT * FROM user WHERE Email = ?", [email], (error, results) => {
+  }
+
+  db.query("SELECT * FROM user WHERE email = ?", [email], (error, results) => {
       if (error) {
-        console.error(error);
-        return res.status(500).send({ message: "Database user query error." });
-      }
-  
-      if (results.length === 0) {
-        return res.status(400).send({ message: "Email not found." });
-      }
-  
-      const otp = Math.floor(100000 + Math.random() * 900000);
-      const otpexp = new Date(Date.now() + 15 * 60 * 1000);
-  
-      db.query("UPDATE user SET OTP = ?, OTP_EXP = ? WHERE Email = ?", [otp, otpexp, email], (error) => {
-          if (error) {
-            console.error(error);
-            return res.status(500).send({ message: "Error updating OTP in database." });
-          }
-  
-          const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-              user: "s6404062620109@email.kmutnb.ac.th",
-              pass: "umhv hkky xduh btac",
-            },
-          });
-  
-          const mailOptions = {
-            from: "s6404062620109@email.kmutnb.ac.th",
-            to: email,
-            subject: "Your OTP Code",
-            text: `Your OTP code is: ${otp}`,
-          };
-  
-          transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.log(error);
-              return res.status(500).send({ message: "Error sending OTP" });
-            } else {
-              console.log("Email sent: " + info.response);
-              const token = jwt.sign({ email: email }, authenRequestotpKey, { expiresIn: "15m" });
-              res.status(200).send({ message: "OTP sent successfully", token: token });
-            }
-          });
-        }
-      );
-    });
-});
-  
-router.get("/autherizationotp", (req, res) => {
-    const authToken = req.headers['authorization'];
-    let authtokenvalue = ''
-    if ( authToken ){
-      authtokenvalue = authToken.split(' ')[1];
-    }
-    
-    const user = jwt.verify(authtokenvalue, authenRequestotpKey);
-    if(user){
-      const email = user.email;
-      db.query('SELECT Email, Name, Role FROM user WHERE Email = ?', [email], (error, result) => {
-        if (error) {
-          console.log(error);
-          return res.status(500).json({ message: "Database user query error." });
-        } else{ 
-          return res.status(200).json({ result });
-        }
-      });
-    } else {
-      return res.status(403).json({ message: "Authorization error!" });
-    }
-});
-  
-router.post("/verifyotp", (req, res) => {
-    const { email, otp } = req.body;
-    db.query("SELECT OTP, OTP_EXP FROM user WHERE Email = ?", [email], (error, result) => {
-        if (error) {
           console.error(error);
           return res.status(500).send({ message: "Database user query error." });
-        }
-  
-        if (result.length === 0) {
-          return res.status(400).send({ message: "Email not found." });
-        }
-  
-        const storedOtp = result[0].OTP;
-        const otpExp = result[0].OTP_EXP;
-        const currentTime = new Date();
-  
-        if (currentTime > otpExp) {
-          return res.status(400).send({ message: "OTP has expired." });
-        }
-  
-        if (storedOtp !== otp) {
-          return res.status(400).send({ message: "Invalid OTP" });
-        }
-  
-        return res.status(200).send({ message: "OTP verified successfully." });
       }
-    );
+
+      if (results.length === 0) {
+          return res.status(400).send({ message: "Email not found." });
+      }
+
+      const resetToken = crypto.randomBytes(32).toString("hex"); 
+      const expiryTime = new Date(Date.now() + 15 * 60 * 1000); 
+
+      db.query("UPDATE user SET verified_key = ?, verified_expired = ? WHERE email = ?", 
+          [resetToken, expiryTime, email], (err) => {
+              if (err) {
+                  console.error("Error storing reset token:", err);
+                  return res.status(500).send({ message: "Error storing reset token." });
+              }
+
+              const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+              const transporter = nodemailer.createTransport({
+                  service: "gmail",
+                  auth: {
+                      user: process.env.EMAIL_USER,
+                      pass: process.env.EMAIL_PASS,
+                  },
+              });
+
+              const mailOptions = {
+                  from: process.env.EMAIL_USER,
+                  to: email,
+                  subject: "Reset Your Password",
+                  text: `Click the link below to reset your password. This link will expire in 15 minutes.\n\n${resetLink}`,
+              };
+
+              transporter.sendMail(mailOptions, (error, info) => {
+                  if (error) {
+                      console.log(error);
+                      return res.status(500).send({ message: "Error sending reset email." });
+                  } else {
+                      console.log("Email sent: " + info.response);
+                      return res.status(200).send({ message: "Password reset link sent successfully." });
+                  }
+              });
+          }
+      );
+  });
 });
   
-router.post("/setnewpassword", async (req, res) => {
-    const { email, password } = req.body;
-  
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
-    }
-  
-    const hashedPassword = await bcrypt.hash(password, 10);
-    db.query("UPDATE user SET Password = ? WHERE Email = ?", [hashedPassword, email], (error) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).send({ message: "Error updating Password in database." });
-        } else {
-          return res.status(200).send({ message: "Update Password Success!" });
-        }
+router.put("/reset_password", async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+      return res.status(400).json({ message: "Token and new password are required." });
+  }
+
+  db.query("SELECT * FROM user WHERE verified_key = ?", [token], async (err, results) => {
+      if (err) {
+          return res.status(500).json({ message: "Database user query error." });
       }
-    );
+
+      if (results.length === 0) {
+          return res.status(400).json({ message: "Invalid or expired token." });
+      }
+
+      const user = results[0];
+
+      if (new Date() > new Date(user.verified_expired)) {
+          return res.status(400).json({ message: "Token has expired." });
+      }
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      db.query("UPDATE user SET password = ?, verified_key = NULL, verified_expired = NULL WHERE email = ?", 
+          [hashedPassword, user.email], (err) => {
+              if (err) {
+                  return res.status(500).json({ message: "Password update failed." });
+              }
+              return res.status(200).json({ message: "Password updated successfully." });
+          }
+      );
+  });
 });
 
 module.exports = router;

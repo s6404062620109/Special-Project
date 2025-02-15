@@ -6,47 +6,53 @@ import backend from '../api/backend';
 
 
 function Navbar() {
-  const [data, setData] = useState({
-    email:'',
-    name:'',
-    role:'',
+  const [userData, setUserData] = useState({
+    id:null,
+    email:null,
+    name:null,
+    role:null,
+    profile_img:null,
   })
   const [menuVisible, setMenuVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
-  const token = localStorage.getItem('authToken');
-
-  const decodeAuthToken = async (token) => {
-    if(!token){
-      console.log('Not authentication.');
-      return
-    }
-    else{
+  const emailrefStorage = localStorage.getItem("email");
+ 
+  useEffect(() => {
+    const fetchUserData = async () => {
       try{
-        const response = await backend.get('/auth/authorization', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          } 
+        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+          withCredentials: true
         });
-
         if(response.status === 200){
-          setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          setUserData({
+            id:response.data.id,
+            email:response.data.email,
+            name:response.data.name,
+            role:response.data.role,
+            profile_img:response.data.profile_img,
+          });
         }
 
-      } catch (error) {
+      } catch(error){
         console.log(error);
       }
+      
     }
-  }
-  
-  useEffect(() => {
-    decodeAuthToken(token);
-  }, [token])
+    fetchUserData();
+  },[]);
 
-  const handleLogout = () =>{
-    localStorage.removeItem('authToken');
-    window.location.reload();
-  }
+  const handleLogout = async () => {
+    try {
+      const response = await backend.post('/auth/logout', {}, { withCredentials: true });
+      if(response.status === 200){
+        localStorage.removeItem('email');
+        window.location.reload();
+      } 
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className={style.navWrap}>
@@ -81,12 +87,12 @@ function Navbar() {
           <div>NEWS</div>
         </div>
 
-        {token && (
+        {userData.name !== null &&(
           <div className={style.userAuth}>  
             <div className={style.userInfo}>
               <div>
                 <p>Welcome, </p>
-                <label>{data.name}</label>
+                <label>{userData.name}</label>
               </div>
 
               <img 

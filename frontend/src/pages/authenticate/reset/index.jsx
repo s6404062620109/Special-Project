@@ -1,43 +1,74 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import style from './css/reset.module.css';
 import backend from '../../../api/backend';
 
 function Reset() {
-    const [email, setEmail] = useState('');
+    const [ password, setPassword ] = useState({
+      rpassword: null, cpassword: null
+    })
     const [statusMessage, setStatusMessage] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const handlesubmit = async (e) =>{
-      e.preventDefault(); 
-      
-      try {
-        const response = await backend.post('/auth/requestotp', { email });
-        if (response.status === 200) {
-          localStorage.setItem('resetToken', response.data.token);
-          setStatusMessage(response.data.message);
-          setTimeout(() => navigate('/resetcode'), 1000);
-        }
-      } catch (error) {
-        setStatusMessage('Failed to send OTP');
+    const searchParams = new URLSearchParams(location.search);
+    const token = searchParams.get('token');
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+
+      if (!token) {
+          setStatusMessage('Token is missing.');
+          return;
       }
-    }
+
+      if (password.rpassword !== password.cpassword) {
+          setStatusMessage('Passwords do not match.');
+          return;
+      }
+
+      try {
+          const response = await backend.put('/auth/reset_password', {
+              token,
+              newPassword: password.rpassword,
+          });
+
+          if (response.status === 200) {
+              setStatusMessage(response.data.message);
+              setTimeout(() => navigate('/'), 2000);
+          }
+      } catch (error) {
+          setStatusMessage(error.response?.data?.message || 'Failed to reset password.');
+      }
+  };
 
     return (
       <div className={style.container}>
         <div className={style.heading}>
-          <p>Recovery Password</p>
+          <p>Reset Password</p>
         </div>
   
-        <form onSubmit={handlesubmit}>
+        <form onSubmit={handleSubmit}>
           <div className={style.inputContent}>
             <div>
-              <label>E-mail</label>
+              <label>Password</label>
               <input
-                type='text'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type='password'
+                value={password.rpassword}
+                onChange={(e) => setPassword({...password, rpassword:e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div className={style.inputContent}>
+            <div>
+              <label>Confirm Password</label>
+              <input
+                type='password'
+                value={password.cpassword}
+                onChange={(e) => setPassword({...password, cpassword:e.target.value})}
                 required
               />
             </div>
