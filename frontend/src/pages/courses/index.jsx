@@ -6,42 +6,41 @@ import { useNavigate } from 'react-router-dom';
 import backend from '../../api/backend';
 
 function Courses() {
-  const [userData, setUserdata] = useState({
-    email:'',
-    name:'',
-    role:'',
-  })
+  const [userData, setUserData] = useState({
+      id:null,
+      email:null,
+      name:null,
+      role:null,
+      profile_img:null,
+  });
   const [data, setData] = useState([]);
   const [updateState, setUpdateState] = useState([]);
   const navigate = useNavigate();
-  const token = localStorage.getItem('authToken');
-
-  const decodeAuthToken = async (token) => {
-    if(!token){
-      console.log('Not authentication.');
-      return
-    }
-    else{
+  const emailrefStorage = localStorage.getItem("email");
+ 
+  useEffect(() => {
+    const fetchUserData = async () => {
       try{
-        const response = await backend.get('/auth/authorization', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          } 
+        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+          withCredentials: true
         });
-
         if(response.status === 200){
-          setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          setUserData({
+            id:response.data.id,
+            email:response.data.email,
+            name:response.data.name,
+            role:response.data.role,
+            profile_img:response.data.profile_img,
+          });
         }
 
-      } catch (error) {
+      } catch(error){
         console.log(error);
       }
+      
     }
-  }
-
-  useEffect(() => {
-    decodeAuthToken(token);
-  }, [token])
+    fetchUserData();
+  },[]);
 
   useEffect(() => {
     
@@ -53,8 +52,8 @@ function Courses() {
           setData(response.data);
         }
 
-        if (token) {
-          const response = await backend.get(`/history/checkCoursesHistory/${userData.email}`);
+        if (userData.id) {
+          const response = await backend.get(`/history/checkCoursesHistory/${userData.id}`);
           if(response.status === 200){
             setUpdateState(response.data.results);
           }
@@ -65,8 +64,8 @@ function Courses() {
     };
 
     fetchData();
-  }, [userData, token]);
-  
+  }, [userData]);
+
   const getUpdateStateForCourse = (courseID) => {
     const courseUpdate = updateState.find((state) => state.CourseID === courseID);
     return courseUpdate ? courseUpdate.HistoryID : null;
@@ -98,12 +97,12 @@ function Courses() {
 
             {data.map((item) => (
               <CourseCard
-                key={item.CourseID}
-                id={item.CourseID}
-                name={item.Name}
-                detail={item.Detail}
-                icon_id={item.Icon_id}
-                HistoryId={getUpdateStateForCourse(item.CourseID)}
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                detail={item.detail}
+                icon_id={item.icon_id}
+                HistoryId={getUpdateStateForCourse(item.id)}
               />
             ))}
           </tbody>

@@ -6,12 +6,12 @@ const router = express.Router();
 router.get("/getAllSubject/:courseId", (req, res) => {
     const courseId = req.params.courseId;
   
-    db.query(`SELECT * FROM courses WHERE CourseID = ?`, [courseId], (err, courseResult) => {
+    db.query(`SELECT * FROM course WHERE id = ?`, [courseId], (err, courseResult) => {
         if (err) {
           console.error(err);
-          return res.status(500).json({ message: "Database courses query error" });
+          return res.status(500).json({ message: "Database course query error" });
         } else {
-          db.query(`SELECT * FROM subject WHERE CourseID = ? `, [courseId], (err, subjectResults) => {
+          db.query(`SELECT * FROM subject WHERE courseId = ? `, [courseId], (err, subjectResults) => {
               if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "Database subject query error" });

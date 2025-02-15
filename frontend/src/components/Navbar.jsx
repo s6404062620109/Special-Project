@@ -12,7 +12,7 @@ function Navbar() {
     name:null,
     role:null,
     profile_img:null,
-  })
+  });
   const [menuVisible, setMenuVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();

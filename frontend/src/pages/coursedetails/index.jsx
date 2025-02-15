@@ -5,7 +5,6 @@ import style from './css/coursedetails.module.css'
 import backend from '../../api/backend';
 
 function CourseDetail() {
-
     const { courseId } = useParams();
     const [ data, setData ] = useState([]);
     const [ courseInfo, setCourseInfo] = useState({
@@ -15,14 +14,39 @@ function CourseDetail() {
       icon:''
     });
     const [userData, setUserData] = useState({
-      email:'',
-      name:'',
-      role:'',
+        id:null,
+        email:null,
+        name:null,
+        role:null,
+        profile_img:null,
     });
     const [ imgPath, setImgPath ] = useState('');
-    
-    const token = localStorage.getItem('authToken');
     const navigate = useNavigate();
+    const emailrefStorage = localStorage.getItem("email");
+ 
+    useEffect(() => {
+      const fetchUserData = async () => {
+        try{
+          const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+            withCredentials: true
+          });
+          if(response.status === 200){
+            setUserData({
+              id:response.data.id,
+              email:response.data.email,
+              name:response.data.name,
+              role:response.data.role,
+              profile_img:response.data.profile_img,
+            });
+          }
+
+        } catch(error){
+          console.log(error);
+        }
+        
+      }
+      fetchUserData();
+    },[]);
 
     useEffect(() => {
       const fetchData = async () => {
@@ -45,33 +69,6 @@ function CourseDetail() {
 
       fetchData();
     }, [courseId]);
-
-    const decodeAuthToken = async (token) => {
-      if(!token){
-        console.log('Not authentication.');
-        return
-      }
-      else{
-        try{
-          const response = await backend.get('/auth/authorization', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            } 
-          });
-  
-          if(response.status === 200){
-            setUserData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
-          }
-  
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    }
-  
-    useEffect(() => {
-      decodeAuthToken(token)
-    }, [token]);
 
     useEffect(() => {
       const fetchIcon = async () => {
@@ -118,7 +115,7 @@ function CourseDetail() {
               to={`/course/${courseId}/subject/${subject.SubjectID}`}
               onClick={handleLinkClick} 
             >
-                {subject.Name}
+                {subject.name}
             </Link>
           ))}
         </ul>
