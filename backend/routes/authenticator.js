@@ -166,7 +166,7 @@ router.post("/login", (req, res) => {
         }
 
         const verifiedKey = crypto.randomBytes(32).toString("hex");
-        const verifiedExpired = new Date(Date.now() + 60 * 60 * 1000);
+        const verifiedExpired = new Date(Date.now() + 4 * 60 * 60 * 1000);
 
         db.query("UPDATE user SET verified_key = ?, verified_expired = ? WHERE email = ?", 
           [verifiedKey, verifiedExpired, email],
@@ -175,7 +175,7 @@ router.post("/login", (req, res) => {
                     return res.status(500).json({ message: "Error updating verification details." });
                 }
 
-                const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "1h" });
+                const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "4h" });
 
                 res.cookie("authToken", token, {
                   maxAge: 3600000,

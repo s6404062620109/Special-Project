@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Feb 17, 2025 at 01:49 PM
+-- Generation Time: Feb 17, 2025 at 04:10 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -201,8 +201,8 @@ CREATE TABLE `enrollment` (
 
 CREATE TABLE `progress` (
   `id` int NOT NULL,
-  `is_completed` tinyint(1) NOT NULL,
-  `score` int NOT NULL,
+  `is_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `score` int NOT NULL DEFAULT '0',
   `questionId` int NOT NULL,
   `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -253,7 +253,37 @@ INSERT INTO `question` (`id`, `content`, `type`, `subjectId`) VALUES
 (26, 'Technical Support Scams คืออะไร?', 'pre', 12),
 (27, 'วิธีที่ Technical Support Scams ใช้บ่อยคืออะไร?', 'pre', 12),
 (28, 'Scareware คืออะไร?', 'pre', 13),
-(29, 'Scareware มักแสดงผลในรูปแบบใด?', 'pre', 13);
+(29, 'Scareware มักแสดงผลในรูปแบบใด?', 'pre', 13),
+(30, 'testQuestion', 'lab', 6),
+(31, 'จงหารหัสคำตอบจาก Email ที่ไม่ใช่รูปแบบของ Email Phishing \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 7),
+(32, 'จงหารหัสคำตอบจาก Email ที่ถูกส่งมาโดยมีรูปแบบที่ไม่ใช่ Email Spam\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 8),
+(33, 'จงหาคำตอบจากไฟล์ที่ได้จาก Email และค้นหาคำตอบจากไฟล์ที่ไม่ใช่ Baiting \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 9),
+(34, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความจาก Email ที่คาดว่าเป็น Pretexting\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 10),
+(35, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่ไม่เป็น Impersonation\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html\\r\\nรูปแบบคำตอบคือ <head>หัวข้อ</head><text>ข้อความ</text>', 'lab', 11),
+(36, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Notifications\r\nโดยนำข้อความและหัวข้อจาก Email ที่คาดว่าเป็น Technical Support Scams\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html \r\nรูปแบบคำตอบคือ <head>หัวข้อ</head><text>ข้อความ</text>', 'lab', 12),
+(37, 'จงหาคำตอบจากไฟล์ที่ได้จากการดาวน์โหลดใน Email จากหน้า Notifications\r\nโดยนำข้อความจากไฟล์ที่คาดว่าไม่เป็น Scareware มาตอบลงในช่องตอบคำถาม\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html ', 'lab', 13),
+(38, 'testquestion', 'post', 6),
+(39, 'testquestion', 'post', 6),
+(40, 'testquestion', 'post', 6),
+(41, 'testquestion', 'post', 7),
+(42, 'testquestion', 'post', 7),
+(43, 'Spam Post Questoin', 'post', 8),
+(44, 'Spam Post Questoin', 'post', 8),
+(45, 'Spam Post Questoin', 'post', 8),
+(46, 'Spam Post Questoin', 'post', 8),
+(47, 'Baiting Post Question', 'post', 9),
+(48, 'Baiting Post Question', 'post', 9),
+(49, 'Baiting Post Question', 'post', 9),
+(50, 'Pretexting Post Question', 'post', 10),
+(51, 'Pretexting Post Question', 'post', 10),
+(52, 'Impersonation Post Question', 'post', 11),
+(53, 'Impersonation Post Question', 'post', 11),
+(54, 'Technical Support Scams Post Question', 'post', 12),
+(55, 'Technical Support Scams Post Question', 'post', 12),
+(56, 'Technical Support Scams Post Question', 'post', 12),
+(57, 'Technical Support Scams Post Question', 'post', 12),
+(58, 'Scareware Post Question', 'post', 13),
+(59, 'Scareware Post Question', 'post', 13);
 
 -- --------------------------------------------------------
 
@@ -305,7 +335,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `role`, `profile_img`, `verified_key`, `verified_expired`) VALUES
-(18, 'arcarnupab@gmail.com', '$2b$10$ZuN43xWkFXdGf/qj7gJAOua06ajuJw.KAA3nutI2JFZPr42X11jc2', 'inwarc', 's', NULL, 'f67a8b7fd43e67bb6e54f6f83c873d31340f4d0634752a9fe16c61b52ff7c29b', '2025-02-17 13:30:33'),
+(18, 'arcarnupab@gmail.com', '$2b$10$ZuN43xWkFXdGf/qj7gJAOua06ajuJw.KAA3nutI2JFZPr42X11jc2', 'inwarc', 's', NULL, '7961a15c40244404a9647c4d9a2162eafe53c36a3860b7da7b672b132165f581', '2025-02-17 19:11:53'),
 (19, 'arnupab0808@gmail.com', '$2b$10$aONAUWiRNim9b/Sg.bWMweKntePAZ8J5L5uznCzO2mNCKsnUYkDMa', 'teach1', 't', NULL, NULL, NULL);
 
 --
@@ -382,19 +412,19 @@ ALTER TABLE `course`
 -- AUTO_INCREMENT for table `enrollment`
 --
 ALTER TABLE `enrollment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `subject`

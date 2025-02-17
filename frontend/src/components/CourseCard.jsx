@@ -133,7 +133,32 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
       </td>
 
       <td>
-        <p>{}</p>
+        {history.length > 0 ? (
+            <>
+              {history.map((enroll) => (
+                <p>
+                  {enroll.pretest_complete === true && 
+                  enroll.posttest_complete === true && 
+                  enroll.completed_labs === enroll.total_labs && (
+                    <>
+                      DONE
+                    </>
+                  )}
+
+                  {enroll.pretest_complete === false || 
+                  enroll.posttest_complete === false || 
+                  enroll.completed_labs < enroll.total_labs && (
+                    <>
+                      WORKING
+                    </>
+                  )}
+                </p>
+              ))}
+            </>
+          ):(
+            <p>-</p>
+          )
+        }
       </td>
 
       <td>

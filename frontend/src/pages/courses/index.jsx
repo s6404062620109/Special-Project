@@ -74,10 +74,10 @@ function Courses() {
         <table>
           <thead>
             <tr>
-              <th width={'60%'}>Course</th>
+              <th width={'60%'}></th>
               <th>Status</th>
               <th width={'30%'}>Completion</th>
-              <th>Button</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
