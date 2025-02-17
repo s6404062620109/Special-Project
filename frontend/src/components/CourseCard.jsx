@@ -1,80 +1,79 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-
-import style from './css/coursecard.module.css'
 import Processbar from './Processbar';
 import backend from '../api/backend';
 
-function CourseCard({ id, name, detail, icon_id, HistoryId }) {
+import style from './css/coursecard.module.css'
 
-  const [data, setData] = useState({
-    email:'',
-    name:'',
-    role:'',
-  })
-  const [buttonText, setButtonText] = useState('');
+function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
+
+  const [userData, setUserData] = useState({
+        id:null,
+        email:null,
+        name:null,
+        role:null,
+        profile_img:null, 
+  });
+  const emailrefStorage = localStorage.getItem("email");
   const [ imgPath, setImgPath ] = useState('');
-  const navigate = useNavigate();
+  const [ buttonText, setButtonText ] = useState('');
   const [ history, setHistory ] = useState([]);
-  const token = localStorage.getItem('authToken');
+  const navigate = useNavigate();
 
-  const decodeAuthToken = async (token) => {
-    if(!token){
-      console.log('Not authentication.');
-      return
-    }
-    else{
+  useEffect(() => {
+    const fetchUserData = async () => {
       try{
-        const response = await backend.get('/auth/authorization', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          } 
+        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+          withCredentials: true
         });
-
         if(response.status === 200){
-          setData({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          setUserData({
+            id:response.data.id,
+            email:response.data.email,
+            name:response.data.name,
+            role:response.data.role,
+            profile_img:response.data.profile_img,
+          });
         }
 
-      } catch (error) {
+      } catch(error){
         console.log(error);
       }
+      
     }
-  }
+    fetchUserData();
 
-  useEffect(() => {
     const fetchIcon = async () => {
-        try {
-            const response = await backend.get(`/imgrender/getIcon/${id}/${icon_id}`);
-            if (response.status === 200) {
-                setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
-            }
-        } catch (err) {
-            console.log("Error fetching icon:", err);
-        }
+      try {
+          const response = await backend.get(`/imgrender/getIcon/${id}/${icon_id}`);
+          if (response.status === 200) {
+              setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
+          }
+      } catch (err) {
+          console.log("Error fetching icon:", err);
+      }
     };
     fetchIcon();
-
-  }, [id, icon_id]);
+  },[emailrefStorage, id, icon_id]);
 
   useEffect(() => {
-    if (!token) {
+    if (!emailrefStorage && !userData.id && !userData.email && !userData.name && !userData.role) {
       setButtonText('View');
     } 
-    else if (HistoryId) {
+    else if (enrollmentId !== 0) {
       setButtonText('Continue');
     } 
     else {
       setButtonText('Start');
     }
 
-    decodeAuthToken(token);
-  }, [token, HistoryId]);
+  }, [emailrefStorage, userData, enrollmentId]);
 
   useEffect(() => {
     
     const fetchHistory = async () => {
       try {
-          const response = await backend.get(`/history/checkCoursesHistory/${data.email}`);
+          const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.email}`);
           if (response.status === 200) {
             setHistory(response.data.results);
           }
@@ -83,13 +82,13 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
       }
     };
     fetchHistory();
-  }, [data])
-
+  }, [userData]);
+  
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
         try{
-          const response = await backend.get(`/progress/getLatestProgress/${HistoryId}`);
+          const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
 
           if(response.status === 200){
             navigate(`/course/${id}/${response.data.inProgress}`);
@@ -103,9 +102,9 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
     }
 
     else if ( status === 'Start') {
-      const registerHistory = async () =>{
+      const enrollCourse = async () =>{
         try{
-          const response = await backend.post(`/history/registerHistory`, {courseId: id, email: data.email});
+          const response = await backend.post(`/enroll/enrollCourse`, {courseId: id, userId: userData.id});
           
           if(response.status === 200){
             navigate(`/course/${id}/pretest/-`);
@@ -114,16 +113,13 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
           console.log(error);
         }
       }
-
-      registerHistory();
+      enrollCourse();
     } 
     
     else {
       navigate(`/course/${id}`);
     }
   }
-
-  const matchedHistory = history.find((item) => item.CourseID === id)?.Status;
 
   return (
     <tr className={style.card}>
@@ -137,11 +133,30 @@ function CourseCard({ id, name, detail, icon_id, HistoryId }) {
       </td>
 
       <td>
-        <p>{matchedHistory}</p>
+        <p>{}</p>
       </td>
 
       <td>
-        <Processbar courseId={id} historyId={HistoryId} />
+        {history.length > 0 ? (
+          <>
+            {history.map((enroll) => (
+              <Processbar
+                pretest_complete={enroll.pretest_complete}
+                posttest_complete={enroll.posttest_complete}
+                completed_labs={enroll.completed_labs}
+                total_labs={enroll.total_labs}
+              />
+            ))}
+          </>
+        ):(
+          <Processbar 
+            pretest_complete={false}
+            posttest_complete={false}
+            completed_labs={0}
+            total_labs={0}
+          />
+        )}
+        
       </td>
 
       <td>

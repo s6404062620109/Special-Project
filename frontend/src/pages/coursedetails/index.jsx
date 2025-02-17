@@ -47,19 +47,19 @@ function CourseDetail() {
       }
       fetchUserData();
     },[]);
-
+    
     useEffect(() => {
       const fetchData = async () => {
         try {
           const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
-          // console.log(response)
+          
           let responseCourse = response.data.courseInfo[0]
 
           setCourseInfo({
-            id: responseCourse.CourseID,
-            name: responseCourse.Name,
-            details: responseCourse.Detail,
-            icon: responseCourse.Icon_id
+            id: responseCourse.id,
+            name: responseCourse.name,
+            details: responseCourse.detail,
+            icon: responseCourse.icon_id
           });
           setData(response.data.subject);
         } catch (err) {
@@ -87,7 +87,7 @@ function CourseDetail() {
     }, [courseId, courseInfo.icon]);
     
     const handleLinkClick = (e) => {
-      if (!token) {
+      if (!emailrefStorage && !userData.id && !userData.email && !userData.name && !userData.role) {
         e.preventDefault();
         alert('Not authenticated. Please log in.');
         navigate('/');

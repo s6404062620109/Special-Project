@@ -1,56 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-import style from './css/home.module.css';
-import backend from '../../api/backend';
-import Login from '../authenticate/login';
+import style from "./css/home.module.css";
+import backend from "../../api/backend";
+import Login from "../authenticate/login";
 
 function Home() {
-  const [userData, setUserdata] = useState({
-    email:'',
-    name:'',
-    role:'',
+  const [userData, setUserData] = useState({
+    id: null,
+    email: null,
+    name: null,
+    role: null,
+    profile_img: null,
   });
+  const emailrefStorage = localStorage.getItem("email");
   const [loginEnable, setLoginEnable] = useState(false);
-  const token = localStorage.getItem('authToken');
-  
-  const decodeAuthToken = async (token) => {
-    if(!token){
-      console.log('Not authentication.');
-      return
-    }
-    else{
-      try{
-        const response = await backend.get('/auth/authorization', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          } 
-        });
 
-        if(response.status === 200){
-          setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await backend.get(
+          `/auth/authorization/${emailrefStorage}`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (response.status === 200) {
+          setUserData({
+            id: response.data.id,
+            email: response.data.email,
+            name: response.data.name,
+            role: response.data.role,
+            profile_img: response.data.profile_img,
+          });
         }
-
       } catch (error) {
         console.log(error);
       }
-    }
-  }
+    };
+    fetchUserData();
+  }, [emailrefStorage]);
 
-  useEffect(() => {
-    decodeAuthToken(token);
-  }, [token]);
-  
   return (
     <div className={style.container}>
       <div className={style["container-wrap"]}>
         {loginEnable === true ? (
           <div className={style["login-tablet"]}>
-            <Login/>
+            <Login />
           </div>
-        ):(
+        ) : (
           <div className={style.content}>
-            <p className={style.title}> 
-              Security <br /> Awareness Training 
+            <p className={style.title}>
+              Security <br /> Awareness Training
             </p>
             <p className={style["sub-title"]}>
               การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
@@ -58,27 +58,24 @@ function Home() {
             </p>
           </div>
         )}
-        
 
         <div className={style["login-wrap"]}>
-          <Login/>
+          <Login />
+        </div>
+
+        <div className={style["login-nav"]}>
+          <p onClick={() => setLoginEnable(!loginEnable)}>
+            {loginEnable === true ? (
+              <>{"<-"} Get Back</>
+            ) : (
+              <>Do you want join members for study?</>
+            )}
+          </p>
         </div>
         
-        {!token && (
-          <div className={style["login-nav"]}>
-            <p onClick={() => setLoginEnable(!loginEnable)} >
-              {loginEnable === true ? (
-                <>{'<-'} Get Back</>
-              ) : (  
-                <>Do you want join members for study?</>
-              )}
-            </p>
-          </div>
-        )}
-
       </div>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import style from './css/navbar.module.css';
 import backend from '../api/backend';
 
-
 function Navbar() {
   const [userData, setUserData] = useState({
     id:null,
@@ -13,10 +12,10 @@ function Navbar() {
     role:null,
     profile_img:null,
   });
+  const emailrefStorage = localStorage.getItem("email");
   const [menuVisible, setMenuVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
-  const emailrefStorage = localStorage.getItem("email");
  
   useEffect(() => {
     const fetchUserData = async () => {
@@ -40,7 +39,7 @@ function Navbar() {
       
     }
     fetchUserData();
-  },[]);
+  },[emailrefStorage]);
 
   const handleLogout = async () => {
     try {

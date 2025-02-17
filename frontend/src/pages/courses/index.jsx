@@ -13,11 +13,11 @@ function Courses() {
       role:null,
       profile_img:null,
   });
-  const [data, setData] = useState([]);
-  const [updateState, setUpdateState] = useState([]);
-  const navigate = useNavigate();
   const emailrefStorage = localStorage.getItem("email");
- 
+  const [data, setData] = useState([]);
+  const [progress, setProgress] = useState([]);
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const fetchUserData = async () => {
       try{
@@ -40,7 +40,7 @@ function Courses() {
       
     }
     fetchUserData();
-  },[]);
+  },[emailrefStorage]);
 
   useEffect(() => {
     
@@ -53,9 +53,9 @@ function Courses() {
         }
 
         if (userData.id) {
-          const response = await backend.get(`/history/checkCoursesHistory/${userData.id}`);
+          const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
           if(response.status === 200){
-            setUpdateState(response.data.results);
+            setProgress(response.data.results);
           }
         }
       } catch (err) {
@@ -65,11 +65,6 @@ function Courses() {
 
     fetchData();
   }, [userData]);
-
-  const getUpdateStateForCourse = (courseID) => {
-    const courseUpdate = updateState.find((state) => state.CourseID === courseID);
-    return courseUpdate ? courseUpdate.HistoryID : null;
-  };
 
   return (
     <div className={style.content}>
@@ -102,7 +97,7 @@ function Courses() {
                 name={item.name}
                 detail={item.detail}
                 icon_id={item.icon_id}
-                HistoryId={getUpdateStateForCourse(item.id)}
+                enrollmentId={progress.length > 0 ? progress[0].enrollmentId : 0}
               />
             ))}
           </tbody>

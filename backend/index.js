@@ -33,9 +33,9 @@ app.use("/subjects", Subjects);
 const Pretest = require("./routes/pretest");
 app.use("/pretest", Pretest);
 
-/* History */
-const History = require("./routes/history");
-app.use("/history", History);
+/* Enrollment */
+const Enrollment = require("./routes/enroll");
+app.use("/enroll", Enrollment);
 
 /* Progress */
 const Progress = require("./routes/progress");
