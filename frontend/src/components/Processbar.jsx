@@ -25,7 +25,7 @@ function Processbar({ pretest_complete, posttest_complete, completed_labs, total
 
         setPercent(newPercent);
     },[pretest_complete, posttest_complete, completed_labs, total_labs])
-        
+
   return (
     <div className={style.container}>
         <label>{percent.toFixed(2)}%</label>

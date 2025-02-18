@@ -10,52 +10,58 @@ import backend from '../../api/backend';
 function Subject() {
     const { courseId, subjectId } = useParams();
     const [ data, setData ] = useState({
-        SubjectID: '',
-        Name: '',
-        Content: '',
-        Image_id: '',
-        CourseID: ''
+        id: null,
+        name: null,
+        content: null,
+        images: null,
+        courseId: null
     });
+    const [ subjectList, setSubjectList ] = useState([]);
     const [ imgPath, setImgPath ] = useState('');
     const [ questionList, setQuestionList ] = useState([]);
     const [ useLab, setUseLab ] = useState(true);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () =>{
+        const fetchSubjectData = async () =>{
             try{
                 const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`);
 
                 let dataResponse = response.data[0];
                 
                 setData({
-                    SubjectID: dataResponse.SubjectID,
-                    Name: dataResponse.Name,
-                    Content: dataResponse.Content,
-                    Image_id: dataResponse.Image_id,
-                    CourseID: dataResponse["Course-ID"]
+                    id: dataResponse.id,
+                    name: dataResponse.name,
+                    content: dataResponse.content,
+                    images: dataResponse.images,
+                    courseId: dataResponse.courseId
                 });    
             }
             catch(err){
                 console.log(err)
             }
-
-            try {
-                const labresponse = await backend.get(`/lab/getLabquestion/${subjectId}`);
-              } catch (err) {
-                if (err.response && err.response.status === 500) {
-                  setUseLab(false);
-                }
-                console.log('Error fetching lab data:', err);
-              }   
         }
-        fetchData();
+
+        fetchSubjectData();
+        
+        const fetcSubjectList = async () => { 
+            try{
+                const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
+
+                if(response.status === 200){
+                    setSubjectList(response.data.subject);
+                }
+            } catch(error){
+                console.log(error);
+            }
+        }
+        fetcSubjectList();
     }, [courseId, subjectId]);
 
     useEffect(() => {
         const fetchImage = async () => {
             try {
-                const response = await backend.get(`/imgrender/getContentImage/${courseId}/${subjectId}/${data.Image_id}`);
+                const response = await backend.get(`/imgrender/getContentImage/${courseId}/${subjectId}/${data.images}`);
                 if (response.status === 200) {
                     setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
                 }
@@ -66,24 +72,25 @@ function Subject() {
         fetchImage();
     }, [ courseId, subjectId, data]);
 
-    useEffect(() => {
-        const fetchQuestion = async () => {
-            try{
-                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
+    // useEffect(() => {
+    //     const fetchQuestion = async () => {
+    //         try{
+    //             const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
 
-                if(response.status === 200){
-                    setQuestionList(response.data.questionResult)
-                }
+    //             if(response.status === 200){
+    //                 setQuestionList(response.data.questionResult)
+    //             }
 
-            } catch(error){
-                console.log(error);
-            }
-        }
+    //         } catch(error){
+    //             console.log(error);
+    //         }
+    //     }
 
-        fetchQuestion();
-    }, [subjectId]);
+    //     fetchQuestion();
+    // }, [subjectId]);
 
     const formatContent = (content) => {
+        if (!content) return null;
         return content.split("\n").map((str, index) => (
             <React.Fragment key={index}>
                 {str}
@@ -110,15 +117,18 @@ function Subject() {
                     </div>
                     {navsubjectMobile && 
                         <div className={style["navsubjectm-wrap"]}>
-                            <NavSubject courseId={courseId}/>
+                            <NavSubject 
+                                courseId={courseId}
+                                subjectList={subjectList}
+                            />
                         </div>
                     }  
 
                     <div className={style.Info}>
-                        <h1>{data.Name}</h1>
+                        <h1>{data.name}</h1>
 
                         <div className={style["lecture-wrap"]}>
-                            <label>{formatContent(data.Content)}</label>
+                            <label>{formatContent(data.content)}</label>
                         </div>
                     </div>
 
@@ -130,7 +140,7 @@ function Subject() {
                     </div>
                 </div>
 
-                <div className={style.questionBox}>
+                {/* <div className={style.questionBox}>
                     { useLab && questionList.map((item, ind) => (
                         <LabBox
                             no={ind+1}
@@ -138,11 +148,14 @@ function Subject() {
                             question={item.Question}
                         />
                     ))}
-                </div>
+                </div> */}
             </div>
             
             <div className={style["navsubject-wrap"]}>
-                <NavSubject courseId={courseId}/>
+                <NavSubject 
+                    courseId={courseId}
+                    subjectList={subjectList}
+                />
             </div>
         </div>
 

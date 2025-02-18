@@ -5,14 +5,14 @@ import backend from '../api/backend';
 
 import style from './css/coursecard.module.css'
 
-function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
-
+function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
+  
   const [userData, setUserData] = useState({
-        id:null,
-        email:null,
-        name:null,
-        role:null,
-        profile_img:null, 
+    id:null,
+    email:null,
+    name:null,
+    role:null,
+    profile_img:null, 
   });
   const emailrefStorage = localStorage.getItem("email");
   const [ imgPath, setImgPath ] = useState('');
@@ -57,6 +57,21 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
   },[emailrefStorage, id, icon_id]);
 
   useEffect(() => {
+    
+    const fetchHistory = async () => {
+      try {
+          const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
+          if (response.status === 200) {
+            setHistory(response.data.results);
+          }
+      } catch (err) {
+          console.log("Error fetching icon:", err);
+      }
+    };
+    fetchHistory();
+  }, [userData]);
+
+  useEffect(() => {
     if (!emailrefStorage && !userData.id && !userData.email && !userData.name && !userData.role) {
       setButtonText('View');
     } 
@@ -69,21 +84,6 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
 
   }, [emailrefStorage, userData, enrollmentId]);
 
-  useEffect(() => {
-    
-    const fetchHistory = async () => {
-      try {
-          const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.email}`);
-          if (response.status === 200) {
-            setHistory(response.data.results);
-          }
-      } catch (err) {
-          console.log("Error fetching icon:", err);
-      }
-    };
-    fetchHistory();
-  }, [userData]);
-  
   const handleClick = (status) =>{
     if ( status === 'Continue' ) {
       const fetchLatestProgress = async () =>{
@@ -91,7 +91,7 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
           const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
 
           if(response.status === 200){
-            navigate(`/course/${id}/${response.data.inProgress}`);
+            navigate(`/course/${courseId}/${response.data.inProgress}`);
           }
         } catch (error) {
           console.log(error);
@@ -107,7 +107,7 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
           const response = await backend.post(`/enroll/enrollCourse`, {courseId: id, userId: userData.id});
           
           if(response.status === 200){
-            navigate(`/course/${id}/pretest/-`);
+            navigate(`/course/${id}/pretest/${response.data.enrollmentId}`);
           }
         } catch (error) {
           console.log(error);
@@ -120,7 +120,7 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId }) {
       navigate(`/course/${id}`);
     }
   }
-
+  
   return (
     <tr className={style.card}>
       <td className={style.content}>

@@ -29,7 +29,7 @@ router.get("/getSubject/:courseId/:subjectId", (req, res) => {
     const courseId = req.params.courseId;
     const subjectId = req.params.subjectId;
   
-    db.query(`SELECT * FROM subject WHERE SubjectID = ? AND CourseID = ? `, [subjectId, courseId], (err, result) => {
+    db.query(`SELECT * FROM subject WHERE id = ? AND courseId = ? `, [subjectId, courseId], (err, result) => {
         if (err) {
           console.log(err);
           return res.status(500).json({ message: "Database subject query error" });

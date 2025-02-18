@@ -97,7 +97,8 @@ function Courses() {
                 name={item.name}
                 detail={item.detail}
                 icon_id={item.icon_id}
-                enrollmentId={progress.length > 0 ? progress[0].enrollmentId : 0}
+                enrollmentId={progress.length > 0 ? progress[0].id : 0}
+                courseId={item.id}
               />
             ))}
           </tbody>

@@ -75,7 +75,6 @@ router.post('/enrollCourse', (req, res) => {
                       return res.status(200).json({
                           message: "Enrollment and progress recorded successfully.",
                           enrollmentId: enrollmentId,
-                          sortedQuestions: sortedQuestions
                       });
                   });
               }
@@ -83,7 +82,6 @@ router.post('/enrollCourse', (req, res) => {
       });
   });
 });
-
 
 router.get("/checkCoursesEnroll/:userId", (req, res) => {
   const userId = req.params.userId;

@@ -1,43 +1,65 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-
-import style from './css/pretest.module.css';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../../api/backend';
 
+import style from './css/pretest.module.css';
+
+
 function Pretest() {
-  const { courseId, historyId } = useParams();
-  const token = localStorage.getItem('authToken');
-  const [userData, setUserdata] = useState({
-    email:'',
-    name:'',
-    role:'',
-  });
+  const { courseId, enrollmentId } = useParams();
   const [questionsWithChoices, setQuestionsWithChoices] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [userData, setUserData] = useState({
+    id:null,
+    email:null,
+    name:null,
+    role:null,
+    profile_img:null, 
+  });
+  const emailrefStorage = localStorage.getItem("email");
   const navigate = useNavigate();
 
-  const decodeAuthToken = async (token) => {
-    if(!token){
-      console.log('Not authentication.');
-      return
-    }
-    else{
+  useEffect(() => {
+    const fetchUserData = async () => {
       try{
-        const response = await backend.get('/auth/authorization', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          } 
+        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+          withCredentials: true
         });
-
         if(response.status === 200){
-          setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
+          setUserData({
+            id:response.data.id,
+            email:response.data.email,
+            name:response.data.name,
+            role:response.data.role,
+            profile_img:response.data.profile_img,
+          });
         }
 
-      } catch (error) {
+      } catch(error){
         console.log(error);
       }
+      
     }
-  }
+    fetchUserData();
+  },[emailrefStorage]);
+
+  useEffect(() => {
+    if(userData.id!==null){
+      const fetchPretestData = async () => {
+        try{
+          const response = await backend.get(`/pretest/getPretest/${enrollmentId}/${userData.id}`);
+          
+          if(response.status === 200){
+            setQuestionsWithChoices(response.data.questions);
+          }
+          
+        } catch(error){
+          console.log(error);
+        }
+      }
+      fetchPretestData();
+    }
+  }, [enrollmentId, userData.id]);
 
   const handleAnswerChange = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({
@@ -46,76 +68,14 @@ function Pretest() {
     }));
   };
 
-  useEffect(() => {
-    const fetchQuestionData = async () => {
-      try {
-        decodeAuthToken(token);
-
-        const response = await backend.get(`/pretest/getPretest/${courseId}/${historyId}/${userData.email}`);
-
-        if (response.data.history) {
-          navigate(`/course/${courseId}/pretest/${response.data.history}`);
-          window.location.reload();
-          return;
-        }
-
-        const questions = response.data.Qustions;
-        const choices = response.data.Choices;
-
-        const choicesByQuestionId = choices.reduce((acc, choice) => {
-          if (!acc[choice.QuestionID]) {
-            acc[choice.QuestionID] = [];
-          }
-          acc[choice.QuestionID].push({
-            AnswerID: choice.AnswerID,
-            result: choice.result.trim(),
-          });
-          return acc;
-        }, {});
-
-        const formattedQuestions = questions.map((question) => {
-          let choices = choicesByQuestionId[question.QuestionID] || [];
-
-          const labeledChoices = choices.map((choice, idx) => ({
-            ...choice,
-            label: String.fromCharCode(65 + idx),
-          }));
-
-          return {
-            QuestionID: question.QuestionID,
-            Question: question.Question,
-            choices: labeledChoices,
-          };
-        });
-
-        setQuestionsWithChoices(formattedQuestions);
-
-        const questionIdList = formattedQuestions.map((item) => item.QuestionID);
-
-        if (questionIdList.length > 0 && historyId === '-') {
-          const registerProgressResponse = await backend.post(`/progress/registerTestProgress`, {
-            questionIdList,
-            courseId,
-            email: userData.email,
-          });
-          console.log(registerProgressResponse);
-        }
-      } catch (err) {
-        console.error('Error fetching question data:', err);
-      }
-    };
-
-    fetchQuestionData();
-  }, [courseId, token, userData.email]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log(selectedAnswers);
     try {
-      const response = await backend.post('/pretest/submitPretest', { answer: selectedAnswers, courseId, email: userData.email });
+      const response = await backend.put('/pretest/submitPretest', { answer: selectedAnswers, enrollmentId });
 
-      if(response.status === 200 && response.data.message === "Progress updated successfully"){
-        navigate(`/course/${courseId}/subject/${response.data.SubjectID}`);
+      if(response.status === 200 && response.data.message === "Progress pretest update completed."){
+        navigate(`/course/${courseId}/subject/${response.data.firstSubject}`);
       }
       
     } 
@@ -124,7 +84,7 @@ function Pretest() {
     }
     
   };
-
+  
   return (
     <div className={style.container}>
       <h1>Pretest</h1>
@@ -133,7 +93,7 @@ function Pretest() {
 
         {questionsWithChoices.map((question, index) => (
           <div key={index} className={style.testCard}>
-            <h3>{index+1}. {question.Question}</h3>
+            <h3>{index+1}. {question.question}</h3>
 
             <ul>
               {question.choices.map((choice, idx) => (
@@ -141,14 +101,13 @@ function Pretest() {
                   <label>
                     <input
                       type="radio"
-                      name={`question-${question.QuestionID}`}
-                      value={choice.AnswerID}
-                      checked={selectedAnswers[question.QuestionID] === choice.AnswerID}
-                      onChange={() => handleAnswerChange(question.QuestionID, choice.AnswerID)}
+                      name={`question-${question.qId}`}
+                      value={choice.aId}
+                      checked={selectedAnswers[question.qId] === choice.aId}
+                      onChange={() => handleAnswerChange(question.qId, choice.aId)}
                       required
                     />
-                    {choice.label}.
-                    {choice.result}
+                    {choice.label}
                   </label>
                 </li>
               ))}
