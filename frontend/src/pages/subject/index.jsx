@@ -19,7 +19,7 @@ function Subject() {
     const [ subjectList, setSubjectList ] = useState([]);
     const [ imgPath, setImgPath ] = useState('');
     const [ questionList, setQuestionList ] = useState([]);
-    const [ useLab, setUseLab ] = useState(true);
+    const [ useLab, setUseLab ] = useState(false);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
 
     useEffect(() => {
@@ -72,22 +72,29 @@ function Subject() {
         fetchImage();
     }, [ courseId, subjectId, data]);
 
-    // useEffect(() => {
-    //     const fetchQuestion = async () => {
-    //         try{
-    //             const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
+    useEffect(() => {
+        const fetchQuestion = async () => {
+            try{
+                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
 
-    //             if(response.status === 200){
-    //                 setQuestionList(response.data.questionResult)
-    //             }
+                if(response.status === 200){
+                    setQuestionList(response.data.questionResult);
+                }
 
-    //         } catch(error){
-    //             console.log(error);
-    //         }
-    //     }
+            } catch(error){
+                console.log(error);
+            }
+        }
 
-    //     fetchQuestion();
-    // }, [subjectId]);
+        fetchQuestion();
+        if(questionList.length > 0){
+            setUseLab(true);
+        }
+    }, [subjectId]);
+    
+    useEffect(() => {
+        setUseLab(questionList.length > 0);
+    },[questionList]);
 
     const formatContent = (content) => {
         if (!content) return null;
@@ -140,15 +147,15 @@ function Subject() {
                     </div>
                 </div>
 
-                {/* <div className={style.questionBox}>
+                <div className={style.questionBox}>
                     { useLab && questionList.map((item, ind) => (
                         <LabBox
                             no={ind+1}
-                            id={item.QuestionID}
-                            question={item.Question}
+                            id={item.id}
+                            question={item.content}
                         />
                     ))}
-                </div> */}
+                </div>
             </div>
             
             <div className={style["navsubject-wrap"]}>

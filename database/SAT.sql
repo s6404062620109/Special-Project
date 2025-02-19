@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Feb 17, 2025 at 04:10 PM
+-- Generation Time: Feb 19, 2025 at 01:17 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -154,7 +154,14 @@ INSERT INTO `answer` (`id`, `content`, `type`, `questionId`) VALUES
 (113, 'ป๊อปอัปแจ้งเตือนว่าคอมพิวเตอร์ติดไวรัส', 1, 29),
 (114, 'ข้อความแจ้งเตือนการอัปเดตจาก Microsoft', 0, 29),
 (115, 'โฆษณาสำหรับซอฟต์แวร์ความปลอดภัยที่ถูกต้อง', 0, 29),
-(116, 'การแจ้งเตือนจากโปรแกรมป้องกันไวรัสจริง', 0, 29);
+(116, 'การแจ้งเตือนจากโปรแกรมป้องกันไวรัสจริง', 0, 29),
+(117, 'zaza57319', 1, 31),
+(118, 'Pa55w0rd55', 1, 32),
+(119, 'Se0ur1ty777', 1, 33),
+(120, 'Your IT administrator has verified your details successfully.', 1, 34),
+(121, '<head>Password Reset Successful</head><text>Your password has been reset successfully. You may now log in with your new password.</text>', 1, 35),
+(122, '<head>Critical System Error</head><text>Your computer has encountered a serious error. Please click the button below to fix the issue and protect your system.</text>', 1, 36),
+(123, 'This is a security file download for eliminate viruses.', 1, 37);
 
 -- --------------------------------------------------------
 
@@ -193,6 +200,13 @@ CREATE TABLE `enrollment` (
   `userId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `enrollment`
+--
+
+INSERT INTO `enrollment` (`id`, `courseId`, `pretest_complete`, `posttest_complete`, `completed_labs`, `total_labs`, `userId`) VALUES
+(19, 1, 1, 0, 0, 8, 18);
+
 -- --------------------------------------------------------
 
 --
@@ -206,6 +220,36 @@ CREATE TABLE `progress` (
   `questionId` int NOT NULL,
   `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `progress`
+--
+
+INSERT INTO `progress` (`id`, `is_completed`, `score`, `questionId`, `enrollmentId`) VALUES
+(385, 1, 0, 5, 19),
+(386, 1, 0, 7, 19),
+(387, 1, 1, 15, 19),
+(388, 1, 0, 19, 19),
+(389, 1, 0, 23, 19),
+(390, 1, 1, 25, 19),
+(391, 1, 0, 26, 19),
+(392, 1, 0, 29, 19),
+(393, 0, 0, 30, 19),
+(394, 0, 0, 31, 19),
+(395, 0, 0, 32, 19),
+(396, 0, 0, 33, 19),
+(397, 0, 0, 34, 19),
+(398, 0, 0, 35, 19),
+(399, 0, 0, 36, 19),
+(400, 0, 0, 37, 19),
+(401, 0, 0, 40, 19),
+(402, 0, 0, 42, 19),
+(403, 0, 0, 44, 19),
+(404, 0, 0, 47, 19),
+(405, 0, 0, 50, 19),
+(406, 0, 0, 53, 19),
+(407, 0, 0, 56, 19),
+(408, 0, 0, 59, 19);
 
 -- --------------------------------------------------------
 
@@ -335,8 +379,8 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `role`, `profile_img`, `verified_key`, `verified_expired`) VALUES
-(18, 'arcarnupab@gmail.com', '$2b$10$ZuN43xWkFXdGf/qj7gJAOua06ajuJw.KAA3nutI2JFZPr42X11jc2', 'inwarc', 's', NULL, '7961a15c40244404a9647c4d9a2162eafe53c36a3860b7da7b672b132165f581', '2025-02-17 19:11:53'),
-(19, 'arnupab0808@gmail.com', '$2b$10$aONAUWiRNim9b/Sg.bWMweKntePAZ8J5L5uznCzO2mNCKsnUYkDMa', 'teach1', 't', NULL, NULL, NULL);
+(18, 'arcarnupab@gmail.com', '$2b$10$ZuN43xWkFXdGf/qj7gJAOua06ajuJw.KAA3nutI2JFZPr42X11jc2', 'inwarc', 's', NULL, '2f0d0fd335a70bcc370799a85468450c329282fcc7e4df642793b9ac99139097', '2025-02-19 16:38:48'),
+(19, 'arnupab0808@gmail.com', '$2b$10$uP6HRXVvlhnS.BwXEt.MMO4TdYKjDnyxk1QaLhaYBhbEp8K1W.W6C', 'teach1', 't', NULL, '5645dda2ab14161f3990c27e35e56931752c1ee25803fd7b610b369aeaec0cbc', '2025-02-18 18:36:46');
 
 --
 -- Indexes for dumped tables
@@ -400,7 +444,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `answer`
 --
 ALTER TABLE `answer`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=124;
 
 --
 -- AUTO_INCREMENT for table `course`
@@ -412,13 +456,13 @@ ALTER TABLE `course`
 -- AUTO_INCREMENT for table `enrollment`
 --
 ALTER TABLE `enrollment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=409;
 
 --
 -- AUTO_INCREMENT for table `question`

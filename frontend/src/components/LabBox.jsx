@@ -11,60 +11,38 @@ function LabBox({ no, id, question }) {
     const [focus, setFocus] = useState(false);
     const [ answer, setAnswer ] = useState([]);
     const [ checkStatus, setCheckStatus ] = useState('');
-    const [userData, setUserdata] = useState({
-        email:'',
-        name:'',
-        role:''
+    const [userData, setUserData] = useState({
+        id:null,
+        email:null,
+        name:null,
+        role:null,
+        profile_img:null,
     });
-    const token = localStorage.getItem('authToken');
-
-    const decodeAuthToken = async (token) => {
-        if(!token){
-          console.log('Not authentication.');
-          return
-        }
-        else{
-          try{
-            const response = await backend.get('/auth/authorization', {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              } 
-            });
-    
-            if(response.status === 200){
-              setUserdata({ email: response.data.result[0].Email, name: response.data.result[0].Name, role: response.data.result[0].Role })
-            }
-    
-          } catch (error) {
-            console.log(error);
-          }
-        }
-    }
+    const emailrefStorage = localStorage.getItem("email");
 
     useEffect(() => {
-        decodeAuthToken(token);
-
-    }, [token]);
-
-    const handleCreateContainer = async () => {
-        setLoading(true);
-
-        try {
-            const response = await backend.post('/lab/createLinuxContainer', { Email:userData.email , questionID: id });
-            if(response.status === 200){    
-                setAddress({ 
-                    ip: response.data.ip, 
-                    port: response.data.port , 
-                    containerId: response.data.containerId, 
-                    url: response.data.url
-                });
+        const fetchUserData = async () => {
+          try{
+            const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+              withCredentials: true
+            });
+            if(response.status === 200){
+              setUserData({
+                id:response.data.id,
+                email:response.data.email,
+                name:response.data.name,
+                role:response.data.role,
+                profile_img:response.data.profile_img,
+              });
             }
-            
-        } catch (err) {
-            console.error(err);
+    
+          } catch(error){
+            console.log(error);
+          }
+          
         }
-        setLoading(false);
-    };
+        fetchUserData();
+    },[emailrefStorage]);
 
     const handleAnswerChange = (questionId, answer) => {
         setAnswer((prev) => ({
@@ -87,6 +65,26 @@ function LabBox({ no, id, question }) {
             console.log(error);
         }
     }
+
+    const handleCreateContainer = async () => {
+        setLoading(true);
+
+        try {
+            const response = await backend.post('/lab/createLinuxContainer', { Email:userData.email , questionID: id });
+            if(response.status === 200){    
+                setAddress({ 
+                    ip: response.data.ip, 
+                    port: response.data.port , 
+                    containerId: response.data.containerId, 
+                    url: response.data.url
+                });
+            }
+            
+        } catch (err) {
+            console.error(err);
+        }
+        setLoading(false);
+    };  
 
     const handleStartContainer = async () => {
         const newTab = window.open(`http://localhost:${Address.port}`, '_blank');
@@ -111,7 +109,7 @@ function LabBox({ no, id, question }) {
             }
         }, 2000);
     };
-    
+
   return (
     <div className={style.container}>
         <h2>Lab Question</h2>
