@@ -4,6 +4,12 @@
     height: 100vh;
 }
 
+.container-wrap{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .content {
     flex: 1;
     background: radial-gradient(  #0F4DA9, #11245A, #0B0C1A);

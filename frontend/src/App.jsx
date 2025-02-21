@@ -1,4 +1,6 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
 
 import './App.css'
 import Navbar from './components/Navbar';
@@ -13,31 +15,100 @@ import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
 import SetPassword from './pages/authenticate/register/Setpassword';
 import Forgot from './pages/authenticate/forgot';
+import backend from './api/backend';
+import NavbarTeach from './components/NavbarTeach';
+import NavbarAdmin from './components/NavbarAdmin';
+
 
 function App() {
+  const [userData, setUserData] = useState({
+      id:null,
+      email:null,
+      name:null,
+      role:null,
+      profile_img:null,
+    });
+  const emailrefStorage = localStorage.getItem("email");
   const location = useLocation();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+
+      try{
+        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
+          withCredentials: true
+        });
+        if(response.status === 200){
+          setUserData({
+            id:response.data.id,
+            email:response.data.email,
+            name:response.data.name,
+            role:response.data.role,
+            profile_img:response.data.profile_img,
+          });
+        }
+
+      } catch(error){
+        console.log(error);
+        if(error.response.status === 403){
+          localStorage.removeItem('email');
+        }
+      }
+      
+    }
+    fetchUserData();
+  },[emailrefStorage]);
 
   const noNavbarRoutes = [];
   const showNavbar = !noNavbarRoutes.includes(location.pathname);
 
   return (
     <div className='container'>
-      {showNavbar && <Navbar />}
+      {userData.role === 's' || !userData.role &&(
+        <div className='container-wrap'>
+          {showNavbar && <Navbar />}
       
-      <div className='content'>
-        <Routes>
-          <Route path='/' element={<Home/>}/>
-          <Route path='/register' element={<Register/>}/>
-          <Route path='/set-password' element={<SetPassword/>}/>
-          <Route path='/forgot-password' element={<Forgot/>}/>
-          <Route path='/reset-password' element={<Reset/>}/>
+          <div className='content'>
+            <Routes>
+              <Route path='/' element={<Home/>}/>
+              <Route path='/register' element={<Register/>}/>
+              <Route path='/set-password' element={<SetPassword/>}/>
+              <Route path='/forgot-password' element={<Forgot/>}/>
+              <Route path='/reset-password' element={<Reset/>}/>
+              
+              <Route path='/courses' element={<Courses/>}/>
+              <Route path='/course/:courseId' element={<CourseDetail/>}/>
+              <Route path='/course/:courseId/subject/:subjectId' element={<Subject/>}/>
+              <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
+            </Routes>
+          </div>
+        </div>
+      )}
+
+      {userData.role === 't' &&(
+        <div className='container-wrap'>
+          <NavbarTeach/>
+
+          <div className='content'>
+            <Routes>
+              <Route path='/' element={<Home/>}/>
+            </Routes>
+          </div>
+        </div>
+      )}
+
+      {userData.role === 'a' &&(
+        <div className='container-wrap'>
+          <NavbarAdmin/>
           
-          <Route path='/courses' element={<Courses/>}/>
-          <Route path='/course/:courseId' element={<CourseDetail/>}/>
-          <Route path='/course/:courseId/subject/:subjectId' element={<Subject/>}/>
-          <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
-        </Routes>
-      </div>
+          <div className='content'>
+            <Routes>
+              <Route path='/' element={<Home/>}/>
+            </Routes>
+          </div>
+        </div>
+      )}
+      
     </div>
   )
 }
