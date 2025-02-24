@@ -52,7 +52,7 @@ function Home() {
           </div>
         ) : (
           <div className={style.content}>
-            {userData.role === 's' || !userData.role &&(
+            {(userData.role === 's' || userData.role === null) &&(
               <p className={style.title}>
                 Security <br /> Awareness Training
               </p>
@@ -70,7 +70,7 @@ function Home() {
               </p>
             )}
             
-            {!userData.id&&(
+            {(userData.role === 's' || userData.role === null)&&(
               <p className={style["sub-title"]}>
                 การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
                 ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น

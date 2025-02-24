@@ -29,7 +29,18 @@ router.get("/getLabAnswer/:questionId", (req, res) => {
 router.post("/createLinuxContainer", (req, res) => {
   const { Email, questionID } = req.body;
   const containerName = `linux_container_${Date.now()}`;
-  const createContainerCmd = `docker run -d -P -e USER=root -e PASSWORD=password --name ${containerName} --storage-opt size=256m dorowu/ubuntu-desktop-lxde-vnc`;
+  const createContainerCmd = `docker run -d -P -p 8080:80 -e USER=root -e PASSWORD=password --name ${containerName} --storage-opt size=256m dorowu/ubuntu-desktop-lxde-vnc`;
+  //   const createContainerCmd = `
+  // docker run -d -P \
+  //   --network=aitae_bridge \
+  //   --ip=192.168.1.254 \
+  //   -p 8080:80 \
+  //   -e USER=root \
+  //   -e PASSWORD=password \
+  //   --name ${containerName} \
+  //   --storage-opt size=256m \
+  //   dorowu/ubuntu-desktop-lxde-vnc
+  // `
 
   // Create the container and get the container ID
   exec(createContainerCmd, (err, stdout, stderr) => {
@@ -41,11 +52,15 @@ router.post("/createLinuxContainer", (req, res) => {
     const containerId = stdout.trim();
 
     // Step 2: Query for the answer
-    db.query(`SELECT content FROM answer WHERE questionId in (?) AND type = ?`,
-      [questionID, 1],(error, result) => {
+    db.query(
+      `SELECT content FROM answer WHERE questionId in (?) AND type = ?`,
+      [questionID, 1],
+      (error, result) => {
         if (error) {
           console.log(error);
-          return res.status(500).json({ message: "Database answer query error" });
+          return res
+            .status(500)
+            .json({ message: "Database answer query error" });
         } else if (result.length === 0) {
           return res.status(404).json({ message: "No answer found" });
         }
@@ -89,7 +104,11 @@ router.post("/createLinuxContainer", (req, res) => {
                     .json({ message: "Failed to read index.html" });
                 }
 
-                const modifiedHtml = data.replace("<!-- INSERT ANSWER HERE -->", encodeURIComponent(answerResult))
+                const modifiedHtml = data
+                  .replace(
+                    "<!-- INSERT ANSWER HERE -->",
+                    encodeURIComponent(answerResult)
+                  )
                   .replace("<head>", '<head><meta charset="UTF-8">');
                 const tempHtmlFilePath = `/tmp/index_${questionID}_${Date.now()}.html`;
 
@@ -97,31 +116,46 @@ router.post("/createLinuxContainer", (req, res) => {
                   encoding: "utf8",
                 });
 
-                exec(`docker cp ${tempHtmlFilePath} ${containerId}:/root/result.html`,
+                exec(
+                  `docker cp ${tempHtmlFilePath} ${containerId}:/root/result.html`,
                   (err) => {
                     if (err) {
                       console.error(
                         "Error copying HTML file into container:",
                         err
                       );
-                      return res.status(500).json({ message: "Failed to copy HTML file into container" });
+                      return res
+                        .status(500)
+                        .json({
+                          message: "Failed to copy HTML file into container",
+                        });
                     }
 
-                    exec(`docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerId}`,
+                    exec(
+                      `docker inspect -f '{{range .NetworkSettings.Ports}}{{.}}{{end}}' ${containerId}`,
                       (err, portOutput) => {
                         if (err) {
                           console.error("Error getting container port:", err);
-                          return res.status(500).json({ message: "Failed to retrieve container port" });
+                          return res
+                            .status(500)
+                            .json({
+                              message: "Failed to retrieve container port",
+                            });
                         }
 
                         const portMatch = portOutput.match(/\d{4,5}/);
                         const port = portMatch ? portMatch[0] : null;
 
-                        exec(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerId}`,
+                        exec(
+                          `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${containerId}`,
                           (err, ipOutput) => {
                             if (err) {
                               console.error("Error getting container IP:", err);
-                              return res.status(500).json({ message: "Failed to retrieve container IP" });
+                              return res
+                                .status(500)
+                                .json({
+                                  message: "Failed to retrieve container IP",
+                                });
                             }
 
                             return res.status(200).json({
@@ -154,11 +188,14 @@ router.post("/startContainer", (req, res) => {
   const { containerId, port } = req.body;
 
   // Execute the Docker command to start Firefox
-  exec(`docker exec ${containerId} firefox http://localhost:${port}`,
+  exec(
+    `docker exec ${containerId} firefox http://localhost:${port}`,
     (err, stdout, stderr) => {
       if (err) {
         console.error("Error opening Firefox:", err);
-        return res.status(500).json({ message: "Error opening Firefox in container" });
+        return res
+          .status(500)
+          .json({ message: "Error opening Firefox in container" });
       }
 
       console.log("Firefox started:", stdout);
@@ -183,7 +220,9 @@ router.post("/stopContainer", (req, res) => {
         console.error(`Error removing container ${containerId}:`, removeErr);
         return res.status(500).json({ message: "Failed to remove container" });
       } else {
-        return res.status(200).json({ message: "Container stopped and removed successfully" });
+        return res
+          .status(200)
+          .json({ message: "Container stopped and removed successfully" });
       }
     });
   });
@@ -207,97 +246,62 @@ router.get("/getLabquestion/:subjectId", (req, res) => {
         return res
           .status(404)
           .json({ message: "No lab questions found for this subject" });
-      } else {
-        return res.status(200).json({ questionResult });
       }
+
+      return res.status(200).json({ questionResult });
     }
   );
 });
 
 router.post("/submitLabanswer", (req, res) => {
-  const { answer, email } = req.body;
+  const { answer, userId } = req.body;
   const QuestionIds = Object.keys(answer);
   const answerResults = Object.values(answer);
 
   db.query(
-    `
-    SELECT question.SubjectID, subject.CourseID 
-    FROM question 
-    INNER JOIN subject ON question.SubjectID=subject.SubjectID
-    WHERE QuestionID = ?
-  `,
-    [QuestionIds],
-    (error, result) => {
+    ` SELECT progress.id, enrollment.id AS enrollmentId 
+    FROM progress 
+    INNER JOIN enrollment ON progress.enrollmentId=enrollment.id
+    WHERE questionId = ? `,[QuestionIds[0]],(error, result) => {
       if (error) {
         console.log(error);
-        return res
-          .status(500)
-          .send({ message: "Database question query error" });
-      } else {
-        const subjectId = result[0].SubjectID;
-        const courseId = result[0].CourseID;
-
-        db.query(
-          `SELECT HistoryID FROM history WHERE CourseID = ? AND Email = ?`,
-          [courseId, email],
-          (error, historyResult) => {
-            if (error) {
-              console.log(error);
-              return res
-                .status(500)
-                .send({ message: "Database history query error" });
-            } else {
-              const historyId = historyResult[0].HistoryID;
-
-              db.query(
-                `SELECT * FROM answer WHERE QuestionID = ? AND Type = ?`,
-                [QuestionIds, "a"],
-                (error, resultCheck) => {
-                  if (error) {
-                    console.log(error);
-                    return res
-                      .status(500)
-                      .send({ message: "Database history query error" });
-                  } else {
-                    const Ref_answer = resultCheck[0].result;
-                    const User_answer = answerResults[0];
-                    let score = 0;
-
-                    if (Ref_answer === User_answer) {
-                      score++;
-                    }
-
-                    if (score === 0) {
-                      return res.status(200).send({ message: "You Failed!!!" });
-                    }
-
-                    if (score > 0) {
-                      db.query(
-                        `UPDATE progress SET Score = ${score}, Status = 'Done' WHERE QuestionID = ? AND SubjectID = ? AND HistoryID = ?`,
-                        [QuestionIds, subjectId, historyId],
-                        (error) => {
-                          if (error) {
-                            console.log(error);
-                            return res
-                              .status(500)
-                              .send({ message: "Update progress lab error" });
-                          } else {
-                            return res
-                              .status(200)
-                              .send({ message: "You Pass!!!" });
-                          }
-                        }
-                      );
-                    }
-                  }
-                }
-              );
-            }
-          }
-        );
+        return res.status(500).json({ message: "Database answer query error" });
       }
+
+      db.query("SELECT * FROM answer WHERE questionId = ?", [QuestionIds[0]], (error, answerResult) => {
+        if(error){
+          console.log(error);
+          return res.status(500).json({ message: "Database answer query error" });
+        }
+
+        if(answerResults[0] === answerResult[0].content){
+          db.query("UPDATE progress SET is_completed = ? ,score = 1 WHERE questionId = ? AND enrollmentId = ?", 
+            [true, QuestionIds[0], result[0].enrollmentId], (error) => {
+              if (error) {
+                console.log(scoreError);
+                return res.status(500).json({ message: "Progress pretest score update error" });
+              }
+
+              db.query("UPDATE enrollment SET completed_labs = completed_labs+1 WHERE id = ?",
+                [result[0].enrollmentId], (error) => {
+                  if (error) {
+                    console.log(scoreError);
+                    return res.status(500).json({ message: "Enrollment lab complete update error" });
+                  }
+
+                  return res.status(200).json({ message: "Pass", enrollmentId: result[0].enrollmentId});
+                });
+            }
+          );
+        }
+
+        else{
+          return res.status(200).json({ message: "Failed"});
+        }
+      });
     }
   );
+  
 });
 
 module.exports = router;

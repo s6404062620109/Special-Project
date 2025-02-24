@@ -153,6 +153,7 @@ function Subject() {
                             no={ind+1}
                             id={item.id}
                             question={item.content}
+                            courseId={courseId}
                         />
                     ))}
                 </div>

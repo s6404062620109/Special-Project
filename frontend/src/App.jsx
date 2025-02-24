@@ -1,6 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
 
 import './App.css'
 import Navbar from './components/Navbar';
@@ -64,7 +63,7 @@ function App() {
 
   return (
     <div className='container'>
-      {userData.role === 's' || !userData.role &&(
+      {(userData.role === 's' || userData.role === null) &&(
         <div className='container-wrap'>
           {showNavbar && <Navbar />}
       
@@ -85,7 +84,7 @@ function App() {
         </div>
       )}
 
-      {userData.role === 't' &&(
+      {userData.role === "t" &&(
         <div className='container-wrap'>
           <NavbarTeach/>
 
@@ -97,7 +96,7 @@ function App() {
         </div>
       )}
 
-      {userData.role === 'a' &&(
+      {userData.role === "a" &&(
         <div className='container-wrap'>
           <NavbarAdmin/>
           

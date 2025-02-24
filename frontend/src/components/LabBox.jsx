@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react'
+import backend from '../api/backend';
+import { useNavigate } from 'react-router-dom';
 
 import style from './css/labbox.module.css';
-import backend from '../api/backend';
 
-function LabBox({ no, id, question }) {
+function LabBox({ no, id, question, courseId }) {
     const [Address, setAddress] = useState({
         ip:'', port:'', containerId: '', url:''
-    });
-    const [loading, setLoading] = useState(false);
-    const [focus, setFocus] = useState(false);
+    }); 
+    const [ loading, setLoading ] = useState(false);
+    const [ focus, setFocus ] = useState(false);
     const [ answer, setAnswer ] = useState([]);
     const [ checkStatus, setCheckStatus ] = useState('');
-    const [userData, setUserData] = useState({
+    const [ userData, setUserData ] = useState({
         id:null,
         email:null,
         name:null,
@@ -19,6 +20,7 @@ function LabBox({ no, id, question }) {
         profile_img:null,
     });
     const emailrefStorage = localStorage.getItem("email");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -51,16 +53,37 @@ function LabBox({ no, id, question }) {
         }));
     };
 
+    const fetchLatestProgress = async (enrollmentId) =>{
+        try{
+          const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
+
+          if(response.status === 200){
+            window.location.href = `/course/${courseId}/${response.data.inProgress}`;
+          }
+        } catch (error) {
+          console.log(error);
+        }  
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try{
             const response = await backend.post('/lab/submitLabanswer', { 
                 answer: answer, 
-                email: userData.email, 
+                userId: userData.id, 
             });
-            setCheckStatus(response.data.message);
 
+            if(response.status === 200){
+                setCheckStatus(response.data.message);
+
+                if(response.data.message === "Pass"){
+                    fetchLatestProgress(response.data.enrollmentId)
+                }
+                if(response.data.message === "Failed"){
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            }   
         } catch (error) {
             console.log(error);
         }
