@@ -1,41 +1,46 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
+import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
 import NavSubject from '../../components/NavSubject';
-import backend from '../../api/backend';
-
 
 function Subject() {
     const { courseId, subjectId } = useParams();
     const [ data, setData ] = useState({
-        id: null,
         name: null,
-        content: null,
         images: null,
-        courseId: null
+    });
+    const [ dataContent, setDataContent ] = useState({
+        content: { title: '', description: '' },
+        subcontent: [],
+        summary: ''
     });
     const [ subjectList, setSubjectList ] = useState([]);
     const [ imgPath, setImgPath ] = useState('');
     const [ questionList, setQuestionList ] = useState([]);
     const [ useLab, setUseLab ] = useState(false);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     useEffect(() => {
         const fetchSubjectData = async () =>{
             try{
                 const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`);
 
-                let dataResponse = response.data[0];
-                
-                setData({
-                    id: dataResponse.id,
-                    name: dataResponse.name,
-                    content: dataResponse.content,
-                    images: dataResponse.images,
-                    courseId: dataResponse.courseId
-                });    
+                if(response.status === 200){
+                    let resultResponse = response.data.result[0];
+
+                    setData({
+                        name: resultResponse.name,
+                        images: resultResponse.images ? resultResponse.images.split(",").map(img => img.trim()) : [],
+                    });
+
+                    let jsonResponse = response.data.jsonData;
+                    setDataContent(jsonResponse);
+                }
+                    
             }
             catch(err){
                 console.log(err)
@@ -59,18 +64,24 @@ function Subject() {
     }, [courseId, subjectId]);
 
     useEffect(() => {
-        const fetchImage = async () => {
+        const fetchImages = async () => {
             try {
-                const response = await backend.get(`/imgrender/getContentImage/${courseId}/${subjectId}/${data.images}`);
-                if (response.status === 200) {
-                    setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
+                if (data.images.length > 0) {
+                    const imageRequests = data.images.map(async (img) => {
+                        const response = await backend.get(`/imgrender/getContentImage/${courseId}/${subjectId}/${img}`);
+                        return response.data.url ? `${import.meta.env.VITE_API_BASE_URL}${response.data.url}` : null;
+                    });
+    
+                    const imagePaths = await Promise.all(imageRequests);
+                    setImgPath(imagePaths.filter(path => path !== null));
                 }
             } catch (err) {
-                console.log("Error fetching icon:", err);
+                console.log("Error fetching images:", err);
             }
         };
-        fetchImage();
-    }, [ courseId, subjectId, data]);
+        fetchImages();
+    }, [courseId, subjectId, data.images]);
+    
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -105,7 +116,14 @@ function Subject() {
             </React.Fragment>
         ));
     };
+    
+    const prevImage = () => {
+        setCurrentImageIndex(prevIndex => (prevIndex === 0 ? imgPath.length - 1 : prevIndex - 1));
+    };
 
+    const nextImage = () => {
+        setCurrentImageIndex(prevIndex => (prevIndex === imgPath.length - 1 ? 0 : prevIndex + 1));
+    };
   return (
     <div className={style.container}>
         
@@ -133,18 +151,32 @@ function Subject() {
 
                     <div className={style.Info}>
                         <h1>{data.name}</h1>
+                        <h2>{dataContent.content.title}</h2>
+                        <p>{formatContent(dataContent.content.description)}</p>
 
-                        <div className={style["lecture-wrap"]}>
-                            <label>{formatContent(data.content)}</label>
+                        <div className={style.subcontent}>
+                            {dataContent.subcontent.map((sub, index) => (
+                                <div key={index} className={style["subcontent-item"]}>
+                                    <h3>{sub.title}</h3>
+                                    <p>{formatContent(sub.description)}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className={style.summary}>
+                            <h3>สรุป</h3>
+                            <p>{formatContent(dataContent.summary)}</p>
                         </div>
                     </div>
 
-                    <div className={style.Picture}>
-                        <img
-                            alt='Content Picture'
-                            src={imgPath}
-                        />
-                    </div>
+                    {imgPath.length > 0 && (
+                        <div className={style.Picture}>
+                            <button className={style.prevBtn} onClick={prevImage}>&#10094;</button>
+                            <img alt="Content" src={imgPath[currentImageIndex]} className={style["content-image"]} />
+                            <div>{data.images[currentImageIndex]}</div>
+                            <button className={style.nextBtn} onClick={nextImage}>&#10095;</button>
+                        </div>
+                    )}
                 </div>
 
                 <div className={style.questionBox}>
@@ -153,6 +185,7 @@ function Subject() {
                             no={ind+1}
                             id={item.id}
                             question={item.content}
+                            type={item.type}
                             courseId={courseId}
                         />
                     ))}

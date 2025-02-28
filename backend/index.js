@@ -7,7 +7,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [ "http://localhost:5173" ],
+    origin: [ process.env.FRONTEND_URL ],
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     credentials: true,
     allowedHeaders: [ "Content-Type", "Authorization" ],
@@ -41,13 +41,23 @@ app.use("/enroll", Enrollment);
 const Progress = require("./routes/progress");
 app.use("/progress", Progress);
 
-/* Lab */
-const Labtest = require("./routes/labtest");
-app.use("/lab", Labtest);
+/* Lab on web */
+const lab = require("./routes/labtest");
+app.use("/lab", lab);
 
+/* lab on test */
+const labTest = require('./routes/lab');
+app.use("/lab-test", labTest);
+
+/* Question */
 const Question = require("./routes/questions");
 app.use("/question", Question);
 
+/* User */
+const User = require("./routes/user");
+app.use("/user", User); 
+
+/* Image */
 const Img = require("./routes/imagerender");
 app.use("/imgrender", Img);
 

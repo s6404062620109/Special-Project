@@ -1,6 +1,6 @@
 # start : docker-compose up -d --build
 # stop : docker-compose down
-version: '3' 
+version: '4' 
 services:
   node-server: 
     build: . 
@@ -13,6 +13,7 @@ services:
       - ./routes:/usr/src/app/router
       - ./lab:/usr/src/app/lab
       - ./courses:/usr/src/app/courses
+      - ./users:/usr/src/app/users
       
   db:
     image: mysql:latest

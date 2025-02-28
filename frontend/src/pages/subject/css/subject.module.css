@@ -31,15 +31,45 @@
     }
 }
 
-.Picture{
+.Picture {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 25%;
+    width: 50%;
+    position: relative;
+}
 
-    img{
-        width: 100%;
-    }
+.content-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.prevBtn, .nextBtn {
+    position: absolute;
+    top: 120%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+.prevBtn {
+    left: 10px;
+}
+
+.nextBtn {
+    right: 10px;
+}
+
+.prevBtn:hover, .nextBtn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 .lecture-wrap {

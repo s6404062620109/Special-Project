@@ -1,0 +1,36 @@
+.renderLab {
+    padding: 20px;
+    text-align: center;
+}
+
+.renderLab ul {
+    list-style: none;
+    padding: 0;
+}
+
+.renderLab li {
+    margin: 10px 0;
+}
+
+.renderLab button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.renderLab button:hover {
+    background-color: #0056b3;
+}
+
+.labPreview {
+    margin-top: 20px;
+}
+
+.labPreview iframe {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ccc;
+}

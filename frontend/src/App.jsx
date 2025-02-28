@@ -1,23 +1,32 @@
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { matchPath, Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react';
+import backend from './api/backend';
 
 import './App.css'
+
 import Navbar from './components/Navbar';
 
+/*  */
 import Home from './pages/home';
 import Courses from './pages/courses';
-
 import Register from './pages/authenticate/register';
 import Reset from './pages/authenticate/reset';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
+import RenderLab from './pages/test/lab';
 import SetPassword from './pages/authenticate/register/Setpassword';
 import Forgot from './pages/authenticate/forgot';
-import backend from './api/backend';
-import NavbarTeach from './components/NavbarTeach';
-import NavbarAdmin from './components/NavbarAdmin';
+/*  */
 
+/* */ 
+import NavbarTeach from './components/NavbarTeach';
+/* */
+
+/* */
+import NavbarAdmin from './components/NavbarAdmin';
+import ManageUser from './pages/manageuser';
+/* */
 
 function App() {
   const [userData, setUserData] = useState({
@@ -58,12 +67,14 @@ function App() {
     fetchUserData();
   },[emailrefStorage]);
 
-  const noNavbarRoutes = [];
-  const showNavbar = !noNavbarRoutes.includes(location.pathname);
+  const noNavbarRoutes = [ '/subject/:subjectId/question/:questionId' ];
+  const showNavbar = !noNavbarRoutes.some((pattern) =>
+    matchPath(pattern, location.pathname)
+  );
 
   return (
     <div className='container'>
-      {(userData.role === 's' || userData.role === null) &&(
+      {userData.role === null &&(
         <div className='container-wrap'>
           {showNavbar && <Navbar />}
       
@@ -74,10 +85,27 @@ function App() {
               <Route path='/set-password' element={<SetPassword/>}/>
               <Route path='/forgot-password' element={<Forgot/>}/>
               <Route path='/reset-password' element={<Reset/>}/>
-              
-              <Route path='/courses' element={<Courses/>}/>
               <Route path='/course/:courseId' element={<CourseDetail/>}/>
+
+              <Route path='/courses' element={<Courses/>}/>
+            </Routes>
+          </div>
+        </div>
+      )}
+
+      {userData.role === 's' &&(
+        <div className='container-wrap'>
+          {showNavbar && <Navbar />}
+      
+          <div className='content'>
+            <Routes>
+              <Route path='/' element={<Home/>}/>
+              <Route path='/forgot-password' element={<Forgot/>}/>
+              <Route path='/reset-password' element={<Reset/>}/>
+
+              <Route path='/courses' element={<Courses/>}/>
               <Route path='/course/:courseId/subject/:subjectId' element={<Subject/>}/>
+              <Route path='/subject/:subjectId/question/:questionId' element={<RenderLab/>}/>
               <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
             </Routes>
           </div>
@@ -103,6 +131,7 @@ function App() {
           <div className='content'>
             <Routes>
               <Route path='/' element={<Home/>}/>
+              <Route path='/manageUser' element={<ManageUser/>}/>
             </Routes>
           </div>
         </div>

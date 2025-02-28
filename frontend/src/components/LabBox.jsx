@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import style from './css/labbox.module.css';
 
-function LabBox({ no, id, question, courseId }) {
+function LabBox({ no, id, question, type, courseId }) {
     const [Address, setAddress] = useState({
         ip:'', port:'', containerId: '', url:''
     }); 
@@ -24,27 +24,33 @@ function LabBox({ no, id, question, courseId }) {
 
     useEffect(() => {
         const fetchUserData = async () => {
-          try{
-            const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-              withCredentials: true
-            });
-            if(response.status === 200){
+          try {
+            const response = await backend.get(
+              `/auth/authorization/${emailrefStorage}`,
+              {
+                withCredentials: true,
+              }
+            );
+            if (response.status === 200) {
               setUserData({
-                id:response.data.id,
-                email:response.data.email,
-                name:response.data.name,
-                role:response.data.role,
-                profile_img:response.data.profile_img,
+                id: response.data.id,
+                email: response.data.email,
+                name: response.data.name,
+                role: response.data.role,
+                profile_img: response.data.profile_img,
               });
             }
-    
-          } catch(error){
+          } catch (error) {
             console.log(error);
+            if (error.response.status === 403) {
+              localStorage.removeItem("email");
+              alert("Your session time out!");
+              navigate('/');
+            }
           }
-          
-        }
+        };
         fetchUserData();
-    },[emailrefStorage]);
+    }, [emailrefStorage]);
 
     const handleAnswerChange = (questionId, answer) => {
         setAnswer((prev) => ({

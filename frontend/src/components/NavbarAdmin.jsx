@@ -76,7 +76,7 @@ function NavbarAdmin() {
         </div>
 
         <div className={style.functionsContainer}>
-          <Link to="">USERS</Link>
+          <Link to="/manageUser">USERS</Link>
           <Link>FAQ</Link>
           <Link>NEWS</Link>
         </div>
