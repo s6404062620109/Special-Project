@@ -3,99 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baiting Attack Lab</title>
+    <title>Security Alert</title>
     <style>
         body {
-            background: #f4f4f4;
             font-family: Arial, sans-serif;
+            background: #f4f4f4;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            background: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        header {
-            background: #0073e6;
-            color: #fff;
-            padding: 15px 20px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .mailContainer {
-            background-color: #fff;
-        }
-
-        .mailContainer > div {
-            padding: 15px 20px;
-            border-bottom: 1px solid #ddd;
-            transition: background-color 0.3s;
-        }
-
-        .mailContainer > div:hover {
-            cursor: pointer;
-            background-color: #f1f9ff;
-        }
-
-        .footer {
-            background: #f4f4f4;
-            color: #555;
-            font-size: 14px;
-            padding: 10px 20px;
+        .popup {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
-            border-top: 1px solid #ddd;
+            max-width: 400px;
+            cursor: pointer; /* เพิ่ม cursor pointer เพื่อให้รู้ว่าสามารถคลิกได้ */
+        }
+
+        .popup h2 {
+            color: red;
+            font-size: 22px;
+        }
+
+        .popup p {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .popup.normal-view {
+            position: static;
+            box-shadow: none;
+            border-radius: 0;
+            max-width: 100%;
+            height: auto;
+            padding: 20px;
+            background: white;
+            cursor: default;
+        }
+
+        .popup.normal-view h2 {
+            color: black;
+            font-size: 24px;
+        }
+
+        .popup.normal-view p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .popup.normal-view .close-btn {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>Email Notifications</header>
-        <div class='mailContainer'>
-            <div data-href="./result.html" data-topic="Suspicious activity detected on your account">Suspicious activity detected on your account</div>
-            <div data-href="./result.html" data-topic="Your account has been compromised">Your account has been compromised</div>
-            <div data-href="./result.html" data-topic="Verification required to access your code">Verification required to access your code</div>
-        </div>
-        <div class="footer">&copy; 2024 Baiting Attack Lab | All Rights Reserved</div>
+    <div class="popup" id="popup">
+        <h2>⚠ Warning: Your Computer is Infected!</h2>
+        <p>Suspicious activity has been detected on your system. Your personal data may be at risk.</p>
+        <button class="close-btn" onclick="closePopup()">Close</button>
     </div>
 
     <script>
-        document.querySelectorAll('.mailContainer > div').forEach(div => {
-            div.addEventListener('click', function() {
-                const href = this.getAttribute('data-href');
-                const topic = encodeURIComponent(this.getAttribute('data-topic'));     
+        let isPopupClicked = false;
 
-                if (href.endsWith('.txt')) {
-                    // Trigger file download with random text
-                    const randomText = generateRandomText(6, 10);
-                    const blob = new Blob([randomText], { type: 'text/plain' });
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = 'fakefile.txt';
-                    link.click();
-                } else {
-                    // Navigate to the real page with the topic
-                    window.location.href = `${href}?topic=${topic}`;
-                }
-            });
+        // ฟังก์ชันสำหรับสร้างคำตอบแบบสุ่ม
+        function generateFakeAnswer() {
+            const fakePasswords = [
+                "P@ssw0rd123",
+                "Secure!2023",
+                "Admin#1234",
+                "RandomPass!",
+                "FakePassword123",
+                "BaitingPassword!",
+                "SimulatedPass#1"
+            ];
+            const randomIndex = Math.floor(Math.random() * fakePasswords.length);
+            return fakePasswords[randomIndex];
+        }
+
+        function answer() {
+            if (isPopupClicked) return; 
+            const fakeAnswer = generateFakeAnswer();
+            document.getElementById("popup").innerHTML = `
+                <p><strong>Your are safe. This was a simulated attack. <br/> 
+                Please take this password: ${fakeAnswer}</strong></p>
+            `;
+            isPopupClicked = true;
+        }
+
+        function changeToNormalView() {
+            const popup = document.getElementById("popup");
+            popup.classList.add("normal-view");
+        }
+
+        function closePopup() {
+            if (isPopupClicked) return;
+            changeToNormalView();
+            document.getElementById("popup").innerHTML = `
+                <p><strong>Your are safe. This was a simulated attack. <br/> 
+                Please take this password: <!-- INSERT ANSWER HERE --></strong></p>
+            `;
+            isPopupClicked = true;
+        }
+
+        document.getElementById("popup").addEventListener("click", function(event) {
+            if (isPopupClicked) return; 
+
+            if (!event.target.classList.contains("close-btn")) {
+                answer();
+                changeToNormalView();
+            }
         });
 
-        // Function to generate random text with 6-10 words
-        function generateRandomText(minWords, maxWords) {
-            const words = ['account', 'suspicious', 'verification', 'code', 'compromised', 'secure', 'gift', 'reward', 'security', 'win'];
-            let text = '';
-            const wordCount = Math.floor(Math.random() * (maxWords - minWords + 1)) + minWords;
-            for (let i = 0; i < wordCount; i++) {
-                text += words[Math.floor(Math.random() * words.length)] + ' ';
-            }
-            return text.trim();
-        }
+        setTimeout(() => {
+            localStorage.setItem("answer", "Your system is safe. This was a simulated attack.");
+        }, 1000);
     </script>
 </body>
 </html>

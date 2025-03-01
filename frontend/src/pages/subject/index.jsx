@@ -4,10 +4,10 @@ import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
-import NavSubject from '../../components/NavSubject';
+import NavSubject from './NavSubject';
 
 function Subject() {
-    const { courseId, subjectId } = useParams();
+    const { courseId, subjectId, enrollmentId } = useParams();
     const [ data, setData ] = useState({
         name: null,
         images: null,
@@ -22,7 +22,7 @@ function Subject() {
     const [ questionList, setQuestionList ] = useState([]);
     const [ useLab, setUseLab ] = useState(false);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [ currentImageIndex, setCurrentImageIndex ] = useState(0);
 
     useEffect(() => {
         const fetchSubjectData = async () =>{
@@ -81,7 +81,6 @@ function Subject() {
         };
         fetchImages();
     }, [courseId, subjectId, data.images]);
-    
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -151,6 +150,16 @@ function Subject() {
 
                     <div className={style.Info}>
                         <h1>{data.name}</h1>
+
+                        {imgPath.length > 0 && (
+                            <div className={style.Picture}>
+                                <button className={style.prevBtn} onClick={prevImage}>&#10094;</button>
+                                <img alt="Content" src={imgPath[currentImageIndex]} className={style["content-image"]} />
+                                <div>{data.images[currentImageIndex]}</div>
+                                <button className={style.nextBtn} onClick={nextImage}>&#10095;</button>
+                            </div>
+                        )}
+
                         <h2>{dataContent.content.title}</h2>
                         <p>{formatContent(dataContent.content.description)}</p>
 
@@ -169,14 +178,7 @@ function Subject() {
                         </div>
                     </div>
 
-                    {imgPath.length > 0 && (
-                        <div className={style.Picture}>
-                            <button className={style.prevBtn} onClick={prevImage}>&#10094;</button>
-                            <img alt="Content" src={imgPath[currentImageIndex]} className={style["content-image"]} />
-                            <div>{data.images[currentImageIndex]}</div>
-                            <button className={style.nextBtn} onClick={nextImage}>&#10095;</button>
-                        </div>
-                    )}
+                    
                 </div>
 
                 <div className={style.questionBox}>
@@ -187,6 +189,7 @@ function Subject() {
                             question={item.content}
                             type={item.type}
                             courseId={courseId}
+                            enrollmentId={enrollmentId}
                         />
                     ))}
                 </div>
@@ -196,6 +199,7 @@ function Subject() {
                 <NavSubject 
                     courseId={courseId}
                     subjectList={subjectList}
+                    enrollmentId={enrollmentId}
                 />
             </div>
         </div>

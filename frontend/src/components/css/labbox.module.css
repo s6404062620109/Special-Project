@@ -1,3 +1,6 @@
+.container > h2{
+    color: white;
+}
 .content{
     display: flex;
     flex-direction: column;
@@ -8,6 +11,10 @@
     padding: 1rem;
     border-radius: 20px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
 }
 
 .question{
@@ -22,7 +29,7 @@
 
         input[type="text"]{
             background: #E7E7E7;
-            height: 20px;
+            height: 25px;
             width: 80%;
             border-radius: 10px;
             box-shadow: inset gray 0px 2px 5px;
@@ -32,46 +39,34 @@
             background: white !important;
         }
 
-        input[type="submit"]{
-            padding: 12px 20px;
+        input[type="submit"], button{
+            display: flex;
+            justify-content: center;
+            padding: 10px 20px;
             border: none;
             border-radius: 40px;
             background:  linear-gradient(to right, #21D4FD , #2152FF);
         }
+        input[type="submit"]:hover{
+            cursor: pointer;
+        }
     }
 }
 
-.labBox{
-    background: #D9D9D9;
-    padding: .625rem;
-    border-radius: 1rem;
+.form-wrapper{
+    display: flex;
 }
 
-.lab-wrap{
+.next-button {
+    position: absolute; /* ใช้ absolute positioning */
+    bottom: 1rem; /* ระยะห่างจากด้านล่าง */
+    right: 1rem; /* ระยะห่างจากด้านขวา */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 40px;
+    background: linear-gradient(to right, #21d4fd, #2152ff);
+    cursor: pointer;
     display: flex;
-    width: 80%;
-    margin: auto;
-    button{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin: auto 1rem;
-        padding: 10px 25px;
-        border: none;
-        border-radius: 10px;
-        background:  linear-gradient(to right, #21D4FD , #2152FF);
-    }
-}
-
-.address{
-    background: white;
-    width: 60%;
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
     align-items: center;
-    p{
-        margin: 0;
-    }
+    gap: 0.5rem;
 }

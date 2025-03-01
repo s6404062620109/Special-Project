@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Feb 28, 2025 at 10:38 AM
+-- Generation Time: Feb 28, 2025 at 12:49 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.2.8
 
@@ -172,7 +172,6 @@ INSERT INTO `answer` (`id`, `content`, `type`, `questionId`) VALUES
 CREATE TABLE `course` (
   `id` int NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `detail` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `icon_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `teacherId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -181,8 +180,8 @@ CREATE TABLE `course` (
 -- Dumping data for table `course`
 --
 
-INSERT INTO `course` (`id`, `name`, `detail`, `icon_id`, `teacherId`) VALUES
-(1, 'Cyber Security - Social Engineering', 'หลักสูตรเกี่ยวกับ Social Engineering และวิธีรับมือป้องกันจากการโจมตี', 'icon.png', 19);
+INSERT INTO `course` (`id`, `name`, `icon_id`, `teacherId`) VALUES
+(1, 'Cyber Security - Social Engineering', 'icon.png', 19);
 
 -- --------------------------------------------------------
 

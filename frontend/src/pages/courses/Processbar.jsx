@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import style from './css/processbar.module.css';
-import backend from '../api/backend';
+import backend from '../../api/backend';
 
 /* Cal Percent */
 

@@ -47,7 +47,10 @@ router.post('/enrollCourse', (req, res) => {
           });
 
           // Collect all 'lab' type questions
-          labQuestions = questionResult.filter(q => q.type === "lab").map(q => q.id);
+          labQuestions = questionResult
+            .filter(q => q.type.toLowerCase().includes('lab'))
+            .map(q => q.id);
+
           let total_labs = labQuestions.length;
 
           let sortedQuestions = [...preQuestions, ...labQuestions, ...postQuestions];

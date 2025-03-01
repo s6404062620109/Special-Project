@@ -1,205 +1,148 @@
-import React, { useEffect, useState } from 'react'
-import backend from '../api/backend';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import backend from "../api/backend";
+import { useNavigate } from "react-router-dom";
 
-import style from './css/labbox.module.css';
+import style from "./css/labbox.module.css";
 
-function LabBox({ no, id, question, type, courseId }) {
-    const [Address, setAddress] = useState({
-        ip:'', port:'', containerId: '', url:''
-    }); 
-    const [ loading, setLoading ] = useState(false);
-    const [ focus, setFocus ] = useState(false);
-    const [ answer, setAnswer ] = useState([]);
-    const [ checkStatus, setCheckStatus ] = useState('');
-    const [ userData, setUserData ] = useState({
-        id:null,
-        email:null,
-        name:null,
-        role:null,
-        profile_img:null,
-    });
-    const emailrefStorage = localStorage.getItem("email");
-    const navigate = useNavigate();
+function LabBox({ no, id, question, type, courseId, enrollmentId }) {
+  const [focus, setFocus] = useState(false);
+  const [answer, setAnswer] = useState([]);
+  const [checkStatus, setCheckStatus] = useState("");
+  const [userData, setUserData] = useState({
+    id: null,
+    email: null,
+    name: null,
+    role: null,
+    profile_img: null,
+  });
+  const emailrefStorage = localStorage.getItem("email");
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-          try {
-            const response = await backend.get(
-              `/auth/authorization/${emailrefStorage}`,
-              {
-                withCredentials: true,
-              }
-            );
-            if (response.status === 200) {
-              setUserData({
-                id: response.data.id,
-                email: response.data.email,
-                name: response.data.name,
-                role: response.data.role,
-                profile_img: response.data.profile_img,
-              });
-            }
-          } catch (error) {
-            console.log(error);
-            if (error.response.status === 403) {
-              localStorage.removeItem("email");
-              alert("Your session time out!");
-              navigate('/');
-            }
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await backend.get(
+          `/auth/authorization/${emailrefStorage}`,
+          {
+            withCredentials: true,
           }
-        };
-        fetchUserData();
-    }, [emailrefStorage]);
-
-    const handleAnswerChange = (questionId, answer) => {
-        setAnswer((prev) => ({
-          ...prev,
-          [questionId]: answer,
-        }));
-    };
-
-    const fetchLatestProgress = async (enrollmentId) =>{
-        try{
-          const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
-
-          if(response.status === 200){
-            window.location.href = `/course/${courseId}/${response.data.inProgress}`;
-          }
-        } catch (error) {
-          console.log(error);
-        }  
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        try{
-            const response = await backend.post('/lab/submitLabanswer', { 
-                answer: answer, 
-                userId: userData.id, 
-            });
-
-            if(response.status === 200){
-                setCheckStatus(response.data.message);
-
-                if(response.data.message === "Pass"){
-                    fetchLatestProgress(response.data.enrollmentId)
-                }
-                if(response.data.message === "Failed"){
-                    setTimeout(() => window.location.reload(), 2000);
-                }
-            }   
-        } catch (error) {
-            console.log(error);
+        );
+        if (response.status === 200) {
+          setUserData({
+            id: response.data.id,
+            email: response.data.email,
+            name: response.data.name,
+            role: response.data.role,
+            profile_img: response.data.profile_img,
+          });
         }
-    }
-
-    const handleCreateContainer = async () => {
-        setLoading(true);
-
-        try {
-            const response = await backend.post('/lab/createLinuxContainer', { Email:userData.email , questionID: id });
-            if(response.status === 200){    
-                setAddress({ 
-                    ip: response.data.ip, 
-                    port: response.data.port , 
-                    containerId: response.data.containerId, 
-                    url: response.data.url
-                });
-            }
-            
-        } catch (err) {
-            console.error(err);
+      } catch (error) {
+        console.log(error);
+        if (error.response.status === 403) {
+          localStorage.removeItem("email");
+          alert("Your session time out!");
+          navigate("/");
         }
-        setLoading(false);
-    };  
-
-    const handleStartContainer = async () => {
-        const newTab = window.open(`http://localhost:${Address.port}`, '_blank');
-    
-        const checkTabClosed = setInterval(async () => {
-            if (newTab.closed) {
-                clearInterval(checkTabClosed);
-    
-                try {
-                    const response = await backend.post('/lab/stopContainer', { 
-                        containerId: Address.containerId, 
-                        IpAddress: `${Address.ip}:${Address.port}` 
-                    });
-    
-                    if (response.status === 200) {
-                        setAddress({ ip: 'Stop lab test', port: '', containerId: '' });
-                    }
-    
-                } catch (error) {
-                    console.error(`Failed to stop container ${Address.containerId}:`, error);
-                }
-            }
-        }, 2000);
+      }
     };
+    fetchUserData();
+  }, [emailrefStorage]);
+
+  const handleAnswerChange = (questionId, answer) => {
+    setAnswer((prev) => ({
+      ...prev,
+      [questionId]: answer,
+    }));
+  };
+
+  const fetchLatestProgress = async (enrollmentId) => {
+    try {
+      const response = await backend.get(
+        `/progress/getLatestProgress/${enrollmentId}`
+      );
+
+      if (response.status === 200) {
+        window.location.href = `/course/${courseId}/${response.data.inProgress}`;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await backend.post("/lab/submitLabanswer", {
+        answer: answer,
+        userId: userData.id,
+      });
+
+      if (response.status === 200) {
+        setCheckStatus(response.data.message);
+
+        if (response.data.message === "Pass") {
+          fetchLatestProgress(response.data.enrollmentId);
+        }
+        if (response.data.message === "Failed") {
+          setTimeout(() => window.location.reload(), 2000);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleStartContainer = async () => {
+    const clientUrl = import.meta.env.VITE_CLIENT_URL || window.location.origin;
+    const url = `${clientUrl}/lab/question/${id}`;
+    window.open(url, "_blank");
+  };
 
   return (
     <div className={style.container}>
-        <h2>Lab Question</h2>
-        <div className={style.content}>
-            <div className={style.questionBox}>
-                
-                <div 
-                    className={style.question}
-                >
-                    <h3>{no}. {question}</h3>
-                    <form onSubmit={(e) => handleSubmit(e)}>
-                        <input
-                            type='text'
-                            onChange={(e) => handleAnswerChange(id, e.target.value)}
-                            onFocus={() => setFocus(true)}
-                            onBlur={() => setFocus(false)}
-                            required
-                            className={`${style.inputText} ${focus ? style.focusInput : ''}`}
-                        />
+      <h2>Lab Question</h2>
 
-                        {!checkStatus ? (
-                            <input
-                                type='submit'
-                                value='Submit'
-                            />
-                        ) : (
-                            <p>{checkStatus}</p>
-                        )}
-                    </form>
-                </div>
+      <div className={style.content}>
+        <div className={style.questionBox}>
+          <div className={style.question}>
+            <h3>
+              {no}. {question}
+            </h3>
+            <div className={style["form-wrapper"]}>
+              <form onSubmit={(e) => handleSubmit(e)}>
+                {type === "lab-w" && (
+                  <button onClick={handleStartContainer}>START</button>
+                )}
+
+                <input
+                  type="text"
+                  onChange={(e) => handleAnswerChange(id, e.target.value)}
+                  onFocus={() => setFocus(true)}
+                  onBlur={() => setFocus(false)}
+                  className={`${style.inputText} ${
+                    focus ? style.focusInput : ""
+                  }`}
+                />
+
+                {!checkStatus ? (
+                  <input type="submit" value="Submit" />
+                ) : (
+                  <p>{checkStatus}</p>
+                )}
+              </form>
+
+              {/* <button className="next-button" onClick={() => fetchLatestProgress(enrollmentId)}>
+                <img src="/Course_Assets/Skip forward.svg" alt="Skip Icon" />
+                NEXT
+              </button> */}
             </div>
-
-            <div className={style.labBox}>
-                <div className={style["lab-wrap"]}>
-                    <button 
-                        onClick={handleCreateContainer} 
-                        disabled={loading}
-                    >
-                        {loading ? 'Spawnng...' : 'SPAWN'}
-                    </button>
-
-                    <div className={style.address}>
-                        {Address && <p to={`${Address.url}`}>{Address.ip}</p>}
-                    </div>
-
-                    <button onClick={handleStartContainer} disabled={!Address.port}>
-                        START
-                    </button>
-                    <button>
-                        <img 
-                            src='/Course_Assets/Skip forward.svg'
-                            alt='Skip Icon'
-                        />
-                        NEXT
-                    </button>
-                </div>
-            </div>
+            
+          </div>
         </div>
-        
+      </div>
     </div>
-  )
+  );
 }
 
-export default LabBox
+export default LabBox;

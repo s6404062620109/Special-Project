@@ -67,7 +67,7 @@ function App() {
     fetchUserData();
   },[emailrefStorage]);
 
-  const noNavbarRoutes = [ '/subject/:subjectId/question/:questionId' ];
+  const noNavbarRoutes = [ '/lab/question/:questionId' ];
   const showNavbar = !noNavbarRoutes.some((pattern) =>
     matchPath(pattern, location.pathname)
   );
@@ -103,9 +103,10 @@ function App() {
               <Route path='/forgot-password' element={<Forgot/>}/>
               <Route path='/reset-password' element={<Reset/>}/>
 
+              <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
               <Route path='/courses' element={<Courses/>}/>
-              <Route path='/course/:courseId/subject/:subjectId' element={<Subject/>}/>
-              <Route path='/subject/:subjectId/question/:questionId' element={<RenderLab/>}/>
+              <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
+              <Route path='/lab/question/:questionId' element={<RenderLab/>}/>
               <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
             </Routes>
           </div>

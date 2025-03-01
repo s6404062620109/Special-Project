@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-
-import style from './css/coursedetails.module.css'
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import backend from '../../api/backend';
 
+import style from './css/coursedetails.module.css';
+import SubjectCard from './subjectCard';
+
 function CourseDetail() {
-    const { courseId } = useParams();
+    const { courseId, enrollmentId } = useParams();
     const [ data, setData ] = useState([]);
     const [ courseInfo, setCourseInfo] = useState({
       id: '',
       name:'',
-      details:'',
       icon:''
     });
     const [userData, setUserData] = useState({
@@ -21,7 +21,8 @@ function CourseDetail() {
         profile_img:null,
     });
     const [ imgPath, setImgPath ] = useState('');
-    const navigate = useNavigate();
+    const [ history, setHistory ] = useState([]);
+    const [ progress, setProgress ] = useState([]);
     const emailrefStorage = localStorage.getItem("email");
  
     useEffect(() => {
@@ -46,7 +47,7 @@ function CourseDetail() {
         
       }
       fetchUserData();
-    },[]);
+    },[emailrefStorage]);
     
     useEffect(() => {
       const fetchData = async () => {
@@ -58,7 +59,6 @@ function CourseDetail() {
           setCourseInfo({
             id: responseCourse.id,
             name: responseCourse.name,
-            details: responseCourse.detail,
             icon: responseCourse.icon_id
           });
           setData(response.data.subject);
@@ -68,7 +68,20 @@ function CourseDetail() {
       };
 
       fetchData();
-    }, [courseId]);
+
+      const fetchHistory = async () => {
+        try {
+            const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
+            if (response.status === 200) {
+              setHistory(response.data.results);
+            }
+        } catch (err) {
+            console.log("Error fetching icon:", err);
+        }
+      };
+      
+      fetchHistory();
+    }, [courseId, userData.id]);
 
     useEffect(() => {
       const fetchIcon = async () => {
@@ -82,17 +95,24 @@ function CourseDetail() {
           console.log("Error fetching icon:", err);
         }
       };
-    
       fetchIcon();
-    }, [courseId, courseInfo.icon]);
-    
-    const handleLinkClick = (e) => {
-      if (!emailrefStorage && !userData.id && !userData.email && !userData.name && !userData.role) {
-        e.preventDefault();
-        alert('Not authenticated. Please log in.');
-        navigate('/');
+
+      const fethProgress = async () => {
+        try{ 
+          const response = await backend.get(`/progress/checkCourseProgress/${history[0].id}`);
+
+          if(response.status === 200){
+            setProgress(response.data.results);
+          }
+        } catch(error){
+          console.log(error);
+        }
       }
-    }
+      if(history.length > 0){
+        fethProgress();
+      }
+      
+    }, [courseId, courseInfo.icon, history]);
 
   return (
     <div className={style.container}>
@@ -101,39 +121,35 @@ function CourseDetail() {
           alt='Course Icon Image'
           src={imgPath}
         />
-        <div className={style.infoContent}>
-          <h1>{courseInfo.name}</h1>
-          <label>{courseInfo.details}</label>
-        </div>
+        <p>{courseInfo.name}</p>
       </div>
 
       <div className={style.content}>
-        <ul>
-          {data.map((subject, index) => (
-            <Link 
-              key={index}
-              to={`/course/${courseId}/subject/${subject.SubjectID}`}
-              onClick={handleLinkClick} 
-            >
-                {subject.name}
-            </Link>
-          ))}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <p>SUBJECT</p>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
 
-        <ul>
-          <Link 
-            to={`/course/${courseId}/pretest`}
-            onClick={handleLinkClick}
-          >
-            Pretest
-          </Link>
-          <Link
-            onClick={handleLinkClick}  
-          >
-            Posttest
-          </Link>
-        </ul>
+          <tbody>
+            {data.map((subject, index) => (
+              <SubjectCard 
+                key={index}
+                id={subject.id}
+                name={subject.name}
+                courseId={subject.courseId}
+                progress={progress}
+                enrollmentId={enrollmentId}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
+      
     </div>
   )
 }

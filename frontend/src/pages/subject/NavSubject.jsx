@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 
 import style from "./css/navsubject.module.css";
-import backend from '../api/backend';
+import backend from '../../api/backend';
 
-function NavSubject({ subjectList, courseId }) {
+function NavSubject({ subjectList, courseId, enrollmentId }) {
 
   const [userData, setUserData] = useState({
       id:null,
@@ -37,29 +37,34 @@ function NavSubject({ subjectList, courseId }) {
     }
     fetchUserData();
   },[emailrefStorage]);
-
+  
   return (
     <div className={style["Nav-Subject"]}>
-      <ul>
-        <li>All Subject</li>
+      <div className={style["subjectlist"]}>
+        <div className={style["subjectlist-title"]}>
+          <p>
+            All Subject
+          </p>
+        </div>
 
         <div className={style["subjectlist-wrap"]}>
           {subjectList.map((subject, ind) => (
-            <li
+            <p
               key={ind}
-              onClick={() => {
-                if (!subject.isDone) {
-                  window.location.href = `/course/${courseId}/subject/${subject.id}`;
-                }
-              }}
+              onClick={() => window.location.href = `/course/${courseId}/subject/${subject.id}/${enrollmentId}`}
               className={subject.isDone ? style["disabled-subject"] : ""}
             >
-              <a>{subject.name}</a>
-            </li>
+              {subject.name}
+            </p>
           ))}
         </div>
 
-      </ul>
+        <div className={style["testlist-wrap"]}>
+          <p>PreTest</p>
+          <p>PostTest</p>
+        </div>
+
+      </div>
     </div>
   );
 }

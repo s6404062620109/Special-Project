@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import Processbar from './Processbar';
-import backend from '../api/backend';
+import backend from '../../api/backend';
 
 import style from './css/coursecard.module.css'
 
-function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
+function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
   
   const [userData, setUserData] = useState({
     id:null,
@@ -38,6 +38,9 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
 
       } catch(error){
         console.log(error);
+        if(error.response.status === 403){
+          localStorage.removeItem('email');
+        }
       }
       
     }
@@ -57,7 +60,6 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
   },[emailrefStorage, id, icon_id]);
 
   useEffect(() => {
-    
     const fetchHistory = async () => {
       try {
           const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
@@ -68,6 +70,7 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
           console.log("Error fetching icon:", err);
       }
     };
+    
     fetchHistory();
   }, [userData]);
 
@@ -89,7 +92,7 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
       const fetchLatestProgress = async () =>{
         try{
           const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
-
+          console.log(response);
           if(response.status === 200){
             navigate(`/course/${courseId}/${response.data.inProgress}`);
           }
@@ -124,12 +127,11 @@ function CourseCard({ id, name, detail, icon_id, enrollmentId, courseId }) {
   return (
     <tr className={style.card}>
       <td className={style.content}>
-        <img alt="Icon Image" src={imgPath} />
-
-        <div className={style.infoContent}>
-          <h1>{name}</h1>
-          <p>{detail}</p>
+        <div className={style["tcell-wrap"]} onClick={() => navigate(`/course/${courseId}/${enrollmentId}`)}>
+          <img alt="Icon Image" src={imgPath} />
+          <p>{name}</p>
         </div>
+        
       </td>
 
       <td>

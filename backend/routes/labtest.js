@@ -4,6 +4,7 @@ const path = require("path");
 const { exec } = require("child_process");
 const db = require("./database");
 const { error } = require("console");
+require('dotenv').config();
 
 const router = express.Router();
 
@@ -29,7 +30,16 @@ router.get("/getLabAnswer/:questionId", (req, res) => {
 router.post("/createLinuxContainer", (req, res) => {
   const { Email, questionID } = req.body;
   const containerName = `linux_container_${Date.now()}`;
-  const createContainerCmd = `docker run -d -P -p 8080:80 -e USER=root -e PASSWORD=password --name ${containerName} --storage-opt size=256m dorowu/ubuntu-desktop-lxde-vnc`;
+  const createContainerCmd = `
+    docker run -d \
+    -p 8080:80 \
+    -e USER=root \
+    -e PASSWORD=password \
+    --name ${containerName} \
+    --network WSL_bridge \
+    dorowu/ubuntu-desktop-lxde-vnc
+  `.trim();
+
   //   const createContainerCmd = `
   // docker run -d -P \
   //   --network=aitae_bridge \
@@ -184,6 +194,32 @@ router.post("/createLinuxContainer", (req, res) => {
   });
 });
 
+// router.post("/createLinuxContainer", (req, res) => {
+//   const containerName = `linux_vm_${Date.now()}`;
+//   const exposedPort = Math.floor(5900 + Math.random() * 100);
+
+//   const createContainerCmd = `
+//     docker run -d --name ${containerName} \
+//     -p ${exposedPort}:5900 \
+//     --network backend_my_network \
+//     dorowu/ubuntu-desktop-lxde-vnc
+//   `.trim();
+
+//   exec(createContainerCmd, (err, stdout, stderr) => {
+//     if (err) {
+//       console.error("Error creating VM:", err);
+//       return res.status(500).json({ message: "Failed to create VM", error: stderr });
+//     }
+
+//     return res.status(200).json({
+//       message: "VM Created",
+//       containerId: stdout.trim(),
+//       port: exposedPort,
+//       url: `http://${process.env.FRONTEND_URL}:${exposedPort}`,
+//     });
+//   });
+// });
+
 router.post("/startContainer", (req, res) => {
   const { containerId, port } = req.body;
 
@@ -231,21 +267,15 @@ router.post("/stopContainer", (req, res) => {
 router.get("/getLabquestion/:subjectId", (req, res) => {
   const subjectId = req.params.subjectId;
 
-  db.query(
-    `SELECT * FROM question WHERE type = ? AND subjectId = ? `,
-    ["lab", subjectId],
-    (err, questionResult) => {
+  db.query(`SELECT * FROM question WHERE type IN (?, ?, ?) AND subjectId = ? `,
+    ["lab", "lab-w", "lab-e", subjectId], (err, questionResult) => {
       if (err) {
         console.log(err);
-        return res
-          .status(500)
-          .json({ message: "Database question query error" });
+        return res.status(500).json({ message: "Database question query error" });
       }
 
       if (questionResult.length === 0) {
-        return res
-          .status(404)
-          .json({ message: "No lab questions found for this subject" });
+        return res.status(404).json({ message: "No lab questions found for this subject" });
       }
 
       return res.status(200).json({ questionResult });

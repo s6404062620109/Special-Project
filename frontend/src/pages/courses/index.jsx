@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import style from './css/courses.module.css'
-import CourseCard from '../../components/CourseCard';
+import CourseCard from './CourseCard';
 import { useNavigate } from 'react-router-dom';
 import backend from '../../api/backend';
 
@@ -68,15 +68,21 @@ function Courses() {
 
   return (
     <div className={style.content}>
-      <div className={style.head}>COURSES</div>
+      <div className={style.head}>
+        <p>COURSES</p>
+      </div>
 
       <div className={style.courseTable}>
         <table>
           <thead>
             <tr>
-              <th width={'60%'}></th>
-              <th>Status</th>
-              <th width={'30%'}>Completion</th>
+              <th></th>
+              <th>
+                <p>Status</p>
+              </th>
+              <th>
+                <p>Completion</p>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -95,7 +101,6 @@ function Courses() {
                 key={item.id}
                 id={item.id}
                 name={item.name}
-                detail={item.detail}
                 icon_id={item.icon_id}
                 enrollmentId={progress.length > 0 ? progress[0].id : 0}
                 courseId={item.id}

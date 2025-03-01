@@ -1,0 +1,13 @@
+.content{
+    border-top: 1px solid #F5F5F5;
+}
+
+.content > td:nth-child(2),
+.content > td:nth-child(3){
+    text-align: center;
+}
+
+.content td:nth-child(1) > p{
+    margin: 0;
+    padding: 0;
+}

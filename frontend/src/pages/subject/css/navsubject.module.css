@@ -1,0 +1,36 @@
+.Nav-Subject{
+    width: 100%;
+    margin: auto;
+    background: #e7e7e7;
+    border-radius: 12px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.subjectlist{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.subjectlist-title{
+    display: flex;
+    justify-content: center;
+}
+
+.subjectlist-wrap > p, .testlist-wrap > p{
+    background: rgba(255, 254, 254, 0.568);
+    margin: 0;
+    padding: 10px 16px;
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.testlist-wrap > p:nth-child(2){
+    border-radius: 0 0 12px 12px;
+}
+
+@media screen and (max-width: 1024px) {
+    .Nav-Subject {
+        width: 240px;
+        z-index: 1000; 
+    }
+}

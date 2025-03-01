@@ -1,13 +1,43 @@
 .card {
-  border-radius: 10px;
-  width: 90%;
+  width: 100%;
   margin: 0 auto;
+  border-top: 1px solid #F5F5F5;
+  border-bottom: 1px solid #F5F5F5  ;
 }
-  
-.card-wrap {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+
+.card:hover{
+  cursor: pointer;
+  background: #F5F5F5;
+}
+
+.card > td:nth-child(2),
+.card > td:nth-child(3),
+.card > td:nth-child(4){
+  text-align: center;
+}
+
+.card > td:nth-child(1){
+  width: 50%;
+
+  .tcell-wrap{
+    width: 90%;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 5%;
+
+    img{
+      width: 45px;
+      height: 45px;
+    }
+  }
+}
+
+.card > td:nth-child(2){
+  width: 10%;
+}
+.card > td:nth-child(3){
+  width: 30%;
 }
   
 button {
@@ -23,8 +53,7 @@ button {
   outline: none;
 }
   
-button::before {
-  content: '';
+.card td > button::before {
   position: absolute;
   top: 0;
   left: 0;
@@ -46,18 +75,6 @@ button:hover {
   border-color: white;
 }
   
-.content {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 40px;
-}
-  
-.content > img {
-  width: 84px;
-  height: 84px;
-}
-  
 .infoContent {
   h1 {
     margin: 0;
@@ -74,14 +91,10 @@ button:hover {
 }
 
 @media screen and (max-width: 640px) {
-  .card > td:nth-child(2){
+  .card > td:nth-child(1),.card > td:nth-child(2){
     display: none;
   }
   .card > td:nth-child(3){
     width: 100%;
   }
-
-  .content{
-    display: none;
-  }  
 }
