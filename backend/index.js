@@ -33,6 +33,10 @@ app.use("/subjects", Subjects);
 const Pretest = require("./routes/pretest");
 app.use("/pretest", Pretest);
 
+/* Post-Test */
+const Posttest = require("./routes/posttest");
+app.use("/posttest", Posttest);
+
 /* Enrollment */
 const Enrollment = require("./routes/enroll");
 app.use("/enroll", Enrollment);

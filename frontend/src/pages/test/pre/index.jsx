@@ -37,11 +37,45 @@ function Pretest() {
 
       } catch(error){
         console.log(error);
+        if (error.response.status === 403) {
+          localStorage.removeItem("email");
+          alert("Your session time out!");
+          navigate("/");
+        }
       }
       
     }
     fetchUserData();
   },[emailrefStorage]);
+
+  useEffect(() => {
+    if (userData.id !== null) {
+      const checkPretestCompletion = async () => {
+        try {
+          const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
+
+          if (response.status === 200) {
+            const pretestProgress = response.data.results.filter(
+              (item) => item.type === 'pre'
+            );
+
+            const areAllPretestsCompleted = pretestProgress.every(
+              (item) => item.is_completed === 1
+            );
+
+            if (areAllPretestsCompleted) {
+              alert('You already complete all Pretest questions.');
+              navigate(`/courses`);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      checkPretestCompletion();
+    }
+  }, [userData.id, enrollmentId, courseId, navigate]);
 
   useEffect(() => {
     if(userData.id!==null){
@@ -70,12 +104,11 @@ function Pretest() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(selectedAnswers);
     try {
       const response = await backend.put('/pretest/submitPretest', { answer: selectedAnswers, enrollmentId });
 
       if(response.status === 200 && response.data.message === "Progress pretest update completed."){
-        navigate(`/course/${courseId}/subject/${response.data.firstSubject}`);
+        navigate(`/course/${courseId}/subject/${response.data.firstSubject}/${enrollmentId}`);
       }
       
     } 

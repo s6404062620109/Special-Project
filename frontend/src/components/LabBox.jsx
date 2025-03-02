@@ -112,7 +112,7 @@ function LabBox({ no, id, question, type, courseId, enrollmentId }) {
             <div className={style["form-wrapper"]}>
               <form onSubmit={(e) => handleSubmit(e)}>
                 {type === "lab-w" && (
-                  <button onClick={handleStartContainer}>START</button>
+                  <button type="button" onClick={handleStartContainer}>START</button>
                 )}
 
                 <input
@@ -131,11 +131,6 @@ function LabBox({ no, id, question, type, courseId, enrollmentId }) {
                   <p>{checkStatus}</p>
                 )}
               </form>
-
-              {/* <button className="next-button" onClick={() => fetchLatestProgress(enrollmentId)}>
-                <img src="/Course_Assets/Skip forward.svg" alt="Skip Icon" />
-                NEXT
-              </button> */}
             </div>
             
           </div>

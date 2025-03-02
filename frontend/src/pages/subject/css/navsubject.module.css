@@ -23,9 +23,18 @@
     padding: 10px 16px;
     border-bottom: 1px solid #e7e7e7;
 }
+.subjectlist-wrap> p:hover, .testlist-wrap > p:hover{
+    cursor: pointer;
+}
 
 .testlist-wrap > p:nth-child(2){
     border-radius: 0 0 12px 12px;
+}
+
+.disabled-subject {
+    color: gray;
+    pointer-events: none;
+    opacity: 0.6;
 }
 
 @media screen and (max-width: 1024px) {

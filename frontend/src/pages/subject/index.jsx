@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
@@ -23,6 +23,7 @@ function Subject() {
     const [ useLab, setUseLab ] = useState(false);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
     const [ currentImageIndex, setCurrentImageIndex ] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchSubjectData = async () =>{
@@ -62,6 +63,29 @@ function Subject() {
         }
         fetcSubjectList();
     }, [courseId, subjectId]);
+
+    useEffect(() => {
+        const checkPretestCompletion = async () => {
+            try {
+                const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
+                
+                if (response.status === 200) {
+                    const progressData = response.data.results.filter(item => item.type === 'pre');
+                    
+                    const allPretestsCompleted = progressData.every(item => item.is_completed === 1);
+                    
+                    if (!allPretestsCompleted) {
+                        alert('You must complete all Pretest questions before proceeding.');
+                        navigate(`/course/${courseId}/pretest/${enrollmentId}`);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        
+        checkPretestCompletion();
+    }, [enrollmentId, courseId, navigate]);
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -108,12 +132,43 @@ function Subject() {
 
     const formatContent = (content) => {
         if (!content) return null;
-        return content.split("\n").map((str, index) => (
-            <React.Fragment key={index}>
-                {str}
-                <br />
-            </React.Fragment>
-        ));
+    
+        // Regular expression to match YouTube URLs (both regular and shortened forms)
+        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([\w\-]{11})/gi;
+    
+        // Split content by newlines and process each line
+        return content.split("\n").map((str, index) => {
+            // Check if the string matches a YouTube URL
+            const youtubeMatch = str.match(youtubeRegex);
+            if (youtubeMatch) {
+                // If YouTube URL is found, extract the video ID and create an embedded iframe
+                const videoId = youtubeMatch[0].includes("youtu.be") 
+                    ? youtubeMatch[0].split("/")[3] 
+                    : youtubeMatch[0].split("v=")[1].split("&")[0]; // Extract video ID
+    
+                return (
+                    <React.Fragment key={index}>
+                        <div className={style["video-wrapper"]}>
+                            <iframe
+                                width="560"
+                                height="315"
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                title="YouTube video"
+                                frameBorder="0"
+                                allowFullScreen
+                            />
+                        </div>
+                    </React.Fragment>
+                );
+            }
+
+            return (
+                <React.Fragment key={index}>
+                    {str}
+                    <br />
+                </React.Fragment>
+            );
+        });
     };
     
     const prevImage = () => {
@@ -144,6 +199,7 @@ function Subject() {
                             <NavSubject 
                                 courseId={courseId}
                                 subjectList={subjectList}
+                                enrollmentId={enrollmentId}
                             />
                         </div>
                     }  
@@ -153,10 +209,17 @@ function Subject() {
 
                         {imgPath.length > 0 && (
                             <div className={style.Picture}>
-                                <button className={style.prevBtn} onClick={prevImage}>&#10094;</button>
+                                {imgPath.length > 1 &&(
+                                    <button className={style.prevBtn} onClick={prevImage}>&#10094;</button>
+                                )}
+                                
                                 <img alt="Content" src={imgPath[currentImageIndex]} className={style["content-image"]} />
                                 <div>{data.images[currentImageIndex]}</div>
-                                <button className={style.nextBtn} onClick={nextImage}>&#10095;</button>
+
+                                {imgPath.length > 1 && (
+                                    <button className={style.nextBtn} onClick={nextImage}>&#10095;</button>
+                                )}
+                                
                             </div>
                         )}
 

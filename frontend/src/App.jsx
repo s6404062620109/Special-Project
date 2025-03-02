@@ -14,6 +14,7 @@ import Reset from './pages/authenticate/reset';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
+import PostTest from './pages/test/post';
 import RenderLab from './pages/test/lab';
 import SetPassword from './pages/authenticate/register/Setpassword';
 import Forgot from './pages/authenticate/forgot';
@@ -108,6 +109,7 @@ function App() {
               <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
               <Route path='/lab/question/:questionId' element={<RenderLab/>}/>
               <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
+              <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
             </Routes>
           </div>
         </div>
