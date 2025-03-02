@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Mar 02, 2025 at 01:29 PM
+-- Generation Time: Mar 02, 2025 at 04:58 PM
 -- Server version: 9.2.0
 -- PHP Version: 8.2.8
 
@@ -155,13 +155,13 @@ INSERT INTO `answer` (`id`, `content`, `type`, `questionId`) VALUES
 (114, 'ข้อความแจ้งเตือนการอัปเดตจาก Microsoft', 0, 29),
 (115, 'โฆษณาสำหรับซอฟต์แวร์ความปลอดภัยที่ถูกต้อง', 0, 29),
 (116, 'การแจ้งเตือนจากโปรแกรมป้องกันไวรัสจริง', 0, 29),
-(117, 'zaza57319', 1, 31),
-(118, 'Pa55w0rd55', 1, 32),
+(117, 'lab-img1.png', 1, 31),
+(118, '1,4', 1, 32),
 (119, 'Se0ur1ty777', 1, 33),
-(120, 'Your IT administrator has verified your details successfully.', 1, 34),
-(121, '<head>Password Reset Successful</head><text>Your password has been reset successfully. You may now log in with your new password.</text>', 1, 35),
-(122, '<head>Critical System Error</head><text>Your computer has encountered a serious error. Please click the button below to fix the issue and protect your system.</text>', 1, 36),
-(123, 'This is a security file download for eliminate viruses.', 1, 37),
+(120, '2', 1, 34),
+(121, '3', 1, 35),
+(122, 'Beware of technical support scams that try to trick you into revealing your sensitive information.', 1, 36),
+(123, 'This is a simulated attack. Do not download files from unknown sources.', 1, 37),
 (125, 'การโจมตีโดยการเจาะระบบเครือข่ายโดยตรง', 0, 60),
 (126, 'การโจมตีโดยใช้ไวรัสคอมพิวเตอร์', 0, 60),
 (127, 'การโจมตีโดยใช้ทักษะทางเทคนิคขั้นสูง', 0, 60),
@@ -310,6 +310,13 @@ CREATE TABLE `enrollment` (
   `userId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `enrollment`
+--
+
+INSERT INTO `enrollment` (`id`, `courseId`, `pretest_complete`, `posttest_complete`, `completed_labs`, `total_labs`, `userId`) VALUES
+(34, 1, 1, 0, 7, 7, 18);
+
 -- --------------------------------------------------------
 
 --
@@ -323,6 +330,35 @@ CREATE TABLE `progress` (
   `questionId` int NOT NULL,
   `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `progress`
+--
+
+INSERT INTO `progress` (`id`, `is_completed`, `score`, `questionId`, `enrollmentId`) VALUES
+(707, 1, 0, 1, 34),
+(708, 1, 1, 10, 34),
+(709, 1, 1, 11, 34),
+(710, 1, 0, 17, 34),
+(711, 1, 1, 21, 34),
+(712, 1, 1, 25, 34),
+(713, 1, 0, 26, 34),
+(714, 1, 0, 29, 34),
+(715, 1, 1, 31, 34),
+(716, 1, 1, 32, 34),
+(717, 1, 1, 33, 34),
+(718, 1, 1, 34, 34),
+(719, 1, 1, 35, 34),
+(720, 1, 1, 36, 34),
+(721, 1, 1, 37, 34),
+(722, 0, 0, 63, 34),
+(723, 0, 0, 65, 34),
+(724, 0, 0, 69, 34),
+(725, 0, 0, 74, 34),
+(726, 0, 0, 77, 34),
+(727, 0, 0, 81, 34),
+(728, 0, 0, 82, 34),
+(729, 0, 0, 87, 34);
 
 -- --------------------------------------------------------
 
@@ -371,13 +407,13 @@ INSERT INTO `question` (`id`, `content`, `type`, `subjectId`) VALUES
 (27, 'วิธีที่ Technical Support Scams ใช้บ่อยคืออะไร?', 'pre', 12),
 (28, 'Scareware คืออะไร?', 'pre', 13),
 (29, 'Scareware มักแสดงผลในรูปแบบใด?', 'pre', 13),
-(31, 'จงหารหัสคำตอบจาก Email ที่ไม่ใช่รูปแบบของ Email Phishing \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 7),
-(32, 'จงหารหัสคำตอบจาก Email ที่ถูกส่งมาโดยมีรูปแบบที่ไม่ใช่ Email Spam\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 8),
-(33, 'จงหาคำตอบจากไฟล์ที่ได้จาก Email และค้นหาคำตอบจากไฟล์ที่ไม่ใช่ Baiting \r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab-w', 9),
-(34, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความจาก Email ที่คาดว่าเป็น Pretexting\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html', 'lab', 10),
-(35, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Email Notifications \r\nโดยนำข้อความและหัวข้อจาก Email ที่ไม่เป็น Impersonation\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html\\r\\nรูปแบบคำตอบคือ <head>หัวข้อ</head><text>ข้อความ</text>', 'lab', 11),
-(36, 'จงหาคำตอบจากข้อความทั้งหมดในหน้า Notifications\r\nโดยนำข้อความและหัวข้อจาก Email ที่คาดว่าเป็น Technical Support Scams\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html \r\nรูปแบบคำตอบคือ <head>หัวข้อ</head><text>ข้อความ</text>', 'lab-w', 12),
-(37, 'จงหาคำตอบจากไฟล์ที่ได้จากการดาวน์โหลดใน Email จากหน้า Notifications\r\nโดยนำข้อความจากไฟล์ที่คาดว่าไม่เป็น Scareware มาตอบลงในช่องตอบคำถาม\r\n*หมายเหตุ: ไฟล์จำลองเริ่มทดสอบจากไฟล์ index.html ', 'lab-w', 13),
+(31, 'จากภาพ lab-img1.png และ lab-img2.png จงบอกว่าภาพไหนคือ email ที่เป็นการ Email Phishing \r\n*กรุณาตอบชื่อ พร้อมนามสกุลไฟล์เต็ม เช่น image.png\r\n**หมายเหตุ: สามารถดูรูปได้ที่บริเวณด้านบนเนื้อหาที่แสดงรูป กดลูกศรเพื่อเปลี่ยนรูปภาพ**', 'lab', 7),
+(32, 'จากประเภทของ Spam (Email Spam, SMS Spam, Application Spam) มีวิธีการหลักที่เหมือนกันทั้งหมด และสื่อกลางที่ใช้แสดงข้อมูลที่จะหลอกล่อต่างกันคืออะไร?\r\nจงเลือกตัวเลขจากตัวเลือกเหล่านี้ไปกรอกในช่องตอบคำถามตามรูปแบบต่อไปนี้ \r\nตัวเลือกวิธีการที่เหมือนกัน,ตัวเลือกสื่อกลางที่ใช้แสดงข้อมูล เช่น 1,2\r\n\r\n-ตัวเลือกวิธีการที่เหมือนกัน : 1.ส่งในปริมาณมาก, 2.ส่งครั้งเดียว, 3.แจ้งเตือนให้ผู้พบคิดว่าติดไวรัส\r\n-ตัวเลือกสื่อกลางที่ใช้แสดงข้อมูล : 1.อีเมล, 2.SMS, 3.แอปพลิเคชันแชท, 4.ถูกทั้ง 1 2 และ 3', 'lab', 8),
+(33, 'เมื่อกด start จะเป็นเว็บจำลองที่มี popup baiting ให้คุณเห็นคุณต้องทำบางอย่างกับ popup เพื่อนำรหัสผ่านหลังข้อความต่อไปนี้มาตอบลงในช่องตอบคำถาม \r\n*Please take this password: ข้อความบางอย่าง*\r\nคำตอบที่ต้องตอบคือ ข้อความบางอย่าง', 'lab-w', 9),
+(34, 'สถานการณ์: คุณได้รับอีเมลจากธนาคารแจ้งว่าบัญชีของคุณถูกระงับชั่วคราว และขอให้คุณคลิกลิงก์เพื่อยืนยันตัวตน\r\n\r\nคำถาม: อีเมลนี้มีลักษณะใดที่บ่งชี้ว่าเป็น Pretexting จงเลือกตัวเลขจากตัวเลือกเหล่านี้มาตอบลงในช่องตอบคำถาม *****ตอบแค่ตัวเลขข้างหน้าตัวเลือก\r\n\r\n1.อีเมลมาจากที่อยู่อีเมลของธนาคารที่คุณรู้จัก\r\n2.อีเมลมีลิงก์ให้คลิกเพื่อยืนยันตัวตน\r\n3.อีเมลแจ้งว่าคุณต้องดำเนินการภายใน 24 ชั่วโมง\r\n4.อีเมลมีข้อความที่เขียนอย่างเป็นทางการ', 'lab', 10),
+(35, 'สถานการณ์: คุณได้รับอีเมลจากเพื่อนร่วมงานที่อ้างว่าตกอยู่ในสถานการณ์ฉุกเฉินและขอให้คุณโอนเงินด่วน\r\n\r\nคำถาม: อีเมลนี้มีลักษณะใดที่บ่งชี้ว่าเป็น Impersonation Email? จงเลือกตัวเลขจากตัวเลือกเหล่านี้มาตอบลงในช่องตอบคำถาม *****ตอบแค่ตัวเลขข้างหน้าตัวเลือก\r\n\r\n1.อีเมลมาจากที่อยู่อีเมลของเพื่อนร่วมงานที่คุณรู้จัก\r\n2.อีเมลมีลิงก์ให้คลิกเพื่อโอนเงิน\r\n3.อีเมลแจ้งว่าคุณต้องโอนเงินทันที\r\n4.อีเมลเขียนอย่างเป็นทางการ', 'lab', 11),
+(36, 'เมื่อกด start จะเป็นเว็บจำลองที่มี popup ให้คุณเห็นและต้องทำบางอย่างกับ popup เพื่อนำข้อความที่อยู่บนเว็บซึ่งได้หลังจากทำบางอย่างกับ popup มากรอกลงในช่องตอบคำถาม\r\n*ข้อความที่ใช่ตอบในช่องตอบคำถามไม่ใช่ตัวหนา เป็นแค่ตัวอักษณธรรมดา*', 'lab-w', 12),
+(37, 'เมื่อกด start จะเป็นเว็บจำลองที่มี popup ให้คุณเห็นและต้องทำบางอย่างกับ popup เพื่อนำข้อความที่อยู่บนเว็บซึ่งได้หลังจากทำบางอย่างกับ popup มากรอกลงในช่องตอบคำถาม\r\n*ข้อความที่ใช่ตอบในช่องตอบคำถามไม่ใช่ตัวหนา เป็นแค่ตัวอักษณธรรมดา*', 'lab-w', 13),
 (60, 'Social Engineering คืออะไร?', 'post', 6),
 (61, 'เป้าหมายหลักของ Social Engineering คืออะไร?', 'post', 6),
 (62, 'ข้อใดคือตัวอย่างของการโจมตีด้วย Social Engineering?', 'post', 6),
@@ -426,7 +462,7 @@ CREATE TABLE `subject` (
 
 INSERT INTO `subject` (`id`, `name`, `images`, `courseId`) VALUES
 (6, 'Social Engineering', 'image.png', 1),
-(7, 'Phishing', 'simage1.png, simage2.png', 1),
+(7, 'Phishing', 'simage1.png, simage2.png, lab-img1.png, lab-img2.png', 1),
 (8, 'SPAM', 'image.png', 1),
 (9, 'Baiting', 'image.png', 1),
 (10, 'Pretexting', 'image.png', 1),
@@ -456,7 +492,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `role`, `profile_img`, `verified_key`, `verified_expired`) VALUES
-(18, 'arcarnupab@gmail.com', '$2b$10$0bpRvf..aYDN.p8P45nQd.qiKZSIVeCVfLCYwTuOwCX7dQY2Ywop6', 'inwarc', 's', NULL, 'aeafc592800f3eb6928790ed2402276a243acdab30ab34db9952bb6984b68673', '2025-03-02 16:30:34'),
+(18, 'arcarnupab@gmail.com', '$2b$10$0bpRvf..aYDN.p8P45nQd.qiKZSIVeCVfLCYwTuOwCX7dQY2Ywop6', 'inwarc', 's', NULL, 'd4f82c11de76c36dcafe5d81e255b94942c3b4672647a1fc1009a3b6af34532a', '2025-03-02 20:56:48'),
 (19, 'arnupab0808@gmail.com', '$2b$10$uP6HRXVvlhnS.BwXEt.MMO4TdYKjDnyxk1QaLhaYBhbEp8K1W.W6C', 'teach1', 't', NULL, 'eaa3bf615dcaae7baf4bac837ff94a9c61496e1ccacc66a7455543f02c646a3e', '2025-02-22 16:49:13'),
 (20, 'tae8.arnupab@gmail.com', '$2b$10$eO0hLCgwKd9trJLop1h9MeK4.WS5M524s9BLyaKboA0IJ2vM6eSBW', 'adminTest', 'a', NULL, '47fdf2f505fcab48e43da645bcf295ce5584063866b3f75b1f1870470e7b0f8d', '2025-02-26 18:07:36');
 
@@ -534,19 +570,19 @@ ALTER TABLE `course`
 -- AUTO_INCREMENT for table `enrollment`
 --
 ALTER TABLE `enrollment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=707;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=730;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
 
 --
 -- AUTO_INCREMENT for table `subject`

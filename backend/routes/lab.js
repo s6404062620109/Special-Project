@@ -36,7 +36,6 @@ router.get("/renderLab/:questionId", (req, res) => {
             return res.status(404).json({ message: "No answer found for this question." });
         }
 
-        console.log(result);
         const answerContent = result[0].content;
 
         fs.readFile(filePath, "utf8", (err, fileContent) => {

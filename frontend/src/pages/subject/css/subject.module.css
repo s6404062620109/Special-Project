@@ -86,6 +86,9 @@
 .questionBox{
     width: 90%;
     margin: auto;
+    h2{
+        color: white;
+    }
 }
 
 .content-wrap{

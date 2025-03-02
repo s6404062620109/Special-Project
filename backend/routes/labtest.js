@@ -303,6 +303,9 @@ router.post("/submitLabanswer", (req, res) => {
           console.log(error);
           return res.status(500).json({ message: "Database answer query error" });
         }
+        if(answerResults.length === 0){
+          return res.status(404).json({ message: "No answer found" });
+        }
 
         if(answerResults[0] === answerResult[0].content){
           db.query("UPDATE progress SET is_completed = ? ,score = 1 WHERE questionId = ? AND enrollmentId = ?", 

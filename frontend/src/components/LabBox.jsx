@@ -99,20 +99,30 @@ function LabBox({ no, id, question, type, courseId, enrollmentId }) {
     window.open(url, "_blank");
   };
 
+  const formatContent = (content) => {
+    if (!content) return null;
+    return content.split("\n").map((str, index) => (
+        <React.Fragment key={index}>
+            {str}
+            <br />
+        </React.Fragment>
+    ));
+  };
+
   return (
     <div className={style.container}>
-      <h2>Lab Question</h2>
-
       <div className={style.content}>
         <div className={style.questionBox}>
           <div className={style.question}>
             <h3>
-              {no}. {question}
+              {no}. {formatContent(question)}
             </h3>
             <div className={style["form-wrapper"]}>
               <form onSubmit={(e) => handleSubmit(e)}>
                 {type === "lab-w" && (
-                  <button type="button" onClick={handleStartContainer}>START</button>
+                  <button type="button" onClick={handleStartContainer}>
+                    START
+                  </button>
                 )}
 
                 <input
@@ -132,7 +142,6 @@ function LabBox({ no, id, question, type, courseId, enrollmentId }) {
                 )}
               </form>
             </div>
-            
           </div>
         </div>
       </div>

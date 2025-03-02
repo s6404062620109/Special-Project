@@ -245,6 +245,7 @@ function Subject() {
                 </div>
 
                 <div className={style.questionBox}>
+                    <h2>Lab Question</h2>
                     { useLab && questionList.map((item, ind) => (
                         <LabBox
                             no={ind+1}
