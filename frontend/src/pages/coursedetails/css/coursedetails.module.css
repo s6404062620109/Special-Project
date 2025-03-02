@@ -1,45 +1,89 @@
-.container{
-    width: 50%;
+.container {
+    width: 60%;
     margin: 3rem auto;
     border-radius: 12px;
     background: white;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+    padding: 2rem;
 }
 
-.head{
+.head {
     width: 95%;
     height: 20%;
     margin: auto;
-    display: flex;  
+    display: flex;
     align-items: center;
     gap: 3%;
-
-    img{
-        width: 90px;
-        height: 90px;
-    }
-
-    .infoContent{
-        width: 70%;
-
-        p{
-            font-size: 24px;
-        }
-    }
+    margin-bottom: 2rem;
 }
 
-.content{
+.head img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+}
+
+.head p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.content {
     width: 100%;
+    padding: 1rem; 
 }
+
 .content table {
     width: 100%;
     border-collapse: collapse;
+}
 
-    thead tr > th{
-        text-align: start;
+.content table thead tr > th {
+    text-align: start;
+    padding: 1rem 0; 
+    border-bottom: 2px solid #e7e7e7; 
+}
 
-        p{
-            color: #979797;
-        }
-    }
+.content table thead tr > th p {
+    color: #979797;
+    font-size: 18px; 
+    font-weight: 600; 
+}
+
+.content table tbody tr {
+    border-bottom: 1px solid #e7e7e7; 
+}
+
+.content table tbody tr:hover {
+    background-color: #f9f9f9; 
+}
+
+.testSection {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 1rem; 
+}
+
+.testItem {
+    background: rgba(255, 254, 254, 0.568);
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px; 
+    font-weight: 500;
+    transition: background-color 0.3s ease; 
+}
+
+.testItem:hover {
+    background-color: #f0f0f0;
+}
+
+.disabledTest {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: #e7e7e7;
 }

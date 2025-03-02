@@ -146,7 +146,13 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
       <td className={style.content}>
         <div
           className={style["tcell-wrap"]}
-          onClick={() => navigate(`/course/${courseId}/${enrollmentId}`)}
+          onClick={() => {
+            if (userData.id) {
+              navigate(`/course/${courseId}/${enrollmentId}`);
+            } else {
+              navigate(`/course/${courseId}`);
+            }
+          }}
         >
           <img alt="Icon Image" src={imgPath} />
           <p>{name}</p>

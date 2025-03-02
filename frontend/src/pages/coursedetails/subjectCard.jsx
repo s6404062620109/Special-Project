@@ -46,10 +46,6 @@ function subjectCard({ id, name, courseId, progress, enrollmentId }) {
     fetchUserData();
   }, [emailrefStorage]);
 
-  const matchedProgress = progress.find(
-    (p) => p.subjectId === id && p.type === "lab"
-  );
-
   const handleStart = () =>{
     if(isUserLogin){
       navigate(`/course/${courseId}/subject/${id}/${enrollmentId}`);
@@ -59,6 +55,10 @@ function subjectCard({ id, name, courseId, progress, enrollmentId }) {
       navigate('/');
     }
   }
+
+  const matchedProgress = progress.find(
+    (p) => p.subjectId === id && p.type.includes("lab")
+  );
 
   return (
     <tr className={style.content}>

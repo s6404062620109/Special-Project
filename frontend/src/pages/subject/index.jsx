@@ -23,6 +23,7 @@ function Subject() {
     const [ useLab, setUseLab ] = useState(false);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
     const [ currentImageIndex, setCurrentImageIndex ] = useState(0);
+    const [isLabCompleted, setIsLabCompleted] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -63,6 +64,23 @@ function Subject() {
         }
         fetcSubjectList();
     }, [courseId, subjectId]);
+
+    useEffect(() => {
+        const fetchLabProgress = async () => {
+            try {
+                const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
+                if (response.status === 200) {
+                    const labProgress = response.data.results.filter(item => item.type === 'lab');
+                    const allLabsCompleted = labProgress.every(item => item.is_completed === 1);
+                    setIsLabCompleted(allLabsCompleted);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchLabProgress();
+    }, [enrollmentId]); 
 
     useEffect(() => {
         const checkPretestCompletion = async () => {
@@ -132,19 +150,17 @@ function Subject() {
 
     const formatContent = (content) => {
         if (!content) return null;
-    
-        // Regular expression to match YouTube URLs (both regular and shortened forms)
+
         const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([\w\-]{11})/gi;
-    
-        // Split content by newlines and process each line
+
         return content.split("\n").map((str, index) => {
-            // Check if the string matches a YouTube URL
+
             const youtubeMatch = str.match(youtubeRegex);
             if (youtubeMatch) {
-                // If YouTube URL is found, extract the video ID and create an embedded iframe
+
                 const videoId = youtubeMatch[0].includes("youtu.be") 
                     ? youtubeMatch[0].split("/")[3] 
-                    : youtubeMatch[0].split("v=")[1].split("&")[0]; // Extract video ID
+                    : youtubeMatch[0].split("v=")[1].split("&")[0]; 
     
                 return (
                     <React.Fragment key={index}>
@@ -243,20 +259,23 @@ function Subject() {
 
                     
                 </div>
-
-                <div className={style.questionBox}>
-                    <h2>Lab Question</h2>
-                    { useLab && questionList.map((item, ind) => (
-                        <LabBox
-                            no={ind+1}
-                            id={item.id}
-                            question={item.content}
-                            type={item.type}
-                            courseId={courseId}
-                            enrollmentId={enrollmentId}
-                        />
-                    ))}
-                </div>
+                
+                {!isLabCompleted && (
+                    <div className={style.questionBox}>
+                        <h2>Lab Question</h2>
+                        { useLab && questionList.map((item, ind) => (
+                            <LabBox
+                                no={ind+1}
+                                id={item.id}
+                                question={item.content}
+                                type={item.type}
+                                courseId={courseId}
+                                enrollmentId={enrollmentId}
+                            />
+                        ))}
+                    </div>
+                )}
+                
             </div>
             
             <div className={style["navsubject-wrap"]}>

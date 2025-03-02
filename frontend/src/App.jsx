@@ -89,6 +89,7 @@ function App() {
               <Route path='/course/:courseId' element={<CourseDetail/>}/>
 
               <Route path='/courses' element={<Courses/>}/>
+              <Route path='/course/:courseId' element={<CourseDetail/>}/>
             </Routes>
           </div>
         </div>
