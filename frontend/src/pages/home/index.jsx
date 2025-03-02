@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-
-import style from "./css/home.module.css";
+import { useNavigate } from "react-router-dom";
 import backend from "../../api/backend";
 import Login from "../authenticate/login";
+import UserBoard from "./UserBoard";
+import CourseBoard from "./CourseBoard";
+
+import style from "./css/home.module.css";
 
 function Home() {
   const [userData, setUserData] = useState({
@@ -14,6 +17,8 @@ function Home() {
   });
   const emailrefStorage = localStorage.getItem("email");
   const [loginEnable, setLoginEnable] = useState(false);
+  const [ enrollment, setEnrollment ] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -36,6 +41,8 @@ function Home() {
         console.log(error);
         if(error.response.status === 403){
           localStorage.removeItem('email');
+          alert("Your session time out!");
+          navigate("/");
         }
       }
       
@@ -43,59 +50,91 @@ function Home() {
     fetchUserData();
   },[emailrefStorage]);
 
+  useEffect(() => {
+    const fetchEnrollment = async () => {
+      try{
+        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
+        if(response.status === 200){
+          setEnrollment(response.data.results);
+        }
+      } catch(error){
+        console.log(error);
+      }
+    }
+    fetchEnrollment();
+  },[userData.id]);
+
   return (
     <div className={style.container}>
-      <div className={style["container-wrap"]}>
-        {loginEnable === true ? (
-          <div className={style["login-tablet"]}>
-            <Login />
-          </div>
-        ) : (
-          <div className={style.content}>
-            {(userData.role === 's' || userData.role === null) &&(
-              <p className={style.title}>
-                Security <br /> Awareness Training
-              </p>
-            )}
+      {!userData.id &&(
+        <div className={style["container-wrap"]}>
+          {loginEnable === true ? (
+            <div className={style["login-tablet"]}>
+              <Login />
+            </div>
+          ) : (
+            <div className={style.content}>
+              { userData.role === null &&(
+                <p className={style.title}>
+                  Security <br /> Awareness Training
+                </p>
+              )}
 
-            {userData.role === 't' &&(
-              <p className={style.title}>
-                Security <br /> Awareness Training <br/> For Teacher.
-              </p>
-            )}
+              {userData.role === 't' &&(
+                <p className={style.title}>
+                  Security <br /> Awareness Training <br/> For Teacher.
+                </p>
+              )}
 
-            {userData.role === 'a' &&(
-              <p className={style.title}>
-                Security <br /> Awareness Training <br/> For Admin.
-              </p>
-            )}
-            
-            {(userData.role === 's' || userData.role === null)&&(
-              <p className={style["sub-title"]}>
-                การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
-                ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
-              </p>
-            )}
-          </div>
-        )}
+              {userData.role === 'a' &&(
+                <p className={style.title}>
+                  Security <br /> Awareness Training <br/> For Admin.
+                </p>
+              )}
+              
+              { userData.role === null &&(
+                <p className={style["sub-title"]}>
+                  การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
+                  ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+                </p>
+              )}
+            </div>
+          )}
 
-        {!userData.id &&(
-          <div className={style["login-wrap"]}>
-            <Login />
-          </div>
-        )}
+          {!userData.id &&(
+            <div className={style["login-wrap"]}>
+              <Login />
+            </div>
+          )}
 
-        <div className={style["login-nav"]}>
-          <p onClick={() => setLoginEnable(!loginEnable)}>
-            {loginEnable === true ? (
-              <>{"<-"} Get Back</>
-            ) : (
-              <>Do you want join members for study?</>
-            )}
-          </p>
+          {!userData.id && (
+            <div className={style["login-nav"]}>
+              <p onClick={() => setLoginEnable(!loginEnable)}>
+                {loginEnable === true ? (
+                  <>{"<-"} Get Back</>
+                ) : (
+                  <>Do you want join members for study?</>
+                )}
+              </p>
+            </div>
+          )}  
         </div>
-        
-      </div>
+      )}
+      
+      {(userData.id && userData.role === 's') && (
+        <div className={style["container-wrap"]}>
+          <UserBoard
+            email={userData.email}
+            name={userData.name}
+            role={userData.role}
+            profile_img={userData.profile_img}
+          />
+
+          <CourseBoard
+            enrollment={enrollment}
+          />         
+        </div>
+      )}
     </div>
   );
 }

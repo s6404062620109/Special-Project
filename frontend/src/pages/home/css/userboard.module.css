@@ -1,0 +1,105 @@
+.userBoard {
+    height: 80%;
+    width: 20%;
+    background: white;
+    padding: 20px 40px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-wrap img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 3px solid #e0e0e0;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-wrap h2 {
+    margin-top: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.information-wrap {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.information-wrap p {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.information-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.information-item {
+    width: 100%;
+    display: flex;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.information-item p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    margin-right: 10px;
+}
+
+.information-item label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+@media screen and (max-width: 1024px) {
+    .userBoard {
+        margin-top: 10px;
+        width: 80%;
+        height: auto;
+        padding: 20px;
+    }
+
+    .profile-wrap img {
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-wrap h2 {
+        font-size: 20px;
+    }
+
+    .information-wrap {
+        width: 100%;
+    }
+
+    .information-item {
+        padding: 8px;
+    }
+
+    .information-item p,
+    .information-item label {
+        font-size: 14px;
+    }
+}

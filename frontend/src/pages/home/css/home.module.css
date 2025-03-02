@@ -7,7 +7,10 @@
 .container-wrap{
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 80%;
+    height: 100%;
+    gap: 20px;
 }
 
 .content{
@@ -42,6 +45,7 @@
 @media screen and (max-width: 1024px) {
     .container-wrap{
         flex-direction: column;
+        height: auto;
     }
     
     .content{

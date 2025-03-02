@@ -48,13 +48,9 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
 
     const fetchIcon = async () => {
       try {
-        const response = await backend.get(
-          `/imgrender/getIcon/${id}/${icon_id}`
-        );
+        const response = await backend.get(`/imgrender/getIcon/${id}/${icon_id}`);
         if (response.status === 200) {
-          setImgPath(
-            `${import.meta.env.VITE_API_BASE_URL}${response.data.url}`
-          );
+          setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
         }
       } catch (err) {
         console.log("Error fetching icon:", err);
@@ -81,13 +77,7 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
   }, [userData]);
 
   useEffect(() => {
-    if (
-      !emailrefStorage &&
-      !userData.id &&
-      !userData.email &&
-      !userData.name &&
-      !userData.role
-    ) {
+    if (!emailrefStorage && !userData.id && !userData.email && !userData.name && !userData.role) {
       setButtonText("View");
     } else if (enrollmentId !== 0) {
       setButtonText("Continue");
@@ -130,7 +120,7 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
       };
       enrollCourse();
     } else {
-      navigate(`/course/${id}`);
+      navigate(`/courses/${id}`);
     }
   };
 
