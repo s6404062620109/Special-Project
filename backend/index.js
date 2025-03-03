@@ -57,9 +57,13 @@ app.use("/lab-test", labTest);
 const Question = require("./routes/questions");
 app.use("/question", Question);
 
-/* User */
-const User = require("./routes/user");
-app.use("/user", User); 
+/* Admin */
+const admin = require("./routes/admin");
+app.use("/admin", admin); 
+
+/* Teacher */
+const teacher = require("./routes/teacher");
+app.use("/teacher", teacher); 
 
 /* Image */
 const Img = require("./routes/imagerender");

@@ -85,7 +85,7 @@ function CourseBoard({ enrollment }) {
                                     </td>
 
                                     <td>
-                                        <p>{course.name}</p>
+                                        <p>{course.courseId}. {course.name}</p>
                                         <Processbar
                                             pretest_complete={course.pretest_complete}
                                             posttest_complete={course.posttest_complete}

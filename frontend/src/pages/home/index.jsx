@@ -17,54 +17,56 @@ function Home() {
   });
   const emailrefStorage = localStorage.getItem("email");
   const [loginEnable, setLoginEnable] = useState(false);
-  const [ enrollment, setEnrollment ] = useState([]);
+  const [enrollment, setEnrollment] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
-
-      try{
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-          withCredentials: true
-        });
-        if(response.status === 200){
+      try {
+        const response = await backend.get(
+          `/auth/authorization/${emailrefStorage}`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (response.status === 200) {
           setUserData({
-            id:response.data.id,
-            email:response.data.email,
-            name:response.data.name,
-            role:response.data.role,
-            profile_img:response.data.profile_img,
+            id: response.data.id,
+            email: response.data.email,
+            name: response.data.name,
+            role: response.data.role,
+            profile_img: response.data.profile_img,
           });
         }
-
-      } catch(error){
+      } catch (error) {
         console.log(error);
-        if(error.response.status === 403){
-          localStorage.removeItem('email');
+        if (error.response.status === 403) {
+          localStorage.removeItem("email");
         }
       }
-      
-    }
+    };
     fetchUserData();
-  },[emailrefStorage]);
+  }, [emailrefStorage]);
 
   useEffect(() => {
     const fetchEnrollment = async () => {
-      try{
-        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
-        if(response.status === 200){
+      try {
+        const response = await backend.get(
+          `/enroll/checkCoursesEnroll/${userData.id}`
+        );
+        if (response.status === 200) {
           setEnrollment(response.data.results);
         }
-      } catch(error){
+      } catch (error) {
         console.log(error);
       }
-    }
+    };
     fetchEnrollment();
-  },[userData.id]);
+  }, [userData.id]);
 
   return (
     <div className={style.container}>
-      {!userData.id &&(
+      {!userData.id && (
         <div className={style["container-wrap"]}>
           {loginEnable === true ? (
             <div className={style["login-tablet"]}>
@@ -72,25 +74,13 @@ function Home() {
             </div>
           ) : (
             <div className={style.content}>
-              { userData.role === null &&(
+              {userData.role === null && (
                 <p className={style.title}>
                   Security <br /> Awareness Training
                 </p>
               )}
 
-              {userData.role === 't' &&(
-                <p className={style.title}>
-                  Security <br /> Awareness Training <br/> For Teacher.
-                </p>
-              )}
-
-              {userData.role === 'a' &&(
-                <p className={style.title}>
-                  Security <br /> Awareness Training <br/> For Admin.
-                </p>
-              )}
-              
-              { userData.role === null &&(
+              {userData.role === null && (
                 <p className={style["sub-title"]}>
                   การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
                   ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
@@ -99,7 +89,7 @@ function Home() {
             </div>
           )}
 
-          {!userData.id &&(
+          {!userData.id && (
             <div className={style["login-wrap"]}>
               <Login />
             </div>
@@ -115,11 +105,11 @@ function Home() {
                 )}
               </p>
             </div>
-          )}  
+          )}
         </div>
       )}
-      
-      {(userData.id && userData.role === 's') && (
+
+      {userData.id && userData.role === "s" && (
         <div className={style["container-wrap"]}>
           <UserBoard
             email={userData.email}
@@ -128,9 +118,27 @@ function Home() {
             profile_img={userData.profile_img}
           />
 
-          <CourseBoard
-            enrollment={enrollment}
-          />         
+          <CourseBoard enrollment={enrollment} />
+        </div>
+      )}
+
+      {userData.id && userData.role === "t" && (
+        <div className={style["container-wrap"]}>
+          <div className={style.content}>
+            <p className={style.title}>
+              Security <br /> Awareness Training <br /> For Teacher.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {userData.id && userData.role === "a" && (
+        <div className={style["container-wrap"]}>
+          <div className={style.content}>
+            <p className={style.title}>
+              Security <br /> Awareness Training <br /> For Admin.
+            </p>
+          </div>
         </div>
       )}
     </div>

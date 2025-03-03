@@ -5,6 +5,7 @@
     margin: auto;
     border: 1px solid;
     border-radius: 15px;
+    overflow: hidden; /* เพื่อให้ animation ไม่ล้นออกนอก container */
 }
 
 .process {
@@ -14,6 +15,7 @@
     background: #42FF00;
     height: 1rem;
     border-radius: 15px;
+    transition: width 0.5s ease-out; /* เพิ่ม transition สำหรับการเปลี่ยนแปลง width */
 }
 
 .container > label {
@@ -22,17 +24,20 @@
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1;
+    color: #000;
 }
 
-.animate {
-    animation: fillAnimation 2s ease-out;
+.loading {
+    background: linear-gradient(90deg, #42FF00 25%, #2ecc71 50%, #42FF00 75%);
+    background-size: 200% 100%;
+    animation: loadingAnimation 1.5s infinite linear;
 }
 
-@keyframes fillAnimation {
+@keyframes loadingAnimation {
     0% {
-        width: 0%;
+        background-position: 200% 0;
     }
     100% {
-        width: var(--progress-width);
+        background-position: -200% 0;
     }
 }

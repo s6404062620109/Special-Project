@@ -79,7 +79,7 @@ function NavbarTeach() {
         </div>
 
         <div className={style.functionsContainer}>
-          <Link to="">MY COURSES</Link>
+          <Link to="/my-courses">MY COURSES</Link>
           <Link>FAQ</Link>
           <Link>NEWS</Link>
         </div>
@@ -91,7 +91,7 @@ function NavbarTeach() {
           onClick={() => setSidebarVisible(!sidebarVisible)}
         >
           <div onClick={() => navigate("/")}>Home</div>
-          <div onClick={() => navigate("/courses")}>COURSES</div>
+          <div onClick={() => navigate("/my-courses")}>MY COURSES</div>
           <div>FAQ</div>
           <div>NEWS</div>
         </div>

@@ -26,7 +26,8 @@ import NavbarTeach from './components/NavbarTeach';
 
 /* */
 import NavbarAdmin from './components/NavbarAdmin';
-import ManageUser from './pages/manageuser';
+import ManageUser from './pages/admin/manageuser';
+import MyCourses from './pages/teacher/MyCourses';
 /* */
 
 function App() {
@@ -36,7 +37,7 @@ function App() {
       name:null,
       role:null,
       profile_img:null,
-    });
+  });
   const emailrefStorage = localStorage.getItem("email");
   const location = useLocation();
 
@@ -123,6 +124,7 @@ function App() {
           <div className='content'>
             <Routes>
               <Route path='/' element={<Home/>}/>
+              <Route path='/my-courses' element={<MyCourses/>}/>
             </Routes>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import backend from '../../api/backend';
+import backend from '../../../api/backend';
 
 import style from './css/manageuser.module.css';
 
@@ -7,7 +7,7 @@ function ManageUser() {
     useEffect(() => {
         const fetchUserData = async () =>{
             try{
-                const response = await backend.get('/user/getUsers');
+                const response = await backend.get('/admin/getUsers');
 
                 if(response.status === 200){
                     console.log(response.data);
