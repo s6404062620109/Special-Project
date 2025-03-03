@@ -61,14 +61,14 @@
 }
 
 .information-item p {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 500;
     color: #555;
     margin-right: 10px;
 }
 
 .information-item label {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 600;
     color: #333;
 }
@@ -96,10 +96,5 @@
 
     .information-item {
         padding: 8px;
-    }
-
-    .information-item p,
-    .information-item label {
-        font-size: 14px;
     }
 }

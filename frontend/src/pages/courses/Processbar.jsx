@@ -13,6 +13,8 @@ import backend from '../../api/backend';
 
 function Processbar({ pretest_complete, posttest_complete, completed_labs, total_labs }) {
     const [ percent, setPercent ] = useState(0);
+    const [animationTriggered, setAnimationTriggered] = useState(false);
+    
     useEffect(() => {
         let newPercent = 0;
 
@@ -24,12 +26,13 @@ function Processbar({ pretest_complete, posttest_complete, completed_labs, total
         }
 
         setPercent(newPercent);
+        setAnimationTriggered(true);
     },[pretest_complete, posttest_complete, completed_labs, total_labs])
 
   return (
     <div className={style.container}>
         <label>{percent.toFixed(2)}%</label>
-        <div className={style.process} style={{ width: `${percent.toFixed(2)}%` }}></div>
+        <div className={`${style.process} ${animationTriggered ? style.animate : ''}`} style={{ width: `${percent.toFixed(2)}%` }}></div>
     </div>
   )
 }

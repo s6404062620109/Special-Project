@@ -41,8 +41,6 @@ function Home() {
         console.log(error);
         if(error.response.status === 403){
           localStorage.removeItem('email');
-          alert("Your session time out!");
-          navigate("/");
         }
       }
       

@@ -56,7 +56,7 @@ function CourseBoard({ enrollment }) {
 
         fetchCourses();
     }, [enrollment]);
-    console.log(courses);
+
     return (
         <div className={style.CourseBoard}>
             <div className={style.head}>
@@ -85,6 +85,7 @@ function CourseBoard({ enrollment }) {
                                     </td>
 
                                     <td>
+                                        <p>{course.name}</p>
                                         <Processbar
                                             pretest_complete={course.pretest_complete}
                                             posttest_complete={course.posttest_complete}

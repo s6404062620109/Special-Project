@@ -8,6 +8,7 @@
     width: 80%;
     margin: 2rem auto;
 }
+
 .container > form{
     width: 80%;
     margin: auto;
@@ -15,6 +16,10 @@
     border: .063rem solid;
     border-radius: 1rem;
     padding: .625rem;
+}
+
+.testCard ul li > label{
+    line-height: 1.8;
 }
 
 .testCard{

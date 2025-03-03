@@ -11,12 +11,12 @@ function UserBoard({ email, name , role, profile_img }) {
   return (
     <div className={style.userBoard}>
         <div className={style["profile-wrap"]}>
+            <h2>{name}</h2>
+
             <img
                 alt='user profile image'
                 src={profileImg}
             />
-
-            <h2>{name}</h2>
         </div>
         
         <div className={style["information-wrap"]}>

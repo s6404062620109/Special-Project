@@ -2,7 +2,7 @@
     height: 80%;
     width: 80%;
     background: white;
-    padding: 20px 40px;
+    padding: 20px;
     border-radius: 20px;
 }
 
@@ -17,8 +17,29 @@
 .body table tbody tr > td:nth-child(1){
     display: flex;
     align-items: center;
+    gap: 20px;
 }
 
 .body table tbody tr > td:nth-child(2){
     width: 40%;
+    p{
+        display: none;
+        margin: 0;
+        font-weight: bold;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .body table tbody tr > td:nth-child(1){
+        display: none;
+    }
+
+    .body table tbody tr > td:nth-child(2){
+        width: 100%;
+
+        p{
+            display: block;
+            margin-bottom: 20px;
+        }
+    }
 }
