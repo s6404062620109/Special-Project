@@ -11,12 +11,9 @@ function AddPopup({ onClose, onAddCourse }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", courseData.name);
-    if (iconFile) {
-      formData.append("icon", iconFile);
-    }
-    onAddCourse(formData);
+
+    onAddCourse({ name: courseData.name, icon: iconFile });
+
     onClose();
   };
 

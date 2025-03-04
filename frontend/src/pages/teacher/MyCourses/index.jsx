@@ -8,11 +8,11 @@ import AddPopup from './AddPopup';
 function MyCourses() {
     const [ myCourses, setMyCourses ] = useState([]);
     const [ userData, setUserData ] = useState({
-        id:null,
-        email:null,
-        name:null,
-        role:null,
-        profile_img:null,
+      id:null,
+      email:null,
+      name:null,
+      role:null,
+      profile_img:null,
     });
     const [courseIcons, setCourseIcons] = useState({});
     const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -90,20 +90,36 @@ function MyCourses() {
         fetchMyCourses();
     },[userData.id]);
 
-    const handleAddCourse = async (formData) => {
+    const handleAddCourse = async ({ name, icon }) => {
       try {
-        const response = await backend.post('/teacher/addCourse', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          withCredentials: true,
-        });
+        const response = await backend.post("/teacher/addCourse", { name, teacherId: userData.id });
     
         if (response.status === 200) {
-          setMyCourses((prevCourses) => [...prevCourses, response.data.course]);
+          const newCourse = response.data.course;
+    
+          if (icon) {
+            await uploadCourseIcon(newCourse.id, icon);
+            window.location.reload();
+          }
+    
+          setMyCourses((prevCourses) => [...prevCourses, newCourse]);
         }
       } catch (error) {
-        console.error('Error adding course:', error);
+        console.error("Error adding course:", error);
+      }
+    };
+
+    const uploadCourseIcon = async (courseId, iconFile) => {
+      try {
+        const formData = new FormData();
+        formData.append("icon", iconFile);
+    
+        await backend.post(`/teacher/uploadCourseIcon/${courseId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+      } catch (error) {
+        console.error("Error uploading course icon:", error);
       }
     };
 
@@ -112,9 +128,7 @@ function MyCourses() {
       if (!confirmDelete) return;
     
       try {
-        const response = await backend.delete(`/teacher/deleteCourse/${courseId}/${userData.id}`, {
-          withCredentials: true,
-        });
+        const response = await backend.delete(`/teacher/deleteCourse/${courseId}/${userData.id}`, { withCredentials: true });
     
         if (response.status === 200) {
           alert(response.data.message);
@@ -178,7 +192,7 @@ function MyCourses() {
         <p>Add Course</p>
       </div>
 
-      {isPopupOpen && (
+      {isPopupOpen && userData.id && (
         <AddPopup
           onClose={() => setIsPopupOpen(false)}
           onAddCourse={handleAddCourse}
