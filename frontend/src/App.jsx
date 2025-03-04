@@ -28,6 +28,7 @@ import NavbarTeach from './components/NavbarTeach';
 import NavbarAdmin from './components/NavbarAdmin';
 import ManageUser from './pages/admin/manageuser';
 import MyCourses from './pages/teacher/MyCourses';
+import EditCourse from './pages/teacher/EditCourse';
 /* */
 
 function App() {
@@ -125,6 +126,7 @@ function App() {
             <Routes>
               <Route path='/' element={<Home/>}/>
               <Route path='/my-courses' element={<MyCourses/>}/>
+              <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
             </Routes>
           </div>
         </div>

@@ -74,7 +74,7 @@
     margin-right: 10px;
 }
 
-.body table tbody td button {
+.body table tbody td > button {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -87,6 +87,9 @@
     cursor: pointer;
     transition: background 0.3s ease;
 }
+.body table tbody td > button:hover{
+    opacity: 0.75;
+} 
 
 .body table tbody td:nth-child(2) > button {
     background: #8392AB;

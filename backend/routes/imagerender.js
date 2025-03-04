@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+
 const router = express.Router();
 
 router.use("/courses", express.static(path.join(__dirname, "../courses")));

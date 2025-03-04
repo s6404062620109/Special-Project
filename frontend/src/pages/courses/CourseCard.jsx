@@ -120,7 +120,7 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
       };
       enrollCourse();
     } else {
-      navigate(`/courses/${id}`);
+      navigate(`/course/${id}`);
     }
   };
 

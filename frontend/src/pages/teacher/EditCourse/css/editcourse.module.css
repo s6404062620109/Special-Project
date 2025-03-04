@@ -1,0 +1,129 @@
+.edit-course-container {
+    width: 100%;
+}
+
+.container {
+    width: 65%;
+    height: 600px;
+    min-height: 700px;
+    border-radius: 12px;
+    margin: 50px auto;
+    background: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.head{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.head > button{
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: #8392AB;
+}
+.head > button:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.subjectTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableWrapper {
+    max-height: 500px;
+    overflow-y: auto; 
+    border-radius: 8px;
+}
+
+.subjectTable td {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+.subjectTable td:nth-child(1){
+    width: 70%;
+    margin: auto;
+}
+.subjectTable td:nth-child(2),
+.subjectTable td:nth-child(3){
+    width: 15%;
+    margin: auto;
+}
+
+.editButton,
+.deleteButton {
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+}
+.editButton:hover,
+.deleteButton:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.editButton {
+    background: #4CAF50;
+}
+
+.deleteButton {
+    background: #f44336;
+}
+
+.add-button {
+    position: fixed;
+    right: 5%;
+    bottom: 5%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 12px 24px;
+    background: linear-gradient(to right, #21D4FD, #2152FF);
+    border-radius: 50px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.add-button img {
+    width: 24px;
+    height: 24px;
+}
+
+.add-button p {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+.add-button:hover {
+    background: linear-gradient(to right, #2152FF, #21D4FD);
+}
+
+.add-button:hover p {
+    opacity: 1;
+    width: auto;
+}

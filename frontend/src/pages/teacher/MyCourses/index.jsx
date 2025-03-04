@@ -143,7 +143,7 @@ function MyCourses() {
         }
       }
     };
-
+    
   return (
     <div className={style['my-courses-container']}>
       <div className={style.container}>
@@ -168,7 +168,7 @@ function MyCourses() {
                   </td>
 
                   <td>
-                    <button>
+                    <button onClick={() => navigate(`/edit-course/${course.id}`)}>
                       <img src='/My_Coursesp/Edit.svg' alt='Edit button' />
                       Edit
                     </button>

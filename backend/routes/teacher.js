@@ -43,7 +43,8 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    const fileName = "icon" + path.extname(file.originalname);
+    cb(null, fileName);
   },
 });
 
@@ -90,6 +91,122 @@ router.post("/addCourse", async (req, res) => {
     console.error("Error adding course:", error);
     return res.status(500).json({ message: "Server error" });
   }
+});
+
+router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", (req, res) => {
+  const { courseId, subjectId, userId } = req.params;
+
+  if(!courseId || !subjectId || !userId){
+    return res.status(400).send({ message: "Course ID, Subject ID and User ID are required." });
+  }
+
+  db.query("SELECT id FROM course WHERE id = ? AND teacherId = ?", [courseId, userId], (error, result) => {
+    if(error){
+      console.log(error);
+      return res.status(500).json({ message: "Database course query error." });
+    }
+    
+    if(result.length === 0){
+      return res.status(404).json({ message: "Course not found or you do not have permission." });
+    }
+
+    if(result.length > 0){
+      db.query("SELECT id FROM subject WHERE id = ? AND courseId = ?", 
+        [subjectId, courseId, userId], (error, result) => {
+          if(error){
+            console.log(error);
+            return res.status(500).json({ message: "Database subject query error." });
+          }
+    
+          if(result.length === 0){
+            return res.status(404).json({ message: "Subject not found or you do not have permission to delete this subject." });
+          }
+    
+          if(result.length > 0){
+  
+            db.query("DELETE FROM subject WHERE id = ? AND courseId = ?",
+              [subjectId, courseId], (error) => {
+                if(error){
+                  console.log(error);
+                  return res.status(500).json({ message: "Delete subject from database error." });
+                }
+    
+                return res.status(200).json({ message: "Subject deleted successfully." });
+              }
+            );
+          }
+        }
+      );
+    }
+  });
+  
+});
+
+router.put("/update/:courseId", async (req, res) => {
+  const { courseId } = req.params;
+  const { name } = req.body;
+
+  try {
+    db.query("UPDATE course SET name = ? WHERE id = ?", [name, courseId], (err) => {
+      if(err){
+        console.log(err);
+        return res.status(500).json({ message: "Update course error"});
+      }
+
+      return res.status(200).json({ message: "Course updated successfully!" });
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update course." });
+  }
+});
+
+const deleteIcon = (courseId, iconFileName) => {
+  if (!iconFileName) return;
+
+  const iconPath = path.join(__dirname, `../courses/c${courseId}`, iconFileName);
+
+  if (fs.existsSync(iconPath)) {
+    fs.unlinkSync(iconPath);
+    console.log(`Deleted icon: ${iconPath}`);
+  } else {
+    console.log(`Icon not found: ${iconPath}`);
+  }
+};
+
+router.post("/uploadCourseIcon/:courseId", upload.single("icon"), (req, res) => {
+  const { courseId } = req.params;
+
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  const iconFileName = req.file.filename;
+
+  db.query("SELECT icon_id FROM course WHERE id = ?", [courseId], (err, results) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ message: "Database query error" });
+    }
+
+    const oldIconFileName = results[0]?.icon_id;
+
+    // ลบ icon เดิม (ถ้ามี)
+    if (oldIconFileName) {
+      deleteIcon(courseId, oldIconFileName);
+    }
+
+    // อัปเดต icon ใหม่ในฐานข้อมูล
+    db.query("UPDATE course SET icon_id = ? WHERE id = ?",
+      [iconFileName, courseId], (err) => {
+        if (err) {
+          console.error("Database update error:", err);
+          return res.status(500).json({ message: "Database update error" });
+        }
+
+        res.status(200).json({ message: "Icon uploaded successfully", icon: iconFileName });
+      }
+    );
+  });
 });
 
 router.delete("/deleteCourse/:courseId/:userId", (req, res) => {
