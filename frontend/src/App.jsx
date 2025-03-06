@@ -22,13 +22,14 @@ import Forgot from './pages/authenticate/forgot';
 
 /* */ 
 import NavbarTeach from './components/NavbarTeach';
+import MyCourses from './pages/teacher/MyCourses';
+import EditCourse from './pages/teacher/EditCourse';
+import AddSubject from './pages/teacher/AddSubject';
 /* */
 
 /* */
 import NavbarAdmin from './components/NavbarAdmin';
 import ManageUser from './pages/admin/manageuser';
-import MyCourses from './pages/teacher/MyCourses';
-import EditCourse from './pages/teacher/EditCourse';
 /* */
 
 function App() {
@@ -127,6 +128,7 @@ function App() {
               <Route path='/' element={<Home/>}/>
               <Route path='/my-courses' element={<MyCourses/>}/>
               <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
+              <Route path='/add-subject/:courseId' element={<AddSubject/>}/>
             </Routes>
           </div>
         </div>

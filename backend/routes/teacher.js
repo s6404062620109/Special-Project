@@ -6,6 +6,9 @@ const db = require("./database");
 
 const router = express.Router();
 
+router.use(express.json());
+router.use(express.urlencoded({ extended: true }));
+
 router.get("/getMyCourses/:userId", (req, res) => {
     const { userId } = req.params;
 
@@ -93,6 +96,106 @@ router.post("/addCourse", async (req, res) => {
   }
 });
 
+function deleteFolderRecursive(folderPath){
+  if (fs.existsSync(folderPath)) {
+    fs.rmSync(folderPath, { recursive: true, force: true });
+    console.log(`Deleted folder: ${folderPath}`);
+  } else {
+    console.log(`Folder does not exist: ${folderPath}`);
+  }
+};
+
+function moveFiles(files, fromPath, toPath) {
+  createFolder(toPath);
+  files.forEach((file) => {
+    const oldPath = path.join(fromPath, file.filename);
+    const newPath = path.join(toPath, file.filename);
+    fs.renameSync(oldPath, newPath);
+  });
+}
+
+function deleteTempFiles(files, tmpPath) {
+  files.forEach((file) => {
+    const filePath = path.join(tmpPath, file.filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  });
+}
+
+const subjectStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const { courseId } = req.params;
+
+    if (!courseId) {
+      return cb(new Error("Course ID is required"), null);
+    }
+
+    const uploadPath = path.join(__dirname, `../courses/c${courseId}/tmp`);
+    createFolder(uploadPath);
+
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const subjectUpload = multer({ storage: subjectStorage });
+
+router.post("/saveSubject/:courseId", subjectUpload.array("images"), (req, res) => {
+  const { courseId } = req.params;
+  const { name, data } = req.body;
+  const uploadedFiles = req.files;
+
+  if (!courseId) {
+    return res.status(400).json({ message: "Course ID is required" });
+  }
+
+  const { content, subcontent, summary } = JSON.parse(data);
+
+  db.query("INSERT INTO subject (name, courseId) VALUES (?, ?)", [name, courseId], (err, insertSubjectResult) => {
+    if (err) {
+      console.error("Database insert error:", err);
+      return res.status(500).json({ message: "Database insert error" });
+    }
+
+    const subjectId = insertSubjectResult.insertId;
+    const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+    const tmpPath = path.join(__dirname, `../courses/c${courseId}/tmp`);
+
+    createFolder(subjectFolderPath);
+
+    const jsonData = { content, subcontent, summary };
+    const jsonFilePath = path.join(subjectFolderPath, "content.json");
+    fs.writeFileSync(jsonFilePath, JSON.stringify(jsonData, null, 2));
+
+    moveFiles(uploadedFiles, tmpPath, subjectFolderPath);
+
+    const imageFileNames = uploadedFiles.map((file) => file.filename);
+    const imageFileNamesString = imageFileNames.join(",");
+
+    db.query("UPDATE subject SET images = ? WHERE id = ?",
+      [imageFileNamesString, subjectId], (err) => {
+        if (err) {
+          console.error("Database update error:", err);
+          return res.status(500).json({ message: "Database update error" });
+        }
+
+        deleteTempFiles(uploadedFiles, tmpPath);
+
+        res.status(200).json({
+          message: "Subject data and images saved successfully",
+          subjectId,
+          name,
+          images: imageFileNamesString,
+          data: jsonData,
+        });
+      }
+    );
+  });
+});
+
 router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", (req, res) => {
   const { courseId, subjectId, userId } = req.params;
 
@@ -131,6 +234,9 @@ router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", (req, res) 
                   return res.status(500).json({ message: "Delete subject from database error." });
                 }
     
+                const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+                deleteFolderRecursive(subjectFolderPath);
+
                 return res.status(200).json({ message: "Subject deleted successfully." });
               }
             );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 
 import style from "./css/editcourse.module.css";
@@ -21,6 +21,7 @@ function EditCourse() {
     profile_img: null,
   });
   const emailrefStorage = localStorage.getItem("email");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -174,7 +175,7 @@ function EditCourse() {
         </div>
       </div>
 
-      <div className={style["add-button"]} onClick={() => setIsPopupOpen(true)}>
+      <div className={style["add-button"]} onClick={() => navigate(`/add-subject/${courseId}`)}>
         <img alt="Add button" src="/My_Coursesp/Add.svg" />
         <p>Add Subject</p>
       </div>
