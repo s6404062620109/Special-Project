@@ -6,7 +6,7 @@
 .container {
     width: 80%;
     margin: 30px auto;
-    background-color: #f5f5f5;
+    background-color: #f5f5f5bd;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
@@ -18,13 +18,14 @@
     margin-bottom: 20px;
 }
 
-.input-container {
+.input-container, .input-questions-container {
     width: 90%;
     margin: auto;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 8px;
     border: 1px solid #ddd;
+    margin-bottom: 20px;
 }
 
 .input-container p {
@@ -51,7 +52,7 @@
     font-size: 16px;
 }
 
-.input-images{
+.input-images {
     width: 60%;
     margin: auto;
 }
@@ -139,8 +140,168 @@
     min-height: 100px;
 }
 
-.summary-container{
+.summary-container {
     width: 100%;
+}
+
+.input-questions-container {
+    width: 60%;
+    margin: auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.input-questions-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.question-item {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.question-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.question-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.question-input-group input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.question-input-group select {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.answer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.answer-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.answer-input-group input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.answer-input-group select {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.delete-answer-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-answer-button img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.delete-answer-button:hover img {
+    opacity: 1;
+}
+
+.question-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.add-answer-button {
+    padding: 8px 12px;
+    border: none;
+    background: #17a2b8;
+    color: white;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.add-answer-button:hover {
+    background: #138496;
+}
+
+.delete-question-button {
+    padding: 8px 12px;
+    border: none;
+    background: #dc3545;
+    color: white;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.delete-question-button:hover {
+    background: #c82333;
+}
+
+.add-question-button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #28a745;
+    color: white;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.add-question-button:hover {
+    background: #218838;
 }
 
 .button-container {
@@ -153,7 +314,7 @@
     padding: 10px 20px;
     border: none;
     border-radius: 8px;
-    background-color: #007bff;
+    background: #007bff;
     color: white;
     font-size: 16px;
     cursor: pointer;
@@ -161,7 +322,7 @@
 }
 
 .button-container button:hover {
-    background-color: #0056b3;
+    background: #0056b3;
 }
 
 .add-subcontent-button {
@@ -169,6 +330,12 @@
     width: 50%;
     margin: auto;
     background: #28a745;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
 }
 
 .add-subcontent-button:hover {

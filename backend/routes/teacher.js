@@ -148,11 +148,15 @@ router.post("/saveSubject/:courseId", subjectUpload.array("images"), (req, res) 
   const { name, data } = req.body;
   const uploadedFiles = req.files;
 
-  if (!courseId) {
-    return res.status(400).json({ message: "Course ID is required" });
+  const { content, subcontent, summary } = JSON.parse(data);
+
+  if(!name || name === null || !data ){
+    return res.status(400).json({ message: "Name and Data are required." });
   }
 
-  const { content, subcontent, summary } = JSON.parse(data);
+  if(!content){
+    return res.status(400).json({ message: "Content and Summary are required." });
+  }
 
   db.query("INSERT INTO subject (name, courseId) VALUES (?, ?)", [name, courseId], (err, insertSubjectResult) => {
     if (err) {
@@ -185,7 +189,7 @@ router.post("/saveSubject/:courseId", subjectUpload.array("images"), (req, res) 
         deleteTempFiles(uploadedFiles, tmpPath);
 
         res.status(200).json({
-          message: "Subject data and images saved successfully",
+          message: "Subject saved successfully",
           subjectId,
           name,
           images: imageFileNamesString,

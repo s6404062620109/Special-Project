@@ -44,21 +44,22 @@ function NavbarAdmin() {
     };
     fetchUserData();
   }, [emailrefStorage]);
+
   const handleLogout = async () => {
     try {
-      const response = await backend.post(
-        "/auth/logout",
-        {},
+      const response = await backend.post("/auth/logout",
         { withCredentials: true }
       );
       if (response.status === 200) {
         localStorage.removeItem("email");
-        window.location.reload();
+        alert(response.data.message);
+        window.location.href = '/';
       }
     } catch (error) {
       console.error(error);
     }
   };
+
   return (
     <div className={style.navWrap}>
       <nav>

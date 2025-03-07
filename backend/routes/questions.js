@@ -22,4 +22,23 @@ router.post("/checkQuestionType", (req, res) => {
     });
 });
 
+router.get("/getAlltype", (req, res) => {
+  db.query("SELECT type FROM question", (err, questionResults) => {
+    if (err) {
+      return res.status(500).json({ error: "Database question query failed", details: err });
+    }
+    const questionTypes = [...new Set(questionResults.map((row) => row.type))];
+
+    db.query("SELECT type FROM answer", (err, answerResults) => {
+      if (err) {
+        return res.status(500).json({ error: "Database answer query failed", details: err });
+      }
+      const answerTypes = [...new Set(answerResults.map((row) => row.type))];
+
+      res.json({ questionType: questionTypes, answerType: answerTypes });
+    });
+  });
+});
+
+
 module.exports = router;
