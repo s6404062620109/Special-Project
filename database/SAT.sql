@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Mar 02, 2025 at 04:58 PM
+-- Generation Time: Mar 08, 2025 at 02:35 PM
 -- Server version: 9.2.0
 -- PHP Version: 8.2.8
 
@@ -283,7 +283,7 @@ INSERT INTO `answer` (`id`, `content`, `type`, `questionId`) VALUES
 CREATE TABLE `course` (
   `id` int NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `icon_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `icon_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
   `teacherId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -315,7 +315,7 @@ CREATE TABLE `enrollment` (
 --
 
 INSERT INTO `enrollment` (`id`, `courseId`, `pretest_complete`, `posttest_complete`, `completed_labs`, `total_labs`, `userId`) VALUES
-(34, 1, 1, 0, 7, 7, 18);
+(38, 1, 1, 0, 1, 7, 18);
 
 -- --------------------------------------------------------
 
@@ -336,29 +336,29 @@ CREATE TABLE `progress` (
 --
 
 INSERT INTO `progress` (`id`, `is_completed`, `score`, `questionId`, `enrollmentId`) VALUES
-(707, 1, 0, 1, 34),
-(708, 1, 1, 10, 34),
-(709, 1, 1, 11, 34),
-(710, 1, 0, 17, 34),
-(711, 1, 1, 21, 34),
-(712, 1, 1, 25, 34),
-(713, 1, 0, 26, 34),
-(714, 1, 0, 29, 34),
-(715, 1, 1, 31, 34),
-(716, 1, 1, 32, 34),
-(717, 1, 1, 33, 34),
-(718, 1, 1, 34, 34),
-(719, 1, 1, 35, 34),
-(720, 1, 1, 36, 34),
-(721, 1, 1, 37, 34),
-(722, 0, 0, 63, 34),
-(723, 0, 0, 65, 34),
-(724, 0, 0, 69, 34),
-(725, 0, 0, 74, 34),
-(726, 0, 0, 77, 34),
-(727, 0, 0, 81, 34),
-(728, 0, 0, 82, 34),
-(729, 0, 0, 87, 34);
+(799, 1, 1, 2, 38),
+(800, 1, 1, 6, 38),
+(801, 1, 1, 11, 38),
+(802, 1, 0, 19, 38),
+(803, 1, 0, 23, 38),
+(804, 1, 0, 24, 38),
+(805, 1, 0, 26, 38),
+(806, 1, 0, 28, 38),
+(807, 1, 1, 31, 38),
+(808, 0, 0, 32, 38),
+(809, 0, 0, 33, 38),
+(810, 0, 0, 34, 38),
+(811, 0, 0, 35, 38),
+(812, 0, 0, 36, 38),
+(813, 0, 0, 37, 38),
+(814, 0, 0, 61, 38),
+(815, 0, 0, 66, 38),
+(816, 0, 0, 68, 38),
+(817, 0, 0, 73, 38),
+(818, 0, 0, 77, 38),
+(819, 0, 0, 80, 38),
+(820, 0, 0, 83, 38),
+(821, 0, 0, 86, 38);
 
 -- --------------------------------------------------------
 
@@ -452,7 +452,7 @@ INSERT INTO `question` (`id`, `content`, `type`, `subjectId`) VALUES
 CREATE TABLE `subject` (
   `id` int NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `images` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `images` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
   `courseId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -492,9 +492,9 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `role`, `profile_img`, `verified_key`, `verified_expired`) VALUES
-(18, 'arcarnupab@gmail.com', '$2b$10$0bpRvf..aYDN.p8P45nQd.qiKZSIVeCVfLCYwTuOwCX7dQY2Ywop6', 'inwarc', 's', NULL, 'd4f82c11de76c36dcafe5d81e255b94942c3b4672647a1fc1009a3b6af34532a', '2025-03-02 20:56:48'),
-(19, 'arnupab0808@gmail.com', '$2b$10$uP6HRXVvlhnS.BwXEt.MMO4TdYKjDnyxk1QaLhaYBhbEp8K1W.W6C', 'teach1', 't', NULL, 'eaa3bf615dcaae7baf4bac837ff94a9c61496e1ccacc66a7455543f02c646a3e', '2025-02-22 16:49:13'),
-(20, 'tae8.arnupab@gmail.com', '$2b$10$eO0hLCgwKd9trJLop1h9MeK4.WS5M524s9BLyaKboA0IJ2vM6eSBW', 'adminTest', 'a', NULL, '47fdf2f505fcab48e43da645bcf295ce5584063866b3f75b1f1870470e7b0f8d', '2025-02-26 18:07:36');
+(18, 'arcarnupab@gmail.com', '$2b$10$0bpRvf..aYDN.p8P45nQd.qiKZSIVeCVfLCYwTuOwCX7dQY2Ywop6', 'inwarc', 's', NULL, '06578c9821f2a0c2cbaba7f3c582a649135713481aea3347a995a26ac4239707', '2025-03-08 18:26:34'),
+(19, 'arnupab0808@gmail.com', '$2b$10$0qBdjOZlgyjM/xxHb5yvnOqyUXQXSRFNiiDdDnMI9K0GrbkVjjg..', 'teach1', 't', NULL, 'fc4b7493987970f892deadbf4b0c17b95ce4fa1a1e0b6877067b1497b8638294', '2025-03-08 18:33:47'),
+(20, 'tae8.arnupab@gmail.com', '$2b$10$eO0hLCgwKd9trJLop1h9MeK4.WS5M524s9BLyaKboA0IJ2vM6eSBW', 'adminTest', 'a', NULL, 'b2ca4b1d8507bb0b2c4b0bda3937fc041ce39bdc3bc9a745660e34e35fc41bfd', '2025-03-03 17:17:07');
 
 --
 -- Indexes for dumped tables
@@ -558,37 +558,37 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `answer`
 --
 ALTER TABLE `answer`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=236;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=245;
 
 --
 -- AUTO_INCREMENT for table `course`
 --
 ALTER TABLE `course`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `enrollment`
 --
 ALTER TABLE `enrollment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=730;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=828;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- AUTO_INCREMENT for table `subject`
 --
 ALTER TABLE `subject`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `user`
