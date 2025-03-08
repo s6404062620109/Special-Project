@@ -23,7 +23,7 @@ function Subject() {
     const [ useLab, setUseLab ] = useState(false);
     const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
     const [ currentImageIndex, setCurrentImageIndex ] = useState(0);
-    const [isLabCompleted, setIsLabCompleted] = useState(false);
+    const [ isLabCompleted, setIsLabCompleted ] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -70,7 +70,7 @@ function Subject() {
             try {
                 const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
                 if (response.status === 200) {
-                    const labProgress = response.data.results.filter(item => item.type === 'lab');
+                    const labProgress = response.data.results.filter(item => item.type.toLowerCase().includes("lab"));
                     const allLabsCompleted = labProgress.every(item => item.is_completed === 1);
                     setIsLabCompleted(allLabsCompleted);
                 }
@@ -194,6 +194,7 @@ function Subject() {
     const nextImage = () => {
         setCurrentImageIndex(prevIndex => (prevIndex === imgPath.length - 1 ? 0 : prevIndex + 1));
     };
+
   return (
     <div className={style.container}>
         
@@ -265,6 +266,7 @@ function Subject() {
                         <h2>Lab Question</h2>
                         { useLab && questionList.map((item, ind) => (
                             <LabBox
+                                key={ind}
                                 no={ind+1}
                                 id={item.id}
                                 question={item.content}

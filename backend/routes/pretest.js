@@ -17,9 +17,11 @@ router.get("/getPretest/:enrollmentId/:userId", (req, res) => {
         return res.status(404).json({ message: "User is not enrolled in any course." });
       }
 
-      if (enrollmentId !== result[0].id.toString()) {
-        return res.status(500).json({ message: "You're not enroll this course." });
-      } 
+      const isEnrolled = result.some((enrollment) => enrollment.id.toString() === enrollmentId);
+
+      if (!isEnrolled) {
+        return res.status(403).json({ message: "You're not enrolled in this course." });
+      }
 
       db.query("SELECT questionId FROM progress WHERE enrollmentId = ?",[enrollmentId], (error, result) => {
           if (error) {

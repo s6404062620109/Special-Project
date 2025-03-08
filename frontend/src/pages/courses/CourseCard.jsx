@@ -79,7 +79,7 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
   useEffect(() => {
     if (!emailrefStorage && !userData.id && !userData.email && !userData.name && !userData.role) {
       setButtonText("View");
-    } else if (enrollmentId !== 0) {
+    } else if (enrollmentId !== null) {
       setButtonText("Continue");
     } else {
       setButtonText("Start");
@@ -124,13 +124,7 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
     }
   };
 
-  const isCourseCompleted = history.some(
-    (enroll) =>
-      enroll.pretest_complete === 1 &&
-      enroll.posttest_complete === 1 &&
-      enroll.completed_labs === enroll.total_labs
-  );
-
+  const filteredHistory = history.filter((enroll) => enroll.courseId === id);
   return (
     <tr className={style.card}>
       <td className={style.content}>
@@ -150,8 +144,8 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
       </td>
 
       <td>
-        {history.length > 0 ? (
-          history.map((enroll, index) => (
+        {filteredHistory.length > 0 ? (
+          filteredHistory.map((enroll, index) => (
             <p key={index}>
               {enroll.pretest_complete === 1 &&
               enroll.posttest_complete === 1 &&
@@ -165,9 +159,9 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
 
       <td>
         <p>{id}. {name}</p>
-        {history.length > 0 ? (
+        {filteredHistory.length > 0 ? (
           <>
-            {history.map((enroll) => (
+            {filteredHistory.map((enroll) => (
               <Processbar
                 pretest_complete={enroll.pretest_complete}
                 posttest_complete={enroll.posttest_complete}
@@ -187,11 +181,19 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
       </td>
 
       <td>
-        {isCourseCompleted ? (
-          <p>Complete!</p>
-        ) : (
-          <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
-        )}
+      {filteredHistory.length > 0 ? (
+        filteredHistory.map((enroll) => (
+          enroll.pretest_complete === 1 &&
+          enroll.posttest_complete === 1 &&
+          enroll.completed_labs === enroll.total_labs ? (
+            <p>Complete!</p>
+          ) : (
+            <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
+          )
+        ))
+      ) : (
+        <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
+      )}
         
       </td>
     </tr>

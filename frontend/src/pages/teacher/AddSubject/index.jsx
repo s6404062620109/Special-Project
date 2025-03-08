@@ -143,7 +143,7 @@ function AddSubject() {
         setQuestionInput(updatedQuestions);
     };
     reader.readAsText(file);
-};
+  };
 
   const saveSubjectData = async () => {
     const formData = new FormData();
@@ -201,14 +201,26 @@ function AddSubject() {
 
     formData.append("name", name);
     formData.append("data", JSON.stringify(jsonData));
+    formData.append("questions", JSON.stringify(questionInput));
 
     imageFiles.forEach((file) => {
       formData.append("images", file);
     });
 
+    questionInput.forEach((question, index) => {
+      if (question.question.type === "lab-w" && question.labFile) {
+        if (question.labFile instanceof File) {
+          formData.append(`labFile-${index}`, question.labFile);
+        } else {
+          console.error("Invalid lab file:", question.labFile);
+          alert(`Invalid lab file for question ${index + 1}`);
+          return;
+        }
+      }
+    });
+
     try {
-      const response = await backend.post(
-        `/teacher/saveSubject/${courseId}`,
+      const response = await backend.post(`/teacher/saveSubject/${courseId}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

@@ -55,9 +55,7 @@ function CourseDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await backend.get(
-          `/subjects/getAllSubject/${courseId}`
-        );
+        const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
 
         let responseCourse = response.data.courseInfo[0];
 
@@ -76,16 +74,22 @@ function CourseDetail() {
 
     const fetchHistory = async () => {
       try {
-        const response = await backend.get(
-          `/enroll/checkCoursesEnroll/${userData.id}`
-        );
+        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
         if (response.status === 200) {
-          setHistory(response.data.results);
+          const courseIdNum = Number(courseId);
+          const enrollmentIdNum = Number(enrollmentId);
+    
+          const filteredHistory = response.data.results.filter(
+            (record) => record.courseId === courseIdNum && record.id === enrollmentIdNum
+          );
+    
+          console.log("Filtered History:", filteredHistory);
+          setHistory(filteredHistory);
         }
       } catch (err) {
-        console.log("Error fetching icon:", err);
+        console.log("Error fetching history:", err);
       }
-    };
+    };    
 
     fetchHistory();
   }, [courseId, userData.id]);
@@ -93,13 +97,10 @@ function CourseDetail() {
   useEffect(() => {
     const fetchIcon = async () => {
       try {
-        const response = await backend.get(
-          `/imgrender/getIcon/${courseId}/${courseInfo.icon}`
-        );
+        const response = await backend.get(`/imgrender/getIcon/${courseId}/${courseInfo.icon}`);
+
         if (response.status === 200) {
-          setImgPath(
-            `${import.meta.env.VITE_API_BASE_URL}${response.data.url}`
-          );
+          setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
         }
       } catch (err) {
         console.log("Error fetching icon:", err);
@@ -109,9 +110,7 @@ function CourseDetail() {
 
     const fethProgress = async () => {
       try {
-        const response = await backend.get(
-          `/progress/checkCourseProgress/${history[0].id}`
-        );
+        const response = await backend.get(`/progress/checkCourseProgress/${history[0].id}`);
 
         if (response.status === 200) {
           const pretest = response.data.results.filter(

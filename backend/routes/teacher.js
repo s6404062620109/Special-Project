@@ -141,62 +141,113 @@ const subjectStorage = multer.diskStorage({
   },
 });
 
-const subjectUpload = multer({ storage: subjectStorage });
+const subjectUpload = multer({
+  storage: subjectStorage,
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === "images" || file.fieldname.startsWith("labFile-")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Unexpected field"), false);
+    }
+  },
+}).any(); 
 
-router.post("/saveSubject/:courseId", subjectUpload.array("images"), (req, res) => {
-  const { courseId } = req.params;
-  const { name, data } = req.body;
-  const uploadedFiles = req.files;
-
-  const { content, subcontent, summary } = JSON.parse(data);
-
-  if(!name || name === null || !data ){
-    return res.status(400).json({ message: "Name and Data are required." });
-  }
-
-  if(!content){
-    return res.status(400).json({ message: "Content and Summary are required." });
-  }
-
-  db.query("INSERT INTO subject (name, courseId) VALUES (?, ?)", [name, courseId], (err, insertSubjectResult) => {
+router.post("/saveSubject/:courseId", (req, res) => {
+  subjectUpload(req, res, async (err) => {
     if (err) {
-      console.error("Database insert error:", err);
-      return res.status(500).json({ message: "Database insert error" });
+      console.error("Multer error:", err);
+      return res.status(400).json({ message: "File upload error" });
     }
 
-    const subjectId = insertSubjectResult.insertId;
-    const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
-    const tmpPath = path.join(__dirname, `../courses/c${courseId}/tmp`);
+    const { courseId } = req.params;
+    const { name, data, questions } = req.body;
+    const uploadedFiles = req.files;
 
-    createFolder(subjectFolderPath);
+    const { content, subcontent, summary } = JSON.parse(data);
+    const questionData = JSON.parse(questions);
 
-    const jsonData = { content, subcontent, summary };
-    const jsonFilePath = path.join(subjectFolderPath, "content.json");
-    fs.writeFileSync(jsonFilePath, JSON.stringify(jsonData, null, 2));
+    if (!name || name === null || !data) {
+      return res.status(400).json({ message: "Name and Data are required." });
+    }
 
-    moveFiles(uploadedFiles, tmpPath, subjectFolderPath);
+    if (!content) {
+      return res.status(400).json({ message: "Content and Summary are required." });
+    }
 
-    const imageFileNames = uploadedFiles.map((file) => file.filename);
-    const imageFileNamesString = imageFileNames.join(",");
-
-    db.query("UPDATE subject SET images = ? WHERE id = ?",
-      [imageFileNamesString, subjectId], (err) => {
-        if (err) {
-          console.error("Database update error:", err);
-          return res.status(500).json({ message: "Database update error" });
-        }
-
-        deleteTempFiles(uploadedFiles, tmpPath);
-
-        res.status(200).json({
-          message: "Subject saved successfully",
-          subjectId,
-          name,
-          images: imageFileNamesString,
-          data: jsonData,
-        });
+    db.query("INSERT INTO subject (name, courseId) VALUES (?, ?)", [name, courseId], (err, insertSubjectResult) => {
+      if (err) {
+        console.error("Database insert error:", err);
+        return res.status(500).json({ message: "Database insert error" });
       }
-    );
+
+      const subjectId = insertSubjectResult.insertId;
+      const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+      const tmpPath = path.join(__dirname, `../courses/c${courseId}/tmp`);
+
+      createFolder(subjectFolderPath);
+
+      const jsonData = { content, subcontent, summary };
+      const jsonFilePath = path.join(subjectFolderPath, "content.json");
+      fs.writeFileSync(jsonFilePath, JSON.stringify(jsonData, null, 2));
+
+      // แยกไฟล์ images และ labFile-*
+      const imageFiles = uploadedFiles.filter(file => file.fieldname === "images");
+      const labFiles = uploadedFiles.filter(file => file.fieldname.startsWith("labFile-"));
+
+      // ย้ายไฟล์ images ไปยังโฟลเดอร์ปลายทาง
+      moveFiles(imageFiles, tmpPath, subjectFolderPath);
+
+      const imageFileNames = imageFiles.map((file) => file.filename);
+      const imageFileNamesString = imageFileNames.join(",");
+
+      db.query("UPDATE subject SET images = ? WHERE id = ?",
+        [imageFileNamesString, subjectId], (err) => {
+          if (err) {
+            console.error("Database update error:", err);
+            return res.status(500).json({ message: "Database update error" });
+          }
+
+          deleteTempFiles(imageFiles, tmpPath);
+
+          questionData.forEach((question, index) => {
+            const { question: q, answers } = question;
+            db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
+              [q.content, q.type, subjectId], (err, insertQuestionResult) => {
+                if (err) {
+                  console.error("Database insert error:", err);
+                  return res.status(500).json({ message: "Database insert error" });
+                }
+
+                const questionId = insertQuestionResult.insertId;
+
+                const labFile = labFiles.find(file => file.fieldname === `labFile-${index}`);
+                if (q.type === "lab-w" && labFile) {
+                  const labFilePath = path.join(__dirname, `../lab/q${questionId}`);
+                  createFolder(labFilePath);
+
+                  try {
+                    fs.copyFileSync(labFile.path, path.join(labFilePath, "index.html"));
+                  } catch (err) {
+                    console.error("Error copying lab file:", err);
+                    return res.status(500).json({ message: "Error copying lab file" });
+                  }
+                }
+
+                answers.forEach((answer) => {
+                  db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                    [answer.content, answer.type, questionId], (err) => {
+                      if (err) {
+                        console.error("Database insert error:", err);
+                        return res.status(500).json({ message: "Database insert error" });
+                      }
+                    });
+                });
+              });
+          });
+
+          res.status(200).json({ message: "Subject saved successfully" });
+        });
+    });
   });
 });
 
