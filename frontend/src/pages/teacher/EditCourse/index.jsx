@@ -92,7 +92,7 @@ function EditCourse() {
   }, [data.courseInfo]);
 
   const handleEdit = (subjectId) => {
-    console.log("Edit subject with ID:", subjectId);
+    navigate(`/edit-subject/${courseId}/${subjectId}`);
   };
 
   const handleDelete = async (subjectId) => {
@@ -132,7 +132,7 @@ function EditCourse() {
           <h2>{data.courseInfo.name}</h2>
           <button onClick={() => setIsPopupOpen(true)}>
             <img src="/My_Coursesp/Edit.svg" alt="Edit button" />
-            Edit
+            <p>Edit</p>
           </button>
         </div>
 
@@ -150,7 +150,8 @@ function EditCourse() {
                           onClick={() => handleEdit(subject.id)}
                         >
                           <img src="/My_Coursesp/Edit.svg" alt="Edit button" />
-                          Edit
+                          <p>Edit</p>
+                          
                         </button>
                       </td>
                       <td>
@@ -159,7 +160,8 @@ function EditCourse() {
                           onClick={() => handleDelete(subject.id)}
                         >
                           <img src="/My_Coursesp/Bin.svg" alt="Delete button" />
-                          Delete
+                          <p>Delete</p>
+                          
                         </button>
                       </td>
                     </tr>

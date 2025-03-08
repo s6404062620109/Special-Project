@@ -22,6 +22,40 @@ router.post("/checkQuestionType", (req, res) => {
     });
 });
 
+router.get("/getSubjectQuestion/:subjectId", (req, res) => {
+  const { subjectId } = req.params;
+
+  if (!subjectId) {
+    return res.status(400).json({ message: "Subject ID is required" });
+  }
+
+  db.query("SELECT * FROM question WHERE subjectId = ?", [subjectId], (err, questions) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Database question query error" });
+    }
+
+    if (questions.length === 0) {
+      return res.status(200).json({ questions: [], answers: [] });
+    }
+
+    const questionIds = questions.map((q) => q.id);
+    db.query("SELECT * FROM answer WHERE questionId IN (?)", [questionIds], (err, answers) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Database answer query error" });
+      }
+
+      const result = questions.map((question) => ({
+        ...question,
+        answers: answers.filter((answer) => answer.questionId === question.id),
+      }));
+
+      return res.status(200).json({ questions: result });
+    });
+  });
+});
+
 router.get("/getAlltype", (req, res) => {
   db.query("SELECT type FROM question", (err, questionResults) => {
     if (err) {

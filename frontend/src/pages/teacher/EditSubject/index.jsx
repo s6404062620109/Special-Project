@@ -2,12 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 
-import style from "./css/addsubject.module.css";
+import style from "./css/editsubject.module.css";
 
-function AddSubject() {
-  const { courseId } = useParams();
-  const [imageFiles, setImageFiles] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
+function EditSubject() {
+  const { courseId, subjectId } = useParams();
   const [subjectInput, setSubjectInput] = useState({
     name: null,
     content: {
@@ -17,10 +15,36 @@ function AddSubject() {
     subcontent: [],
     summary: null,
   });
+  const [imageFiles, setImageFiles] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
   const [questionType, setQuestionType] = useState([]);
   const [questionInput, setQuestionInput] = useState([]);
   const [answerType, setAnswerType] = useState([]);
   const navigate = useNavigate();
+
+  const fetchSubjectData = async () => {
+    try {
+      const response = await backend.get(
+        `/subjects/getSubject/${courseId}/${subjectId}`
+      );
+
+      if (response.status === 200) {
+        const { jsonData, result } = response.data;
+
+        setSubjectInput({
+          name: result[0].name,
+          content: {
+            title: jsonData.content.title,
+            description: jsonData.content.description,
+          },
+          subcontent: jsonData.subcontent,
+          summary: jsonData.summary,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchQuestionType = async () => {
     try {
@@ -35,8 +59,35 @@ function AddSubject() {
     }
   };
 
+  const fetchQuestions = async () => {
+    try {
+      const response = await backend.get(`/question/getSubjectQuestion/${subjectId}`);
+
+      if(response.status === 200){
+        const questions = response.data.questions;
+
+        const mappedQuestions = questions.map((q) => ({
+          question: {
+            content: q.content,
+            type: q.type,
+          },
+          answers: q.answers.map((a) => ({
+            content: a.content,
+            type: a.type.toString(),
+          })),
+        }));
+
+      setQuestionInput(mappedQuestions);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     fetchQuestionType();
+    fetchSubjectData();
+    fetchQuestions();
   }, []);
 
   const addSubcontent = () => {
@@ -235,10 +286,10 @@ function AddSubject() {
   };
 
   return (
-    <div className={style["add-subject-container"]}>
+    <div className={style["edit-subject-container"]}>
       <div className={style.container}>
         <div className={style.title}>
-          <h1>Add Subject</h1>
+          <h1>Edit Subject</h1>
         </div>
 
         <div className={style["input-container"]}>
@@ -501,10 +552,7 @@ function AddSubject() {
                   className={style["delete-question-button"]}
                   onClick={() => deleteQuestion(questionIndex)}
                 >
-                  <img
-                    alt="Delete question input"
-                    src="/My_Coursesp/Bin.svg"
-                  />
+                  <img alt="Delete question input" src="/My_Coursesp/Bin.svg" />
                   Delete Question
                 </button>
               </div>
@@ -520,14 +568,9 @@ function AddSubject() {
             </button>
           </div>
         </div>
-
-        <div className={style["button-container"]}>
-          <button onClick={() => navigate(`/edit-course/${courseId}`)}>Back</button>
-          <button onClick={saveSubjectData}>Save</button>
-        </div>
       </div>
     </div>
   );
 }
 
-export default AddSubject;
+export default EditSubject;

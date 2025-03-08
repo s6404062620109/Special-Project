@@ -35,10 +35,8 @@ router.get("/getSubject/:courseId/:subjectId", (req, res) => {
     `../courses/c${courseId}/s${subjectId}/content.json`
   );
 
-  db.query(
-    `SELECT name, images FROM subject WHERE id = ? AND courseId = ? `,
-    [subjectId, courseId],
-    (err, result) => {
+  db.query(`SELECT name, images FROM subject WHERE id = ? AND courseId = ? `,
+    [subjectId, courseId], (err, result) => {
       if (err) {
         console.log(err);
         return res

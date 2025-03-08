@@ -25,6 +25,7 @@ import NavbarTeach from './components/NavbarTeach';
 import MyCourses from './pages/teacher/MyCourses';
 import EditCourse from './pages/teacher/EditCourse';
 import AddSubject from './pages/teacher/AddSubject';
+import EditSubject from './pages/teacher/EditSubject';
 /* */
 
 /* */
@@ -131,6 +132,7 @@ function App() {
               <Route path='/my-courses' element={<MyCourses/>}/>
               <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
               <Route path='/add-subject/:courseId' element={<AddSubject/>}/>
+              <Route path='edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
             </Routes>
           </div>
         </div>
