@@ -64,6 +64,8 @@ function App() {
         console.log(error);
         if(error.response.status === 403){
           localStorage.removeItem('email');
+          alert(response.data.message);
+          window.location.href = '/';
         }
       }
       
