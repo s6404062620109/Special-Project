@@ -1,4 +1,4 @@
-.add-subject-container {
+.edit-subject-container {
     width: 100%;
     padding: 20px 0;
 }
@@ -182,23 +182,28 @@
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
+    justify-content: center;
     width: 100%;
 }
+.question-input-group .input-wrapper{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 90%;
 
-.question-input-group input{
-    width: 66%;
-}
-
-.question-input-group input,
-.question-input-group select {   
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-}
-
-.question-input-group select{
-    border-radius: 6px;
+    input, select{
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+    }
+    select{
+        width: 40%;
+        border-radius: 6px;
+    }
+    input{
+        width: 66%;
+    }
 }
 
 .lab-upload-section {
@@ -221,25 +226,30 @@
 
 .answer-input-group {
     display: flex;
-    gap: 10px;
     align-items: center;
+    justify-content: center;
+    gap: 10px;
     width: 100%;
 }
 
-.answer-input-group input {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-}
+.answer-input-group .answer-input{
+    display: flex;
+    width: 90%;
+    gap: 15px;
 
-.answer-input-group select {
-    width: 200px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    input, select{
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+    }
+    input{        
+        border-radius: 20px;
+        width: 66%;
+    }
+    select{
+        border-radius: 8px;
+        width: 40%;
+    }
 }
 
 .delete-answer-button {
@@ -368,4 +378,46 @@
 
 .add-subcontent-button:hover {
     background: #218838;
+}
+
+@media screen and (max-width: 768px) {
+    .header{
+        justify-content: center;
+    }
+    .input-container > .header,
+    .input-container > .input-images,
+    .input-container > .body
+    {
+        width: 100%;
+    }
+
+    .input-questions-container{
+        width: 90%;
+    }
+    
+    .input-questions-container .input-wrapper{
+        flex-direction: column;
+        width: 90%;
+
+       input, select{
+        width: 100%;
+       }
+    }
+
+    .input-images{
+        width: 100%;
+    }
+
+    .answer-input-group{
+        gap: 40px;
+    }
+    .answer-input-group .answer-input{
+        flex-direction: column;
+        width: 80%;
+
+        input, select{
+            width: 100%;
+        }
+    }
+
 }

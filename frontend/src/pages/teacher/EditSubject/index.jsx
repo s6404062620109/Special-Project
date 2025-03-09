@@ -31,7 +31,7 @@ function EditSubject() {
       if (response.status === 200) {
         const { jsonData, result } = response.data;
 
-        setSubjectInput({
+        const subjectData = {
           name: result[0].name,
           content: {
             title: jsonData.content.title,
@@ -39,7 +39,9 @@ function EditSubject() {
           },
           subcontent: jsonData.subcontent,
           summary: jsonData.summary,
-        });
+        };
+
+        setSubjectInput(subjectData);
       }
     } catch (error) {
       console.log(error);
@@ -61,13 +63,16 @@ function EditSubject() {
 
   const fetchQuestions = async () => {
     try {
-      const response = await backend.get(`/question/getSubjectQuestion/${subjectId}`);
+      const response = await backend.get(
+        `/question/getSubjectQuestion/${subjectId}`
+      );
 
-      if(response.status === 200){
+      if (response.status === 200) {
         const questions = response.data.questions;
 
         const mappedQuestions = questions.map((q) => ({
           question: {
+            id: q.id,
             content: q.content,
             type: q.type,
           },
@@ -77,12 +82,12 @@ function EditSubject() {
           })),
         }));
 
-      setQuestionInput(mappedQuestions);
+        setQuestionInput(mappedQuestions);
       }
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   useEffect(() => {
     fetchQuestionType();
@@ -143,10 +148,28 @@ function EditSubject() {
     ]);
   };
 
-  const deleteQuestion = (questionIndex) => {
+  const deleteQuestion = async (questionIndex) => {
     const updatedQuestions = [...questionInput];
-    updatedQuestions.splice(questionIndex, 1);
+    const deletedQuestion = updatedQuestions.splice(questionIndex, 1);
     setQuestionInput(updatedQuestions);
+    console.log(questionIndex);
+    console.log(deletedQuestion);
+    
+    if (!deletedQuestion[0]?.question?.id) {
+      console.error("Question ID is undefined:", deletedQuestion);
+      alert("Failed to delete question: Question ID is missing");
+      return;
+    }
+
+    try {
+      const response = await backend.delete(`/question/${deletedQuestion[0].question.id}`);
+      if (response.status === 200) {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      alert("Failed to delete question");
+    }
   };
 
   const addAnswer = (questionIndex) => {
@@ -182,18 +205,27 @@ function EditSubject() {
   const handleFileUpload = (e, questionIndex) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (event) => {
-        const content = event.target.result;
-        const isValid = content.includes("<!-- INSERT ANSWER HERE -->");
-        
-        const updatedQuestions = [...questionInput];
-        updatedQuestions[questionIndex].labFile = file;
-        updatedQuestions[questionIndex].isValidFile = isValid;
-        setQuestionInput(updatedQuestions);
+      const content = event.target.result;
+      const isValid = content.includes("<!-- INSERT ANSWER HERE -->");
+
+      const updatedQuestions = [...questionInput];
+      updatedQuestions[questionIndex].labFile = file;
+      updatedQuestions[questionIndex].isValidFile = isValid;
+      setQuestionInput(updatedQuestions);
     };
     reader.readAsText(file);
+  };
+
+  const hasNewImages = () => {
+    return imageFiles.length > 0;
+  };
+  const hasNewLabFiles = () => {
+    return questionInput.some(
+      (q) => q.question.type === "lab-w" && q.labFile instanceof File
+    );
   };
 
   const saveSubjectData = async () => {
@@ -231,8 +263,8 @@ function EditSubject() {
       return;
     }
 
-    const hasPreTest = questionInput.some(q => q.question.type === "pre");
-    const hasPostTest = questionInput.some(q => q.question.type === "post");
+    const hasPreTest = questionInput.some((q) => q.question.type === "pre");
+    const hasPostTest = questionInput.some((q) => q.question.type === "post");
 
     if (!hasPreTest) {
       alert("ต้องมีคำถามประเภท 'แบบทดสอบก่อนเรียน' อย่างน้อย 1 ข้อ");
@@ -243,10 +275,12 @@ function EditSubject() {
       return;
     }
     for (let i = 0; i < questionInput.length; i++) {
-      const hasAnswer = questionInput[i].answers.some(ans => ans.type === "1");
+      const hasAnswer = questionInput[i].answers.some(
+        (ans) => ans.type === "1"
+      );
       if (!hasAnswer) {
-          alert(`คำถามที่ ${i + 1} ต้องมีคำตอบประเภท "คำตอบ" อย่างน้อย 1 คำตอบ`);
-          return;
+        alert(`คำถามที่ ${i + 1} ต้องมีคำตอบประเภท "คำตอบ" อย่างน้อย 1 คำตอบ`);
+        return;
       }
     }
 
@@ -254,9 +288,19 @@ function EditSubject() {
     formData.append("data", JSON.stringify(jsonData));
     formData.append("questions", JSON.stringify(questionInput));
 
-    imageFiles.forEach((file) => {
-      formData.append("images", file);
-    });
+    if (hasNewImages()) {
+      imageFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+    }
+
+    if (hasNewLabFiles()) {
+      questionInput.forEach((question, index) => {
+        if (question.question.type === "lab-w" && question.labFile) {
+          formData.append(`labFile-${index}`, question.labFile);
+        }
+      });
+    }
 
     questionInput.forEach((question, index) => {
       if (question.question.type === "lab-w" && question.labFile) {
@@ -271,8 +315,7 @@ function EditSubject() {
     });
 
     try {
-      const response = await backend.post(`/teacher/saveSubject/${courseId}`,
-        formData,
+      const response = await backend.post(`/teacher/updateSubject/${courseId}/${subjectId}`, formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
@@ -431,38 +474,41 @@ function EditSubject() {
               <div className={style["question-header"]}>
                 <div className={style["question-input-group"]}>
                   <p>{questionIndex + 1}.</p>
-                  <input
-                    type="text"
-                    placeholder="Please enter question here."
-                    value={item.question.content}
-                    onChange={(e) =>
-                      handleQuestionChange(
-                        questionIndex,
-                        "content",
-                        e.target.value
-                      )
-                    }
-                  />
-                  <select
-                    value={item.question.type}
-                    onChange={(e) =>
-                      handleQuestionChange(
-                        questionIndex,
-                        "type",
-                        e.target.value
-                      )
-                    }
-                  >
-                    <option value="">Select Question Type</option>
-                    {questionType.map((type, i) => (
-                      <option key={i} value={type}>
-                        {type === "lab" && "แลปคำถาม"}
-                        {type === "lab-w" && "แลปจำลองสถานการณ์"}
-                        {type === "pre" && "แบบทดสอบก่อนเรียน"}
-                        {type === "post" && "แบบทดสอบหลังเรียน"}
-                      </option>
-                    ))}
-                  </select>
+
+                  <div className={style["input-wrapper"]}>
+                    <input
+                      type="text"
+                      placeholder="Please enter question here."
+                      value={item.question.content}
+                      onChange={(e) =>
+                        handleQuestionChange(
+                          questionIndex,
+                          "content",
+                          e.target.value
+                        )
+                      }
+                    />
+                    <select
+                      value={item.question.type}
+                      onChange={(e) =>
+                        handleQuestionChange(
+                          questionIndex,
+                          "type",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">Select Question Type</option>
+                      {questionType.map((type, i) => (
+                        <option key={i} value={type}>
+                          {type === "lab" && "แลปคำถาม"}
+                          {type === "lab-w" && "แลปจำลองสถานการณ์"}
+                          {type === "pre" && "แบบทดสอบก่อนเรียน"}
+                          {type === "post" && "แบบทดสอบหลังเรียน"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   {item.question.type === "lab-w" && (
                     <div className={style["lab-upload-section"]}>
@@ -493,39 +539,43 @@ function EditSubject() {
               {item.answers.map((answer, answerIndex) => (
                 <div key={answerIndex} className={style["answer-item"]}>
                   <div className={style["answer-input-group"]}>
-                    <input
-                      type="text"
-                      placeholder="Please enter answer here."
-                      value={answer.content}
-                      onChange={(e) =>
-                        handleQuestionChange(
-                          questionIndex,
-                          "content",
-                          e.target.value,
-                          true,
-                          answerIndex
-                        )
-                      }
-                    />
-                    <select
-                      value={answer.type}
-                      onChange={(e) =>
-                        handleQuestionChange(
-                          questionIndex,
-                          "type",
-                          e.target.value,
-                          true,
-                          answerIndex
-                        )
-                      }
-                    >
-                      <option value="">Select Answer Type</option>
-                      {answerType.map((type, i) => (
-                        <option key={i} value={type}>
-                          {type === 1 ? "คำตอบ" : "ตัวเลือก"}
-                        </option>
-                      ))}
-                    </select>
+                    
+                    <div className={style["answer-input"]}>
+                      <input
+                        type="text"
+                        placeholder="Please enter answer here."
+                        value={answer.content}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            "content",
+                            e.target.value,
+                            true,
+                            answerIndex
+                          )
+                        }
+                      />
+                      <select
+                        value={answer.type}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            "type",
+                            e.target.value,
+                            true,
+                            answerIndex
+                          )
+                        }
+                      >
+                        <option value="">Select Answer Type</option>
+                        {answerType.map((type, i) => (
+                          <option key={i} value={type}>
+                            {type === 1 ? "คำตอบ" : "ตัวเลือก"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
                     <button
                       className={style["delete-answer-button"]}
                       onClick={() => deleteAnswer(questionIndex, answerIndex)}
@@ -567,6 +617,15 @@ function EditSubject() {
               Add Question
             </button>
           </div>
+        </div>
+
+        <div className={style["button-container"]}>
+          <button onClick={() => navigate(`/edit-course/${courseId}`)}>
+            Back
+          </button>
+          <button onClick={saveSubjectData}>
+            Save
+          </button>
         </div>
       </div>
     </div>

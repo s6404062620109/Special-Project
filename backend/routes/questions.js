@@ -1,4 +1,6 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const db = require("./database");
 
 const router = express.Router();
@@ -74,5 +76,48 @@ router.get("/getAlltype", (req, res) => {
   });
 });
 
+router.delete("/:questionId", (req, res) => {
+  const { questionId } = req.params;
+
+  db.query("SELECT type FROM question WHERE id = ?", [questionId], (err, result) => {
+    if (err) {
+      console.error("Database select error:", err);
+      return res.status(500).json({ message: "Database select error" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Question not found." });
+    }
+
+    const questionType = result[0].type;
+
+    db.query("DELETE FROM answer WHERE questionId = ?", [questionId], (err) => {
+      if (err) {
+        console.error("Database delete error:", err);
+        return res.status(500).json({ message: "Database delete error" });
+      }
+
+      db.query("DELETE FROM question WHERE id = ?", [questionId], (err) => {
+        if (err) {
+          console.error("Database delete error:", err);
+          return res.status(500).json({ message: "Database delete error" });
+        }
+
+        if (questionType === "lab-w") {
+          const labFolderPath = path.join(__dirname, `../lab/q${questionId}`);
+
+          if (fs.existsSync(labFolderPath)) {
+            fs.rmdirSync(labFolderPath, { recursive: true });
+            console.log(`Deleted lab folder: ${labFolderPath}`);
+          } else {
+            console.log(`Lab folder not found: ${labFolderPath}`);
+          }
+        }
+
+        res.status(200).json({ message: "Question deleted successfully" });
+      });
+    });
+  });
+});
 
 module.exports = router;

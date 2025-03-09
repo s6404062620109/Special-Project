@@ -380,38 +380,41 @@ function AddSubject() {
               <div className={style["question-header"]}>
                 <div className={style["question-input-group"]}>
                   <p>{questionIndex + 1}.</p>
-                  <input
-                    type="text"
-                    placeholder="Please enter question here."
-                    value={item.question.content}
-                    onChange={(e) =>
-                      handleQuestionChange(
-                        questionIndex,
-                        "content",
-                        e.target.value
-                      )
-                    }
-                  />
-                  <select
-                    value={item.question.type}
-                    onChange={(e) =>
-                      handleQuestionChange(
-                        questionIndex,
-                        "type",
-                        e.target.value
-                      )
-                    }
-                  >
-                    <option value="">Select Question Type</option>
-                    {questionType.map((type, i) => (
-                      <option key={i} value={type}>
-                        {type === "lab" && "แลปคำถาม"}
-                        {type === "lab-w" && "แลปจำลองสถานการณ์"}
-                        {type === "pre" && "แบบทดสอบก่อนเรียน"}
-                        {type === "post" && "แบบทดสอบหลังเรียน"}
-                      </option>
-                    ))}
-                  </select>
+
+                  <div className={style["input-wrapper"]}>
+                    <input
+                      type="text"
+                      placeholder="Please enter question here."
+                      value={item.question.content}
+                      onChange={(e) =>
+                        handleQuestionChange(
+                          questionIndex,
+                          "content",
+                          e.target.value
+                        )
+                      }
+                    />
+                    <select
+                      value={item.question.type}
+                      onChange={(e) =>
+                        handleQuestionChange(
+                          questionIndex,
+                          "type",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">Select Question Type</option>
+                      {questionType.map((type, i) => (
+                        <option key={i} value={type}>
+                          {type === "lab" && "แลปคำถาม"}
+                          {type === "lab-w" && "แลปจำลองสถานการณ์"}
+                          {type === "pre" && "แบบทดสอบก่อนเรียน"}
+                          {type === "post" && "แบบทดสอบหลังเรียน"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   {item.question.type === "lab-w" && (
                     <div className={style["lab-upload-section"]}>
@@ -442,39 +445,43 @@ function AddSubject() {
               {item.answers.map((answer, answerIndex) => (
                 <div key={answerIndex} className={style["answer-item"]}>
                   <div className={style["answer-input-group"]}>
-                    <input
-                      type="text"
-                      placeholder="Please enter answer here."
-                      value={answer.content}
-                      onChange={(e) =>
-                        handleQuestionChange(
-                          questionIndex,
-                          "content",
-                          e.target.value,
-                          true,
-                          answerIndex
-                        )
-                      }
-                    />
-                    <select
-                      value={answer.type}
-                      onChange={(e) =>
-                        handleQuestionChange(
-                          questionIndex,
-                          "type",
-                          e.target.value,
-                          true,
-                          answerIndex
-                        )
-                      }
-                    >
-                      <option value="">Select Answer Type</option>
-                      {answerType.map((type, i) => (
-                        <option key={i} value={type}>
-                          {type === 1 ? "คำตอบ" : "ตัวเลือก"}
-                        </option>
-                      ))}
-                    </select>
+                    
+                    <div className={style["answer-input"]}>
+                      <input
+                        type="text"
+                        placeholder="Please enter answer here."
+                        value={answer.content}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            "content",
+                            e.target.value,
+                            true,
+                            answerIndex
+                          )
+                        }
+                      />
+                      <select
+                        value={answer.type}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            "type",
+                            e.target.value,
+                            true,
+                            answerIndex
+                          )
+                        }
+                      >
+                        <option value="">Select Answer Type</option>
+                        {answerType.map((type, i) => (
+                          <option key={i} value={type}>
+                            {type === 1 ? "คำตอบ" : "ตัวเลือก"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
                     <button
                       className={style["delete-answer-button"]}
                       onClick={() => deleteAnswer(questionIndex, answerIndex)}
