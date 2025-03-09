@@ -81,7 +81,6 @@ function NavbarTeach() {
         <div className={style.functionsContainer}>
           <Link to="/my-courses">MY COURSES</Link>
           <Link>FAQ</Link>
-          <Link>NEWS</Link>
         </div>
 
         <div
@@ -93,7 +92,6 @@ function NavbarTeach() {
           <div onClick={() => navigate("/")}>Home</div>
           <div onClick={() => navigate("/my-courses")}>MY COURSES</div>
           <div>FAQ</div>
-          <div>NEWS</div>
         </div>
 
         {userData.name !== null && (

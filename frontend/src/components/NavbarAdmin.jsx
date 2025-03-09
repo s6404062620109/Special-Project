@@ -79,7 +79,6 @@ function NavbarAdmin() {
         <div className={style.functionsContainer}>
           <Link to="/manageUser">USERS</Link>
           <Link>FAQ</Link>
-          <Link>NEWS</Link>
         </div>
 
         <div
@@ -91,7 +90,6 @@ function NavbarAdmin() {
           <div onClick={() => navigate("/")}>Home</div>
           <div onClick={() => navigate("/manageUser")}>USERS</div>
           <div>FAQ</div>
-          <div>NEWS</div>
         </div>
 
         {userData.name !== null && (

@@ -79,7 +79,6 @@ function Navbar() {
         <div className={style.functionsContainer}>
           <Link to='/courses'>COURSES</Link>
           <Link>FAQ</Link>
-          <Link>NEWS</Link>
         </div>
 
         <div 
@@ -89,7 +88,6 @@ function Navbar() {
           <div onClick={() => navigate('/')}>Home</div>
           <div onClick={() => navigate('/courses')}>COURSES</div>
           <div>FAQ</div>
-          <div>NEWS</div>
         </div>
 
         {userData.name !== null &&(
