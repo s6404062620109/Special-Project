@@ -17,6 +17,8 @@ function EditSubject() {
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [existingImageUrls, setExistingImageUrls] = useState([]);
   const [questionType, setQuestionType] = useState([]);
   const [questionInput, setQuestionInput] = useState([]);
   const [answerType, setAnswerType] = useState([]);
@@ -24,9 +26,7 @@ function EditSubject() {
 
   const fetchSubjectData = async () => {
     try {
-      const response = await backend.get(
-        `/subjects/getSubject/${courseId}/${subjectId}`
-      );
+      const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`);
 
       if (response.status === 200) {
         const { jsonData, result } = response.data;
@@ -42,6 +42,12 @@ function EditSubject() {
         };
 
         setSubjectInput(subjectData);
+        if (result[0].images) {
+          const imagesArray = result[0].images
+            .split(",")
+            .map((img) => img.trim());
+          setExistingImages(imagesArray);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -94,6 +100,53 @@ function EditSubject() {
     fetchSubjectData();
     fetchQuestions();
   }, []);
+
+  useEffect(() => {
+    const fetchImageUrls = async () => {
+      try {
+        const urls = await Promise.all(
+          existingImages.map(async (image) => {
+            const response = await backend.get(
+              `/imgrender/getContentImage/${courseId}/${subjectId}/${image}`
+            );
+            return response.data.url
+              ? `${import.meta.env.VITE_API_BASE_URL}${response.data.url}`
+              : null;
+          })
+        );
+        setExistingImageUrls(urls.filter((url) => url !== null));
+      } catch (error) {
+        console.error("Error fetching image URLs:", error);
+      }
+    };
+
+    if (existingImages.length > 0) {
+      fetchImageUrls();
+    }
+  }, [existingImages, courseId, subjectId]);
+
+  const deleteImage = async (imageName) => {
+    try {
+      const response = await backend.delete(`/courses/deleteImgFile/${courseId}/${subjectId}/${imageName}`
+      );
+
+      if (response.status === 200) {
+        alert(response.data.message);
+        setExistingImages(existingImages.filter((img) => img !== imageName));
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      alert("Failed to delete image");
+    }
+  };
+
+  const deleteSubcontent = (index) => {
+    const updatedSubcontent = subjectInput.subcontent.filter((_, i) => i !== index);
+    setSubjectInput({
+      ...subjectInput,
+      subcontent: updatedSubcontent,
+    });
+  };
 
   const addSubcontent = () => {
     setSubjectInput({
@@ -154,7 +207,7 @@ function EditSubject() {
     setQuestionInput(updatedQuestions);
     console.log(questionIndex);
     console.log(deletedQuestion);
-    
+
     if (!deletedQuestion[0]?.question?.id) {
       console.error("Question ID is undefined:", deletedQuestion);
       alert("Failed to delete question: Question ID is missing");
@@ -162,7 +215,9 @@ function EditSubject() {
     }
 
     try {
-      const response = await backend.delete(`/question/${deletedQuestion[0].question.id}`);
+      const response = await backend.delete(
+        `/question/${deletedQuestion[0].question.id}`
+      );
       if (response.status === 200) {
         alert(response.data.message);
       }
@@ -315,7 +370,9 @@ function EditSubject() {
     });
 
     try {
-      const response = await backend.post(`/teacher/updateSubject/${courseId}/${subjectId}`, formData,
+      const response = await backend.post(
+        `/teacher/updateSubject/${courseId}/${subjectId}`,
+        formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
@@ -363,6 +420,24 @@ function EditSubject() {
                   <button onClick={() => removeImage(index)}>Remove</button>
                 </div>
               ))}
+            </div>
+
+            <div className={style["Existing-wrapper"]}>
+              <h3>Existing Images</h3>
+              <div className={style["image-preview"]}>
+                {existingImageUrls.map((url, index) => (
+                  <div key={index} className={style["image-item"]}>
+                    <img
+                      src={url}
+                      alt={`Existing Image ${index}`}
+                      className={style["preview-image"]}
+                    />
+                    <button onClick={() => deleteImage(existingImages[index])}>
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -436,6 +511,16 @@ function EditSubject() {
                     name="description"
                   />
                 </div>
+
+                <button
+                  className={style["delete-subcontent-button"]}
+                  onClick={() => deleteSubcontent(index)}
+                >
+                  <img
+                    alt="Delete subcontent input"
+                    src="/My_Coursesp/Bin.svg"
+                  />
+                </button>
               </div>
             ))}
 
@@ -539,7 +624,6 @@ function EditSubject() {
               {item.answers.map((answer, answerIndex) => (
                 <div key={answerIndex} className={style["answer-item"]}>
                   <div className={style["answer-input-group"]}>
-                    
                     <div className={style["answer-input"]}>
                       <input
                         type="text"
@@ -575,7 +659,7 @@ function EditSubject() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <button
                       className={style["delete-answer-button"]}
                       onClick={() => deleteAnswer(questionIndex, answerIndex)}
@@ -623,9 +707,7 @@ function EditSubject() {
           <button onClick={() => navigate(`/edit-course/${courseId}`)}>
             Back
           </button>
-          <button onClick={saveSubjectData}>
-            Save
-          </button>
+          <button onClick={saveSubjectData}>Save</button>
         </div>
       </div>
     </div>

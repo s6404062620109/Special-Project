@@ -380,6 +380,26 @@
     background: #218838;
 }
 
+.sub-content{
+    position: relative;
+}
+
+.delete-subcontent-button {
+    background: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+  
+.delete-subcontent-button:hover {
+    border: none;
+}
+
+.delete-subcontent-button img {
+    width: 16px;
+    height: 16px;
+}
+
 @media screen and (max-width: 768px) {
     .header{
         justify-content: center;

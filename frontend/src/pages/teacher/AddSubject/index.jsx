@@ -39,6 +39,14 @@ function AddSubject() {
     fetchQuestionType();
   }, []);
 
+  const deleteSubcontent = (index) => {
+    const updatedSubcontent = subjectInput.subcontent.filter((_, i) => i !== index);
+    setSubjectInput({
+      ...subjectInput,
+      subcontent: updatedSubcontent,
+    });
+  };
+
   const addSubcontent = () => {
     setSubjectInput({
       ...subjectInput,
@@ -131,16 +139,16 @@ function AddSubject() {
   const handleFileUpload = (e, questionIndex) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (event) => {
-        const content = event.target.result;
-        const isValid = content.includes("<!-- INSERT ANSWER HERE -->");
-        
-        const updatedQuestions = [...questionInput];
-        updatedQuestions[questionIndex].labFile = file;
-        updatedQuestions[questionIndex].isValidFile = isValid;
-        setQuestionInput(updatedQuestions);
+      const content = event.target.result;
+      const isValid = content.includes("<!-- INSERT ANSWER HERE -->");
+
+      const updatedQuestions = [...questionInput];
+      updatedQuestions[questionIndex].labFile = file;
+      updatedQuestions[questionIndex].isValidFile = isValid;
+      setQuestionInput(updatedQuestions);
     };
     reader.readAsText(file);
   };
@@ -180,8 +188,8 @@ function AddSubject() {
       return;
     }
 
-    const hasPreTest = questionInput.some(q => q.question.type === "pre");
-    const hasPostTest = questionInput.some(q => q.question.type === "post");
+    const hasPreTest = questionInput.some((q) => q.question.type === "pre");
+    const hasPostTest = questionInput.some((q) => q.question.type === "post");
 
     if (!hasPreTest) {
       alert("ต้องมีคำถามประเภท 'แบบทดสอบก่อนเรียน' อย่างน้อย 1 ข้อ");
@@ -192,10 +200,12 @@ function AddSubject() {
       return;
     }
     for (let i = 0; i < questionInput.length; i++) {
-      const hasAnswer = questionInput[i].answers.some(ans => ans.type === "1");
+      const hasAnswer = questionInput[i].answers.some(
+        (ans) => ans.type === "1"
+      );
       if (!hasAnswer) {
-          alert(`คำถามที่ ${i + 1} ต้องมีคำตอบประเภท "คำตอบ" อย่างน้อย 1 คำตอบ`);
-          return;
+        alert(`คำถามที่ ${i + 1} ต้องมีคำตอบประเภท "คำตอบ" อย่างน้อย 1 คำตอบ`);
+        return;
       }
     }
 
@@ -220,7 +230,8 @@ function AddSubject() {
     });
 
     try {
-      const response = await backend.post(`/teacher/saveSubject/${courseId}`,
+      const response = await backend.post(
+        `/teacher/saveSubject/${courseId}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -342,6 +353,16 @@ function AddSubject() {
                     name="description"
                   />
                 </div>
+
+                <button
+                  className={style["delete-subcontent-button"]}
+                  onClick={() => deleteSubcontent(index)}
+                >
+                  <img
+                    alt="Delete subcontent input"
+                    src="/My_Coursesp/Bin.svg"
+                  />
+                </button>
               </div>
             ))}
 
@@ -445,7 +466,6 @@ function AddSubject() {
               {item.answers.map((answer, answerIndex) => (
                 <div key={answerIndex} className={style["answer-item"]}>
                   <div className={style["answer-input-group"]}>
-                    
                     <div className={style["answer-input"]}>
                       <input
                         type="text"
@@ -481,7 +501,7 @@ function AddSubject() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <button
                       className={style["delete-answer-button"]}
                       onClick={() => deleteAnswer(questionIndex, answerIndex)}
@@ -508,10 +528,7 @@ function AddSubject() {
                   className={style["delete-question-button"]}
                   onClick={() => deleteQuestion(questionIndex)}
                 >
-                  <img
-                    alt="Delete question input"
-                    src="/My_Coursesp/Bin.svg"
-                  />
+                  <img alt="Delete question input" src="/My_Coursesp/Bin.svg" />
                   Delete Question
                 </button>
               </div>
@@ -529,7 +546,9 @@ function AddSubject() {
         </div>
 
         <div className={style["button-container"]}>
-          <button onClick={() => navigate(`/edit-course/${courseId}`)}>Back</button>
+          <button onClick={() => navigate(`/edit-course/${courseId}`)}>
+            Back
+          </button>
           <button onClick={saveSubjectData}>Save</button>
         </div>
       </div>

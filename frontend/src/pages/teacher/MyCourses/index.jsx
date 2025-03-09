@@ -170,14 +170,14 @@ function MyCourses() {
                   <td>
                     <button onClick={() => navigate(`/edit-course/${course.id}`)}>
                       <img src='/My_Coursesp/Edit.svg' alt='Edit button' />
-                      Edit
+                      <p>Edit</p>
                     </button>
                   </td>
 
                   <td>
                     <button onClick={() => handleDeleteCourse(course.id)}>
                       <img src='/My_Coursesp/Bin.svg' alt='Delete button' />
-                      Delete
+                      <p>Delete</p>
                     </button>
                   </td>
                 </tr>

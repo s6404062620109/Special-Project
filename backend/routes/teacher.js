@@ -262,7 +262,6 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
     const { name, data, questions } = req.body;
     const uploadedFiles = req.files;
 
-    // ตรวจสอบว่าข้อมูลถูกส่งมาหรือไม่
     if (!data || !questions) {
       return res.status(400).json({ message: "Data and questions are required." });
     }
@@ -270,7 +269,6 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
     let content, subcontent, summary, questionData;
 
     try {
-      // แปลงข้อมูล JSON
       const parsedData = JSON.parse(data);
       content = parsedData.content;
       subcontent = parsedData.subcontent;
@@ -281,15 +279,13 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
     }
 
     try {
-      // แปลงคำถาม JSON
       questionData = JSON.parse(questions);
     } catch (error) {
       console.error("Error parsing questions:", error);
       return res.status(400).json({ message: "Invalid questions format." });
     }
 
-    // ตรวจสอบว่ามีการเปลี่ยนแปลงใน name หรือ content หรือไม่
-    db.query("SELECT name FROM subject WHERE id = ? AND courseId = ?", [subjectId, courseId], (err, result) => {
+    db.query("SELECT name, images FROM subject WHERE id = ? AND courseId = ?", [subjectId, courseId], (err, result) => {
       if (err) {
         console.error("Database select error:", err);
         return res.status(500).json({ message: "Database select error" });
@@ -302,7 +298,6 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
       const currentSubject = result[0];
       const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
 
-      // อัปเดตไฟล์ content.json
       const jsonData = { content, subcontent, summary };
       const jsonFilePath = path.join(subjectFolderPath, "content.json");
       fs.writeFileSync(jsonFilePath, JSON.stringify(jsonData, null, 2));
@@ -310,32 +305,32 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
       let updateSubjectQuery = "UPDATE subject SET";
       const updateParams = [];
 
-      // ตรวจสอบการเปลี่ยนแปลงใน name
       if (name && name !== currentSubject.name) {
         updateSubjectQuery += " name = ?,";
         updateParams.push(name);
       }
 
-      // ถ้ามีการอัปโหลดไฟล์รูปภาพใหม่
       const imageFiles = uploadedFiles.filter(file => file.fieldname === "images");
       if (imageFiles.length > 0) {
+        const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+        createFolder(subjectFolderPath);
+
         const imageFileNames = imageFiles.map((file) => file.filename);
-        const imageFileNamesString = imageFileNames.join(",");
+        const existingImages = currentSubject.images 
+          ? currentSubject.images.split(",").filter(img => img.trim() !== "") 
+          : [];
 
-        updateSubjectQuery += " images = ?,";
-        updateParams.push(imageFileNamesString);
-
-        // ลบไฟล์รูปภาพเก่าที่ไม่จำเป็น
-        const existingImages = currentSubject.images ? currentSubject.images.split(",") : [];
-        existingImages.forEach((image) => {
-          const imagePath = path.join(subjectFolderPath, image);
-          if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-          }
+        imageFiles.forEach((file) => {
+          const oldPath = file.path;
+          const newPath = path.join(subjectFolderPath, file.filename);
+          fs.renameSync(oldPath, newPath);
         });
+
+        const updatedImages = [...existingImages, ...imageFileNames].join(",");
+        updateSubjectQuery += " images = ?,";
+        updateParams.push(updatedImages);
       }
 
-      // ลบเครื่องหมาย comma สุดท้ายถ้ามี
       if (updateParams.length > 0) {
         updateSubjectQuery = updateSubjectQuery.slice(0, -1);
         updateSubjectQuery += " WHERE id = ? AND courseId = ?";
@@ -349,12 +344,10 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
         });
       }
 
-      // อัปเดตหรือเพิ่มคำถามและคำตอบ
       questionData.forEach((question, index) => {
         const { question: q, answers } = question;
 
         if (q.id) {
-          // อัปเดตคำถามที่มีอยู่
           db.query("UPDATE question SET content = ?, type = ? WHERE id = ?",
             [q.content, q.type, q.id], (err) => {
               if (err) {
@@ -362,30 +355,33 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
                 return res.status(500).json({ message: "Database update error" });
               }
 
-              // อัปเดตคำตอบที่มีอยู่
               answers.forEach((answer) => {
-                if (answer.id) {
-                  db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?",
-                    [answer.content, answer.type, answer.id], (err) => {
-                      if (err) {
-                        console.error("Database update error:", err);
-                        return res.status(500).json({ message: "Database update error" });
-                      }
-                    });
-                } else {
-                  // เพิ่มคำตอบใหม่
-                  db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
-                    [answer.content, answer.type, q.id], (err) => {
-                      if (err) {
-                        console.error("Database insert error:", err);
-                        return res.status(500).json({ message: "Database insert error" });
-                      }
-                    });
-                }
+                db.query("SELECT id FROM answer WHERE content = ? AND type = ? AND questionId = ?",
+                  [answer.content, answer.type, q.id],
+                  (err, result) => {
+                    if (err) {
+                      console.error("Database select error:", err);
+                      return res.status(500).json({ message: "Database select error" });
+                    }
+
+                    if (result.length === 0) {
+                      db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                        [answer.content, answer.type, q.id],
+                        (err) => {
+                          if (err) {
+                            console.error("Database insert error:", err);
+                            return res.status(500).json({ message: "Database insert error" });
+                          }
+                        }
+                      );
+                    }
+                  }
+                );
               });
             });
-        } else {
-          // ตรวจสอบว่าคำถามนี้มีอยู่แล้วหรือไม่ (ป้องกันการเพิ่มซ้ำ)
+        } 
+
+        else {
           db.query("SELECT id FROM question WHERE content = ? AND type = ? AND subjectId = ?",
             [q.content, q.type, subjectId], (err, result) => {
               if (err) {
@@ -397,7 +393,6 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
                 return res.status(500).json({ message: "Question already exists" });
               } 
               else {
-                // เพิ่มคำถามใหม่
                 db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
                   [q.content, q.type, subjectId], (err, insertResult) => {
                     if (err) {
@@ -407,7 +402,6 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
 
                     const questionId = insertResult.insertId;
 
-                    // เพิ่มคำตอบใหม่สำหรับคำถามนี้
                     answers.forEach((answer) => {
                       db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
                         [answer.content, answer.type, questionId], (err) => {
@@ -418,11 +412,10 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
                         });
                     });
 
-                    // ถ้ามีการอัปโหลดไฟล์แลปใหม่
                     const labFile = uploadedFiles.find(file => file.fieldname === `labFile-${index}`);
                     if (q.type === "lab-w" && labFile) {
                       const labFilePath = path.join(__dirname, `../lab/q${questionId}`);
-                      fs.mkdirSync(labFilePath, { recursive: true }); // สร้างโฟลเดอร์ถ้ายังไม่มี
+                      fs.mkdirSync(labFilePath, { recursive: true });
 
                       try {
                         fs.copyFileSync(labFile.path, path.join(labFilePath, "index.html"));
