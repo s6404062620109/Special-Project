@@ -14,8 +14,8 @@ function MyCourses() {
       role:null,
       profile_img:null,
     });
-    const [courseIcons, setCourseIcons] = useState({});
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [ courseIcons, setCourseIcons ] = useState({});
+    const [ isPopupOpen, setIsPopupOpen ] = useState(false);
     const emailrefStorage = localStorage.getItem("email");
     const navigate = useNavigate();
 

@@ -1,0 +1,327 @@
+.manageuser-container {
+    width: 100%;
+}
+
+.container {
+    width: 70%;
+    height: auto;
+    min-height: 600px;
+    border-radius: 12px;
+    margin: 50px auto;
+    background: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.head {
+    width: 90%;
+    margin: 0 auto;
+}
+
+.head > h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.filter-container {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.searchInput {
+    width: 60%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.filterSelect {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-container th, .table-container td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-container th {
+    background: #2c3e50;
+    color: white;
+}
+
+.table-container tr:hover {
+    background: #f1f1f1;
+}
+
+.table-container table tr > td:nth-child(4){
+    margin: auto;
+    display: flex;
+    justify-content: space-around;
+}
+
+.table-container button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease, transform 0.2s ease;
+
+    p{
+        margin: 0;
+    }
+}
+  
+.table-container button.editButton {
+    background: #2196F3; 
+    color: white;
+}
+  
+.table-container button.editButton:hover {
+    background: #1976D2; 
+    transform: translateY(-2px);
+}
+  
+.table-container button.editButton:active {
+    transform: translateY(0);
+}
+
+.table-container button.deleteButton {
+    background: #f44336; 
+    color: white;
+}
+  
+.table-container button.deleteButton:hover {
+    background: #d32f2f; 
+    transform: translateY(-2px);
+}
+  
+.table-container button.deleteButton:active {
+    transform: translateY(0);
+}
+  
+.table-container button img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+}
+
+.add-button {
+    position: fixed;
+    right: 5%;
+    bottom: 5%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 12px 24px;
+    background: linear-gradient(to right, #21D4FD, #2152FF);
+    border-radius: 50px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.add-button img {
+    width: 24px;
+    height: 24px;
+}
+
+.add-button p {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+.add-button:hover {
+    background: linear-gradient(to right, #2152FF, #21D4FD);
+    border: none;
+}
+
+.add-button:hover p {
+    opacity: 1;
+    width: auto;
+}
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popupContent {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.popupContent h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.inputField, .selectField {
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.popupButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    div:nth-child(2){
+        width: 40%;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+}
+
+.confirmButton {
+    background: #4CAF50; 
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.confirmButton:hover {
+    background: #45a049;
+}
+
+.cancelButton {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.cancelButton:hover {
+    background: #d32f2f;
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.5s ease, fadeOut 0.5s ease 2.5s;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+  
+.toast.success {
+    background: #4CAF50; 
+    color: white;
+}
+  
+.toast.error {
+    background: #f44336;
+    color: white;
+}
+  
+.toast::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+}
+  
+.toast.success::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg>');
+}
+  
+.toast.error::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>');
+}
+  
+@keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+}
+  
+@keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(100%);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .table-container table tr > td:nth-child(3), .table-container table thead th:nth-child(3){
+        display: none;
+    }
+
+    .table-container button > p{
+        display: none;
+    }
+}

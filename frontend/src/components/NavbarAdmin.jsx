@@ -89,7 +89,7 @@ function NavbarAdmin() {
           onClick={() => setSidebarVisible(!sidebarVisible)}
         >
           <div onClick={() => navigate("/")}>Home</div>
-          <div onClick={() => navigate("/courses")}>COURSES</div>
+          <div onClick={() => navigate("/manageUser")}>USERS</div>
           <div>FAQ</div>
           <div>NEWS</div>
         </div>
