@@ -89,7 +89,7 @@
         font-size: 16px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;  
+        transition: background-color 0.3s ease, transform 0.2s ease;
     }
     
     button:hover {
@@ -112,6 +112,7 @@
 
     div button:nth-child(2), button:last-child{
         display: flex;
+        justify-content: center;
         gap: 10px;
         background: #f44336; 
         color: white;
@@ -139,4 +140,23 @@
         background: #fb8c00;
     }
 
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        width: 90%;
+    }
+
+    .footer{
+        flex-direction: column;
+        gap: 10px;
+
+        div{
+            justify-content: space-between;
+        }
+
+        div > button{
+            width: 50%;
+        }
+    }
 }

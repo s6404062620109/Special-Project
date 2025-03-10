@@ -178,7 +178,7 @@ router.post("/login", (req, res) => {
                 const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "4h" });
 
                 res.cookie("authToken", token, {
-                  maxAge: 3600000,
+                  maxAge: 4 * 60 * 60 * 1000,
                   secure: true,
                   httpOnly: true,
                   sameSite: 'none',
@@ -395,8 +395,5 @@ router.put("/updateProfile/:id", async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
-
-module.exports = router;
-
 
 module.exports = router;
