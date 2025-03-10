@@ -104,7 +104,7 @@ function NavbarTeach() {
 
               <img
                 alt="Profile Image"
-                src="/Navbar_Assets/Profile.png"
+                src={userData.profile_img ? userData.profile_img : '/Navbar_Assets/Profile.png'}
                 onClick={() => setMenuVisible(!menuVisible)}
               />
             </div>
@@ -112,20 +112,20 @@ function NavbarTeach() {
             {menuVisible && (
               <div className={style.functions}>
                 <ul>
-                  <li>
-                    Setting
+                  <li onClick={() => navigate(`/profile`)}>
                     <img
-                      alt="Setting Button"
-                      src="/Navbar_Assets/Setting.svg"
+                      alt='Profile Button'
+                      src='/Navbar_Assets/User.svg'
                     />
+                    <p>Profile</p>
                   </li>
 
                   <li onClick={handleLogout}>
-                    Log Out
                     <img
-                      alt="LogOut Button"
-                      src="/Navbar_Assets/Sign_out.svg"
+                      alt='LogOut Button'
+                      src='/Navbar_Assets/Sign_out.svg'
                     />
+                    <p>Log Out</p>
                   </li>
                 </ul>
               </div>

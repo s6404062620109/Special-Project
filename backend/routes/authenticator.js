@@ -330,4 +330,73 @@ router.put("/reset_password", async (req, res) => {
   });
 });
 
+router.get("/getVerifiedExpired/:email", (req, res) => {
+  const authToken = req.cookies.authToken;
+  const { email } = req.params;
+
+  if (!authToken) {
+    return res.status(403).json({ message: "Authorization error! No token provided." });
+  }
+
+  db.query("SELECT id, email, verified_expired, verified_key FROM user WHERE email = ?",
+    [email], (err, users) => {
+      if (err) {
+        return res.status(500).json({ message: "Database error while fetching user data." });
+      }
+
+      if (users.length === 0) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      const user = users[0];
+
+      try {
+        const decoded = jwt.verify(authToken, user.verified_key);
+        if (decoded.id === user.id) {
+          return res.status(200).json({
+            verified_expired: user.verified_expired,
+          });
+        }
+      } catch (error) {
+        console.log("Invalid token for user:", error);
+        return res.status(403).json({ message: "Invalid or expired token." });
+      }
+
+      return res.status(403).json({ message: "Invalid or expired token." });
+    }
+  );
+});
+
+router.put("/updateProfile/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, email, profile_img } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ message: "Name and email are required." });
+  }
+
+  try {
+
+    db.query("UPDATE user SET name = ?, email = ?, profile_img = ? WHERE id = ?",  
+      [ name, email, profile_img, id ], (error, results) => {
+      if (error) {
+        console.error("Database error:", error);
+        return res.status(500).json({ message: "Database error." });
+      }
+
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      res.status(200).json({ message: "Profile updated successfully!" });
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+module.exports = router;
+
+
 module.exports = router;

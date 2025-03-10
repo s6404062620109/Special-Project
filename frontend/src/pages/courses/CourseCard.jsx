@@ -158,7 +158,7 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
       </td>
 
       <td>
-        <p>{id}. {name}</p>
+        <p>{name}</p>
         {filteredHistory.length > 0 ? (
           <>
             {filteredHistory.map((enroll) => (

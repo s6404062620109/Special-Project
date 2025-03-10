@@ -60,7 +60,7 @@ function CourseBoard({ enrollment }) {
     return (
         <div className={style.CourseBoard}>
             <div className={style.head}>
-                <p>COURSES</p>
+                <p>My Courses</p>
             </div>
 
             {courses.length > 0 ? (
@@ -85,7 +85,7 @@ function CourseBoard({ enrollment }) {
                                     </td>
 
                                     <td>
-                                        <p>{course.courseId}. {course.name}</p>
+                                        <p>{course.name}</p>
                                         <Processbar
                                             pretest_complete={course.pretest_complete}
                                             posttest_complete={course.posttest_complete}

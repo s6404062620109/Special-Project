@@ -37,10 +37,10 @@ function Processbar({ pretest_complete, posttest_complete, completed_labs, total
 
   return (
     <div className={style.container}>
-      <label>{isLoading ? "Loading..." : `${percent.toFixed(2)}%`}</label>
+      <label>{isLoading ? "Loading..." : `${percent.toFixed(0)}%`}</label>
       <div
         className={`${style.process} ${isLoading ? style.loading : ""}`}
-        style={{ width: isLoading ? "100%" : `${percent.toFixed(2)}%` }}
+        style={{ width: isLoading ? "100%" : `${percent.toFixed(0)}%` }}
       ></div>
     </div>
   );

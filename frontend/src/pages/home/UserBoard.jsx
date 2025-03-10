@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import style from './css/userboard.module.css';
 
 function UserBoard({ email, name , role, profile_img }) {
     const [ profileImg, setProfileImg ] = useState('');
 
-    if(profileImg === ''){
-        setProfileImg('/Navbar_Assets/Profile.png');
-    }
+    useEffect(() => {
+        setProfileImg(profile_img || '/Navbar_Assets/Profile.png');
+    },[profile_img])
+    
+    
   return (
     <div className={style.userBoard}>
         <div className={style["profile-wrap"]}>

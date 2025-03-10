@@ -4,9 +4,8 @@ import backend from './api/backend';
 
 import './App.css'
 
-import Navbar from './components/Navbar';
-
 /*  */
+import Navbar from './components/Navbar';
 import Home from './pages/home';
 import Courses from './pages/courses';
 import Register from './pages/authenticate/register';
@@ -18,6 +17,7 @@ import PostTest from './pages/test/post';
 import RenderLab from './pages/test/lab';
 import SetPassword from './pages/authenticate/register/Setpassword';
 import Forgot from './pages/authenticate/forgot';
+import Profile from './pages/Profile';
 /*  */
 
 /* */ 
@@ -32,6 +32,7 @@ import EditSubject from './pages/teacher/EditSubject';
 import NavbarAdmin from './components/NavbarAdmin';
 import ManageUser from './pages/admin/manageuser';
 /* */
+
 
 function App() {
   const [userData, setUserData] = useState({
@@ -93,9 +94,7 @@ function App() {
               <Route path='/forgot-password' element={<Forgot/>}/>
               <Route path='/reset-password' element={<Reset/>}/>
               <Route path='/course/:courseId' element={<CourseDetail/>}/>
-
               <Route path='/courses' element={<Courses/>}/>
-              <Route path='/course/:courseId' element={<CourseDetail/>}/>
             </Routes>
           </div>
         </div>
@@ -110,6 +109,7 @@ function App() {
               <Route path='/' element={<Home/>}/>
               <Route path='/forgot-password' element={<Forgot/>}/>
               <Route path='/reset-password' element={<Reset/>}/>
+              <Route path='/profile' element={<Profile/>}/>
 
               <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
               <Route path='/courses' element={<Courses/>}/>
@@ -129,6 +129,7 @@ function App() {
           <div className='content'>
             <Routes>
               <Route path='/' element={<Home/>}/>
+              <Route path='/profile' element={<Profile/>}/>
               <Route path='/my-courses' element={<MyCourses/>}/>
               <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
               <Route path='/add-subject/:courseId' element={<AddSubject/>}/>
@@ -145,6 +146,7 @@ function App() {
           <div className='content'>
             <Routes>
               <Route path='/' element={<Home/>}/>
+              <Route path='/profile' element={<Profile/>}/>
               <Route path='/manageUser' element={<ManageUser/>}/>
             </Routes>
           </div>
