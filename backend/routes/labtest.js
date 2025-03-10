@@ -283,58 +283,47 @@ router.get("/getLabquestion/:subjectId", (req, res) => {
   );
 });
 
-router.post("/submitLabanswer", (req, res) => {
+router.post("/submitLabanswer/:enrollmentId", (req, res) => {
+  const { enrollmentId } = req.params;
   const { answer, userId } = req.body;
   const QuestionIds = Object.keys(answer);
   const answerResults = Object.values(answer);
 
-  db.query(
-    ` SELECT progress.id, enrollment.id AS enrollmentId 
-    FROM progress 
-    INNER JOIN enrollment ON progress.enrollmentId=enrollment.id
-    WHERE questionId = ? `,[QuestionIds[0]],(error, result) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Database answer query error" });
-      }
+  db.query("SELECT * FROM answer WHERE questionId = ?", [QuestionIds[0]], (error, answerResult) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Database answer query error" });
+    }
+    if (answerResults.length === 0) {
+      return res.status(404).json({ message: "No answer found" });
+    }
 
-      db.query("SELECT * FROM answer WHERE questionId = ?", [QuestionIds[0]], (error, answerResult) => {
-        if(error){
-          console.log(error);
-          return res.status(500).json({ message: "Database answer query error" });
-        }
-        if(answerResults.length === 0){
-          return res.status(404).json({ message: "No answer found" });
-        }
+    if (answerResults[0] === answerResult[0].content) {
+      db.query("UPDATE progress SET is_completed = ?, score = 1 WHERE questionId = ? AND enrollmentId = ?",
+        [true, QuestionIds[0], enrollmentId],
+        (error) => {
+          if (error) {
+            console.log(error);
+            return res.status(500).json({ message: "Progress pretest score update error" });
+          }
 
-        if(answerResults[0] === answerResult[0].content){
-          db.query("UPDATE progress SET is_completed = ? ,score = 1 WHERE questionId = ? AND enrollmentId = ?", 
-            [true, QuestionIds[0], result[0].enrollmentId], (error) => {
+          db.query("UPDATE enrollment SET completed_labs = completed_labs + 1 WHERE id = ?",
+            [enrollmentId],
+            (error) => {
               if (error) {
-                console.log(scoreError);
-                return res.status(500).json({ message: "Progress pretest score update error" });
+                console.log(error);
+                return res.status(500).json({ message: "Enrollment lab complete update error" });
               }
 
-              db.query("UPDATE enrollment SET completed_labs = completed_labs+1 WHERE id = ?",
-                [result[0].enrollmentId], (error) => {
-                  if (error) {
-                    console.log(scoreError);
-                    return res.status(500).json({ message: "Enrollment lab complete update error" });
-                  }
-
-                  return res.status(200).json({ message: "Pass", enrollmentId: result[0].enrollmentId});
-                });
+              return res.status(200).json({ message: "Pass", enrollmentId: enrollmentId });
             }
           );
         }
-
-        else{
-          return res.status(200).json({ message: "Failed"});
-        }
-      });
+      );
+    } else {
+      return res.status(200).json({ message: "Failed" });
     }
-  );
-  
+  });
 });
 
 module.exports = router;

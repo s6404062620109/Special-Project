@@ -6,6 +6,7 @@ import backend from "../../api/backend";
 import style from "./css/coursecard.module.css";
 
 function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
+
   const [userData, setUserData] = useState({
     id: null,
     email: null,
@@ -145,31 +146,42 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
 
       <td>
         {filteredHistory.length > 0 ? (
-          filteredHistory.map((enroll, index) => (
-            <p key={index}>
-              {enroll.pretest_complete === 1 &&
-              enroll.posttest_complete === 1 &&
-              enroll.completed_labs === enroll.total_labs ? "DONE" : "WORKING"}
-            </p>
-          ))
+          (() => {
+            const latestEnroll = filteredHistory.at(-1);
+
+            return (
+              <p>
+                {latestEnroll.posttest_complete === -1
+                  ? "FAILED"
+                  : latestEnroll.pretest_complete === 1 &&
+                    latestEnroll.posttest_complete === 1 &&
+                    latestEnroll.completed_labs === latestEnroll.total_labs
+                  ? "DONE"
+                  : "WORKING"}
+              </p>
+            );
+          })()
         ) : (
           <p>-</p>
         )}
       </td>
 
+
       <td>
         <p>{name}</p>
         {filteredHistory.length > 0 ? (
-          <>
-            {filteredHistory.map((enroll) => (
+          (() => {
+            const latestEnroll = filteredHistory.at(-1);
+
+            return (
               <Processbar
-                pretest_complete={enroll.pretest_complete}
-                posttest_complete={enroll.posttest_complete}
-                completed_labs={enroll.completed_labs}
-                total_labs={enroll.total_labs}
+                pretest_complete={latestEnroll.pretest_complete}
+                posttest_complete={latestEnroll.posttest_complete}
+                completed_labs={latestEnroll.completed_labs}
+                total_labs={latestEnroll.total_labs}
               />
-            ))}
-          </>
+            );
+          })()
         ) : (
           <Processbar
             pretest_complete={false}
@@ -180,22 +192,52 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
         )}
       </td>
 
+
       <td>
-      {filteredHistory.length > 0 ? (
-        filteredHistory.map((enroll) => (
-          enroll.pretest_complete === 1 &&
-          enroll.posttest_complete === 1 &&
-          enroll.completed_labs === enroll.total_labs ? (
-            <p>Complete!</p>
-          ) : (
-            <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
-          )
-        ))
-      ) : (
-        <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
-      )}
-        
+        {filteredHistory.length > 0 ? (
+          (() => {
+            const latestEnroll = filteredHistory.at(-1); 
+
+            if (latestEnroll.posttest_complete === -1) {
+              return (
+                <button
+                  onClick={() => {
+                    const reEnroll = async () => {
+                      try {
+                        const response = await backend.post(`/enroll/enrollCourse`, {
+                          courseId: id,
+                          userId: userData.id,
+                        });
+
+                        if (response.status === 200) {
+                          navigate(`/course/${id}/pretest/${response.data.enrollmentId}`);
+                        }
+                      } catch (error) {
+                        console.log(error);
+                      }
+                    };
+                    reEnroll();
+                  }}
+                >
+                  Retry
+                </button>
+              );
+            } else if (
+              latestEnroll.pretest_complete === 1 &&
+              latestEnroll.posttest_complete === 1 &&
+              latestEnroll.completed_labs === latestEnroll.total_labs
+            ) {
+              return <p>Complete!</p>;
+            } else {
+              return <button onClick={() => handleClick(buttonText)}>{buttonText}</button>;
+            }
+          })()
+        ) : (
+          <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
+        )}
       </td>
+
+
     </tr>
   );
 }

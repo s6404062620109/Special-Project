@@ -73,7 +73,7 @@ function LabBox({ no, id, question, type, courseId, enrollmentId }) {
     e.preventDefault();
 
     try {
-      const response = await backend.post("/lab/submitLabanswer", {
+      const response = await backend.post(`/lab/submitLabanswer/${enrollmentId}`, {
         answer: answer,
         userId: userData.id,
       });

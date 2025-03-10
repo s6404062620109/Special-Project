@@ -97,14 +97,16 @@ function Courses() {
             ))}
 
             {data.map((item) => {
-              const enrollment = progress.find((p) => p.courseId === item.id);
+              const courseEnrollments = progress.filter((p) => p.courseId === item.id);
+              const latestEnroll = courseEnrollments.at(-1);
+
               return (
                 <CourseCard
                   key={item.id}
                   id={item.id}
                   name={item.name}
                   icon_id={item.icon_id}
-                  enrollmentId={enrollment ? enrollment.id : null}
+                  enrollmentId={latestEnroll?.id || null} 
                   courseId={item.id}
                 />
               );

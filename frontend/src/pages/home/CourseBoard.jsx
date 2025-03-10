@@ -20,10 +20,11 @@ function CourseBoard({ enrollment }) {
 
                     if (response.status === 200) {
                         const combinedData = response.data.map((course) => {
-                            const enrollData = enrollment.find((enroll) => enroll.courseId === course.id);
+                            const courseEnrollments = enrollment.filter((enroll) => enroll.courseId === course.id);
+                            const latestEnroll = courseEnrollments.at(-1);
                             return {
                                 ...course,
-                                ...enrollData,
+                                ...latestEnroll,
                             };
                         });
 
