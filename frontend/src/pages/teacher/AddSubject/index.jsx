@@ -183,10 +183,6 @@ function AddSubject() {
         }
       }
     }
-    if (!summary) {
-      alert("Summary is required");
-      return;
-    }
 
     const hasPreTest = questionInput.some((q) => q.question.type === "pre");
     const hasPostTest = questionInput.some((q) => q.question.type === "post");

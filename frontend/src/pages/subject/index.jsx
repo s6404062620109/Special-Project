@@ -145,18 +145,26 @@ function Subject() {
 
     const formatContent = (content) => {
         if (!content) return null;
-
+    
         const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([\w\-]{11})/gi;
-
-        return content.split("\n").map((str, index) => {
-
-            const youtubeMatch = str.match(youtubeRegex);
+    
+        // Split content by new lines and process each line
+        return content.split("\n").map((line, index) => {
+            // Trim leading and trailing spaces from the line
+            const trimmedLine = line.trim();
+    
+            // Skip empty lines
+            if (!trimmedLine) {
+                return <br key={index} />; // Render a line break for empty lines
+            }
+    
+            // Check if the line contains a YouTube link
+            const youtubeMatch = trimmedLine.match(youtubeRegex);
             if (youtubeMatch) {
-
                 const videoId = youtubeMatch[0].includes("youtu.be")
                     ? youtubeMatch[0].split("/")[3]
                     : youtubeMatch[0].split("v=")[1].split("&")[0];
-
+    
                 return (
                     <React.Fragment key={index}>
                         <div className={style["video-wrapper"]}>
@@ -172,8 +180,9 @@ function Subject() {
                     </React.Fragment>
                 );
             }
-
-            const imageMatch = data.images.find(img => str.includes(img));
+    
+            // Check if the line contains an image file name
+            const imageMatch = data.images.find(img => trimmedLine.includes(img));
             if (imageMatch) {
                 const imageIndex = data.images.indexOf(imageMatch);
                 return (
@@ -187,10 +196,15 @@ function Subject() {
                     </React.Fragment>
                 );
             }
-
+    
+            // Render the line as text, preserving spaces and formatting
             return (
                 <React.Fragment key={index}>
-                    {str}
+                    {trimmedLine.split(" ").map((word, wordIndex) => (
+                        <span key={wordIndex}>
+                            {word}{" "} {/* Add a space after each word */}
+                        </span>
+                    ))}
                     <br />
                 </React.Fragment>
             );
@@ -262,10 +276,13 @@ function Subject() {
                             ))}
                         </div>
 
-                        <div className={style.summary}>
-                            <h3>สรุป</h3>
-                            <p>{formatContent(dataContent.summary)}</p>
-                        </div>
+                        {dataContent.summary &&(
+                            <div className={style.summary}>
+                                <h3>สรุป</h3>
+                                <p>{formatContent(dataContent.summary)}</p>
+                            </div>
+                        )}
+                        
                     </div>
 
                     
