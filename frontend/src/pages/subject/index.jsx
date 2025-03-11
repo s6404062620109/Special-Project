@@ -153,10 +153,10 @@ function Subject() {
             const youtubeMatch = str.match(youtubeRegex);
             if (youtubeMatch) {
 
-                const videoId = youtubeMatch[0].includes("youtu.be") 
-                    ? youtubeMatch[0].split("/")[3] 
-                    : youtubeMatch[0].split("v=")[1].split("&")[0]; 
-    
+                const videoId = youtubeMatch[0].includes("youtu.be")
+                    ? youtubeMatch[0].split("/")[3]
+                    : youtubeMatch[0].split("v=")[1].split("&")[0];
+
                 return (
                     <React.Fragment key={index}>
                         <div className={style["video-wrapper"]}>
@@ -169,6 +169,21 @@ function Subject() {
                                 allowFullScreen
                             />
                         </div>
+                    </React.Fragment>
+                );
+            }
+
+            const imageMatch = data.images.find(img => str.includes(img));
+            if (imageMatch) {
+                const imageIndex = data.images.indexOf(imageMatch);
+                return (
+                    <React.Fragment key={index}>
+                        <img
+                            src={imgPath[imageIndex]}
+                            alt={imageMatch}
+                            className={style.Picture}
+                        />
+                        <br />
                     </React.Fragment>
                 );
             }
@@ -219,7 +234,7 @@ function Subject() {
                     <div className={style.Info}>
                         <h1>{data.name}</h1>
 
-                        {imgPath.length > 0 && (
+                        {/* {imgPath.length > 0 && (
                             <div className={style.Picture}>
                                 {imgPath.length > 1 &&(
                                     <button className={style.prevBtn} onClick={prevImage}>&#10094;</button>
@@ -233,7 +248,7 @@ function Subject() {
                                 )}
                                 
                             </div>
-                        )}
+                        )} */}
 
                         <h2>{dataContent.content.title}</h2>
                         <p>{formatContent(dataContent.content.description)}</p>
