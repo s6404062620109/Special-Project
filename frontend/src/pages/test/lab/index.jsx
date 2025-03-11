@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
+
 import style from "./css/renderlab.module.css";
 
 function RenderLab() {
-  const { questionId } = useParams();
+  const { enrollmentId, questionId } = useParams();
   const [userData, setUserData] = useState({
     id: null,
     email: null,
@@ -43,6 +44,33 @@ function RenderLab() {
     fetchUserData();
 
   }, [emailrefStorage]);
+
+  useEffect(() => {
+    const fetchProgressData = async () => {
+        try {
+            const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
+            
+            if (response.status === 200) {
+                const progressData = response.data.results;
+
+                const isQuestionAttempted = progressData.some(item => String(item.questionId) === String(questionId));
+
+                if (!isQuestionAttempted) {
+                    alert("You have not attempted this lab yet.");
+                    navigate("/courses");
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            if (error.response?.status === 500) {
+                alert("You are not enrolled in this course.");
+                window.location.href = '/courses';
+            }
+        }
+    };
+
+    fetchProgressData();
+}, [enrollmentId, navigate]);  
 
   return (
     <div className={style.container}>

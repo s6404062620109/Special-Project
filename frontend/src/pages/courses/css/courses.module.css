@@ -45,7 +45,12 @@
     display: none;
 }
 
-@media screen and (max-width: 640px) {  
+@media screen and (max-width: 640px) {
+    
+    .content{
+        width: 90%;
+    }
+
     .head{
         text-align: center;
     }

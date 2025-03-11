@@ -91,10 +91,8 @@ function CourseCard({ id, name, icon_id, enrollmentId, courseId }) {
     if (status === "Continue") {
       const fetchLatestProgress = async () => {
         try {
-          const response = await backend.get(
-            `/progress/getLatestProgress/${enrollmentId}`
-          );
-          console.log(response);
+          const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
+
           if (response.status === 200) {
             navigate(`/course/${courseId}/${response.data.inProgress}`);
           }

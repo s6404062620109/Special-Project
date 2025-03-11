@@ -66,44 +66,59 @@ function Subject() {
     }, [courseId, subjectId]);
 
     useEffect(() => {
-        const fetchLabProgress = async () => {
-            try {
-                const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
-                if (response.status === 200) {
-                    const labProgress = response.data.results.filter(item => item.type.toLowerCase().includes("lab"));
-                    const allLabsCompleted = labProgress.every(item => item.is_completed === 1);
-                    setIsLabCompleted(allLabsCompleted);
+        const fetchQuestion = async () => {
+            try{
+                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
+
+                if(response.status === 200){
+                    setQuestionList(response.data.questionResult);
                 }
-            } catch (error) {
+
+            } catch(error){
                 console.log(error);
             }
-        };
+        }
 
-        fetchLabProgress();
-    }, [enrollmentId]); 
+        fetchQuestion();
+        if(questionList.length > 0){
+            setUseLab(true);
+        }
+    }, [subjectId]);
 
     useEffect(() => {
-        const checkPretestCompletion = async () => {
+        if (questionList.length === 0) return;
+
+        const fetchProgressData = async () => {
             try {
                 const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
                 
                 if (response.status === 200) {
-                    const progressData = response.data.results.filter(item => item.type === 'pre');
-                    
-                    const allPretestsCompleted = progressData.every(item => item.is_completed === 1);
-                    
+                    const progressData = response.data.results;
+
+                    const pretestProgress = progressData.filter(item => item.type === 'pre');
+                    const allPretestsCompleted = pretestProgress.every(item => item.is_completed === 1);
                     if (!allPretestsCompleted) {
                         alert('You must complete all Pretest questions before proceeding.');
                         navigate(`/course/${courseId}/pretest/${enrollmentId}`);
+                        return;
                     }
+
+                    const allLabsCompleted = questionList.every(q => 
+                        progressData.some(p => p.questionId === q.id && p.is_completed === 1)
+                    );
+                    setIsLabCompleted(allLabsCompleted);
                 }
             } catch (error) {
                 console.log(error);
+                if (error.response?.status === 500) {
+                    alert("You are not enrolled in this course.");
+                    window.location.href = '/courses';
+                }
             }
         };
-        
-        checkPretestCompletion();
-    }, [enrollmentId, courseId, navigate]);
+    
+        fetchProgressData();
+    }, [enrollmentId, questionList, courseId, navigate]);
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -124,26 +139,6 @@ function Subject() {
         fetchImages();
     }, [courseId, subjectId, data.images]);
 
-    useEffect(() => {
-        const fetchQuestion = async () => {
-            try{
-                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
-
-                if(response.status === 200){
-                    setQuestionList(response.data.questionResult);
-                }
-
-            } catch(error){
-                console.log(error);
-            }
-        }
-
-        fetchQuestion();
-        if(questionList.length > 0){
-            setUseLab(true);
-        }
-    }, [subjectId]);
-    
     useEffect(() => {
         setUseLab(questionList.length > 0);
     },[questionList]);

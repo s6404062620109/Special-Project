@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import backend from '../../api/backend';
 
 import style from './css/courses.module.css'
 import CourseCard from './CourseCard';
-import { useNavigate } from 'react-router-dom';
-import backend from '../../api/backend';
 
 function Courses() {
   const [userData, setUserData] = useState({
@@ -16,7 +15,6 @@ function Courses() {
   const emailrefStorage = localStorage.getItem("email");
   const [data, setData] = useState([]);
   const [progress, setProgress] = useState([]);
-  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchUserData = async () => {
@@ -36,6 +34,11 @@ function Courses() {
 
       } catch(error){
         console.log(error);
+        if(error.response.status === 403){
+          localStorage.removeItem('email');
+          alert(response.data.message);
+          window.location.href = '/';
+        }
       }
       
     }

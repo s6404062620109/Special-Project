@@ -95,7 +95,7 @@ function LabBox({ no, id, question, type, courseId, enrollmentId }) {
 
   const handleStartContainer = async () => {
     const clientUrl = import.meta.env.VITE_CLIENT_URL || window.location.origin;
-    const url = `${clientUrl}/lab/question/${id}`;
+    const url = `${clientUrl}/lab/${enrollmentId}/question/${id}`;
     window.open(url, "_blank");
   };
 

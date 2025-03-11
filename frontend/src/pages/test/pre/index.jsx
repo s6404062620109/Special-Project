@@ -89,6 +89,10 @@ function Pretest() {
           
         } catch(error){
           console.log(error);
+          if(error.response.status === 404){
+            alert("Please enroll this course before pretest.");
+            navigate('/');
+          }
         }
       }
       fetchPretestData();

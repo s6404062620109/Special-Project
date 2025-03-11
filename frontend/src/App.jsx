@@ -33,7 +33,6 @@ import NavbarAdmin from './components/NavbarAdmin';
 import ManageUser from './pages/admin/manageuser';
 /* */
 
-
 function App() {
   const [userData, setUserData] = useState({
       id:null,
@@ -75,7 +74,7 @@ function App() {
     fetchUserData();
   },[emailrefStorage]);
 
-  const noNavbarRoutes = [ '/lab/question/:questionId' ];
+  const noNavbarRoutes = [ '/lab/:enrollmentId/question/:questionId' ];
   const showNavbar = !noNavbarRoutes.some((pattern) =>
     matchPath(pattern, location.pathname)
   );
@@ -114,7 +113,7 @@ function App() {
               <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
               <Route path='/courses' element={<Courses/>}/>
               <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
-              <Route path='/lab/question/:questionId' element={<RenderLab/>}/>
+              <Route path='/lab/:enrollmentId/question/:questionId' element={<RenderLab/>}/>
               <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
               <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
             </Routes>

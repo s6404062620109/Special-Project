@@ -21,12 +21,10 @@ function PostTest() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await backend.get(
-          `/auth/authorization/${emailrefStorage}`,
-          {
-            withCredentials: true,
-          }
+        const response = await backend.get(`/auth/authorization/${emailrefStorage}`,
+          { withCredentials: true }
         );
+
         if (response.status === 200) {
           setUserData({
             id: response.data.id,
@@ -41,7 +39,7 @@ function PostTest() {
         if (error.response.status === 403) {
           localStorage.removeItem("email");
           alert("Your session time out!");
-          navigate("/");
+          window.location.href = "/";
         }
       }
     };
@@ -77,15 +75,17 @@ function PostTest() {
     if (userData.id !== null) {
       const fetchPretestData = async () => {
         try {
-          const response = await backend.get(
-            `/posttest/getPosttest/${enrollmentId}/${userData.id}`
-          );
+          const response = await backend.get(`/posttest/getPosttest/${enrollmentId}/${userData.id}`);
 
           if (response.status === 200) {
             setQuestionsWithChoices(response.data.questions);
           }
         } catch (error) {
           console.log(error);
+          if(error.response.status === 404){
+            alert("Please enroll this course before posttest.");
+            navigate('/');
+          }
         }
       };
       fetchPretestData();
@@ -114,6 +114,7 @@ function PostTest() {
       console.log(err);
     }
   };
+  console.log(questionsWithChoices)
   return (
     <div className={style.container}>
       <h1>Posttest</h1>

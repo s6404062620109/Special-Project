@@ -84,7 +84,7 @@ function Profile() {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setTimeLeft(`${hours}h:${minutes}m:${seconds}s`);
+      setTimeLeft(`${hours}:${minutes}:${seconds}`);
     };
 
     const timer = setInterval(updateTimer, 1000);
