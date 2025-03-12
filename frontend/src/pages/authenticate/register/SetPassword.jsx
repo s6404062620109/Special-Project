@@ -34,10 +34,10 @@ function SetPassword() {
   
         if (response.status === 200) {
           setStatusMessage(response.data.message);
-          setTimeout(() => navigate('/'), 2000);
         } else {
           setStatusMessage(response.data.message);
         }
+        setTimeout(() => navigate('/'), 2000);
       } catch (error) {
         console.error('Error during registration:', error);
         setStatusMessage(error.response.data.message);

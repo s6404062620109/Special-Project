@@ -114,7 +114,15 @@ router.put("/register_password", async (req, res) => {
               }
 
               if (new Date() > new Date(user.verified_expired)) {
-                  return res.status(400).json({ message: "Token has expired." });
+                db.query("DELETE FROM user WHERE email = ?", [email], (err, result) => {
+                  if (err) {
+                      console.error("User deletion failed:", err);
+                      return res.status(500).json({ message: "User deletion failed." });
+                  }
+                  return res.status(200).json({ message: "Token has expired. Please register again." });
+                });
+
+                return;
               }
 
               const saltRounds = 10;
