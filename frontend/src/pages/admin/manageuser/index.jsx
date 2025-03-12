@@ -28,9 +28,12 @@ function ManageUser() {
   const [selectedUser, setSelectedUser] = useState({ 
     id: null, 
     name: "", 
-    email: "", 
+    email: "",
+    profile_img: "", 
     role: "s" 
   });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [currentProfileImg, setCurrentProfileImg] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -83,8 +86,10 @@ function ManageUser() {
   }, [userData]);
 
   const filteredUsers = userList.filter(user => {
+    const matchesName = user?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesEmail = user?.email?.toLowerCase().includes(searchQuery.toLowerCase());
     return (
-      user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (matchesName || matchesEmail) &&
       (filterRole === "all" || user.role === filterRole)
     );
   });
@@ -141,15 +146,33 @@ function ManageUser() {
       id: user.id,
       name: user.name,
       email: user.email,
+      profile_img: user.profile_img,
       role: user.role,
     });
+    setCurrentProfileImg(user.profile_img);
     setShowEditPopup(true); 
   }
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUpdateUser = async () => {
     try {
+      const updatedUser = {
+        ...selectedUser,
+        profile_img: selectedImage || currentProfileImg,
+      };
+
       const response = await backend.put(`/admin/updateUser/${selectedUser.id}/${userData.id}`,
-        selectedUser
+        updatedUser
       );
       if (response.status === 200) {
         setMessage({ text: response.data.message, status: "success" });
@@ -173,7 +196,7 @@ function ManageUser() {
           <div className={style["filter-container"]}>
             <input
               type="text"
-              placeholder="Search by name..."
+              placeholder="Search by profile name or email..."
               className={style.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -194,7 +217,7 @@ function ManageUser() {
             <table>
               <thead>
                 <tr>
-                  <th>Profile</th>
+                  <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
                   <th></th>
@@ -302,8 +325,31 @@ function ManageUser() {
 
         {showEditPopup && (
         <div className={style.popup}>
-            <div className={style.popupContent}>
+          <div className={style.popupContent}>
             <h3>Edit User</h3>
+            <div className={style.profileImageContainer}>
+              {currentProfileImg || selectedImage ? (
+                <img
+                src={selectedImage || currentProfileImg}
+                alt="Profile"
+                className={style.profileImage}
+              />
+            ) : (
+              <div className={style.profilePlaceholder}>No Image</div>
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className={style.imageUploadInput}
+              id="imageUpload"
+            />
+            <label htmlFor="imageUpload" className={style.uploadButton}>
+              Upload Image
+            </label>
+          </div>
+
             <input
                 type="text"
                 placeholder="Name"

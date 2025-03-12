@@ -163,7 +163,7 @@ router.delete("/deleteUser/:userId/:authId", (req, res) => {
 
 router.put("/updateUser/:userId/:authId", (req, res) => {
     const { userId, authId } = req.params;
-    const { name, email, role } = req.body;
+    const { name, email, role, profile_img } = req.body;
   
     if (!authId) {
       return res.status(400).json({ message: "authId is required." });
@@ -184,8 +184,8 @@ router.put("/updateUser/:userId/:authId", (req, res) => {
       }
   
 
-      db.query("UPDATE user SET name = ?, email = ?, role = ? WHERE id = ?",
-        [name, email, role, userId], (error, result) => {
+      db.query("UPDATE user SET name = ?, email = ?, role = ?, profile_img = ? WHERE id = ?",
+        [name, email, role, profile_img, userId], (error, result) => {
           if (error) {
             console.log(error);
             return res.status(500).send({ message: "Database user query error." });
