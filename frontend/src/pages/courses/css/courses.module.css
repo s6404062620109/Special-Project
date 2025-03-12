@@ -9,6 +9,7 @@
     height: 600px;
     margin: auto;
     border-radius: 12px;
+    overflow: hidden;
 }
 
 .head{
@@ -27,6 +28,7 @@
 
 .courseTable{
     width: 100%;
+    height: calc(100% - 14%);
     overflow-y: auto;
 }
 .courseTable > table{
