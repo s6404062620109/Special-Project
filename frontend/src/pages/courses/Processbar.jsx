@@ -21,12 +21,21 @@ function Processbar({ pretest_complete, posttest_complete, completed_labs, total
     const timer = setTimeout(() => {
       let newPercent = 0;
 
-      if (pretest_complete) newPercent += 10;
-      if (posttest_complete) newPercent += 10;
-
-      if (completed_labs > 0 && total_labs > 0 && completed_labs <= total_labs) {
+      if (total_labs === 0) {
+        if (pretest_complete) {
+          newPercent += 50;
+        }
+        if(posttest_complete) {
+          newPercent += 50;
+        }
+      }
+      if (total_labs > 0) {
+        if (pretest_complete) newPercent += 10;
+        if (posttest_complete) newPercent += 10;
         newPercent += (completed_labs / total_labs) * 80;
       }
+
+      if (newPercent > 100) newPercent = 100;
 
       setPercent(newPercent);
       setIsLoading(false);
