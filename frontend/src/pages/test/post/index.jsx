@@ -114,7 +114,7 @@ function PostTest() {
       console.log(err);
     }
   };
-  console.log(questionsWithChoices)
+
   return (
     <div className={style.container}>
       <h1>Posttest</h1>
