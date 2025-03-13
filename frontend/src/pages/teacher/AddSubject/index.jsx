@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 
 import style from "./css/addsubject.module.css";
+import PdfPreview from "./PdfPreview";
 
 function AddSubject() {
   const { courseId } = useParams();
@@ -20,6 +21,10 @@ function AddSubject() {
   const [questionType, setQuestionType] = useState([]);
   const [questionInput, setQuestionInput] = useState([]);
   const [answerType, setAnswerType] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [mode, setMode] = useState("manual");
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfPreview, setPdfPreview] = useState("");
   const navigate = useNavigate();
 
   const fetchQuestionType = async () => {
@@ -38,6 +43,122 @@ function AddSubject() {
   useEffect(() => {
     fetchQuestionType();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pdfPreview) {
+        URL.revokeObjectURL(pdfPreview);
+        console.log("Revoked old URL:", pdfPreview);
+      }
+    };
+  }, [pdfPreview]);
+
+  const formatContent = (content) => {
+    if (!content) return null;
+  
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([\w\-]{11})/gi;
+    const imageMarkdownRegex = /!\[(.*?)\]\((.*?)\)/g;
+  
+    return content.split("\n").map((line, index) => {
+      const trimmedLine = line.trim();
+  
+      if (!trimmedLine) {
+        return <br key={index} />;
+      }
+  
+      // Check for YouTube links
+      const youtubeMatch = trimmedLine.match(youtubeRegex);
+      if (youtubeMatch) {
+        const videoId = youtubeMatch[0].includes("youtu.be")
+          ? youtubeMatch[0].split("/")[3]
+          : youtubeMatch[0].split("v=")[1].split("&")[0];
+  
+        return (
+          <React.Fragment key={index}>
+            <div className={style["video-wrapper"]}>
+              <iframe
+                width="560"
+                height="315"
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title="YouTube video"
+                frameBorder="0"
+                allowFullScreen
+              />
+            </div>
+          </React.Fragment>
+        );
+      }
+  
+      // Check for image markdown
+      const imageMatch = imageFiles.find((img) => trimmedLine.includes(img.name));
+      if (imageMatch) {
+        const imageIndex = imageFiles.indexOf(imageMatch);
+        return (
+          <React.Fragment key={index}>
+            <img
+              src={previewImages[imageIndex]}
+              alt={imageMatch.name}
+              className={style.Picture}
+            />
+            <br />
+          </React.Fragment>
+        );
+      }
+  
+      // Render plain text
+      return (
+        <React.Fragment key={index}>
+          {trimmedLine.split(" ").map((word, wordIndex) => (
+            <span key={wordIndex}>
+              {word}{" "}
+            </span>
+          ))}
+          <br />
+        </React.Fragment>
+      );
+    });
+  };
+
+  const validateSubjectInput = () => {
+    const { name, content, subcontent, summary } = subjectInput;
+
+    if (!name || name.trim() === "") {
+      alert("Subject name is required");
+      return false;
+    }
+
+    if (!content.title || content.title.trim() === "") {
+      alert("Content title is required");
+      return false;
+    }
+
+    if (!content.description || content.description.trim() === "") {
+      alert("Content description is required");
+      return false;
+    }
+
+    if (subcontent.length > 0) {
+      for (let i = 0; i < subcontent.length; i++) {
+        if (!subcontent[i].title || subcontent[i].title.trim() === "") {
+          alert(`Subcontent ${i + 1} title is required`);
+          return false;
+        }
+        if (!subcontent[i].description || subcontent[i].description.trim() === "") {
+          alert(`Subcontent ${i + 1} description is required`);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const togglePreview = () => {
+    if (!validateSubjectInput()) {
+      return;
+    }
+    setShowPreview(!showPreview);
+  };
 
   const deleteSubcontent = (index) => {
     const updatedSubcontent = subjectInput.subcontent.filter((_, i) => i !== index);
@@ -71,15 +192,40 @@ function AddSubject() {
   };
 
   const handleImageUpload = (e) => {
-    const files = e.target.files;
-    if (files) {
-      const fileArray = Array.from(files);
-      setImageFiles([...imageFiles, ...fileArray]);
-
-      const previewURLs = fileArray.map((file) => URL.createObjectURL(file));
-      setPreviewImages([...previewImages, ...previewURLs]);
-    }
+    const files = Array.from(e.target.files);
+  
+    setImageFiles([
+      ...imageFiles,
+      ...files.map((file) => ({ file, name: file.name })),
+    ]);
+  
+    const previewURLs = files.map((file) => URL.createObjectURL(file));
+    setPreviewImages([...previewImages, ...previewURLs]);
   };
+
+  const handleImageInsert = (e, index = null) => {
+    const selectedImage = e.target.value;
+    if (!selectedImage) return;
+  
+    const imageMarkdown = `\n${selectedImage}`;
+  
+    if (index === null) {
+      setSubjectInput({
+        ...subjectInput,
+        content: {
+          ...subjectInput.content,
+          description: subjectInput.content.description + imageMarkdown,
+        },
+      });
+    } else {
+      const updatedSubcontent = [...subjectInput.subcontent];
+      updatedSubcontent[index].description += imageMarkdown;
+      setSubjectInput({
+        ...subjectInput,
+        subcontent: updatedSubcontent,
+      });
+    }
+  }; 
 
   const removeImage = (index) => {
     const updatedImages = [...imageFiles];
@@ -155,38 +301,41 @@ function AddSubject() {
 
   const saveSubjectData = async () => {
     const formData = new FormData();
-
+  
     const { name, content, subcontent, summary } = subjectInput;
     const jsonData = { content, subcontent, summary };
-
+  
     if (!name) {
       alert("Subject name is required");
       return;
     }
-    if (!content.title) {
-      alert("Content title is required");
-      return;
-    }
-    if (!content.description) {
-      alert("Content description is required");
-      return;
-    }
-    if (subcontent.length > 0) {
-      for (let i = 0; i < subcontent.length; i++) {
-        if (!subcontent[i].title) {
-          alert(`Subcontent ${i + 1} title is required`);
-          return;
-        }
-        if (!subcontent[i].description) {
-          alert(`Subcontent ${i + 1} description is required`);
-          return;
+  
+    if (mode === "manual") {
+      if (!content.title) {
+        alert("Content title is required");
+        return;
+      }
+      if (!content.description) {
+        alert("Content description is required");
+        return;
+      }
+      if (subcontent.length > 0) {
+        for (let i = 0; i < subcontent.length; i++) {
+          if (!subcontent[i].title) {
+            alert(`Subcontent ${i + 1} title is required`);
+            return;
+          }
+          if (!subcontent[i].description) {
+            alert(`Subcontent ${i + 1} description is required`);
+            return;
+          }
         }
       }
     }
-
+  
     const hasPreTest = questionInput.some((q) => q.question.type === "pre");
     const hasPostTest = questionInput.some((q) => q.question.type === "post");
-
+  
     if (!hasPreTest) {
       alert("ต้องมีคำถามประเภท 'แบบทดสอบก่อนเรียน' อย่างน้อย 1 ข้อ");
       return;
@@ -196,48 +345,67 @@ function AddSubject() {
       return;
     }
     for (let i = 0; i < questionInput.length; i++) {
-      const hasAnswer = questionInput[i].answers.some(
-        (ans) => ans.type === "1"
-      );
+      const hasAnswer = questionInput[i].answers.some((ans) => ans.type === "1");
       if (!hasAnswer) {
         alert(`คำถามที่ ${i + 1} ต้องมีคำตอบประเภท "คำตอบ" อย่างน้อย 1 คำตอบ`);
         return;
       }
     }
-
+  
     formData.append("name", name);
-    formData.append("data", JSON.stringify(jsonData));
-    formData.append("questions", JSON.stringify(questionInput));
-
-    imageFiles.forEach((file) => {
-      formData.append("images", file);
-    });
-
-    questionInput.forEach((question, index) => {
-      if (question.question.type === "lab-w" && question.labFile) {
-        if (question.labFile instanceof File) {
-          formData.append(`labFile-${index}`, question.labFile);
-        } else {
-          console.error("Invalid lab file:", question.labFile);
-          alert(`Invalid lab file for question ${index + 1}`);
-          return;
+    formData.append("mode", mode);
+  
+    if (mode === "manual") {
+      formData.append("data", JSON.stringify(jsonData));
+      formData.append("questions", JSON.stringify(questionInput));
+  
+      imageFiles.forEach((file) => {
+        formData.append("images", file.file);
+      });
+  
+      questionInput.forEach((question, index) => {
+        if (question.question.type === "lab-w" && question.labFile) {
+          if (question.labFile instanceof File) {
+            formData.append(`labFile-${index}`, question.labFile);
+          } else {
+            console.error("Invalid lab file:", question.labFile);
+            alert(`Invalid lab file for question ${index + 1}`);
+            return;
+          }
         }
+      });
+    } else if (mode === "pdf") {
+      if (!pdfFile || !(pdfFile instanceof File)) {
+        alert("PDF file is required for PDF mode");
+        return;
       }
-    });
-
+      formData.append("pdfFile", pdfFile);
+      formData.append("questions", JSON.stringify(questionInput));
+    }
+  
     try {
-      const response = await backend.post(
-        `/teacher/saveSubject/${courseId}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+      const response = await backend.post(`/teacher/saveSubject/${courseId}`,
+        formData, { headers: { "Content-Type": "multipart/form-data" } }
       );
-
+  
       if (response.status === 200) {
         alert(response.data.message);
         setTimeout(() => navigate(`/edit-course/${courseId}`), 2000);
       }
     } catch (error) {
       console.error("Error saving subject data:", error);
+      alert("An error occurred while saving the subject. Please try again.");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file && file.type === "application/pdf") {
+      setPdfFile(file);
+      setPdfPreview(URL.createObjectURL(file));
+    } else {
+      alert("กรุณาอัปโหลดไฟล์ PDF เท่านั้น");
     }
   };
 
@@ -247,7 +415,7 @@ function AddSubject() {
         <div className={style.title}>
           <h1>Add Subject</h1>
         </div>
-
+        
         <div className={style["input-container"]}>
           <div className={style.header}>
             <p>Subject Name</p>
@@ -262,132 +430,232 @@ function AddSubject() {
             />
           </div>
 
-          <div className={style["input-images"]}>
-            <h3>Upload Images</h3>
-            <input type="file" multiple onChange={handleImageUpload} />
-            <div className={style["image-preview"]}>
-              {previewImages.map((preview, index) => (
-                <div key={index} className={style["image-item"]}>
-                  <img
-                    src={preview}
-                    alt={`Preview ${index}`}
-                    className={style["preview-image"]}
-                  />
-                  <button onClick={() => removeImage(index)}>Remove</button>
-                </div>
-              ))}
-            </div>
+          <div className={style["mode-selector"]}>
+            <label> 
+              <input
+                type="radio"
+                value="manual"
+                checked={mode === "manual"}
+                onChange={() => setMode("manual")}
+              />
+              เพิ่มเนื้อหาด้วยตนเอง
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="pdf"
+                checked={mode === "pdf"}
+                onChange={() => setMode("pdf")}
+              />
+              อัปโหลดไฟล์ PDF
+            </label>
           </div>
 
-          <div className={style.body}>
-            <h3>Content</h3>
-            <div className={style["main-content"]}>
-              <div>
-                <label>Title</label>
-                <input
-                  type="text"
-                  placeholder="Title"
-                  required
-                  value={subjectInput.content.title}
-                  onChange={(e) =>
-                    setSubjectInput({
-                      ...subjectInput,
-                      content: {
-                        ...subjectInput.content,
-                        title: e.target.value,
-                      },
-                    })
-                  }
-                />
+          {mode === "manual" && (
+            <div className={style.body}>
+              <div className={style["input-images"]}>
+                <h3>Upload Images</h3>
+                <input type="file" multiple onChange={handleImageUpload} />
+                <div className={style["image-preview"]}>
+                  {previewImages.map((preview, index) => (
+                    <div key={index} className={style["image-item"]}>
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        className={style["preview-image"]}
+                      />
+                      <button onClick={() => removeImage(index)}>Remove</button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div>
-                <label>Description</label>
-                <textarea
-                  rows="4"
-                  cols="50"
-                  placeholder="Description"
-                  required
-                  value={subjectInput.content.description}
-                  onChange={(e) =>
-                    setSubjectInput({
-                      ...subjectInput,
-                      content: {
-                        ...subjectInput.content,
-                        description: e.target.value,
-                      },
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            <h3>Subcontent</h3>
-            {subjectInput.subcontent.map((sub, index) => (
-              <div className={style["sub-content"]} key={index}>
+              <h3>Content</h3>
+              <div className={style["main-content"]}>
                 <div>
                   <label>Title</label>
                   <input
                     type="text"
                     placeholder="Title"
                     required
-                    value={sub.title}
-                    onChange={(e) => handleSubcontentChange(e, index)}
-                    name="title"
+                    value={subjectInput.content.title}
+                    onChange={(e) =>
+                      setSubjectInput({
+                        ...subjectInput,
+                        content: {
+                          ...subjectInput.content,
+                          title: e.target.value,
+                        },
+                      })
+                    }
                   />
                 </div>
 
                 <div>
                   <label>Description</label>
                   <textarea
-                    rows="4"
+                    rows="10"
                     cols="50"
                     placeholder="Description"
                     required
-                    value={sub.description}
-                    onChange={(e) => handleSubcontentChange(e, index)}
-                    name="description"
+                    value={subjectInput.content.description}
+                    onChange={(e) =>
+                      setSubjectInput({
+                        ...subjectInput,
+                        content: {
+                          ...subjectInput.content,
+                          description: e.target.value,
+                        },
+                      })
+                    }
                   />
                 </div>
 
-                <button
-                  className={style["delete-subcontent-button"]}
-                  onClick={() => deleteSubcontent(index)}
-                >
-                  <img
-                    alt="Delete subcontent input"
-                    src="/My_Coursesp/Bin.svg"
+                <div className={style["image-selector"]}>
+                  <h3>Select Image to Insert</h3>
+                  <select onChange={(e) => handleImageInsert(e)}>
+                    <option value="">Select an image</option>
+                    {imageFiles.map((file, index) => (
+                      <option key={index} value={file.name}>
+                        {file.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+              </div>
+
+              <h3>Subcontent</h3>
+              {subjectInput.subcontent.map((sub, index) => (
+                <div className={style["sub-content"]} key={index}>
+                  <div>
+                    <label>Title</label>
+                    <input
+                      type="text"
+                      placeholder="Title"
+                      required
+                      value={sub.title}
+                      onChange={(e) => handleSubcontentChange(e, index)}
+                      name="title"
+                    />
+                  </div>
+
+                  <div>
+                    <label>Description</label>
+                    <textarea
+                      rows="10"
+                      cols="50"
+                      placeholder="Description"
+                      required
+                      value={sub.description}
+                      onChange={(e) => handleSubcontentChange(e, index)}
+                      name="description"
+                    />
+                  </div>
+
+                  <button
+                    className={style["delete-subcontent-button"]}
+                    onClick={() => deleteSubcontent(index)}
+                  >
+                    <img
+                      alt="Delete subcontent input"
+                      src="/My_Coursesp/Bin.svg"
+                    />
+                  </button>
+
+                  <div className={style["image-selector"]}>
+                    <h3>Select Image to Insert</h3>
+                    <select onChange={(e) => handleImageInsert(e, index)}>
+                      <option value="">Select an image</option>
+                      {imageFiles.map((file, index) => (
+                        <option key={index} value={file.name}>
+                          {file.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                </div>
+              ))}
+
+              <button
+                className={style["add-subcontent-button"]}
+                onClick={addSubcontent}
+              >
+                Add Subcontent
+              </button>
+
+              <div className={style["summary-container"]}>
+                <h3>Summary</h3>
+                <div>
+                  <textarea
+                    rows="4"
+                    cols="50"
+                    placeholder="Summary"
+                    required
+                    value={subjectInput.summary}
+                    onChange={(e) =>
+                      setSubjectInput({
+                        ...subjectInput,
+                        summary: e.target.value,
+                      })
+                    }
                   />
-                </button>
+                </div>
               </div>
-            ))}
 
-            <button
-              className={style["add-subcontent-button"]}
-              onClick={addSubcontent}
-            >
-              Add Subcontent
-            </button>
+              <button onClick={togglePreview} className={style["preview-button"]}>
+                {showPreview ? "Hide Preview" : "Show Preview"}
+              </button>
 
-            <div className={style["summary-container"]}>
-              <h3>Summary</h3>
-              <div>
-                <textarea
-                  rows="4"
-                  cols="50"
-                  placeholder="Summary"
-                  required
-                  value={subjectInput.summary}
-                  onChange={(e) =>
-                    setSubjectInput({
-                      ...subjectInput,
-                      summary: e.target.value,
-                    })
-                  }
-                />
-              </div>
+              {showPreview && (
+                <div className={style["preview-overlay"]}>
+                  <div className={style["preview-container"]}>
+                    <button className={style["close-btn"]} onClick={() => setShowPreview(false)}>✖</button>
+                    <div className={style["preview-content"]}>
+                      <h1>{subjectInput.name}</h1>
+                      <h2>{subjectInput.content.title}</h2>
+                      <p>{formatContent(subjectInput.content.description)}</p>
+
+                      {subjectInput.subcontent.map((sub, index) => (
+                        <div key={index} className={style["preview-subcontent"]}>
+                          <h3>{sub.title}</h3>
+                          <p>{formatContent(sub.description)}</p>
+                        </div>
+                      ))}
+
+                      {subjectInput.summary && (
+                        <div className={style["preview-summary"]}>
+                          <h3>สรุป</h3>
+                          <p>{formatContent(subjectInput.summary)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
-          </div>
+          )}
+
+          {mode === "pdf" && (
+            <div className={style["pdf-upload-section"]}>
+              <h3>อัปโหลดไฟล์ PDF</h3>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleFileChange}
+              />
+
+              {pdfPreview && (
+                <div className={style["pdf-preview-section"]}>
+                  <h3>PDF Preview</h3>
+                  <PdfPreview fileUrl={pdfPreview} />
+                </div>
+              )}
+            </div>
+          )}
+          
         </div>
 
         <div className={style["input-questions-container"]}>

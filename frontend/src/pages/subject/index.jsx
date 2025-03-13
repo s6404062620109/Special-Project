@@ -5,6 +5,7 @@ import backend from '../../api/backend';
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
 import NavSubject from './NavSubject';
+import PdfPreview from '../teacher/AddSubject/pdfPreview';
 
 function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();
@@ -17,6 +18,7 @@ function Subject() {
         subcontent: [],
         summary: ''
     });
+    const [ pdfUrl, setPdfUrl ] = useState(null);
     const [ subjectList, setSubjectList ] = useState([]);
     const [ imgPath, setImgPath ] = useState('');
     const [ questionList, setQuestionList ] = useState([]);
@@ -27,30 +29,32 @@ function Subject() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchSubjectData = async () =>{
-            try{
+        const fetchSubjectData = async () => {
+            try {
                 const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`);
 
-                if(response.status === 200){
+                if (response.status === 200) {
                     let resultResponse = response.data.result[0];
 
                     setData({
                         name: resultResponse.name,
                         images: resultResponse.images ? resultResponse.images.split(",").map(img => img.trim()) : [],
                     });
-
-                    let jsonResponse = response.data.jsonData;
-                    setDataContent(jsonResponse);
-                }
                     
+                    if (response.data.jsonData) {
+                        setDataContent(response.data.jsonData);
+                    } 
+                    if (response.data.pdfUrl) {
+                        setPdfUrl(response.data.pdfUrl);
+                    }
+                }
+            } catch (err) {
+                console.log(err);
             }
-            catch(err){
-                console.log(err)
-            }
-        }
+        };
 
         fetchSubjectData();
-        
+       
         const fetcSubjectList = async () => { 
             try{
                 const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
@@ -210,7 +214,7 @@ function Subject() {
             );
         });
     };
-    
+
     const prevImage = () => {
         setCurrentImageIndex(prevIndex => (prevIndex === 0 ? imgPath.length - 1 : prevIndex - 1));
     };
@@ -264,23 +268,29 @@ function Subject() {
                             </div>
                         )} */}
 
-                        <h2>{dataContent.content.title}</h2>
-                        <p>{formatContent(dataContent.content.description)}</p>
+                        {pdfUrl ? (
+                            <PdfPreview fileUrl={`${import.meta.env.VITE_API_BASE_URL}/subjects${pdfUrl}`} />
+                        ) : (
+                            <>
+                                <h2>{dataContent.content.title}</h2>
+                                <p>{formatContent(dataContent.content.description)}</p>
 
-                        <div className={style.subcontent}>
-                            {dataContent.subcontent.map((sub, index) => (
-                                <div key={index} className={style["subcontent-item"]}>
-                                    <h3>{sub.title}</h3>
-                                    <p>{formatContent(sub.description)}</p>
+                                <div className={style.subcontent}>
+                                    {dataContent.subcontent.map((sub, index) => (
+                                        <div key={index} className={style["subcontent-item"]}>
+                                            <h3>{sub.title}</h3>
+                                            <p>{formatContent(sub.description)}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
 
-                        {dataContent.summary &&(
-                            <div className={style.summary}>
-                                <h3>สรุป</h3>
-                                <p>{formatContent(dataContent.summary)}</p>
-                            </div>
+                                {dataContent.summary &&(
+                                    <div className={style.summary}>
+                                        <h3>สรุป</h3>
+                                        <p>{formatContent(dataContent.summary)}</p>
+                                    </div>
+                                )}
+                            </>
                         )}
                         
                     </div>
