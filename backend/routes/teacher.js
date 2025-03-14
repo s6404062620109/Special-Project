@@ -217,7 +217,38 @@ router.post("/saveSubject/:courseId", (req, res) => {
           return res.status(500).json({ message: "Error saving PDF file" });
         }
 
-        return res.status(200).json({ message: "Subject saved successfully in PDF mode" });
+        questionData.forEach((question, index) => {
+          const { question: q, answers } = question;
+          db.query(
+            "INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
+            [q.content, q.type, subjectId],
+            (err, insertQuestionResult) => {
+              if (err) {
+                console.error("Database insert error:", err);
+                return res.status(500).json({ message: "Database insert error" });
+              }
+      
+              const questionId = insertQuestionResult.insertId;
+      
+              // บันทึกคำตอบ
+              answers.forEach((answer) => {
+                db.query(
+                  "INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                  [answer.content, answer.type, questionId],
+                  (err) => {
+                    if (err) {
+                      console.error("Database insert error:", err);
+                      return res.status(500).json({ message: "Database insert error" });
+                    }
+                  }
+                );
+              });
+            }
+          );
+        });
+      
+
+        return res.status(200).json({ message: "Subject saved successfully." });
       } else if (mode === "manual") {
         // โหมด Manual: ดำเนินการตามเดิม
         if (!data) {
@@ -300,7 +331,7 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
     }
 
     const { courseId, subjectId } = req.params;
-    const { name, data, questions, mode } = req.body; // เพิ่ม mode
+    const { name, data, questions, mode } = req.body; 
     const uploadedFiles = req.files;
 
     if (!mode) {
@@ -311,12 +342,11 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
       return res.status(400).json({ message: "Data and questions are required for manual mode." });
     }
 
-    if (mode === "pdf" && !uploadedFiles?.pdfFile) {
-      return res.status(400).json({ message: "PDF file is required for PDF mode." });
-    }
+    // if (mode === "pdf" && !uploadedFiles?.pdfFile) {
+    //   return res.status(400).json({ message: "PDF file is required for PDF mode." });
+    // }
 
-    // ตรวจสอบว่าวิชานี้มีอยู่หรือไม่
-    db.query("SELECT name, images, contentPath FROM subject WHERE id = ? AND courseId = ?", [subjectId, courseId], (err, result) => {
+    db.query("SELECT name, images FROM subject WHERE id = ? AND courseId = ?", [subjectId, courseId], (err, result) => {
       if (err) {
         console.error("Database select error:", err);
         return res.status(500).json({ message: "Database select error" });
@@ -329,16 +359,23 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
       const currentSubject = result[0];
       const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
 
-      // สร้างโฟลเดอร์ถ้ายังไม่มี
       if (!fs.existsSync(subjectFolderPath)) {
         fs.mkdirSync(subjectFolderPath, { recursive: true });
       }
 
       // โหมด PDF
       if (mode === "pdf") {
-        const pdfFile = uploadedFiles.pdfFile[0];
+        let questionData
 
-        // ลบไฟล์ PDF เดิม (ถ้ามี)
+        try {
+          questionData = JSON.parse(questions);
+        } catch (error) {
+          console.error("Error parsing questions:", error);
+          return res.status(400).json({ message: "Invalid questions format." });
+        }
+
+        const pdfFile = uploadedFiles.find(file => file.fieldname === "pdfFile");
+
         if (currentSubject.contentPath && fs.existsSync(currentSubject.contentPath)) {
           try {
             fs.unlinkSync(currentSubject.contentPath);
@@ -348,10 +385,8 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
           }
         }
 
-        // สร้าง path สำหรับไฟล์ PDF ใหม่
         const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
 
-        // ย้ายไฟล์ PDF ใหม่ไปยัง path ที่กำหนด
         try {
           fs.renameSync(pdfFile.path, pdfFilePath);
         } catch (err) {
@@ -359,17 +394,97 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
           return res.status(500).json({ message: "Error moving PDF file" });
         }
 
-        // อัปเดต path ของไฟล์ PDF ในฐานข้อมูล
-        db.query(
-          "UPDATE subject SET contentPath = ? WHERE id = ? AND courseId = ?",
-          [pdfFilePath, subjectId, courseId],
-          (err) => {
-            if (err) {
-              console.error("Database update error:", err);
-              return res.status(500).json({ message: "Database update error" });
-            }
+        questionData.forEach((question, index) => {
+          const { question: q, answers } = question;
+
+          if (q.id) {
+            db.query("UPDATE question SET content = ?, type = ? WHERE id = ?",
+              [q.content, q.type, q.id],
+              (err) => {
+                if (err) {
+                  console.error("Database update error:", err);
+                  return res.status(500).json({ message: "Database update error" });
+                }
+
+                answers.forEach((answer) => {
+                  db.query("SELECT id FROM answer WHERE content = ? AND type = ? AND questionId = ?",
+                    [answer.content, answer.type, q.id],
+                    (err, result) => {
+                      if (err) {
+                        console.error("Database select error:", err);
+                        return res.status(500).json({ message: "Database select error" });
+                      }
+
+                      if (result.length === 0) {
+                        db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                          [answer.content, answer.type, q.id],
+                          (err) => {
+                            if (err) {
+                              console.error("Database insert error:", err);
+                              return res.status(500).json({ message: "Database insert error" });
+                            }
+                          }
+                        );
+                      }
+                    }
+                  );
+                });
+              }
+            );
+          } else {
+            db.query("SELECT id FROM question WHERE content = ? AND type = ? AND subjectId = ?",
+              [q.content, q.type, subjectId], (err, result) => {
+                if (err) {
+                  console.error("Database select error:", err);
+                  return res.status(500).json({ message: "Database select error" });
+                }
+
+                if (result.length > 0) {
+                  return res.status(500).json({ message: "Question already exists" });
+                } else {
+                  db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
+                    [q.content, q.type, subjectId],
+                    (err, insertResult) => {
+                      if (err) {
+                        console.error("Database insert error:", err);
+                        return res.status(500).json({ message: "Database insert error" });
+                      }
+
+                      const questionId = insertResult.insertId;
+
+                      answers.forEach((answer) => {
+                        db.query(
+                          "INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                          [answer.content, answer.type, questionId],
+                          (err) => {
+                            if (err) {
+                              console.error("Database insert error:", err);
+                              return res.status(500).json({ message: "Database insert error" });
+                            }
+                          }
+                        );
+                      });
+
+                      const labFile = uploadedFiles.find(file => file.fieldname === `labFile-${index}`);
+                      if (q.type === "lab-w" && labFile) {
+                        const labFilePath = path.join(__dirname, `../lab/q${questionId}`);
+                        fs.mkdirSync(labFilePath, { recursive: true });
+
+                        try {
+                          fs.copyFileSync(labFile.path, path.join(labFilePath, "index.html"));
+                        } catch (err) {
+                          console.error("Error copying lab file:", err);
+                          return res.status(500).json({ message: "Error copying lab file" });
+                        }
+                      }
+                    }
+                  );
+                }
+              }
+            );
           }
-        );
+        });
+
       }
 
       // โหมด Manual
@@ -445,8 +560,7 @@ router.post("/updateSubject/:courseId/:subjectId", (req, res) => {
           const { question: q, answers } = question;
 
           if (q.id) {
-            db.query(
-              "UPDATE question SET content = ?, type = ? WHERE id = ?",
+            db.query("UPDATE question SET content = ?, type = ? WHERE id = ?",
               [q.content, q.type, q.id],
               (err) => {
                 if (err) {

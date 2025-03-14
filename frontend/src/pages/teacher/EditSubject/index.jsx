@@ -63,6 +63,7 @@ function EditSubject() {
         }
 
         if (pdfUrl) {
+          setMode("pdf");
           setSubjectInput({ ...subjectInput, name: result[0].name });
           setPdfFile(pdfUrl);
           setPdfPreview(import.meta.env.VITE_API_BASE_URL+'/subjects'+pdfUrl);
@@ -508,13 +509,24 @@ function EditSubject() {
       });
     } else if (mode === "pdf") {
       if (!pdfFile || !(pdfFile instanceof File)) {
-        alert("PDF file is required for PDF mode");
         return;
       }
       formData.append("pdfFile", pdfFile);
       formData.append("questions", JSON.stringify(questionInput));
+
+      questionInput.forEach((question, index) => {
+        if (question.question.type === "lab-w" && question.labFile) {
+          if (question.labFile instanceof File) {
+            formData.append(`labFile-${index}`, question.labFile);
+          } else {
+            console.error("Invalid lab file:", question.labFile);
+            alert(`Invalid lab file for question ${index + 1}`);
+            return;
+          }
+        }
+      });
     }
-  
+    
     try {
       const response = await backend.post(`/teacher/updateSubject/${courseId}/${subjectId}`,
         formData,

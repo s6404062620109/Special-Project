@@ -381,6 +381,18 @@ function AddSubject() {
       }
       formData.append("pdfFile", pdfFile);
       formData.append("questions", JSON.stringify(questionInput));
+
+      questionInput.forEach((question, index) => {
+        if (question.question.type === "lab-w" && question.labFile) {
+          if (question.labFile instanceof File) {
+            formData.append(`labFile-${index}`, question.labFile);
+          } else {
+            console.error("Invalid lab file:", question.labFile);
+            alert(`Invalid lab file for question ${index + 1}`);
+            return;
+          }
+        }
+      });
     }
   
     try {
