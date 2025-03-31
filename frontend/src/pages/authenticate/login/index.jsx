@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
+import TextField from '@mui/material/TextField';
 
 import style from './css/login.module.css';
 import backend from '../../../api/backend';
@@ -43,20 +44,32 @@ function Login() {
       <form onSubmit={handleSubmit}>
         <div className={style.inputContent}>
           <div>
-            <label>EMAIL</label>
-            <input
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="EMAIL"
+              InputProps={{
+                sx: { 
+                  color: 'white'
+                }
+              }}
               type='text'
-              placeholder='EMAIL'
               value={dataInput.email}
               onChange={(e) => setDatainput({...dataInput, email: e.target.value})}
             />
           </div>
 
           <div>
-            <label>PASSWORD</label>
-            <input
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="PASSWORD"
+              InputProps={{
+                sx: { 
+                  color: 'white'
+                }
+              }}
               type='password'
-              placeholder='PASSWORD'
               value={dataInput.password}
               onChange={(e) => setDatainput({...dataInput, password: e.target.value})}
             />

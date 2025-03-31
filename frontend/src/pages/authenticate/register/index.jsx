@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import TextField from '@mui/material/TextField';
 
-import style from './css/register.module.css';
+import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
 
 function Register() {
@@ -43,20 +44,38 @@ function Register() {
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className={style.inputContent}>
           <div>
-            <label>EMAIL</label>
-            <input
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="EMAIL"
+              sx={{
+                borderRadius: "8px"
+              }}
+              InputProps={{
+                sx: { 
+                  color: 'white'
+                }
+              }}
               type='text'
-              placeholder='EMAIL'
               value={data.email}
               onChange={(e) => setData({ ...data, email:e.target.value })}
             />
           </div>
 
           <div>
-            <label>NAME</label>
-            <input
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="NAME"
+              sx={{
+                borderRadius: "8px"
+              }}
+              InputProps={{
+                sx: { 
+                  color: 'white'
+                }
+              }}
               type='text'
-              placeholder='NAME'
               value={data.name}
               onChange={(e) => setData({ ...data, name:e.target.value })}
             />

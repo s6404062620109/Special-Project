@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import backend from "../../../api/backend";
+import TextField from '@mui/material/TextField';
 
-import style from "./css/forgot.module.css";
+import style from "../css/auth.module.css";
+import backend from "../../../api/backend";
 
 function Forgot() {
   const [email, setEmail] = useState("");
@@ -36,9 +37,15 @@ function Forgot() {
       <form onSubmit={handleSubmit}>
         <div className={style.inputContent}>
           <div>
-            <label>Email</label>
-            <input
-              type="text"
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="EMAIL"
+              InputProps={{
+                sx: { 
+                  color: 'white'
+                }
+              }}
               value={email}
               onChange={(e) =>
                 setEmail(e.target.value)

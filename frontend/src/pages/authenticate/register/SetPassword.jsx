@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import TextField from '@mui/material/TextField';
 
-import style from './css/register.module.css';
+import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
 
 function SetPassword() {
@@ -54,20 +55,32 @@ function SetPassword() {
           <form onSubmit={(e) => handleSubmit(e)}>
             <div className={style.inputContent}>
               <div>
-                <label>PASSWORD</label>
-                <input
+                <TextField
+                  id="standard-basic"
+                  variant="standard"
+                  label="PASSWORD"
+                  InputProps={{
+                    sx: { 
+                      color: 'white'
+                    }
+                  }}
                   type='password'
-                  placeholder='PASSWORD'
                   value={data.password}
                   onChange={(e) => setData({ ...data, password:e.target.value })}
                 />
               </div>
     
               <div>
-                <label>CONFIRM PASSWORD</label>
-                <input
+                <TextField
+                  id="standard-basic"
+                  variant="standard"
+                  label="CONFIRM PASSWORD"
+                  InputProps={{
+                    sx: { 
+                      color: 'white'
+                    }
+                  }}
                   type='password'
-                  placeholder='CONFIRM PASSWORD'
                   value={data.cpassword}
                   onChange={(e) => setData({ ...data, cpassword:e.target.value })}
                 />

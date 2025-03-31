@@ -1,50 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-
-import style from './css/navbar.module.css';
+import { AuthContext } from '../context/AuthProvider';
 import backend from '../api/backend';
 
+import style from './css/navbar.module.css';
+
 function Navbar() {
-  const [userData, setUserData] = useState({
-    id:null,
-    email:null,
-    name:null,
-    role:null,
-    profile_img:null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
+  const { userData } = useContext(AuthContext);
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try{
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-          withCredentials: true
-        });
-        if(response.status === 200){
-          setUserData({
-            id:response.data.id,
-            email:response.data.email,
-            name:response.data.name,
-            role:response.data.role,
-            profile_img:response.data.profile_img,
-          });
-        }
-
-      } catch(error){
-        console.log(error);
-        if(error.response.status === 403){
-          localStorage.removeItem('email');
-          alert(response.data.message);
-          window.location.href = '/';
-        }
-      }
-      
-    }
-    fetchUserData();
-  },[emailrefStorage]);
 
   const handleLogout = async () => {
     try {

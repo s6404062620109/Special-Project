@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import TextField from '@mui/material/TextField';
 
-import style from './css/reset.module.css';
+import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
 
 function Reset() {
@@ -52,8 +53,15 @@ function Reset() {
         <form onSubmit={handleSubmit}>
           <div className={style.inputContent}>
             <div>
-              <label>Password</label>
-              <input
+              <TextField
+                id="standard-basic"
+                variant="standard"
+                label="PASSWORD"
+                InputProps={{
+                  sx: { 
+                    color: 'white'
+                  }
+                }}
                 type='password'
                 value={password.rpassword}
                 onChange={(e) => setPassword({...password, rpassword:e.target.value})}
@@ -64,8 +72,15 @@ function Reset() {
 
           <div className={style.inputContent}>
             <div>
-              <label>Confirm Password</label>
-              <input
+              <TextField
+                id="standard-basic"
+                variant="standard"
+                label="CONFIRM PASSWORD"
+                InputProps={{
+                  sx: { 
+                    color: 'white'
+                  }
+                }}
                 type='password'
                 value={password.cpassword}
                 onChange={(e) => setPassword({...password, cpassword:e.target.value})}

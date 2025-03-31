@@ -1,6 +1,6 @@
 import { matchPath, Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react';
-import backend from './api/backend';
+import { useContext } from 'react';
+import { AuthContext } from './context/AuthProvider';
 
 import './App.css'
 
@@ -15,7 +15,7 @@ import Subject from './pages/subject';
 import Pretest from './pages/test/pre';
 import PostTest from './pages/test/post';
 import RenderLab from './pages/test/lab';
-import SetPassword from './pages/authenticate/register/Setpassword';
+import SetPassword from './pages/authenticate/register/SetPassword';
 import Forgot from './pages/authenticate/forgot';
 import Profile from './pages/Profile';
 /*  */
@@ -34,46 +34,9 @@ import ManageUser from './pages/admin/manageuser';
 /* */
 
 function App() {
-  const [userData, setUserData] = useState({
-      id:null,
-      email:null,
-      name:null,
-      role:null,
-      profile_img:null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
+  const { userData } = useContext(AuthContext);
+
   const location = useLocation();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-
-      try{
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-          withCredentials: true
-        });
-        if(response.status === 200){
-          setUserData({
-            id:response.data.id,
-            email:response.data.email,
-            name:response.data.name,
-            role:response.data.role,
-            profile_img:response.data.profile_img,
-          });
-        }
-
-      } catch(error){
-        console.log(error);
-        if(error.response.status === 403){
-          localStorage.removeItem('email');
-          alert(response.data.message);
-          window.location.href = '/';
-        }
-      }
-      
-    }
-    fetchUserData();
-  },[emailrefStorage]);
-
   const noNavbarRoutes = [ '/lab/:enrollmentId/question/:questionId' ];
   const showNavbar = !noNavbarRoutes.some((pattern) =>
     matchPath(pattern, location.pathname)
