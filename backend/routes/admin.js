@@ -2,7 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const db = require("./database");
+const db = require("../database");
 
 const router = express.Router();
 

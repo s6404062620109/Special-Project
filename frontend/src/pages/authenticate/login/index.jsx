@@ -31,7 +31,7 @@ function Login() {
       }
     } catch (error) {
       console.error('Error during registration:', error);
-      setStatusMessage("Server error, please try again later");
+      setStatusMessage(error.response.data.message);
     }
   }
 

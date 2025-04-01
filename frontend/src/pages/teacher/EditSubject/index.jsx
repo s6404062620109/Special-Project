@@ -273,9 +273,7 @@ function EditSubject() {
 
   const deleteImage = async (imageName) => {
     try {
-      const response = await backend.delete(
-        `/courses/deleteImgFile/${courseId}/${subjectId}/${imageName}`
-      );
+      const response = await backend.delete(`/teacher/deleteImgFile/${courseId}/${subjectId}/${imageName}`);
 
       if (response.status === 200) {
         alert(response.data.message);

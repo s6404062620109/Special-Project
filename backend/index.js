@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const multer = require("multer");
+const cookieParser = require("cookie-parser");
 
 const app = express();
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -18,8 +19,8 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 /* Authenticator */
-const authenticator = require("./routes/authenticator");
-app.use("/auth", authenticator);
+const authRoutes = require("./routes/authRoutes");
+app.use("/auth", authRoutes);
 
 /* Courses */
 const Courses = require("./routes/courses");

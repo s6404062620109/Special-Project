@@ -28,9 +28,9 @@ function SetPassword() {
 
       try { 
         const response = await backend.put('/auth/register_password', {
-            token,
-            email,
-            newPassword: data.password
+          token,
+          email,
+          newPassword: data.password
         });
   
         if (response.status === 200) {

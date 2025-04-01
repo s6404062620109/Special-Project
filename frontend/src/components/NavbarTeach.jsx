@@ -14,9 +14,7 @@ function NavbarTeach() {
 
   const handleLogout = async () => {
     try {
-      const response = await backend.post("/auth/logout",
-        { withCredentials: true }
-      );
+      const response = await backend.post("/auth/logout", { email: userData.email }, { withCredentials: true });
       if (response.status === 200) {
         localStorage.removeItem("email");
         alert(response.data.message);
