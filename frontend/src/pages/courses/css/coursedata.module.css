@@ -90,24 +90,39 @@ button:hover {
   }
 }
 
-@media screen and (max-width: 700px) {
-  .content > img{
-    display: none;
-  }
+.tcell-mobile-wrap{
+  display: none;
 }
 
 @media screen and (max-width: 640px) {
-  .card > td:nth-child(1),.card > td:nth-child(2){
+  .card > td:nth-child(2), .card > td:nth-child(3){
     display: none;
   }
-  .card > td:nth-child(3){
+
+  .card > td:nth-child(4){
+    width: 25%;
+  }
+
+  .card > td:nth-child(1) > .tcell-wrap{
+    display: none;
+  }
+
+  .tcell-mobile-wrap{
     display: flex;
     flex-direction: column;
-    
-    width: 100%;
-    p{
-      display: block;
-      margin: 10px 0px;
+    align-items: flex-start;
+    justify-content: center;
+
+    div{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+
+      img{
+        width: 35px;
+        height: 35px;
+      }
     }
   }
 }

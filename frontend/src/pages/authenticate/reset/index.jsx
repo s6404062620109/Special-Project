@@ -57,9 +57,11 @@ function Reset() {
                 id="standard-basic"
                 variant="standard"
                 label="PASSWORD"
-                InputProps={{
-                  sx: { 
-                    color: 'white'
+                slotProps={{
+                  input: {
+                    sx: { 
+                      color: 'white',
+                    }
                   }
                 }}
                 type='password'
@@ -76,9 +78,11 @@ function Reset() {
                 id="standard-basic"
                 variant="standard"
                 label="CONFIRM PASSWORD"
-                InputProps={{
-                  sx: { 
-                    color: 'white'
+                slotProps={{
+                  input: {
+                    sx: { 
+                      color: 'white',
+                    }
                   }
                 }}
                 type='password'

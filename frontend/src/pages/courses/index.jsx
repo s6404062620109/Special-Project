@@ -1,49 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import backend from '../../api/backend';
+import { AuthContext } from '../../context/AuthProvider';
 
 import style from './css/courses.module.css'
-import CourseCard from './CourseCard';
+import CourseData from './CourseData';
 
 function Courses() {
-  const [userData, setUserData] = useState({
-      id:null,
-      email:null,
-      name:null,
-      role:null,
-      profile_img:null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
+  const { userData } = useContext(AuthContext);
   const [data, setData] = useState([]);
   const [progress, setProgress] = useState([]);
-  
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try{
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-          withCredentials: true
-        });
-        if(response.status === 200){
-          setUserData({
-            id:response.data.id,
-            email:response.data.email,
-            name:response.data.name,
-            role:response.data.role,
-            profile_img:response.data.profile_img,
-          });
-        }
-
-      } catch(error){
-        console.log(error);
-        if(error.response.status === 403){
-          localStorage.removeItem('email');
-          alert(response.data.message);
-          window.location.href = '/';
-        }
-      }
-      
-    }
-    fetchUserData();
-  },[emailrefStorage]);
 
   useEffect(() => {
     
@@ -80,12 +45,16 @@ function Courses() {
           <thead>
             <tr>
               <th></th>
-              <th>
-                <p>Status</p>
-              </th>
-              <th>
-                <p>Completion</p>
-              </th>
+              {userData.id && (
+                <th>
+                  <p>Status</p>
+                </th>
+              )}
+              {userData.id && (
+                <th>
+                  <p>Completion</p>
+                </th>
+              )}
               <th></th>
             </tr>
           </thead>
@@ -104,7 +73,7 @@ function Courses() {
               const latestEnroll = courseEnrollments.at(-1);
 
               return (
-                <CourseCard
+                <CourseData
                   key={item.id}
                   id={item.id}
                   name={item.name}

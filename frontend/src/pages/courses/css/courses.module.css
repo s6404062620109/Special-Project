@@ -1,12 +1,12 @@
 .content{
     position: absolute;
-    top: 60%;
+    top: 70%;
     left: 50%;
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -70%);
     background: white;
     border-radius: 12px;
     width: 70%;
-    height: 600px;
+    height: 700px;
     margin: auto;
     border-radius: 12px;
     overflow: hidden;
@@ -50,7 +50,11 @@
 @media screen and (max-width: 640px) {
     
     .content{
-        width: 90%;
+        top: 80%;
+        left: 50%;
+        transform: translate(-50%, -80%);
+        width: 95%;
+        height: 80%;
     }
 
     .head{

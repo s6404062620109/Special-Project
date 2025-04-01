@@ -21,3 +21,10 @@ h2{
 h3{
     font-weight: 600;
 }
+
+input:-webkit-autofill {
+    background-color: transparent !important;
+    -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 9999s ease-in-out 0s !important;
+}

@@ -40,7 +40,7 @@ function Login() {
       <div className={style.heading}>
         <p>LOG IN</p>
       </div>
-
+      
       <form onSubmit={handleSubmit}>
         <div className={style.inputContent}>
           <div>
@@ -48,9 +48,11 @@ function Login() {
               id="standard-basic"
               variant="standard"
               label="EMAIL"
-              InputProps={{
-                sx: { 
-                  color: 'white'
+              slotProps={{
+                input: {
+                  sx: { 
+                    color: 'white',
+                  }
                 }
               }}
               type='text'
@@ -64,9 +66,11 @@ function Login() {
               id="standard-basic"
               variant="standard"
               label="PASSWORD"
-              InputProps={{
-                sx: { 
-                  color: 'white'
+              slotProps={{
+                input: {
+                  sx: { 
+                    color: 'white',
+                  }
                 }
               }}
               type='password'

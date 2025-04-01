@@ -51,9 +51,11 @@ function Register() {
               sx={{
                 borderRadius: "8px"
               }}
-              InputProps={{
-                sx: { 
-                  color: 'white'
+              slotProps={{
+                input: {
+                  sx: { 
+                    color: 'white',
+                  }
                 }
               }}
               type='text'
@@ -67,12 +69,11 @@ function Register() {
               id="standard-basic"
               variant="standard"
               label="NAME"
-              sx={{
-                borderRadius: "8px"
-              }}
-              InputProps={{
-                sx: { 
-                  color: 'white'
+              slotProps={{
+                input: {
+                  sx: { 
+                    color: 'white',
+                  }
                 }
               }}
               type='text'

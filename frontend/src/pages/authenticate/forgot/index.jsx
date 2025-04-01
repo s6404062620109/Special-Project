@@ -41,9 +41,11 @@ function Forgot() {
               id="standard-basic"
               variant="standard"
               label="EMAIL"
-              InputProps={{
-                sx: { 
-                  color: 'white'
+              slotProps={{
+                input: {
+                  sx: { 
+                    color: 'white',
+                  }
                 }
               }}
               value={email}
