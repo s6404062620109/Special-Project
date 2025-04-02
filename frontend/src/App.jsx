@@ -21,7 +21,6 @@ import Profile from './pages/Profile';
 /*  */
 
 /* */ 
-import NavbarTeach from './components/NavbarTeach';
 import MyCourses from './pages/teacher/MyCourses';
 import EditCourse from './pages/teacher/EditCourse';
 import AddSubject from './pages/teacher/AddSubject';
@@ -29,7 +28,6 @@ import EditSubject from './pages/teacher/EditSubject';
 /* */
 
 /* */
-import NavbarAdmin from './components/NavbarAdmin';
 import ManageUser from './pages/admin/manageuser';
 /* */
 
@@ -44,10 +42,9 @@ function App() {
 
   return (
     <div className='container'>
+      {showNavbar && <Navbar />}
       {userData.role === null &&(
-        <div className='container-wrap'>
-          {showNavbar && <Navbar />}
-      
+        <div className='container-wrap'>      
           <div className='content'>
             <Routes>
               <Route path='/' element={<Home/>}/>
@@ -64,7 +61,6 @@ function App() {
 
       {userData.role === 's' &&(
         <div className='container-wrap'>
-          {showNavbar && <Navbar />}
       
           <div className='content'>
             <Routes>
@@ -86,7 +82,6 @@ function App() {
 
       {userData.role === "t" &&(
         <div className='container-wrap'>
-          <NavbarTeach/>
 
           <div className='content'>
             <Routes>
@@ -103,7 +98,6 @@ function App() {
 
       {userData.role === "a" &&(
         <div className='container-wrap'>
-          <NavbarAdmin/>
           
           <div className='content'>
             <Routes>

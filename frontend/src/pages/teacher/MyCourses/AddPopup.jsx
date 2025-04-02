@@ -5,22 +5,23 @@ import style from "./css/addPopup.module.css";
 function AddPopup({ onClose, onAddCourse }) {
   const [courseData, setCourseData] = useState({
     name: null,
-    icon_id: null,
+    icon: null,
   });
-  const [iconFile, setIconFile] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    onAddCourse({ name: courseData.name, icon: iconFile });
-
+    onAddCourse(courseData);
     onClose();
-  };
+  }
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setIconFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCourseData((prev) => ({ ...prev, icon: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -35,9 +36,9 @@ function AddPopup({ onClose, onAddCourse }) {
                 className={style.previewImageContainer}
                 onClick={() => document.getElementById("fileInput").click()}
               >
-                {iconFile ? (
+                {courseData.icon ? (
                   <img
-                    src={URL.createObjectURL(iconFile)}
+                    src={courseData.icon}
                     alt="Preview"
                     className={style.previewImage}
                   />

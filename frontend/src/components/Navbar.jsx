@@ -43,8 +43,19 @@ function Navbar() {
         </div>
 
         <div className={style.functionsContainer}>
-          <Link to='/courses'>COURSES</Link>
-          <Link>FAQ</Link>
+          {userData.role === "t" && (
+            <Link to='/my-courses'>MY COURSES</Link>
+          )}
+          {userData.role === "a" && (
+            <>
+              <Link to='/manageUser'>USERS</Link>
+              <Link to='/manageCourse'>COURSES</Link>
+            </>
+          )}
+          {(userData.role === "s" || userData.role === null) && (
+            <Link to='/courses'>COURSES</Link>
+          )}
+          <Link>GUIDE</Link>
         </div>
 
         <div 
@@ -52,8 +63,24 @@ function Navbar() {
           onClick={() => setSidebarVisible(!sidebarVisible)}
         >
           <div onClick={() => navigate('/')}>Home</div>
-          <div onClick={() => navigate('/courses')}>COURSES</div>
-          <div>FAQ</div>
+
+          {userData.role === "t" && (
+            <div onClick={() => navigate('/my-courses')}>MY COURSES</div>
+          )}
+
+          {userData.role === "a" && (
+            <>
+              <div onClick={() => navigate('/manageUser')}>USERS</div>
+              <div onClick={() => navigate('/manageCourse')}>COURSES</div>
+            </>
+          )}
+
+          {(userData.role === "s" || userData.role === null) && (
+            <div onClick={() => navigate('/courses')}>COURSES</div>
+          )}
+
+          
+          <div>GUIDE</div>
         </div>
 
         {userData.name !== null &&(

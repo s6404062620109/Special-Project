@@ -13,75 +13,17 @@ router.use(express.urlencoded({ extended: true }));
 
 router.get("/getMyCourses/:userId", authUserRole.checkTeacherRole, teacherController.getMyCourses);
 
+router.post("/addCourse", authUserRole.checkTeacherRole, teacherController.createCourse);
+
+router.put("/update/:courseId", authUserRole.verifiedTeacherCourse, teacherController.updateCourse);
+
+router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteCourse);
+
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
   }
 };
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const { courseId } = req.params;
-
-    if (!courseId) {
-      return cb(new Error("Course ID is required"), null);
-    }
-
-    const uploadPath = path.join(__dirname, `../courses/c${courseId}`);
-    createFolder(uploadPath);
-
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const fileName = "icon" + path.extname(file.originalname);
-    cb(null, fileName);
-  },
-});
-
-const upload = multer({ storage });
-
-router.post("/uploadCourseIcon/:courseId", upload.single("icon"), (req, res) => {
-  const { courseId } = req.params;
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded" });
-  }
-
-  const iconFileName = req.file.filename;
-
-  db.query("UPDATE course SET icon_id = ? WHERE id = ?", [iconFileName, courseId], (err) => {
-    if (err) {
-      console.error("Database update error:", err);
-      return res.status(500).json({ message: "Database update error" });
-    }
-
-    res.status(200).json({ message: "Icon uploaded successfully", icon: iconFileName });
-  });
-});
-
-router.post("/addCourse", async (req, res) => {
-  try {
-    const { name, teacherId } = req.body;
-
-    if (!name || !teacherId) {
-      return res.status(400).json({ message: "Course name and teacher ID are required" });
-    }
-
-    db.query("INSERT INTO course (name, teacherId) VALUES (?, ?)", [name, teacherId], (err, result) => {
-      if (err) {
-        console.error("Database query error:", err);
-        return res.status(500).json({ message: "Database query error" });
-      }
-
-      return res.status(200).json({
-        message: "Course added successfully",
-        course: { id: result.insertId, name, teacherId, icon: null },
-      });
-    });
-  } catch (error) {
-    console.error("Error adding course:", error);
-    return res.status(500).json({ message: "Server error" });
-  }
-});
 
 function deleteFolderRecursive(folderPath){
   if (fs.existsSync(folderPath)) {
@@ -692,107 +634,6 @@ router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", (req, res) 
     }
   });
   
-});
-
-router.put("/update/:courseId", async (req, res) => {
-  const { courseId } = req.params;
-  const { name } = req.body;
-
-  try {
-    db.query("UPDATE course SET name = ? WHERE id = ?", [name, courseId], (err) => {
-      if(err){
-        console.log(err);
-        return res.status(500).json({ message: "Update course error"});
-      }
-
-      return res.status(200).json({ message: "Course updated successfully!" });
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update course." });
-  }
-});
-
-const deleteIcon = (courseId, iconFileName) => {
-  if (!iconFileName) return;
-
-  const iconPath = path.join(__dirname, `../courses/c${courseId}`, iconFileName);
-
-  if (fs.existsSync(iconPath)) {
-    fs.unlinkSync(iconPath);
-    console.log(`Deleted icon: ${iconPath}`);
-  } else {
-    console.log(`Icon not found: ${iconPath}`);
-  }
-};
-
-router.post("/uploadCourseIcon/:courseId", upload.single("icon"), (req, res) => {
-  const { courseId } = req.params;
-
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded" });
-  }
-
-  const iconFileName = req.file.filename;
-
-  db.query("SELECT icon_id FROM course WHERE id = ?", [courseId], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ message: "Database query error" });
-    }
-
-    const oldIconFileName = results[0]?.icon_id;
-
-    // ลบ icon เดิม (ถ้ามี)
-    if (oldIconFileName) {
-      deleteIcon(courseId, oldIconFileName);
-    }
-
-    // อัปเดต icon ใหม่ในฐานข้อมูล
-    db.query("UPDATE course SET icon_id = ? WHERE id = ?",
-      [iconFileName, courseId], (err) => {
-        if (err) {
-          console.error("Database update error:", err);
-          return res.status(500).json({ message: "Database update error" });
-        }
-
-        res.status(200).json({ message: "Icon uploaded successfully", icon: iconFileName });
-      }
-    );
-  });
-});
-
-router.delete("/deleteCourse/:courseId/:userId", (req, res) => {
-    const { courseId, userId } = req.params;
-
-    if( typeof courseId !== 'string' || typeof userId !== 'string' ){
-        return res.status(400).send({ message: "Invalid User ID or Course ID." });
-    }
-
-    db.query("SELECT id FROM course WHERE id = ? AND teacherId = ?", [ courseId, userId ], (error, result) => {
-        if(error){
-            console.log(error);
-            return res.status(500).send({ message: "Database user query error." });
-        }
-
-        if(result.length === 0){
-            return res.status(404).send({ message: "Course not found or you do not have permission to delete this course." });
-        }
-
-        db.query("DELETE FROM course WHERE id = ?", [courseId], (error) => {
-            if(error){
-                console.log(error);
-                return res.status(500).send({ message: "Database course query error." });
-            }
-            
-            const coursePath = path.join(__dirname, `../courses/c${courseId}`);
-            if (fs.existsSync(coursePath)) {
-                fs.rmSync(coursePath, { recursive: true, force: true });
-            }
-            
-            return res.status(200).send({ message: "Course deleted successfully."});
-        });
-    });
-    
 });
 
 module.exports = router;
