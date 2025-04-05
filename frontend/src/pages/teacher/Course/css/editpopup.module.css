@@ -77,19 +77,6 @@
     color: #2c3e50;
 }
   
-.formGroup input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 14px;
-    outline: none;
-}
-  
-.formGroup input[type="text"]:focus {
-    border-color: #3498db;
-}
-  
 .buttonGroup {
     display: flex;
     justify-content: flex-end;

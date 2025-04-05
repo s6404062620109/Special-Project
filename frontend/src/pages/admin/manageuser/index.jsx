@@ -1,17 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import backend from "../../../api/backend";
+import { AuthContext } from "../../../context/AuthProvider";
 
 import style from "./css/manageuser.module.css";
 
 function ManageUser() {
-  const [userData, setUserData] = useState({
-    id: null,
-    email: null,
-    name: null,
-    role: null,
-    profile_img: null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
+  const { userData } = useContext(AuthContext);
   const [ userList, setUserList ] = useState([]);
   const [ searchQuery, setSearchQuery ] = useState("");
   const [ message, setMessage ] = useState({ 
@@ -35,53 +29,19 @@ function ManageUser() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentProfileImg, setCurrentProfileImg] = useState(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await backend.get(
-          `/auth/authorization/${emailrefStorage}`,
-          {
-            withCredentials: true,
-          }
-        );
-        if (response.status === 200) {
-          setUserData({
-            id: response.data.id,
-            email: response.data.email,
-            name: response.data.name,
-            role: response.data.role,
-            profile_img: response.data.profile_img,
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        if (error.response.status === 403) {
-          localStorage.removeItem("email");
-          alert(response.data.message);
-          window.location.href = "/";
-        }
-      }
-    };
-    fetchUserData();
-  }, [emailrefStorage]);
+  const fetchUserData = async () => {
+    try {
+      const response = await backend.get('/admin/getUsers', { withCredentials: true });
 
-  useEffect(() => {
-    if (userData.id === null) {
-      return;
+      if (response.status === 200) {
+        setUserList(response.data.result);
+      }
+    } catch (error) {
+      console.log(error);
     }
+  };
 
-    const fetchUserData = async () => {
-      try {
-        const response = await backend.get(`/admin/getUsers/${userData.id}`);
-
-        if (response.status === 200) {
-          setUserList(response.data.result);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
+  useEffect(() => {
     fetchUserData();
   }, [userData]);
 

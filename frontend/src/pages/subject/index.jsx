@@ -5,7 +5,7 @@ import backend from '../../api/backend';
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
 import NavSubject from './NavSubject';
-import PdfPreview from '../teacher/AddSubject/pdfPreview';
+import PdfPreview from '../teacher/Subject/pdfPreview';
 
 function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();

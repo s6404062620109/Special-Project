@@ -2,7 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const multer = require('multer'); 
 const db = require("../database");
+const e = require("express");
 
+/* teacher_course controller */ 
 const getMyCourses = (req, res) => {
     const { userId } = req.params;
 
@@ -32,14 +34,14 @@ const createFolder = (folderPath) => {
 };
 
 const createCourse = (req, res) => {
-    const { name, icon, teacherId } = req.body;
+    const { name, icon, enable, teacherId } = req.body;
     
     if (!name || !teacherId || !icon) {
         return res.status(400).json({ message: "Name, icon, and teacherId are required." });
     }
 
     try {
-        db.query("INSERT INTO course (name, icon, teacherId) VALUES (?, ?, ?)", [name, icon, teacherId], (err, result) => {
+        db.query("INSERT INTO course (name, icon, teacherId, enable, createat) VALUES (?, ?, ?, ?, NOW())", [name, icon, teacherId, enable], (err, result) => {
           if (err) {
             console.error("Database query error:", err);
             return res.status(500).json({ message: "Database query error" });
@@ -48,6 +50,7 @@ const createCourse = (req, res) => {
           const courseId = result.insertId;
           const uploadPath = path.join(__dirname, `../courses/c${courseId}`);
           createFolder(uploadPath);
+
           return res.status(200).json({ message: "Course added successfully" });
         });
 
@@ -59,18 +62,18 @@ const createCourse = (req, res) => {
 
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
-    const { name, icon } = req.body;
-
+    const { name, icon, enable } = req.body;
+    
     if( typeof courseId !== 'string' || typeof name !== 'string' || typeof icon !== 'string' ){
         return res.status(400).send({ message: "Invalid Course ID or Name or Icon." });
     }
 
-    if (!name || !icon) {
-        return res.status(400).json({ message: "Name and icon are required." });
+    if (!name || !icon || enable === undefined || typeof enable !== 'boolean') {
+        return res.status(400).json({ message: "Name ,icon and enable are required." });
     }
 
     try{
-        db.query("UPDATE course SET name = ?, icon = ? WHERE id = ?", [name, icon, courseId], (error) => {
+        db.query("UPDATE course SET name = ?, icon = ?, enable = ?, updateat = NOW() WHERE id = ?", [name, icon, enable, courseId], (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });
@@ -112,6 +115,12 @@ const deleteCourse = (req, res) => {
         return res.status(500).send({ message: "Server error.", error });
     }
 }
+/* teacher_course controller */
+
+/* teacher_subject controller */
+
+
+/* teacher_subject controller */
 
 module.exports = {
     getMyCourses,

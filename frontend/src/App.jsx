@@ -22,9 +22,8 @@ import Profile from './pages/Profile';
 
 /* */ 
 import MyCourses from './pages/teacher/MyCourses';
-import EditCourse from './pages/teacher/EditCourse';
-import AddSubject from './pages/teacher/AddSubject';
-import EditSubject from './pages/teacher/EditSubject';
+import EditCourse from './pages/teacher/Course';
+import AddSubject from './pages/teacher/Subject';
 /* */
 
 /* */
@@ -89,8 +88,7 @@ function App() {
               <Route path='/profile' element={<Profile/>}/>
               <Route path='/my-courses' element={<MyCourses/>}/>
               <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
-              <Route path='/add-subject/:courseId' element={<AddSubject/>}/>
-              <Route path='edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
+              <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
             </Routes>
           </div>
         </div>

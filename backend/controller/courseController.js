@@ -1,32 +1,17 @@
-const express = require("express");
 const db = require("../database");
-
-const router = express.Router();
 
 const getCourses = (req, res) => {
     try{
-        db.query("SELECT * FROM course", (err, courses) => {
+        db.query("SELECT * FROM course WHERE enable = 1", (err, results) => {
             if (err) {
               return res.status(500).send({ message: "Database course query error" });
             } 
             
-            if (courses.length === 0) {
-              return res.status(200).send([]);
+            if (results.length === 0) {
+              return res.status(400).send({ message: "No courses found" });
             }
-        
-            const courseIds = courses.map(course => course.id);
-        
-            db.query("SELECT * FROM subject WHERE courseId IN (?)", [courseIds], (err, subjects) => {
-              if (err) {
-                return res.status(500).send({ message: "Database subject query error" });
-              } 
-        
-              const filteredCourses = courses.filter(course => 
-                subjects.some(subject => subject.courseId === course.id)
-              );
-        
-              return res.status(200).send(filteredCourses);
-            });
+            
+            return res.status(200).send({ results });
           }
         );
 
@@ -61,6 +46,6 @@ const getEnrollmentCourses = (req, res) => {
 }
 
 module.exports = {
-    getCourses,
-    getEnrollmentCourses
+  getCourses,
+  getEnrollmentCourses
 }

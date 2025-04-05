@@ -4,7 +4,7 @@ import backend from '../../../api/backend';
 import { AuthContext } from '../../../context/AuthProvider';
  
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcom from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import style from './css/mycourses.module.css';
 import AddPopup from './AddPopup';
@@ -32,9 +32,9 @@ function MyCourses() {
     fetchMyCourses();
   },[userData.id]);
 
-  const handleAddCourse = async ({ name, icon }) => {
+  const handleAddCourse = async ({ name, icon, enable }) => {
     try {
-      const response = await backend.post("/teacher/addCourse", { name, icon, teacherId: userData.id }, { withCredentials: true });
+      const response = await backend.post("/teacher/addCourse", { name, icon, enable, teacherId: userData.id }, { withCredentials: true });
     
       if (response.status === 200) {
         window.location.reload();
@@ -105,7 +105,7 @@ function MyCourses() {
 
                       <td>
                         <button onClick={() => handleDeleteCourse(course.id)}>
-                          <DeleteIcom/>
+                          <DeleteIcon/>
                           <p>Delete</p>
                         </button>
                       </td>

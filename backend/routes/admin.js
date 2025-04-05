@@ -3,41 +3,12 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const db = require("../database");
+const authUserRole = require("../middleware/authUserRole");
+const adminController = require("../controller/adminController");
 
 const router = express.Router();
 
-router.get("/getUsers/:authId", (req, res) => {
-    const { authId } = req.params;
-
-    if(!authId){
-        return res.status(400).json({ message: "authId is required." });
-    }
-
-    db.query("SELECT role FROM user WHERE id = ?", [authId], (error, authResult) => {
-        if(error){
-            console.log(error);
-            return res.status(500).send({ message: "Database user query error." });
-        }
-
-        if(authResult.length === 0){
-            return res.status(404).send({ message: "User not found." });
-        }
-        
-        if(authResult[0].role !== 'a'){
-            return res.status(404).send({ message: "Your not have permission." });
-        }
-
-        db.query("SELECT id, email, name, role, profile_img FROM user", (error, result) => {
-            if(error){
-                console.log(error);
-                return res.status(500).send({ message: "Database user query error." });
-            }
-
-            return res.status(200).send({ result });
-        });    
-    })
-    
-});
+router.get("/getUsers", authUserRole.checkAdminRole, adminController.getUsers);
 
 router.post("/addUser/:authId", async (req, res) => {
     const { authId } = req.params;

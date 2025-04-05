@@ -7,33 +7,34 @@ import CourseData from './CourseData';
 
 function Courses() {
   const { userData } = useContext(AuthContext);
-  const [data, setData] = useState([]);
-  const [progress, setProgress] = useState([]);
+  const [ courses, setCourses ] = useState([]);
+  const [ progress, setProgress ] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const response = await backend.get('/courses/getCourses');
+
+      if(response.status === 200){
+        setCourses(response.data.results);
+      }
+
+      if (userData.id) {
+        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
+        if(response.status === 200){
+          setProgress(response.data.results);
+        }
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
-    
-    const fetchData = async () => {
-      try {
-        const response = await backend.get('/courses/getCourses');
-
-        if(response.status === 200){
-          setData(response.data);
-        }
-
-        if (userData.id) {
-          const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
-          if(response.status === 200){
-            setProgress(response.data.results);
-          }
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
     fetchData();
   }, [userData]);
 
+  console.log(courses);
   return (
     <div className={style.content}>
       <div className={style.head}>
@@ -59,7 +60,7 @@ function Courses() {
             </tr>
           </thead>
           <tbody>
-            {data.map((item) => (
+            {courses.map((item) => (
               <tr
                 className={style["course-name"]}
                 key={item.CourseID}
@@ -68,7 +69,7 @@ function Courses() {
               </tr>
             ))}
 
-            {data.map((item) => {
+            {courses.map((item) => {
               const courseEnrollments = progress.filter((p) => p.courseId === item.id);
               const latestEnroll = courseEnrollments.at(-1);
 
@@ -77,7 +78,7 @@ function Courses() {
                   key={item.id}
                   id={item.id}
                   name={item.name}
-                  icon_id={item.icon_id}
+                  icon={item.icon}
                   enrollmentId={latestEnroll?.id || null} 
                   courseId={item.id}
                 />

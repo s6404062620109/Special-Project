@@ -7,24 +7,12 @@ import { AuthContext } from "../../context/AuthProvider";
 import style from "./css/coursedata.module.css";
 
 
-function CourseData({ id, name, icon_id, enrollmentId, courseId }) {
+function CourseData({ id, name, icon, enrollmentId, courseId }) {
   const { userData } = useContext(AuthContext);
   const [imgPath, setImgPath] = useState("");
   const [buttonText, setButtonText] = useState("");
   const [history, setHistory] = useState([]);
   const navigate = useNavigate();
-
-  const fetchIcon = async () => {
-    try {
-      const response = await backend.get(`/imgrender/getIcon/${id}/${icon_id}`);
-
-      if (response.status === 200) {
-        setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
-      }
-    } catch (err) {
-      console.log("Error fetching icon:", err);
-    }
-  };
 
   const fetchHistory = async () => {
     try {
@@ -82,7 +70,6 @@ function CourseData({ id, name, icon_id, enrollmentId, courseId }) {
   const filteredHistory = history.filter((enroll) => enroll.courseId === id);
 
   useEffect(() => {   
-    fetchIcon();
     fetchHistory();
 
     if (!userData.id && !userData.email && !userData.name && !userData.role) {
@@ -93,7 +80,7 @@ function CourseData({ id, name, icon_id, enrollmentId, courseId }) {
       setButtonText("Start");
     }
 
-  }, [id, icon_id, userData, enrollmentId]);
+  }, [id, userData, enrollmentId]);
 
   return (
     <tr className={style.card}>
@@ -108,7 +95,7 @@ function CourseData({ id, name, icon_id, enrollmentId, courseId }) {
             }
           }}
         >
-          <img alt="Icon Image" src={imgPath} />
+          <img alt="Icon Image" src={icon} />
           <p>{name}</p>
         </div>
 
@@ -123,7 +110,7 @@ function CourseData({ id, name, icon_id, enrollmentId, courseId }) {
           }}
         >
           <div>
-            <img alt="Icon Image" src={imgPath} />
+            <img alt="Icon Image" src={icon} />
             <p>{name}</p>
           </div>
           {userData.id &&(

@@ -18,13 +18,13 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 
-/* Authenticator */
+/* authRoutes */
 const authRoutes = require("./routes/authRoutes");
 app.use("/auth", authRoutes);
 
 /* Courses */
-const Courses = require("./routes/courses");
-app.use("/courses", Courses);
+const courseRoutes = require("./routes/courseRoutes");
+app.use("/courses", courseRoutes);
 
 /* Subject */
 const Subjects = require("./routes/subjects");
@@ -63,8 +63,8 @@ const admin = require("./routes/admin");
 app.use("/admin", admin); 
 
 /* Teacher */
-const teacher = require("./routes/teacher");
-app.use("/teacher", teacher); 
+const teachRoutes = require("./routes/teachRoutes");
+app.use("/teacher", teachRoutes); 
 
 /* Image */
 const Img = require("./routes/imagerender");

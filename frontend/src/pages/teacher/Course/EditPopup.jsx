@@ -1,40 +1,53 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
+import backend from '../../../api/backend';
 import { FormControlLabel, Switch, TextField } from "@mui/material";
 
-import style from "./css/addPopup.module.css";
+import style from './css/editpopup.module.css';
 
-function AddPopup({ onClose, onAddCourse }) {
+function EditPopup({ courseInfo, onClose, onSave }) {
   const [courseData, setCourseData] = useState({
-    name: "",
-    icon: "",
-    enable: false
+    name: courseInfo.name,
+    icon: courseInfo.icon,
+    enable: courseInfo.enable
   });
 
-  const handleSubmit = (e) => {
-    if(courseData.name === "" || courseData.icon === ""){
-      alert("Name and icon are required.");
-      return;
-    }
+  const handleSave = async (e) => {
     e.preventDefault();
-    onAddCourse(courseData);
-    onClose();
-  }
+      
+    try {
+      const response = await backend.put(`/teacher/update/${courseInfo.id}`, 
+        { 
+          name: courseData.name, 
+          icon: courseData.icon, 
+          enable: courseData.enable
+        }, { withCredentials: true }
+      );
+    
+      if (response.status === 200) {
+        alert(response.data.message);
+        onSave();
+      }
+    } catch (error) {
+      console.log(error);
+      alert(error.response.data.message);
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCourseData((prev) => ({ ...prev, icon: reader.result }));
+        setCourseData({ ...courseData, icon: reader.result });
       };
       reader.readAsDataURL(file);
     }
   };
-
+  console.log(courseData)
   return (
     <div className={style.popupOverlay}>
       <div className={style.popupContent}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSave}>
           <div className={style["form-wrapper"]}>
             <div className={style.fileInput}>
               <label>Course Icon</label>
@@ -58,7 +71,6 @@ function AddPopup({ onClose, onAddCourse }) {
                 accept="image/*"
                 onChange={handleFileChange}
                 style={{ display: "none" }}
-                required
               />
             </div>
 
@@ -68,10 +80,8 @@ function AddPopup({ onClose, onAddCourse }) {
                 variant="outlined"
                 label="Course Name"
                 type="text"
-                value={courseData.name}
-                onChange={(e) =>
-                  setCourseData({ ...courseData, name: e.target.value })
-                }
+                defaultValue={courseData.name}
+                onChange={(e) => setCourseData({ ...courseData, name: e.target.value})}
                 required
               />
 
@@ -91,12 +101,12 @@ function AddPopup({ onClose, onAddCourse }) {
             <button type="button" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit">Add Course</button>
+            <button type="submit">Save</button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }
 
-export default AddPopup;
+export default EditPopup

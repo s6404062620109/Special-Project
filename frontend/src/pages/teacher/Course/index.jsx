@@ -3,24 +3,26 @@ import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
+import EditIcon from '@mui/icons-material/Edit';
+import { Button, Dialog, DialogActions, DialogTitle, IconButton } from "@mui/material";
+
 import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
 
 function EditCourse() {
   const { courseId } = useParams();
   const { userData } = useContext(AuthContext);
-  const [data, setData] = useState({
+  const [ data, setData ] = useState({
     courseInfo: {},
     subject: [],
   });
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [ editPopupOpen, setEditPopupOpen ] = useState(false);
+  const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
   const navigate = useNavigate();
 
   const fetchSubjects = async () => {
     try {
-      const response = await backend.get(
-        `/subjects/getAllSubject/${courseId}`
-      );
+      const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
 
       if (response.status === 200) {
         setData({
@@ -62,7 +64,7 @@ function EditCourse() {
   };
 
   const handleSaveCourse = () => {
-    setIsPopupOpen(false);
+    setEditPopupOpen(false);
     fetchSubjects();
   };
 
@@ -70,12 +72,16 @@ function EditCourse() {
     <div className={style["edit-course-container"]}>
       <div className={style.container}>
         <div className={style.head}>
-          <img alt="course icon" src={data.courseInfo.icon} width={50} height={50} />
+          <img alt="course icon" src={data.courseInfo.icon} 
+            style={{
+              "width": "50px", 
+              "height": "50px", 
+              "borderRadius": "8px"
+            }}/>
           <h2>{data.courseInfo.name}</h2>
-          <button onClick={() => setIsPopupOpen(true)}>
-            <img src="/My_Coursesp/Edit.svg" alt="Edit button" />
-            <p>Edit</p>
-          </button>
+          <IconButton onClick={() => setEditPopupOpen(true)}>
+            <EditIcon/>
+          </IconButton>
         </div>
 
         <div className={style.body}>
@@ -119,15 +125,49 @@ function EditCourse() {
         </div>
       </div>
 
-      <div className={style["add-button"]} onClick={() => navigate(`/add-subject/${courseId}`)}>
+      <div className={style["add-button"]} onClick={() => setSubjectPopupOpen(true)}>
         <img alt="Add button" src="/My_Coursesp/Add.svg" />
         <p>Add Subject</p>
       </div>
 
-      {isPopupOpen && (
+      <Dialog
+        open={subjectPopupOpen}
+        onClose={() => setSubjectPopupOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            backgroundColor: 'white',
+          },
+        }}
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"How to add subject?"}
+        </DialogTitle>
+
+        <DialogActions>
+          <Button 
+            variant='contained' 
+            onClick={() => navigate(`/add-subject/${courseId}/0`)}
+          >
+            PDF
+          </Button>
+          <Button 
+            variant='contained' 
+            onClick={() => navigate(`/add-subject/${courseId}/1`)}
+          >
+            Manual
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {editPopupOpen && (
         <EditPopup
           courseInfo={data.courseInfo}
-          onClose={() => setIsPopupOpen(false)}
+          onClose={() => setEditPopupOpen(false)}
           onSave={handleSaveCourse}
         />
       )}
