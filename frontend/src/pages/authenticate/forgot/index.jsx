@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 
 import style from "../css/auth.module.css";
 import backend from "../../../api/backend";
+import { autofillTextFieldSx } from "../login";
 
 function Forgot() {
   const [email, setEmail] = useState("");
@@ -41,11 +42,10 @@ function Forgot() {
               id="standard-basic"
               variant="standard"
               label="EMAIL"
+              sx={autofillTextFieldSx}
               slotProps={{
                 input: {
-                  sx: { 
-                    color: 'white',
-                  }
+                  sx: { color: 'white' }
                 }
               }}
               value={email}

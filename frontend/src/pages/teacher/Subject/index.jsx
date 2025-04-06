@@ -9,6 +9,7 @@ import { Alert, Button, Slide, Snackbar } from "@mui/material";
 import style from "./css/addsubject.module.css";
 import AddManual from "./addContents/addManual";
 import AddPdf from "./addContents/AddPdf";
+import AddQuestion from "./addContents/AddQuestion";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -22,6 +23,31 @@ function AddSubject() {
     name: "",
     content: []  
   });
+  const [ questionType ] = useState([ "Pre", "Post", "Lab", "Quiz" ]);
+  const [ questionInput, setQuestionInput ] = useState([
+    {
+      content: "",
+      choice: [
+        {
+          content: "",
+          isCorrect: false
+        }
+      ],
+      img: "",
+      type: questionType[0]
+    },
+    {
+      content: "",
+      choice: [
+        {
+          content: "",
+          isCorrect: false
+        }
+      ],
+      img: "",
+      type: questionType[1]
+    },
+  ]);
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
 
@@ -97,25 +123,143 @@ function AddSubject() {
     return;
   }
 
-  const handleSubmit = async () => {
-    const error = inputValidation();
-    if (error) {
-      setAlertMessage(error);
-      setOpenSnackbar(true);
-      return;
+  const questionValidation = () => {
+    if(questionInput.length === 0) {
+      return "At least one question is required";
+    }
+    for (let i = 0; i < questionInput.length; i++) {
+      const item = questionInput[i];
+      if (item.content === "") {
+        return `Question ${i + 1} content is required`;
+      }
+      if (item.choice.length === 0) {
+        return `At least one choice is required for Question ${i + 1}`;
+      }
+      for (let j = 0; j < item.choice.length; j++) {
+        const choice = item.choice[j];
+        if (choice.content === "") {
+          return `Choice ${j + 1} content for Question ${i + 1} is required`;
+        }
+      }
+
+      if (item.type === "Pre" || item.type === "Post") {
+        const correctChoices = item.choice.filter(choice => choice.isCorrect);
+        if (correctChoices.length !== 1) {
+          return `Question ${i + 1} of type "${item.type}" must have exactly one correct choice`;
+        }
+        const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
+        if (incorrectChoices.length === 0) {
+          return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
+        }
+      }
     }
 
-    setAlertMessage("");
-    setOpenSnackbar(false); 
+    return;
   }
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
+  const handleSubmit = async () => {
+    if (mode === "1") {
+      const error = inputValidation();
+      if (error) {
+        setAlertMessage(error);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      setAlertMessage("");
+      setOpenSnackbar(false);
+      navigate(`/add-subject/${courseId}/question`); 
+    }
+    
+    if (mode === "0") {}
+
+    if (mode === "question") {
+      const error = questionValidation();
+      if (error) {
+        setAlertMessage(error);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      try{
+        const response = await backend.post(`/teacher/addSubject/${courseId}`, 
+          {
+            name: subjectInput.name,
+            content: subjectInput.content,
+            question: questionInput,
+          }, { withCredentials: true }
+        );
+
+        if(response.status === 200){
+          setAlertMessage(response.data.message);
+          setOpenSnackbar(true);
+        }
+      } catch(error){
+        console.log(error);
+        setAlertMessage(error.response.data.message);
+        setOpenSnackbar(true);
+      }
+    }
+  }
 
   /* Input Format Functions */
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /* Input Question Functions */
+  
+  const handleQuestionChange = (index, field, value) => {
+    const newQuestions = [...questionInput];
+    newQuestions[index][field] = value;
+    setQuestionInput(newQuestions);
+  };
+  
+  const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
+    const newQuestions = [...questionInput];
+    newQuestions[questionIndex].choice[choiceIndex][field] = value;
+    setQuestionInput(newQuestions);
+  };
+  
+  const addQuestion = () => {
+    const newQuestion = {
+      content: "",
+      choice: [
+        {
+          content: "",
+          isCorrect: false,
+        },
+      ],
+      img: "",
+      type: questionType[0],
+    };
+    setQuestionInput([...questionInput, newQuestion]);
+  };
+  
+  const addChoice = (index) => {
+    const newQuestions = [...questionInput];
+    newQuestions[index].choice.push({
+      content: "",
+      isCorrect: false,
+    });
+    setQuestionInput(newQuestions);
+  };
+  
+  const deleteChoice = (questionIndex, choiceIndex) => {
+    const newQuestions = [...questionInput];
+    newQuestions[questionIndex].choice.splice(choiceIndex, 1);
+    setQuestionInput(newQuestions);
+  };
+  
+  const deleteQuestion = (index) => {
+    const newQuestions = questionInput.filter((_, i) => i !== index);
+    setQuestionInput(newQuestions);
+  };
+
+  /* Input Question Functions */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+
   return (
     <div className={style["add-subject-container"]}>
       <div className={style.container}>
@@ -130,11 +274,18 @@ function AddSubject() {
         <Snackbar
           open={openSnackbar}
           autoHideDuration={5000}
-          onClose={handleCloseSnackbar}
+          onClose={() => setOpenSnackbar(false)}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           slots={{ transition: SlideTransition }} 
         >
-          <Alert onClose={handleCloseSnackbar} severity="error" variant="filled" sx={{ width: '100%' }}>
+          <Alert 
+            onClose={() => setOpenSnackbar(false)} 
+            severity={
+              alertMessage === "Subject created successfully." ? "success" : "error"
+            } 
+            variant="filled" 
+            sx={{ width: '100%' }}
+          >
             {alertMessage}
           </Alert>
         </Snackbar>
@@ -154,6 +305,20 @@ function AddSubject() {
 
         { mode === "0" && (
           <AddPdf/>
+        )}
+
+        { mode === "question" && (
+          <AddQuestion
+            questionInput={questionInput}
+            questionType={questionType}
+            addQuestion={addQuestion}
+            deleteQuestion={deleteQuestion}
+            handleQuestionChange={handleQuestionChange}
+            handleChoiceChange={handleChoiceChange}
+            addChoice={addChoice}
+            deleteChoice={deleteChoice}
+            handleSubmit={handleSubmit}
+          />
         )}
       </div>
     </div>

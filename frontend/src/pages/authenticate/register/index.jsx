@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 
 import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
+import { autofillTextFieldSx } from '../login';
 
 function Register() {
   const navigate = useNavigate();
@@ -48,14 +49,10 @@ function Register() {
               id="standard-basic"
               variant="standard"
               label="EMAIL"
-              sx={{
-                borderRadius: "8px"
-              }}
+              sx={autofillTextFieldSx}
               slotProps={{
                 input: {
-                  sx: { 
-                    color: 'white',
-                  }
+                  sx: { color: 'white' }
                 }
               }}
               type='text'
@@ -69,11 +66,10 @@ function Register() {
               id="standard-basic"
               variant="standard"
               label="NAME"
+              sx={autofillTextFieldSx}
               slotProps={{
                 input: {
-                  sx: { 
-                    color: 'white',
-                  }
+                  sx: { color: 'white' }
                 }
               }}
               type='text'

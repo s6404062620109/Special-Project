@@ -51,13 +51,20 @@ function AddManual({
         }}
         gap={2}
       >
-        <Typography variant="h5">Subject</Typography>
+        <Typography variant="h5" fontWeight='bold'>Subject</Typography>
         <TextField 
           id="outlined-basic" 
           variant="outlined" 
           label="Subject Name"
           value={subjectInput.name}
-          onChange={(e) => setSubjectInput({ ...subjectInput, name: e.target.value })} 
+          onChange={(e) => setSubjectInput({ ...subjectInput, name: e.target.value })}
+          sx={{
+            '& input:-webkit-autofill': {
+              WebkitBoxShadow: '0 0 0 1000px white inset',
+              WebkitTextFillColor: 'black',
+              caretColor: 'black',
+            },
+          }}
         />
 
         <Stack
@@ -97,7 +104,7 @@ function AddManual({
                       src={img}
                       alt="preview"
                       style={{
-                        width: "400px", 
+                        width: "100%", 
                         height: "200px", 
                         objectFit: "cover", 
                         borderRadius: "4px", 

@@ -5,6 +5,20 @@ import TextField from '@mui/material/TextField';
 import style from './css/login.module.css';
 import backend from '../../../api/backend';
 
+export const autofillTextFieldSx = {
+  '& input:-webkit-autofill': {
+    WebkitBoxShadow: '0 0 0px 1000px transparent inset !important',
+    WebkitTextFillColor: 'white',
+    transition: 'background-color 9999s ease-in-out 0s',
+  },
+  '& .MuiInputBase-root': {
+    color: 'white',
+  },
+  '& .MuiInputLabel-root': {
+    color: 'white',
+  }
+};
+
 function Login() {
   const [dataInput, setDatainput] = useState({
     email: '',
@@ -48,11 +62,10 @@ function Login() {
               id="standard-basic"
               variant="standard"
               label="EMAIL"
+              sx={autofillTextFieldSx}
               slotProps={{
                 input: {
-                  sx: { 
-                    color: 'white',
-                  }
+                  sx: { color: 'white'},
                 }
               }}
               type='text'
@@ -68,9 +81,7 @@ function Login() {
               label="PASSWORD"
               slotProps={{
                 input: {
-                  sx: { 
-                    color: 'white',
-                  }
+                  sx: { color: 'white' }
                 }
               }}
               type='password'
