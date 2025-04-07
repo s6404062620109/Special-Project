@@ -1,8 +1,9 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PreviewIcon from '@mui/icons-material/Preview';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 import { styled } from "@mui/material/styles";
@@ -28,9 +29,11 @@ function AddManual({
   handleChange, 
   handleImageUpload, 
   removeImage,
+  handlePreview,
   handleSubmit 
 }) {
   const navigate = useNavigate();
+  const { courseId } = useParams();
 
   return (
     <Stack
@@ -51,7 +54,21 @@ function AddManual({
         }}
         gap={2}
       >
-        <Typography variant="h5" fontWeight='bold'>Subject</Typography>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="h5" fontWeight='bold'>Subject</Typography>
+          <Button 
+            variant="outlined" 
+            startIcon={<PreviewIcon />}
+            onClick={handlePreview}
+          >
+            Preview
+          </Button>
+        </Stack>
+        
         <TextField 
           id="outlined-basic" 
           variant="outlined" 
@@ -72,71 +89,78 @@ function AddManual({
         >
           <Typography variant="h5">Content</Typography>
           {subjectInput.content.map((item, index) => (
-          <Stack key={index} gap={1} sx={{ border: '1px solid #ddd', padding: '10px', borderRadius: '8px' }}>
-            <Stack direction="row" justifyContent="space-between">
-              <Typography variant="h6">Topic {index + 1}</Typography>
-              <IconButton onClick={() => removeContent(index)} color="error">
-                <DeleteIcon />
-              </IconButton>
-            </Stack>
-            <TextField 
-              variant="outlined" 
-              label="Topic Name"
-              value={item.topic}
-              onChange={(e) => handleChange(index, "topic", e.target.value)}
-            />
-            <TextField
-              label="Topic Description"
-              multiline
-              rows={4}
-              value={item.description}
-              onChange={(e) => handleChange(index, "description", e.target.value)}
-            />
-            <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-              Upload Image
-              <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple />
-            </Button>
-            <Stack gap={1}>
-              {item.imgs.map((img, imgIndex) => (
-                <Box key={imgIndex} sx={{ display: "flex", justifyContent: "center" }}>
-                  <Box sx={{ position: "relative" }}>
-                    <img
-                      src={img}
-                      alt="preview"
-                      style={{
-                        width: "100%", 
-                        height: "200px", 
-                        objectFit: "cover", 
-                        borderRadius: "4px", 
-                      }}
-                    />
-                    <IconButton
-                      onClick={() => removeImage(index, imgIndex)}
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        background: "rgba(0, 0, 0, 0.5)",
-                        color: "white",
-                        padding: "2px",
-                        zIndex: 1
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+            <Stack key={index} 
+              gap={1} 
+              sx={{ 
+                border: '1px solid #ddd', 
+                padding: '10px', 
+                borderRadius: '8px' 
+              }}
+            >
+              <Stack direction="row" justifyContent="space-between">
+                <Typography variant="h6">Topic {index + 1}</Typography>
+                <IconButton onClick={() => removeContent(index)} color="error">
+                  <DeleteIcon />
+                </IconButton>
+              </Stack>
+              <TextField 
+                variant="outlined" 
+                label="Topic Name"
+                value={item.topic}
+                onChange={(e) => handleChange(index, "topic", e.target.value)}
+              />
+              <TextField
+                label="Topic Description"
+                multiline
+                rows={4}
+                value={item.description}
+                onChange={(e) => handleChange(index, "description", e.target.value)}
+              />
+              <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+                Upload Image
+                <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple />
+              </Button>
+              <Stack gap={1}>
+                {item.imgs.map((img, imgIndex) => (
+                  <Box key={imgIndex} sx={{ display: "flex", justifyContent: "center" }}>
+                    <Box sx={{ position: "relative" }}>
+                      <img
+                        src={img}
+                        alt="preview"
+                        style={{
+                          width: "100%", 
+                          height: "200px", 
+                          objectFit: "cover", 
+                          borderRadius: "4px", 
+                        }}
+                      />
+                      <IconButton
+                        onClick={() => removeImage(index, imgIndex)}
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          right: 0,
+                          background: "rgba(0, 0, 0, 0.5)",
+                          color: "white",
+                          padding: "2px",
+                          zIndex: 1
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
                   </Box>
-                </Box>
-              ))}
+                ))}
+              </Stack>
             </Stack>
-          </Stack>
-        ))}
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={addContent}
-        >
-          Add Content
-        </Button>
+          ))}
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
+            onClick={addContent}
+          >
+            Add Content
+          </Button>
         </Stack>
         
       </Stack>
@@ -154,7 +178,7 @@ function AddManual({
             color: "white",
             width: { xs: '100%', sm: '50%' }
           }}
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/edit-course/${courseId}`)}
         >
           Cancel
         </Button>

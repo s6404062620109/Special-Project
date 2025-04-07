@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
@@ -10,6 +10,7 @@ import style from "./css/addsubject.module.css";
 import AddManual from "./addContents/addManual";
 import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
+import PreviewManual from "./addContents/PreviewManual";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -50,6 +51,17 @@ function AddSubject() {
   ]);
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
+
+  useEffect(() => {
+    if(mode === "manualQuestion" && (subjectInput.name === "" || subjectInput.content.length === 0)){
+      setAlertMessage("Subject Name and Content is required");
+      setOpenSnackbar(true);
+      setTimeout(() => {
+        navigate(`/add-subject/${courseId}/manual`);
+      }, 3000);
+    }
+  }, [mode, subjectInput, navigate, courseId]);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Input Format Functions */
@@ -158,7 +170,7 @@ function AddSubject() {
   }
 
   const handleSubmit = async () => {
-    if (mode === "1") {
+    if (mode === "manual") {
       const error = inputValidation();
       if (error) {
         setAlertMessage(error);
@@ -168,10 +180,10 @@ function AddSubject() {
 
       setAlertMessage("");
       setOpenSnackbar(false);
-      navigate(`/add-subject/${courseId}/question`); 
+      navigate(`/add-subject/${courseId}/manualQuestion`); 
     }
     
-    if (mode === "0") {}
+    if (mode === "pdf") {}
 
     if (mode === "question") {
       const error = questionValidation();
@@ -205,6 +217,15 @@ function AddSubject() {
   /* Input Format Functions */
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
+  const handlePreview = () => {
+    const error = inputValidation();
+    if(error){
+      setAlertMessage(error);
+      setOpenSnackbar(true);
+      return;
+    }
+    setPreviewPopupOpen(true);
+  };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Input Question Functions */
@@ -258,7 +279,6 @@ function AddSubject() {
 
   /* Input Question Functions */
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
 
   return (
     <div className={style["add-subject-container"]}>
@@ -290,7 +310,15 @@ function AddSubject() {
           </Alert>
         </Snackbar>
 
-        { mode === "1" && (
+        { PreviewPopupOpen && (
+          <PreviewManual
+            subjectInput={subjectInput}
+            PreviewPopupOpen={PreviewPopupOpen}
+            setPreviewPopupOpen={setPreviewPopupOpen}
+          />
+        )}
+
+        { mode === "manual" && (
           <AddManual
             subjectInput={subjectInput}
             setSubjectInput={setSubjectInput}
@@ -299,15 +327,16 @@ function AddSubject() {
             handleChange={handleChange}
             handleImageUpload={handleImageUpload}
             removeImage={removeImage}
+            handlePreview={handlePreview}
             handleSubmit={handleSubmit}
           />
         )}
 
-        { mode === "0" && (
+        { mode === "pdf" && (
           <AddPdf/>
         )}
 
-        { mode === "question" && (
+        { (mode === "manualQuestion" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
           <AddQuestion
             questionInput={questionInput}
             questionType={questionType}

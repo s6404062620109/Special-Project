@@ -1,11 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-function AddQuestion({ 
+function AddQuestion({
   questionInput, 
   questionType, 
   addQuestion, 
@@ -16,7 +16,8 @@ function AddQuestion({
   deleteChoice, 
   handleSubmit 
 }) {
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
+  const { courseId } = useParams();  
 
   return (
     <Stack
@@ -195,7 +196,7 @@ function AddQuestion({
             color: "white",
             width: { xs: '100%', sm: '50%' }
           }}
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/edit-course/${courseId}`)}
         >
           Cancel
         </Button>

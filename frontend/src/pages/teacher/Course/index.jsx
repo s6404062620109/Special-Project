@@ -135,13 +135,15 @@ function EditCourse() {
         onClose={() => setSubjectPopupOpen(false)}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            padding: '20px',
-            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-            backgroundColor: 'white',
-          },
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+              backgroundColor: 'white',
+            }
+          }
         }}
       >
         <DialogTitle id="alert-dialog-title">
@@ -151,13 +153,13 @@ function EditCourse() {
         <DialogActions>
           <Button 
             variant='contained' 
-            onClick={() => navigate(`/add-subject/${courseId}/0`)}
+            onClick={() => navigate(`/add-subject/${courseId}/pdf`)}
           >
             PDF
           </Button>
           <Button 
             variant='contained' 
-            onClick={() => navigate(`/add-subject/${courseId}/1`)}
+            onClick={() => navigate(`/add-subject/${courseId}/manual`)}
           >
             Manual
           </Button>
