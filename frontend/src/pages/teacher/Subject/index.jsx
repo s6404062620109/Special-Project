@@ -4,13 +4,13 @@ import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Alert, Button, Slide, Snackbar } from "@mui/material";
+import { Alert, Button, CircularProgress, Slide, Snackbar } from "@mui/material";
 
-import style from "./css/addsubject.module.css";
+import style from "./css/subject.module.css";
 import AddManual from "./addContents/addManual";
 import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
-import PreviewManual from "./addContents/PreviewManual";
+import Preview from "./addContents/Preview";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -52,16 +52,34 @@ function AddSubject() {
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
+  const [ loading, setLoading ] = useState(true);
 
   useEffect(() => {
-    if(mode === "manualQuestion" && (subjectInput.name === "" || subjectInput.content.length === 0)){
-      setAlertMessage("Subject Name and Content is required");
-      setOpenSnackbar(true);
-      setTimeout(() => {
-        navigate(`/add-subject/${courseId}/manual`);
-      }, 3000);
-    }
+    const checkInitialCondition = () => {
+      if (mode === "question") {
+        if (subjectInput.name === "" || subjectInput.content.length === 0) {
+          setAlertMessage("Subject Name and Content is required");
+          setOpenSnackbar(true);
+          setTimeout(() => {
+            navigate(`/add-subject/${courseId}/manual`);
+          }, 3000);
+          return;
+        }
+      }
+
+      setLoading(false); 
+    };
+
+    checkInitialCondition();
   }, [mode, subjectInput, navigate, courseId]);
+
+  if (loading) {
+    return (
+      <div className={style["loading-container"]}>
+        <CircularProgress size={60} thickness={5} color="secondary"/>
+      </div>
+    );
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* Input Format Functions */
@@ -180,7 +198,7 @@ function AddSubject() {
 
       setAlertMessage("");
       setOpenSnackbar(false);
-      navigate(`/add-subject/${courseId}/manualQuestion`); 
+      navigate(`/add-subject/${courseId}/question`); 
     }
     
     if (mode === "pdf") {}
@@ -193,24 +211,27 @@ function AddSubject() {
         return;
       }
 
-      try{
-        const response = await backend.post(`/teacher/addSubject/${courseId}`, 
-          {
-            name: subjectInput.name,
-            content: subjectInput.content,
-            question: questionInput,
-          }, { withCredentials: true }
-        );
+      setPreviewPopupOpen(true);
 
-        if(response.status === 200){
-          setAlertMessage(response.data.message);
-          setOpenSnackbar(true);
-        }
-      } catch(error){
-        console.log(error);
-        setAlertMessage(error.response.data.message);
-        setOpenSnackbar(true);
-      }
+    // if (mode === "manualQuestion") {
+    //   try{
+    //     const response = await backend.post(`/teacher/addSubject/${courseId}`, 
+    //       {
+    //         name: subjectInput.name,
+    //         content: subjectInput.content,
+    //         question: questionInput,
+    //       }, { withCredentials: true }
+    //     );
+
+    //     if(response.status === 200){
+    //       setAlertMessage(response.data.message);
+    //       setOpenSnackbar(true);
+    //     }
+    //   } catch(error){
+    //     console.log(error);
+    //     setAlertMessage(error.response.data.message);
+    //     setOpenSnackbar(true);
+    //   }
     }
   }
 
@@ -218,13 +239,27 @@ function AddSubject() {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   const handlePreview = () => {
-    const error = inputValidation();
-    if(error){
-      setAlertMessage(error);
-      setOpenSnackbar(true);
-      return;
+    if(mode === "manual" ){
+      const error = inputValidation();
+      if(error){
+        setAlertMessage(error);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      setPreviewPopupOpen(true);
     }
-    setPreviewPopupOpen(true);
+    
+    if(mode === "question"){
+      const error = questionValidation();
+      if(error){
+        setAlertMessage(error);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      setPreviewPopupOpen(true);
+    }
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -310,9 +345,22 @@ function AddSubject() {
           </Alert>
         </Snackbar>
 
-        { PreviewPopupOpen && (
-          <PreviewManual
+        { (PreviewPopupOpen && mode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
+          <Preview
             subjectInput={subjectInput}
+            questionInput={null}
+            PreviewPopupOpen={PreviewPopupOpen}
+            setPreviewPopupOpen={setPreviewPopupOpen}
+          />
+        )}
+
+        { (PreviewPopupOpen && 
+          mode === "question" && 
+          questionInput.length !== 0) 
+          && (
+          <Preview
+            subjectInput={null}
+            questionInput={questionInput}
             PreviewPopupOpen={PreviewPopupOpen}
             setPreviewPopupOpen={setPreviewPopupOpen}
           />
@@ -336,7 +384,7 @@ function AddSubject() {
           <AddPdf/>
         )}
 
-        { (mode === "manualQuestion" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
+        { (mode === "question" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
           <AddQuestion
             questionInput={questionInput}
             questionType={questionType}
@@ -346,6 +394,7 @@ function AddSubject() {
             handleChoiceChange={handleChoiceChange}
             addChoice={addChoice}
             deleteChoice={deleteChoice}
+            handlePreview={handlePreview}
             handleSubmit={handleSubmit}
           />
         )}

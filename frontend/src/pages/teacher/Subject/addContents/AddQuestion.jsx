@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PreviewIcon from '@mui/icons-material/Preview';
 
 function AddQuestion({
   questionInput, 
@@ -13,7 +14,8 @@ function AddQuestion({
   handleQuestionChange, 
   handleChoiceChange, 
   addChoice, 
-  deleteChoice, 
+  deleteChoice,
+  handlePreview, 
   handleSubmit 
 }) {
   const navigate = useNavigate();
@@ -35,7 +37,21 @@ function AddQuestion({
           width: { xs: '90%', sm: '50%' }
         }}
       >
-        <Typography variant='h5' fontWeight='bold'>Question</Typography>
+        <Stack
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+        >
+          <Typography variant='h5' fontWeight='bold'>Question</Typography>
+
+          <Button 
+            variant="outlined" 
+            startIcon={<PreviewIcon />}
+            onClick={handlePreview}
+          >
+            Preview
+          </Button>
+        </Stack>
 
         <Stack>
           {questionInput.map((question, index) => (
