@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -7,8 +7,9 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 function TestRead({ question }) {
   const location = useLocation();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedType, setSelectedType] = useState('all');
+  const { courseId } = useParams();
+  const [ currentIndex, setCurrentIndex ] = useState(0);
+  const [ selectedType, setSelectedType ] = useState('all');
   
   useEffect(() => {
     setCurrentIndex(0);
@@ -33,8 +34,12 @@ function TestRead({ question }) {
     : question.filter(q => q.type === selectedType);
 
   const currentItem = filteredQuestions[currentIndex];
-  const showSelector = /^\/add-subject\/\d+\/question$/.test(location.pathname);
-  
+  const pathsToShow = [
+    `/add-subject/${courseId}/question`,
+    `/add-subject/${courseId}/submit`,
+  ];
+  const showSelector = pathsToShow.includes(location.pathname);
+
   return (
     <Stack
       gap={2}

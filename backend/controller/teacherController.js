@@ -129,8 +129,18 @@ const addManualSubject = (req, res) => {
     if (!name || !content || !question) {
       return res.status(400).json({ message: "Name, content, and question are required." });
     }
+
+    let parsedContent;
+    let parsedQuestion;
+
+    try {
+      parsedContent = JSON.parse(content);
+      parsedQuestion = JSON.parse(question); 
+    } catch (err) {
+      return res.status(400).json({ message: "Content and question must be valid JSON strings." });
+    }
   
-    if (!Array.isArray(question) || question.length === 0) {
+    if (!Array.isArray(parsedQuestion) || parsedQuestion.length === 0) {
       return res.status(400).json({ message: "Questions must be an array." });
     }
   
@@ -145,10 +155,10 @@ const addManualSubject = (req, res) => {
         const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
         createFolder(subjectFolderPath);
         const jsonFilePath = path.join(subjectFolderPath, "content.json");
-        fs.writeFileSync(jsonFilePath, JSON.stringify(content, null, 2));
+        fs.writeFileSync(jsonFilePath, JSON.stringify(parsedContent, null, 2));
   
         try {
-          for (const q of question) {
+          for (const q of parsedQuestion) {
             await new Promise((resolve, reject) => {
               db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
                 [q.content, q.type, subjectId], (err, questionResult) => {
@@ -180,7 +190,6 @@ const addManualSubject = (req, res) => {
       return res.status(500).send({ message: "Server error.", error });
     }
 };
-  
 
 /* teacher_subject controller */
 

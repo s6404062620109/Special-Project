@@ -19,7 +19,9 @@ router.put("/update/:courseId", authUserRole.verifiedTeacherCourse, teacherContr
 
 router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteCourse);
 
-router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, teacherController.addManualSubject);
+const NoneFileMulter = multer();
+
+router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(), teacherController.addManualSubject);
 
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {

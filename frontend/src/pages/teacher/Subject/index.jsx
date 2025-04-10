@@ -4,13 +4,14 @@ import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Alert, Button, CircularProgress, Slide, Snackbar } from "@mui/material";
+import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from "@mui/material";
 
 import style from "./css/subject.module.css";
 import AddManual from "./addContents/addManual";
 import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
 import Preview from "./addContents/Preview";
+import Reader from "../../../components/Reader";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -52,6 +53,7 @@ function AddSubject() {
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
+  const [ openDialog, setOpenDialog ] = useState(false);
   const [ loading, setLoading ] = useState(true);
 
   useEffect(() => {
@@ -59,6 +61,17 @@ function AddSubject() {
       if (mode === "question") {
         if (subjectInput.name === "" || subjectInput.content.length === 0) {
           setAlertMessage("Subject Name and Content is required");
+          setOpenSnackbar(true);
+          setTimeout(() => {
+            navigate(`/add-subject/${courseId}/manual`);
+          }, 3000);
+          return;
+        }
+      }
+
+      if(mode === "submit"){
+        if (subjectInput.name === "" || subjectInput.content.length === 0 || questionInput.length === 0){
+          setAlertMessage("Subject Name, Content and Question is required");
           setOpenSnackbar(true);
           setTimeout(() => {
             navigate(`/add-subject/${courseId}/manual`);
@@ -174,8 +187,8 @@ function AddSubject() {
 
       if (item.type === "Pre" || item.type === "Post") {
         const correctChoices = item.choice.filter(choice => choice.isCorrect);
-        if (correctChoices.length !== 1) {
-          return `Question ${i + 1} of type "${item.type}" must have exactly one correct choice`;
+        if (correctChoices.length === 0) {
+          return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
         }
         const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
         if (incorrectChoices.length === 0) {
@@ -210,28 +223,50 @@ function AddSubject() {
         setOpenSnackbar(true);
         return;
       }
+      navigate(`/add-subject/${courseId}/submit`);
+    }
 
-      setPreviewPopupOpen(true);
+    if (mode === "submit") {
+      const inputError = inputValidation();
+      const questionError = questionValidation();
 
-    // if (mode === "manualQuestion") {
-    //   try{
-    //     const response = await backend.post(`/teacher/addSubject/${courseId}`, 
-    //       {
-    //         name: subjectInput.name,
-    //         content: subjectInput.content,
-    //         question: questionInput,
-    //       }, { withCredentials: true }
-    //     );
+      if (inputError || questionError) {
+        setAlertMessage(inputError || questionError);
+        setOpenSnackbar(true);
+        return;
+      }
 
-    //     if(response.status === 200){
-    //       setAlertMessage(response.data.message);
-    //       setOpenSnackbar(true);
-    //     }
-    //   } catch(error){
-    //     console.log(error);
-    //     setAlertMessage(error.response.data.message);
-    //     setOpenSnackbar(true);
-    //   }
+      setOpenDialog(true);
+    }
+  }
+
+  const handleSubmitDialog = async () => {
+    const formData = new FormData();
+
+    formData.append('name', subjectInput.name);
+    formData.append('content', JSON.stringify(subjectInput.content));
+    formData.append('question', JSON.stringify(questionInput))
+    
+    try{
+      const response = await backend.post(`/teacher/addSubject/${courseId}`, 
+        formData, { 
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true  
+        }
+      );
+
+      if(response.status === 200){
+        setAlertMessage(response.data.message);
+        setOpenSnackbar(true);
+
+        setTimeout(() => {
+          navigate(`/edit-course/${courseId}`);
+        }, 3000);
+      }
+    } catch(error){
+      console.log(error);
+      setAlertMessage(error.response.data.message);
+      setOpenSnackbar(true);
     }
   }
 
@@ -354,10 +389,7 @@ function AddSubject() {
           />
         )}
 
-        { (PreviewPopupOpen && 
-          mode === "question" && 
-          questionInput.length !== 0) 
-          && (
+        { (PreviewPopupOpen && mode === "question" && questionInput.length !== 0) && (
           <Preview
             subjectInput={null}
             questionInput={questionInput}
@@ -398,6 +430,66 @@ function AddSubject() {
             handleSubmit={handleSubmit}
           />
         )}
+
+        {( (mode === "submit") && 
+        (subjectInput.name !== "" && subjectInput.content.length !== 0) && 
+        (questionInput.length !== 0)) && (
+          <Stack>
+            <Reader 
+              content={subjectInput}
+              question={questionInput}
+            />
+
+            <Stack
+              sx={{
+                width: { xs: "60%", sm: "40%" },
+                margin: "20px auto",
+                gap: 2,
+                flexDirection: { xs: "column", sm: "row" },
+              }}
+            >
+              <Button 
+                variant='outlined' 
+                sx={{
+                  background: "red",
+                  color: "white",
+                  width: { xs: '100%', sm: '50%' }
+                }}
+                onClick={() => navigate(`/edit-course/${courseId}`)}
+              >
+                Cancel
+              </Button>
+
+              <Button 
+                variant='contained'
+                sx={{
+                  background: "green",
+                  width: { xs: '100%', sm: '50%' }
+                }}
+                onClick={handleSubmit}
+              >
+                Confirm
+              </Button>
+                    
+            </Stack>
+          </Stack>
+        )}
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>ยืนยันการส่งข้อมูล</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            คุณต้องการส่งข้อมูลเนื้อหาและคำถามทั้งหมดใช่หรือไม่?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>ยกเลิก</Button>
+          <Button variant="contained" color="primary" onClick={handleSubmitDialog}>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       </div>
     </div>
   );
