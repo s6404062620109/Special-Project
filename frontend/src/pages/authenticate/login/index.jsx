@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import TextField from '@mui/material/TextField';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import style from './css/login.module.css';
 import backend from '../../../api/backend';
@@ -20,11 +22,12 @@ export const autofillTextFieldSx = {
 };
 
 function Login() {
-  const [dataInput, setDatainput] = useState({
+  const [ dataInput, setDatainput ] = useState({
     email: '',
     password: ''
   });
-  const [statusMessage, setStatusMessage] = useState('');
+  const [ statusMessage, setStatusMessage ] = useState('');
+  const [ showPassword, setShowPassword ] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,10 +84,24 @@ function Login() {
               label="PASSWORD"
               slotProps={{
                 input: {
-                  sx: { color: 'white' }
+                  sx: { color: 'white' },
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? 
+                          <VisibilityIcon sx={{color: 'white'}}/> : 
+                          <VisibilityOffIcon sx={{color: 'white'}}/>
+                        }
+                      </IconButton>
+                    </InputAdornment>
+                  )
                 }
               }}
-              type='password'
+              type={showPassword ? 'text' : 'password'}
               value={dataInput.password}
               onChange={(e) => setDatainput({...dataInput, password: e.target.value})}
             />

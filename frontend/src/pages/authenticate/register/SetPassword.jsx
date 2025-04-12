@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import TextField from '@mui/material/TextField';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
@@ -12,11 +14,15 @@ function SetPassword() {
     const email = queryParams.get("email");
     const navigate = useNavigate();
 
-    const [data, setData] = useState({
+    const [ data, setData ] = useState({
       password: '',
       cpassword: ''
     });
-    const [statusMessage, setStatusMessage] = useState('');
+    const [ statusMessage, setStatusMessage ] = useState('');
+    const [ showPassword, setShowPassword ] = useState({
+      password: false,
+      cpassword: false
+    });
 
     const handleSubmit = async (e) =>{
       e.preventDefault();
@@ -61,12 +67,24 @@ function SetPassword() {
                   label="PASSWORD"
                   slotProps={{
                     input: {
-                      sx: { 
-                        color: 'white',
-                      }
+                      sx: { color: 'white' },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => setShowPassword({...showPassword, password: !showPassword.password})}
+                            edge="end"
+                          >
+                            {showPassword.password ? 
+                              <VisibilityIcon sx={{color: 'white'}}/> : 
+                              <VisibilityOffIcon sx={{color: 'white'}}/>
+                            }
+                          </IconButton>
+                        </InputAdornment>
+                      )
                     }
                   }}
-                  type='password'
+                  type={ showPassword.password ? 'text' : 'password' }
                   value={data.password}
                   onChange={(e) => setData({ ...data, password:e.target.value })}
                 />
@@ -79,12 +97,24 @@ function SetPassword() {
                   label="CONFIRM PASSWORD"
                   slotProps={{
                     input: {
-                      sx: { 
-                        color: 'white',
-                      }
+                      sx: { color: 'white' },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => setShowPassword({...showPassword, cpassword: !showPassword.cpassword})}
+                            edge="end"
+                          >
+                            {showPassword.cpassword ? 
+                              <VisibilityIcon sx={{color: 'white'}}/> : 
+                              <VisibilityOffIcon sx={{color: 'white'}}/>
+                            }
+                          </IconButton>
+                        </InputAdornment>
+                      )
                     }
                   }}
-                  type='password'
+                  type={ showPassword.cpassword ? 'text' : 'password' }
                   value={data.cpassword}
                   onChange={(e) => setData({ ...data, cpassword:e.target.value })}
                 />
