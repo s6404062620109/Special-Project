@@ -17,6 +17,8 @@ services:
       - ./lab:/usr/src/app/lab
       - ./courses:/usr/src/app/courses
       - ./users:/usr/src/app/users
+    env_file:
+      - .env
       
   db:
     image: mysql:latest
