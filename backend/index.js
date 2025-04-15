@@ -2,24 +2,28 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+require('dotenv').config();
 
 const app = express();
 app.use(cookieParser());
 
 const allowedOrigins = [process.env.FRONTEND_URL];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (origin && allowedOrigins.includes(origin)) {
       callback(null, origin);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
-}));
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+};
+app.options("*", cors(corsOptions));
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(bodyParser.json());
 
