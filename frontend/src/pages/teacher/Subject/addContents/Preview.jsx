@@ -24,7 +24,7 @@ function Preview({
                   padding: '20px',
                   boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                   backgroundColor: 'white',
-                  width: { xs: '90%', sm: '50%' },
+                  width: { xs: '90%', sm: '70%' },
                   position: 'relative'
                 }
             }

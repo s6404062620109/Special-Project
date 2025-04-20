@@ -112,7 +112,7 @@ function AddManual({
               <TextField
                 label="Topic Description"
                 multiline
-                rows={4}
+                rows={6}
                 value={item.description}
                 onChange={(e) => handleChange(index, "description", e.target.value)}
               />

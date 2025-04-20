@@ -31,7 +31,7 @@ function AddPdf({
       setFile(selectedFile);
     }
   };
-
+  
   return (
     <Stack
       justifyContent='space-around'
@@ -94,16 +94,23 @@ function AddPdf({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <AddIcon
-              sx={{
-                color: '#b3b3b3'
-              }}
-            />
-            <Typography variant="h6" sx={{ color: '#b3b3b3' }}>Upload PDf here.</Typography>
-            {file && (
-              <Typography variant="body2" sx={{ color: '#666', mt: 1 }}>
-                Selected file: {file[0].name}
+            {file ? (
+              <Typography variant="body1" sx={{ color: '#666', mt: 1 }}>
+                Selected file: {file.name}
               </Typography>
+            ) : (
+              <Stack
+                justifyContent="center"
+                alignItems="center"
+              >
+                <AddIcon
+                  sx={{
+                    color: '#b3b3b3'
+                  }}
+                />
+              <Typography variant="h6" sx={{ color: '#b3b3b3' }}>Upload PDf here.</Typography>
+              </Stack>
+              
             )}
           </Stack>
           

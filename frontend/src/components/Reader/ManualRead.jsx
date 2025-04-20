@@ -60,19 +60,26 @@ function ManualRead({ subjectInput }) {
             </Typography>
           ))}
 
-          {currentItem.imgs?.map((img, imgIndex) => (
-            <img
-              key={imgIndex}
-              src={img}
-              alt="preview"
-              style={{
-                width: '100%',
-                height: '200px',
-                objectFit: 'cover',
-                borderRadius: '4px',
-              }}
-            />
-          ))}
+          <Stack
+            gap={2}
+            justifyContent='center'
+            alignItems='center'
+          >
+            {currentItem.imgs?.map((img, imgIndex) => (
+              <img
+                key={imgIndex}
+                src={img}
+                alt="preview"
+                style={{
+                  width: '600px',
+                  height: '400px',
+                  objectFit: 'cover',
+                  borderRadius: '4px',
+                }}
+              />
+            ))}
+          </Stack>
+          
         </Stack>
       )}
 

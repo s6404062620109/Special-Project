@@ -12,19 +12,91 @@ import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
 import Preview from "./addContents/Preview";
 import Reader from "../../../components/Reader";
+import { use } from "react";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
-function AddSubject() {
-  const { courseId, mode } = useParams();
-  const { userData } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [ subjectInput, setSubjectInput ] = useState({ 
-    name: "",
-    content: []  
-  });
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Format Functions */
+
+const useSubjectForm = () => {
+  const [ subjectInput, setSubjectInput ] = useState({ name: "", content: [] });
+
+  const addContent = () => {
+    setSubjectInput(prev => ({
+      ...prev,
+      content: [...prev.content, { topic: "", description: "", imgs: [] }]
+    }));
+  };
+
+  const removeContent = (index) => {
+    const updatedContent = subjectInput.content.filter((_, i) => i !== index);
+    setSubjectInput({ ...subjectInput, content: updatedContent });
+  };
+
+  const handleChange = (index, field, value) => {
+    const updatedContent = [...subjectInput.content];
+    updatedContent[index][field] = value;
+    setSubjectInput({ ...subjectInput, content: updatedContent });
+  };
+
+  const handleImageUpload = (index, event) => {
+    const files = Array.from(event.target.files);
+    const updatedContent = [...subjectInput.content];
+    files.forEach(file => {
+      if (file.size <= 6 * 1024 * 1024) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+          updatedContent[index].imgs.push(reader.result);
+          setSubjectInput({ ...subjectInput, content: updatedContent });
+        };
+      } else {
+        alert("File size must be less than 6MB");
+      }
+    });
+  };
+
+  const removeImage = (contentIndex, imgIndex) => {
+    const updatedContent = [...subjectInput.content];
+    updatedContent[contentIndex].imgs = updatedContent[contentIndex].imgs.filter((_, i) => i !== imgIndex);
+    setSubjectInput({ ...subjectInput, content: updatedContent });
+  };
+
+  const inputValidation = () => {
+    if (subjectInput.name === "") return "Subject Name is required";
+    if (subjectInput.content.length === 0) return "At least one content is required";
+
+    for (let i = 0; i < subjectInput.content.length; i++) {
+      const item = subjectInput.content[i];
+      if (item.topic === "") return `Topic ${i + 1} is required`;
+      if (item.description === "") return `Description for Topic ${i + 1} is required`;
+    }
+
+    return null;
+  };
+
+  return {
+    subjectInput,
+    setSubjectInput,
+    addContent,
+    removeContent,
+    handleChange,
+    handleImageUpload,
+    removeImage,
+    inputValidation
+  };
+};
+
+/* Input Format Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Question Functions */
+
+const useQuestionForm = () => {
   const [ questionType ] = useState([ "Pre", "Post", "Lab", "Quiz" ]);
   const [ questionInput, setQuestionInput ] = useState([
     {
@@ -50,6 +122,129 @@ function AddSubject() {
       type: questionType[1]
     },
   ]);
+
+  const handleQuestionChange = (index, field, value) => {
+    const newQuestions = [...questionInput];
+    newQuestions[index][field] = value;
+    setQuestionInput(newQuestions);
+  };
+  
+  const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
+    const newQuestions = [...questionInput];
+    newQuestions[questionIndex].choice[choiceIndex][field] = value;
+    setQuestionInput(newQuestions);
+  };
+  
+  const addQuestion = () => {
+    const newQuestion = {
+      content: "",
+      choice: [
+        {
+          content: "",
+          isCorrect: false,
+        },
+      ],
+      img: "",
+      type: questionType[0],
+    };
+    setQuestionInput([...questionInput, newQuestion]);
+  };
+  
+  const addChoice = (index) => {
+    const newQuestions = [...questionInput];
+    newQuestions[index].choice.push({
+      content: "",
+      isCorrect: false,
+    });
+    setQuestionInput(newQuestions);
+  };
+  
+  const deleteChoice = (questionIndex, choiceIndex) => {
+    const newQuestions = [...questionInput];
+    newQuestions[questionIndex].choice.splice(choiceIndex, 1);
+    setQuestionInput(newQuestions);
+  };
+  
+  const deleteQuestion = (index) => {
+    const newQuestions = questionInput.filter((_, i) => i !== index);
+    setQuestionInput(newQuestions);
+  };
+
+  const questionValidation = () => {
+    if(questionInput.length === 0) {
+      return "At least one question is required";
+    }
+    for (let i = 0; i < questionInput.length; i++) {
+      const item = questionInput[i];
+      if (item.content === "") {
+        return `Question ${i + 1} content is required`;
+      }
+      if (item.choice.length === 0) {
+        return `At least one choice is required for Question ${i + 1}`;
+      }
+      for (let j = 0; j < item.choice.length; j++) {
+        const choice = item.choice[j];
+        if (choice.content === "") {
+          return `Choice ${j + 1} content for Question ${i + 1} is required`;
+        }
+      }
+
+      if (item.type === "Pre" || item.type === "Post") {
+        const correctChoices = item.choice.filter(choice => choice.isCorrect);
+        if (correctChoices.length === 0) {
+          return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
+        }
+        const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
+        if (incorrectChoices.length === 0) {
+          return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
+        }
+      }
+    }
+
+    return;
+  }
+
+  return {
+    questionType,
+    questionInput,
+    setQuestionInput,
+    handleQuestionChange,
+    handleChoiceChange,
+    addQuestion,
+    addChoice,
+    deleteChoice,
+    deleteQuestion,
+    questionValidation
+  }
+}
+
+/* Input Question Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function AddSubject() {
+  const { courseId, mode } = useParams();
+  const { userData } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { subjectInput,
+    setSubjectInput,
+    addContent,
+    removeContent,
+    handleChange,
+    handleImageUpload,
+    removeImage,
+    inputValidation
+  } = useSubjectForm();
+  const { questionType,
+    questionInput,
+    setQuestionInput,
+    handleQuestionChange,
+    handleChoiceChange,
+    addQuestion,
+    addChoice,
+    deleteChoice,
+    deleteQuestion,
+    questionValidation
+  } = useQuestionForm();
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
@@ -92,112 +287,6 @@ function AddSubject() {
         <CircularProgress size={60} thickness={5} color="secondary"/>
       </div>
     );
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /* Input Format Functions */
-  const addContent = () => {
-    setSubjectInput({
-      ...subjectInput,
-      content: [
-        ...subjectInput.content,
-        {
-          topic: "",
-          description: "",
-          imgs: []
-        }
-      ]
-    });
-  };
-
-  const removeContent = (index) => {
-    const updatedContent = subjectInput.content.filter((_, i) => i !== index);
-    setSubjectInput({ ...subjectInput, content: updatedContent });
-  };
-
-  const handleChange = (index, field, value) => {
-    const updatedContent = [...subjectInput.content];
-    updatedContent[index][field] = value;
-    setSubjectInput({ ...subjectInput, content: updatedContent });
-  };
-
-  const handleImageUpload = (index, event) => {
-    const files = Array.from(event.target.files);
-    
-    const updatedContent = [...subjectInput.content];
-    files.forEach(file => {
-      if (file.size <= 6 * 1024 * 1024) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-          updatedContent[index].imgs.push(reader.result);
-          setSubjectInput({ ...subjectInput, content: updatedContent });
-        };
-      } else {
-        alert("File size must be less than 6MB");
-      }
-    });
-  };
-
-  const removeImage = (contentIndex, imgIndex) => {
-    const updatedContent = [...subjectInput.content];
-    updatedContent[contentIndex].imgs = updatedContent[contentIndex].imgs.filter((_, i) => i !== imgIndex);
-    setSubjectInput({ ...subjectInput, content: updatedContent });
-  };
-
-  const inputValidation = () => {
-
-    if(subjectInput.name === "") {
-      return "Subject Name is required";
-    }
-    if(subjectInput.content.length === 0) {
-      return "At least one content is required";
-    }
-    for (let i = 0; i < subjectInput.content.length; i++) {
-      const item = subjectInput.content[i];
-      if (item.topic === "") {
-        return `Topic ${i + 1} is required`;
-      }
-      if (item.description === "") {
-        return `Description for Topic ${i + 1} is required`;
-      }
-    }
-
-    return;
-  }
-
-  const questionValidation = () => {
-    if(questionInput.length === 0) {
-      return "At least one question is required";
-    }
-    for (let i = 0; i < questionInput.length; i++) {
-      const item = questionInput[i];
-      if (item.content === "") {
-        return `Question ${i + 1} content is required`;
-      }
-      if (item.choice.length === 0) {
-        return `At least one choice is required for Question ${i + 1}`;
-      }
-      for (let j = 0; j < item.choice.length; j++) {
-        const choice = item.choice[j];
-        if (choice.content === "") {
-          return `Choice ${j + 1} content for Question ${i + 1} is required`;
-        }
-      }
-
-      if (item.type === "Pre" || item.type === "Post") {
-        const correctChoices = item.choice.filter(choice => choice.isCorrect);
-        if (correctChoices.length === 0) {
-          return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
-        }
-        const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
-        if (incorrectChoices.length === 0) {
-          return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
-        }
-      }
-    }
-
-    return;
   }
 
   const handleSubmit = async () => {
@@ -269,9 +358,6 @@ function AddSubject() {
       setOpenSnackbar(true);
     }
   }
-
-  /* Input Format Functions */
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   const handlePreview = () => {
     if(mode === "manual" ){
@@ -296,59 +382,6 @@ function AddSubject() {
       setPreviewPopupOpen(true);
     }
   };
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /* Input Question Functions */
-  
-  const handleQuestionChange = (index, field, value) => {
-    const newQuestions = [...questionInput];
-    newQuestions[index][field] = value;
-    setQuestionInput(newQuestions);
-  };
-  
-  const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
-    const newQuestions = [...questionInput];
-    newQuestions[questionIndex].choice[choiceIndex][field] = value;
-    setQuestionInput(newQuestions);
-  };
-  
-  const addQuestion = () => {
-    const newQuestion = {
-      content: "",
-      choice: [
-        {
-          content: "",
-          isCorrect: false,
-        },
-      ],
-      img: "",
-      type: questionType[0],
-    };
-    setQuestionInput([...questionInput, newQuestion]);
-  };
-  
-  const addChoice = (index) => {
-    const newQuestions = [...questionInput];
-    newQuestions[index].choice.push({
-      content: "",
-      isCorrect: false,
-    });
-    setQuestionInput(newQuestions);
-  };
-  
-  const deleteChoice = (questionIndex, choiceIndex) => {
-    const newQuestions = [...questionInput];
-    newQuestions[questionIndex].choice.splice(choiceIndex, 1);
-    setQuestionInput(newQuestions);
-  };
-  
-  const deleteQuestion = (index) => {
-    const newQuestions = questionInput.filter((_, i) => i !== index);
-    setQuestionInput(newQuestions);
-  };
-
-  /* Input Question Functions */
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className={style["add-subject-container"]}>
