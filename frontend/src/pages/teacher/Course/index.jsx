@@ -153,13 +153,19 @@ function EditCourse() {
         <DialogActions>
           <Button 
             variant='contained' 
-            onClick={() => navigate(`/add-subject/${courseId}/pdf`)}
+            onClick={() => {
+              localStorage.setItem("prevMode", "pdf");
+              navigate(`/add-subject/${courseId}/pdf`);
+            }}
           >
             PDF
           </Button>
           <Button 
             variant='contained' 
-            onClick={() => navigate(`/add-subject/${courseId}/manual`)}
+            onClick={() => {
+              localStorage.setItem("prevMode", "manual");
+              navigate(`/add-subject/${courseId}/manual`)
+            }}
           >
             Manual
           </Button>

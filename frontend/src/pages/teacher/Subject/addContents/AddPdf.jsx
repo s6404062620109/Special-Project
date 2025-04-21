@@ -1,4 +1,6 @@
 import React, { useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
 import { Box, Button, Stack, Typography, styled } from "@mui/material";
 import PreviewIcon from '@mui/icons-material/Preview';
 import AddIcon from '@mui/icons-material/Add';
@@ -17,20 +19,16 @@ const VisuallyHiddenInput = styled('input')({
 
 function AddPdf({
   handlePreview,
+  file,
+  setFile,
+  inputRef,
+  handleBoxClick,
+  handleFileChange,
+  handleSubmit,
+  pdfValidation
 }) {
-  const inputRef = useRef(null);
-  const [ file, setFile ] = useState(null);
-
-  const handleBoxClick = () => {
-    inputRef.current.click();
-  };
-
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.type === "application/pdf") {
-      setFile(selectedFile);
-    }
-  };
+  const { courseId } = useParams();
+  const navigate = useNavigate();
   
   return (
     <Stack
@@ -124,6 +122,36 @@ function AddPdf({
           />
         </Box>
       </Stack>
+
+      <Stack
+        sx={{
+          width: { xs: "60%", sm: "40%" },
+          gap: 2,
+          flexDirection: { xs: "column", sm: "row" }
+        }}
+      >
+        <Button 
+          variant='outlined' 
+          sx={{
+            background: "red",
+            color: "white",
+            width: { xs: '100%', sm: '50%' }
+          }}
+          onClick={() => navigate(`/edit-course/${courseId}`)}
+        >
+          Cancel
+        </Button>
+        <Button 
+          variant='contained'
+          sx={{
+            width: { xs: '100%', sm: '50%' }
+          }}
+          onClick={handleSubmit}
+        >
+          Next
+        </Button>
+        
+      </Stack>     
       
     </Stack>
   );

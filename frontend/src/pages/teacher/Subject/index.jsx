@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
@@ -12,7 +12,6 @@ import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
 import Preview from "./addContents/Preview";
 import Reader from "../../../components/Reader";
-import { use } from "react";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -221,6 +220,57 @@ const useQuestionForm = () => {
 /* Input Question Functions */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Pdf Functions */
+
+const usePdfForm = () => {
+  const [ file, setFile ] = useState(null);
+  const inputRef = useRef(null);
+
+  const handleBoxClick = () => {
+    inputRef.current.click();
+  };
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile && selectedFile.type === "application/pdf") {
+      setFile(selectedFile);
+    }
+  };
+
+  const handlePreview = () => {
+
+  }
+
+  const pdfValidation = () => {
+    if(!file){
+      return "Please select a PDF file";
+    }
+
+    if(file.type !== "application/pdf"){
+      return "Please select a PDF file";
+    }
+
+    if(file.size > 1024 * 1024 * 512){
+      return "File size must be less than 512MB";
+    }
+
+    return null;
+  }
+
+  return{
+    file,
+    setFile,
+    inputRef,
+    handleBoxClick,
+    handleFileChange,
+    pdfValidation
+  }
+}
+
+/* Input Pdf Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 function AddSubject() {
   const { courseId, mode } = useParams();
   const { userData } = useContext(AuthContext);
@@ -245,6 +295,13 @@ function AddSubject() {
     deleteQuestion,
     questionValidation
   } = useQuestionForm();
+  const { file,
+    setFile,
+    inputRef,
+    handleBoxClick,
+    handleFileChange,
+    pdfValidation
+  } = usePdfForm();
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
@@ -252,15 +309,34 @@ function AddSubject() {
   const [ loading, setLoading ] = useState(true);
 
   useEffect(() => {
+    const prevMode = localStorage.getItem("prevMode");
+    if(prevMode !== "manual" && prevMode !== "pdf"){
+      alert("Please selected add subject mode.");
+      navigate(`/edit-course/${courseId}`);
+      return;
+    }
     const checkInitialCondition = () => {
       if (mode === "question") {
-        if (subjectInput.name === "" || subjectInput.content.length === 0) {
-          setAlertMessage("Subject Name and Content is required");
-          setOpenSnackbar(true);
-          setTimeout(() => {
-            navigate(`/add-subject/${courseId}/manual`);
-          }, 3000);
-          return;
+        if(prevMode === "manual"){
+          if (subjectInput.name === "" || subjectInput.content.length === 0) {
+            setAlertMessage("Subject Name and Content is required");
+            setOpenSnackbar(true);
+            setTimeout(() => {
+              navigate(`/add-subject/${courseId}/manual`);
+            }, 3000);
+            return;
+          }
+        }
+
+        if(prevMode === "pdf"){
+          if(!file){
+            setAlertMessage("Please select a PDF file");
+            setOpenSnackbar(true);
+            setTimeout(() => {
+              navigate(`/add-subject/${courseId}/pdf`);
+            }, 3000);
+            return;
+          }
         }
       }
 
@@ -277,9 +353,9 @@ function AddSubject() {
 
       setLoading(false); 
     };
-
+    
     checkInitialCondition();
-  }, [mode, subjectInput, navigate, courseId]);
+  }, [mode, subjectInput, questionInput, file, navigate, courseId]);
 
   if (loading) {
     return (
@@ -300,10 +376,23 @@ function AddSubject() {
 
       setAlertMessage("");
       setOpenSnackbar(false);
+      localStorage.setItem("prevMode", "manual");
       navigate(`/add-subject/${courseId}/question`); 
     }
     
-    if (mode === "pdf") {}
+    if (mode === "pdf") {
+      const error = pdfValidation();
+      if(error){
+        setAlertMessage(error);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      setAlertMessage("");
+      setOpenSnackbar(false);
+      localStorage.setItem("prevMode", "pdf");
+      navigate(`/add-subject/${courseId}/question`);
+    }
 
     if (mode === "question") {
       const error = questionValidation();
@@ -446,7 +535,16 @@ function AddSubject() {
         )}
 
         { mode === "pdf" && (
-          <AddPdf/>
+          <AddPdf
+            handlePreview={handlePreview}
+            file={file}
+            setFile={setFile}
+            inputRef={inputRef}
+            handleBoxClick={handleBoxClick}
+            handleFileChange={handleFileChange}
+            handleSubmit={handleSubmit}
+            pdfValidation={pdfValidation}
+          />
         )}
 
         { (mode === "question" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
