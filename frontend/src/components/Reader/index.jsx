@@ -11,7 +11,7 @@ function Reader({
   question, 
 }) {
   const { mode } = useParams();
-  const isPDF = typeof content === 'string' && content.endsWith('.pdf');
+  const isPDF = (typeof content === 'string' && content.endsWith('.pdf')) || (content instanceof File);
   const isManual = typeof content === 'object' && content;
   const isTest = Array.isArray(question) && question.length > 0;
 

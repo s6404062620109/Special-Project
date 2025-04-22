@@ -302,11 +302,14 @@ function AddSubject() {
     handleFileChange,
     pdfValidation
   } = usePdfForm();
+  const [ previewContent, setPreviewContent ] = useState(null);
+  const [ previewQuestion, setPreviewQuestion ] = useState([]); 
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
   const [ openDialog, setOpenDialog ] = useState(false);
   const [ loading, setLoading ] = useState(true);
+
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
@@ -457,7 +460,24 @@ function AddSubject() {
         return;
       }
 
+      setPreviewContent(subjectInput);
+      setPreviewQuestion([]);
       setPreviewPopupOpen(true);
+    }
+
+    if(mode === "pdf"){
+      const error = pdfValidation();
+      if(error){
+        setAlertMessage(error);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      if (file) {
+        setPreviewContent(file); 
+        setPreviewQuestion([]); 
+        setPreviewPopupOpen(true);
+      }
     }
     
     if(mode === "question"){
@@ -468,6 +488,8 @@ function AddSubject() {
         return;
       }
 
+      setPreviewContent(null);
+      setPreviewQuestion(questionInput);
       setPreviewPopupOpen(true);
     }
   };
@@ -501,6 +523,15 @@ function AddSubject() {
             {alertMessage}
           </Alert>
         </Snackbar>
+
+        { (PreviewPopupOpen && mode === "pdf" && file !== null) && (
+          <Preview
+            subjectInput={previewContent}
+            questionInput={null}
+            PreviewPopupOpen={PreviewPopupOpen}
+            setPreviewPopupOpen={setPreviewPopupOpen}
+          />
+        )}
 
         { (PreviewPopupOpen && mode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
           <Preview

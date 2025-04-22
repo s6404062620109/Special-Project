@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Dialog, IconButton, Stack, Typography } from '@mui/material';
+import { Dialog, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Reader from '../../../../components/Reader';
 
