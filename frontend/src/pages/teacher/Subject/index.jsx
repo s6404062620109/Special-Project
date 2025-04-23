@@ -309,7 +309,7 @@ function AddSubject() {
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
   const [ openDialog, setOpenDialog ] = useState(false);
   const [ loading, setLoading ] = useState(true);
-
+  const prevMode = localStorage.getItem("prevMode");
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
@@ -578,7 +578,7 @@ function AddSubject() {
           />
         )}
 
-        { (mode === "question" && subjectInput.name !== "" && subjectInput.content.length !== 0) && (
+        { (mode === "question" && ( prevMode === "manual" || prevMode === "pdf" )) && (
           <AddQuestion
             questionInput={questionInput}
             questionType={questionType}

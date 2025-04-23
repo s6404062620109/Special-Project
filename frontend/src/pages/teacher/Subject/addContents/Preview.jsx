@@ -13,22 +13,23 @@ function Preview({
 
   return (
     <Dialog
-        open={PreviewPopupOpen}
-        onClose={() => setPreviewPopupOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        slotProps={{
-            paper: {
-                sx: {
-                  borderRadius: '12px',
-                  padding: '20px',
-                  boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: 'white',
-                  width: { xs: '90%', sm: '70%' },
-                  position: 'relative'
-                }
-            }
-        }}
+      open={PreviewPopupOpen}
+      onClose={() => setPreviewPopupOpen(false)}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            backgroundColor: 'white',
+            width: { xs: '90%', sm: '70%' },
+            maxWidth: '100%',
+            position: 'relative'
+          }
+        }
+      }}
     >
         <IconButton 
             onClick={() => setPreviewPopupOpen(false)}
