@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 
 import ManualRead from './ManualRead'
@@ -11,26 +11,34 @@ function Reader({
   question, 
 }) {
   const { mode } = useParams();
-  const isPDF = (typeof content === 'string' && content.endsWith('.pdf')) || (content instanceof File);
-  const isManual = typeof content === 'object' && content;
+  const isPDF = ( typeof content === 'string' && content.endsWith('.pdf') ) || (
+    typeof content === 'object' &&
+    content !== null &&
+    'name' in content &&
+    'file' in content &&
+    content.file instanceof File &&
+    content.file.type === 'application/pdf'
+  );
+  const isManual = typeof content === 'object' && !isPDF && content;
   const isTest = Array.isArray(question) && question.length > 0;
 
   const availableModes = [
-    isManual && "Manual",
-    isPDF && "PDF",
-    isTest && "Test",
-  ].filter(Boolean);
+    { condition: isManual, label: "Manual" },
+    { condition: isPDF, label: "PDF" },
+    { condition: isTest, label: "Test" },
+  ].filter(item => item.condition)
+  .map(item => item.label);
   const [ confirmMode, setConfirmMode ] = useState(availableModes[0]);
 
   return (
     <Box>
       {(isManual && mode === "manual") && <ManualRead subjectInput={content} />}
 
-      {(isPDF && mode === "pdf") && <PdfRead fileUrl={content} />}
+      {(isPDF && mode === "pdf") && <PdfRead subjectName={ isPDF ? content.name : "" } fileUrl={ isPDF ? content.file : content } />}
 
       {(isTest && mode === "question") && <TestRead question={question} />}
 
-      {(mode === "submit" && isManual && isTest) && (
+      {(mode === "submit") && (
         <Box
           sx={{
             width: "80%",
@@ -41,7 +49,7 @@ function Reader({
           }}
         >
           {confirmMode === "Manual" && <ManualRead subjectInput={content} />}
-          {confirmMode === "PDF" && <PdfRead fileUrl={content} />}
+          {confirmMode === "PDF" && <PdfRead subjectName={ isPDF ? content.name : "" } fileUrl={ isPDF ? content.file : content } />}
           {confirmMode === "Test" && <TestRead question={question} />}
         </Box>
       )}

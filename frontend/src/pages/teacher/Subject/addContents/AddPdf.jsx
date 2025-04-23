@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Box, Button, Stack, Typography, styled } from "@mui/material";
+import { Box, Button, Stack, TextField, Typography, styled } from "@mui/material";
 import PreviewIcon from '@mui/icons-material/Preview';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -19,13 +19,13 @@ const VisuallyHiddenInput = styled('input')({
 
 function AddPdf({
   handlePreview,
+  subjectPdfInput,
+  setSubjectPdfInput,
   file,
-  setFile,
   inputRef,
   handleBoxClick,
   handleFileChange,
   handleSubmit,
-  pdfValidation
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -66,6 +66,21 @@ function AddPdf({
           </Button>
         </Stack>
 
+        <TextField 
+          id="outlined-basic" 
+          variant="outlined" 
+          label="Subject Name"
+          value={subjectPdfInput.name}
+            onChange={(e) => setSubjectPdfInput({ ...subjectPdfInput, name: e.target.value })}
+          sx={{
+            '& input:-webkit-autofill': {
+              WebkitBoxShadow: '0 0 0 1000px white inset',
+              WebkitTextFillColor: 'black',
+              caretColor: 'black',
+            },
+          }}
+        />
+
         <Box
           onClick={handleBoxClick}
           sx={{
@@ -92,9 +107,9 @@ function AddPdf({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            {file ? (
+            {subjectPdfInput.file ? (
               <Typography variant="body1" sx={{ color: '#666', mt: 1 }}>
-                Selected file: {file.name}
+                Selected file: {subjectPdfInput.file.name}
               </Typography>
             ) : (
               <Stack

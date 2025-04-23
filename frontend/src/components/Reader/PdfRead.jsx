@@ -3,10 +3,12 @@ import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 
-function PdfReader({ fileUrl }) {
+function PdfReader({ subjectName, fileUrl }) {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const [pdfUrl, setPdfUrl] = useState('');
+
 
   useEffect(() => {
     if (!fileUrl) return;
@@ -23,13 +25,14 @@ function PdfReader({ fileUrl }) {
     }
   }, [fileUrl]);
 
-  if (!pdfUrl) return <div>Loading...</div>;
+  if (!pdfUrl) return <CircularProgress color="secondary" />;
 
   return (
     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-      <div>
+      <Stack gap={2}>
+        <Typography variant='h5' fontWeight='600'>{subjectName}</Typography>
         <Viewer fileUrl={pdfUrl} plugins={[defaultLayoutPluginInstance]} />
-      </div>
+      </Stack>
     </Worker>
   );
 }

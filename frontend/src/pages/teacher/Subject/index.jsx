@@ -224,7 +224,10 @@ const useQuestionForm = () => {
 /* Input Pdf Functions */
 
 const usePdfForm = () => {
-  const [ file, setFile ] = useState(null);
+  const [ subjectPdfInput, setSubjectPdfInput ] = useState({
+    name: "",
+    file: null,
+  });
   const inputRef = useRef(null);
 
   const handleBoxClick = () => {
@@ -234,24 +237,24 @@ const usePdfForm = () => {
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
-      setFile(selectedFile);
+      setSubjectPdfInput({ ...subjectPdfInput, file: selectedFile });
     }
   };
 
-  const handlePreview = () => {
-
-  }
-
   const pdfValidation = () => {
-    if(!file){
+    if(subjectPdfInput.name === ""){
+      return "Subject Name is required";
+    }
+
+    if(!subjectPdfInput.file){
       return "Please select a PDF file";
     }
 
-    if(file.type !== "application/pdf"){
+    if(subjectPdfInput.file.type !== "application/pdf"){
       return "Please select a PDF file";
     }
 
-    if(file.size > 1024 * 1024 * 512){
+    if(subjectPdfInput.file.size > 1024 * 1024 * 512){
       return "File size must be less than 512MB";
     }
 
@@ -259,8 +262,8 @@ const usePdfForm = () => {
   }
 
   return{
-    file,
-    setFile,
+    subjectPdfInput,
+    setSubjectPdfInput,
     inputRef,
     handleBoxClick,
     handleFileChange,
@@ -295,8 +298,8 @@ function AddSubject() {
     deleteQuestion,
     questionValidation
   } = useQuestionForm();
-  const { file,
-    setFile,
+  const { subjectPdfInput,
+    setSubjectPdfInput,
     inputRef,
     handleBoxClick,
     handleFileChange,
@@ -332,7 +335,7 @@ function AddSubject() {
         }
 
         if(prevMode === "pdf"){
-          if(!file){
+          if(!subjectPdfInput.file){
             setAlertMessage("Please select a PDF file");
             setOpenSnackbar(true);
             setTimeout(() => {
@@ -344,13 +347,26 @@ function AddSubject() {
       }
 
       if(mode === "submit"){
-        if (subjectInput.name === "" || subjectInput.content.length === 0 || questionInput.length === 0){
-          setAlertMessage("Subject Name, Content and Question is required");
-          setOpenSnackbar(true);
-          setTimeout(() => {
-            navigate(`/add-subject/${courseId}/manual`);
-          }, 3000);
-          return;
+        if(prevMode === "manual"){
+          if (subjectInput.name === "" || subjectInput.content.length === 0 || questionInput.length === 0){
+            setAlertMessage("Subject Name, Content and Question is required");
+            setOpenSnackbar(true);
+            setTimeout(() => {
+              navigate(`/add-subject/${courseId}/manual`);
+            }, 3000);
+            return;
+          }
+        }
+        
+        if(prevMode === "pdf"){
+          if(subjectPdfInput.name === "" || !subjectPdfInput.file){
+            setAlertMessage("Subject Name and PDF file is required");
+            setOpenSnackbar(true);
+            setTimeout(() => {
+              navigate(`/add-subject/${courseId}/pdf`);
+            }, 3000);
+            return;
+          }
         }
       }
 
@@ -358,7 +374,7 @@ function AddSubject() {
     };
     
     checkInitialCondition();
-  }, [mode, subjectInput, questionInput, file, navigate, courseId]);
+  }, [mode, subjectInput, questionInput, subjectPdfInput, navigate, courseId]);
 
   if (loading) {
     return (
@@ -408,14 +424,27 @@ function AddSubject() {
     }
 
     if (mode === "submit") {
-      const inputError = inputValidation();
-      const questionError = questionValidation();
+      if(prevMode === "manual"){
+        const inputError = inputValidation();
+        const questionError = questionValidation();
 
-      if (inputError || questionError) {
-        setAlertMessage(inputError || questionError);
-        setOpenSnackbar(true);
-        return;
+        if (inputError || questionError) {
+          setAlertMessage(inputError || questionError);
+          setOpenSnackbar(true);
+          return;
+        }
       }
+
+      if(prevMode === "pdf"){
+        const pdfError = pdfValidation();
+        const questionError = questionValidation();
+
+        if (pdfError || questionError) {
+          setAlertMessage(inputError || questionError);
+          setOpenSnackbar(true);
+          return;
+        }
+      }    
 
       setOpenDialog(true);
     }
@@ -424,31 +453,38 @@ function AddSubject() {
   const handleSubmitDialog = async () => {
     const formData = new FormData();
 
-    formData.append('name', subjectInput.name);
-    formData.append('content', JSON.stringify(subjectInput.content));
-    formData.append('question', JSON.stringify(questionInput))
-    
-    try{
-      const response = await backend.post(`/teacher/addSubject/${courseId}`, 
-        formData, { 
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true  
+    if(prevMode === "manual"){
+      formData.append('name', subjectInput.name);
+      formData.append('content', JSON.stringify(subjectInput.content));
+      formData.append('question', JSON.stringify(questionInput))
+      
+      try{
+        const response = await backend.post(`/teacher/addSubject/${courseId}`, 
+          formData, { 
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true  
+          }
+        );
+
+        if(response.status === 200){
+          setAlertMessage(response.data.message);
+          setOpenSnackbar(true);
+
+          setTimeout(() => {
+            navigate(`/edit-course/${courseId}`);
+          }, 3000);
         }
-      );
-
-      if(response.status === 200){
-        setAlertMessage(response.data.message);
+      } catch(error){
+        console.log(error);
+        setAlertMessage(error.response.data.message);
         setOpenSnackbar(true);
-
-        setTimeout(() => {
-          navigate(`/edit-course/${courseId}`);
-        }, 3000);
       }
-    } catch(error){
-      console.log(error);
-      setAlertMessage(error.response.data.message);
-      setOpenSnackbar(true);
     }
+
+    if(prevMode === "pdf"){
+      console.log(subjectPdfInput)
+    }
+    
   }
   
   const handlePreview = () => {
@@ -473,8 +509,8 @@ function AddSubject() {
         return;
       }
 
-      if (file) {
-        setPreviewContent(file); 
+      if (subjectPdfInput.name !== "" && subjectPdfInput.file) {
+        setPreviewContent(subjectPdfInput); 
         setPreviewQuestion([]); 
         setPreviewPopupOpen(true);
       }
@@ -524,7 +560,7 @@ function AddSubject() {
           </Alert>
         </Snackbar>
 
-        { (PreviewPopupOpen && mode === "pdf" && file !== null) && (
+        { (PreviewPopupOpen && mode === "pdf" && subjectPdfInput.name !== "" && subjectPdfInput.file !== null) && (
           <Preview
             subjectInput={previewContent}
             questionInput={null}
@@ -568,8 +604,8 @@ function AddSubject() {
         { mode === "pdf" && (
           <AddPdf
             handlePreview={handlePreview}
-            file={file}
-            setFile={setFile}
+            subjectPdfInput={subjectPdfInput}
+            setSubjectPdfInput={setSubjectPdfInput}
             inputRef={inputRef}
             handleBoxClick={handleBoxClick}
             handleFileChange={handleFileChange}
@@ -594,11 +630,12 @@ function AddSubject() {
         )}
 
         {( (mode === "submit") && 
-        (subjectInput.name !== "" && subjectInput.content.length !== 0) && 
+        ((prevMode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0) || 
+        (prevMode === "pdf" && subjectPdfInput.name !== "" && subjectPdfInput.file !== null)) && 
         (questionInput.length !== 0)) && (
           <Stack>
             <Reader 
-              content={subjectInput}
+              content={subjectInput.name !== "" && subjectInput.content.length !== 0 ? subjectInput : subjectPdfInput}
               question={questionInput}
             />
 
