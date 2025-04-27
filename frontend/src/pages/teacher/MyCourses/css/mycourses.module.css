@@ -3,9 +3,9 @@
 }
 
 .container {
-    width: 70%;
+    width: 60%;
     height: auto;
-    min-height: 700px;
+    min-height: 800px;
     border-radius: 12px;
     margin: 50px auto;
     background: white;
@@ -44,6 +44,9 @@
 .body table tbody tr {
     border-top: 1px solid #e0e0e0;
     border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .body table tbody td {
@@ -55,16 +58,21 @@
     text-overflow: ellipsis;
 }
 
+.body table tbody tr:hover {
+    cursor: pointer;
+    background: #dddddd;
+}
+
 .body table tbody td:nth-child(1) {
     display: flex;
     align-items: center;
-    width: 70%; 
+    width: 80%; 
 }
 
-.body table tbody td:nth-child(2),
-.body table tbody td:nth-child(3) {
-    padding: 0 15px;
-    width: 15%;
+.body table tbody td:nth-child(2){
+    display: flex;
+    justify-content: flex-end;
+    width: 20%;
 }
 
 .body table tbody td img {
@@ -94,14 +102,6 @@
 .body table tbody td > button:hover{
     opacity: 0.75;
 } 
-
-.body table tbody td:nth-child(2) > button {
-    background: #8392AB;
-}
-
-.body table tbody td:nth-child(3) > button {
-    background: red;
-}
 
 .body table tbody td button img {
     width: 16px;
@@ -150,14 +150,7 @@
 }
 
 @media screen and (max-width: 768px) {
-    .body table tbody td:nth-child(1){
-        img{
-            display: none;
-        }
-    }
-    .body table tbody td > button{
-        p{
-            display: none;
-        }
+    .container{
+        width: 80%;
     }
 }

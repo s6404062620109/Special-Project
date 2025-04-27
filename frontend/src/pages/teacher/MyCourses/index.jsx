@@ -5,14 +5,27 @@ import { AuthContext } from '../../../context/AuthProvider';
  
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 
 import style from './css/mycourses.module.css';
 import AddPopup from './AddPopup';
+import { IconButton, Menu, MenuItem } from '@mui/material';
+import EditPopup from '../Course/EditPopup';
+
+const menuItemStyle = {
+  padding: "0 24px",
+  width: "100%",
+  display: "flex",
+  gap: "10px",
+};
 
 function MyCourses() {
   const { userData } = useContext(AuthContext);
   const [ myCourses, setMyCourses ] = useState([]);
   const [ isPopupOpen, setIsPopupOpen ] = useState(false);
+  const [ editPopupOpen, setEditPopupOpen ] = useState(false);
+  const [ anchorEl, setAnchorEl ] = useState(null);
+  const [ selecedCourse, setSelectedCourse ] = useState(null);
   const navigate = useNavigate();
 
   const fetchMyCourses = async () => {
@@ -69,6 +82,11 @@ function MyCourses() {
     }
   };
 
+  const handleSaveCourse = () => {
+    setEditPopupOpen(false);
+    fetchMyCourses();
+  };
+
   return (
     <div className={style['my-courses-container']}>
       <div className={style.container}>
@@ -82,7 +100,13 @@ function MyCourses() {
               {myCourses.length > 0 ? (
                 myCourses.map((course, index) => (
                   course ? (
-                    <tr key={course.id || index}>
+                    <tr key={course.id || index} onClick={(e) => {
+                      if(anchorEl){
+                        e.stopPropagation();
+                        return;
+                      }
+                      navigate(`/edit-course/${course.id}`)
+                    }}>
                       <td>
                         {course?.icon ? (
                           <img
@@ -96,18 +120,67 @@ function MyCourses() {
                         {course?.name || "Unnamed Course"}
                       </td>
 
-                      <td>
-                        <button onClick={() => navigate(`/edit-course/${course.id}`)}>
-                          <EditIcon />
-                          <p>Edit</p>
-                        </button>
-                      </td>
-
-                      <td>
+                      {/* <td>
                         <button onClick={() => handleDeleteCourse(course.id)}>
                           <DeleteIcon/>
                           <p>Delete</p>
                         </button>
+                      </td> */}
+
+                      <td>
+                        <IconButton onClick={(e) => {
+                          e.stopPropagation();
+                          setAnchorEl(e.currentTarget)
+                        }}>
+                          <MoreVertOutlinedIcon sx={{ color: "black" }}/>
+                        </IconButton>
+
+                        <Menu
+                          id="menu-appbar"
+                          anchorEl={anchorEl}
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          }}
+                          keepMounted
+                          transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          open={Boolean(anchorEl)}
+                          onClose={() => setAnchorEl(null)}
+                        >
+                          <MenuItem 
+                            sx={menuItemStyle}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAnchorEl(null);
+                              setSelectedCourse({
+                                name: course.name,
+                                icon: course.icon,
+                                enable: course.enable,
+                                id: course.id,
+                              });
+                              setEditPopupOpen(true);
+                            }}
+                          >
+                            <EditIcon/>
+                            <p>Edit</p>
+                          </MenuItem>
+
+                          <MenuItem 
+                            sx={menuItemStyle}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAnchorEl(null);
+                              handleDeleteCourse(course.id)
+                            }}
+                          >
+                            <DeleteIcon/>
+                            <p>Delete</p>
+                          </MenuItem>
+                            
+                        </Menu>
                       </td>
                     </tr>
                   ) : null
@@ -131,6 +204,14 @@ function MyCourses() {
         <AddPopup
           onClose={() => setIsPopupOpen(false)}
           onAddCourse={handleAddCourse}
+        />
+      )}
+
+      {editPopupOpen && (
+        <EditPopup
+          courseInfo={selecedCourse}
+          onClose={() => setEditPopupOpen(false)}
+          onSave={handleSaveCourse}
         />
       )}
     </div>

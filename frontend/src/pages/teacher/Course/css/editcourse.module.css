@@ -3,9 +3,9 @@
 }
 
 .container {
-    width: 65%;
-    height: 600px;
-    min-height: 700px;
+    width: 60%;
+    height: auto;
+    min-height: 800px;
     border-radius: 12px;
     margin: 50px auto;
     background: white;
