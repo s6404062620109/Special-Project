@@ -23,6 +23,22 @@ const NoneFileMulter = multer();
 
 router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(), teacherController.addManualSubject);
 
+const pdfStorage = multer.memoryStorage(); 
+const pdfUpload = multer({ 
+  storage: pdfStorage,
+  limits: { fileSize: 16 * 1024 * 1024 }, 
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed!'), false);
+    }
+  }
+});
+
+router.post("/addPdfSubject/:courseId", authUserRole.verifiedTeacherCourse, pdfUpload.single("file"), teacherController.addPdfSubject);
+
+
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -37,28 +53,6 @@ function deleteFolderRecursive(folderPath){
     console.log(`Folder does not exist: ${folderPath}`);
   }
 };
-
-const moveFiles = (files, sourcePath, destinationPath) => {
-  try {
-    files.forEach((file) => {
-      const sourceFile = path.join(sourcePath, file.filename);
-      const destinationFile = path.join(destinationPath, file.filename);
-      fs.renameSync(sourceFile, destinationFile);
-    });
-  } catch (err) {
-    console.error("Error moving files:", err);
-    throw new Error("Error moving files");
-  }
-};
-
-function deleteTempFiles(files, tmpPath) {
-  files.forEach((file) => {
-    const filePath = path.join(tmpPath, file.filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  });
-}
 
 const subjectStorage = multer.diskStorage({
   destination: (req, file, cb) => {

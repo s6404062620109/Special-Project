@@ -1,8 +1,6 @@
 const fs = require("fs");
-const path = require("path");
-const multer = require('multer'); 
+const path = require("path"); 
 const db = require("../database");
-const e = require("express");
 
 /* teacher_course controller */ 
 const getMyCourses = (req, res) => {
@@ -191,6 +189,78 @@ const addManualSubject = (req, res) => {
     }
 };
 
+const addPdfSubject = (req, res) => {
+  const { courseId } = req.params;
+  const { name, question } = req.body;
+  const file = req.file;
+
+  if (typeof courseId !== 'string') {
+    return res.status(400).send({ message: "Invalid Course ID." });
+  }
+  if (!name || !question || !file) {
+    return res.status(400).json({ message: "Name, file, and question are required." });
+  }
+
+  let parsedQuestion;
+
+  try {
+    parsedQuestion = JSON.parse(question);
+  } catch (err) {
+    return res.status(400).json({ message: "Question must be a valid JSON string." });
+  }
+
+  if (!Array.isArray(parsedQuestion) || parsedQuestion.length === 0) {
+    return res.status(400).json({ message: "Questions must be an array." });
+  }
+
+  try {
+    db.query("INSERT INTO subject (name, courseId, createat) VALUES (?, ?, NOW())", [name, courseId], async (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Database subject query error." });
+      }
+
+      const subjectId = result.insertId;
+      const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+      createFolder(subjectFolderPath);
+
+      const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
+      fs.writeFileSync(pdfFilePath, file.buffer);
+
+      try {
+        for (const q of parsedQuestion) {
+          await new Promise((resolve, reject) => {
+            db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
+              [q.content, q.type, subjectId], (err, questionResult) => {
+                if (err) return reject(err);
+
+                const questionId = questionResult.insertId;
+
+                for (const c of q.choice) {
+                  db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                    [c.content, c.isCorrect, questionId], (err) => {
+                      if (err) console.log("Choice Insert Error:", err);
+                    }
+                  );
+                }
+                resolve();
+              }
+            );
+          });
+        }
+
+        return res.status(200).json({ message: "PDF subject created successfully." });
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send({ message: "Error inserting questions or choices." });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+};
+
 /* teacher_subject controller */
 
 module.exports = {
@@ -199,4 +269,5 @@ module.exports = {
     updateCourse,
     deleteCourse,
     addManualSubject,
+    addPdfSubject,
 }

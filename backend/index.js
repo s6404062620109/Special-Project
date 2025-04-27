@@ -10,9 +10,9 @@ app.use(cookieParser());
 const allowedOrigins = [process.env.FRONTEND_URL];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (origin && allowedOrigins.includes(origin)) {
-      callback(null, origin);
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
@@ -21,8 +21,9 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
 };
-app.options("*", cors(corsOptions));
+
 app.use(cors(corsOptions));
+
 
 app.use(express.json());
 app.use(bodyParser.json());

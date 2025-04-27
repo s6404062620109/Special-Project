@@ -254,8 +254,8 @@ const usePdfForm = () => {
       return "Please select a PDF file";
     }
 
-    if(subjectPdfInput.file.size > 1024 * 1024 * 512){
-      return "File size must be less than 512MB";
+    if(subjectPdfInput.file.size > 16 * 1024 * 1024 ){
+      return "File size must be less than 16MB";
     }
 
     return null;
@@ -482,7 +482,31 @@ function AddSubject() {
     }
 
     if(prevMode === "pdf"){
-      console.log(subjectPdfInput)
+      formData.append('name', subjectPdfInput.name);
+      formData.append('file', subjectPdfInput.file);
+      formData.append('question', JSON.stringify(questionInput));
+
+      try{
+        const response = await backend.post(`/teacher/addPdfSubject/${courseId}`, 
+          formData, { 
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true  
+          }
+        );
+
+        if(response.status === 200){
+          setAlertMessage(response.data.message);
+          setOpenSnackbar(true);
+
+          setTimeout(() => {
+            navigate(`/edit-course/${courseId}`);
+          }, 3000);
+        }
+      } catch(error){
+        console.log(error);
+        setAlertMessage(error.response.data.message);
+        setOpenSnackbar(true);
+      }
     }
     
   }
@@ -551,8 +575,9 @@ function AddSubject() {
           <Alert 
             onClose={() => setOpenSnackbar(false)} 
             severity={
-              alertMessage === "Subject created successfully." ? "success" : "error"
-            } 
+              (alertMessage === "Subject created successfully." || alertMessage === "PDF subject created successfully.")
+              ? "success" : "error"
+            }
             variant="filled" 
             sx={{ width: '100%' }}
           >
