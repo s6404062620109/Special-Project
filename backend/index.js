@@ -49,8 +49,8 @@ const Posttest = require("./routes/posttest");
 app.use("/posttest", Posttest);
 
 /* Enrollment */
-const Enrollment = require("./routes/enroll");
-app.use("/enroll", Enrollment);
+const enrollRoutes = require("./routes/enrollRoutes");
+app.use("/enroll", enrollRoutes);
 
 /* Progress */
 const Progress = require("./routes/progress");

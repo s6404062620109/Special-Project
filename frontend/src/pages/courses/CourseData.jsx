@@ -9,20 +9,19 @@ import style from "./css/coursedata.module.css";
 
 function CourseData({ id, name, icon, enrollmentId, courseId }) {
   const { userData } = useContext(AuthContext);
-  const [imgPath, setImgPath] = useState("");
-  const [buttonText, setButtonText] = useState("");
-  const [history, setHistory] = useState([]);
+  const [ buttonText, setButtonText ] = useState("");
+  const [ history, setHistory ] = useState([]);
   const navigate = useNavigate();
 
   const fetchHistory = async () => {
     try {
-      const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
+      const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {withCredentials: true});
       
       if (response.status === 200) {
         setHistory(response.data.results);
       }
     } catch (err) {
-      console.log("Error fetching icon:", err);
+      console.log(err);
     }
   };
 
@@ -43,7 +42,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
       const response = await backend.post(`/enroll/enrollCourse`, {
         courseId: id,
         userId: userData.id,
-      });
+      }, {withCredentials: true});
 
       if (response.status === 200) {
         navigate(`/course/${id}/pretest/${response.data.enrollmentId}`);
@@ -72,7 +71,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
   useEffect(() => {   
     fetchHistory();
 
-    if (!userData.id && !userData.email && !userData.name && !userData.role) {
+    if (!userData.id) {
       setButtonText("View");
     } else if (enrollmentId !== null) {
       setButtonText("Continue");
