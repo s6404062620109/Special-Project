@@ -36,6 +36,7 @@ function Courses() {
 
   console.log(courses);
   return (
+    
     <div className={style.content}>
       <div className={style.head}>
         <p>COURSES</p>
@@ -86,8 +87,10 @@ function Courses() {
             })}
           </tbody>
         </table>
+        <div>sdfdsjglfjgljf</div>
       </div>
     </div>
+    
   )
 }
 
