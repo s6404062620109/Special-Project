@@ -25,9 +25,7 @@ function Home() {
       try {
         const response = await backend.get(
           `/auth/authorization/${emailrefStorage}`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
         if (response.status === 200) {
           setUserData({
@@ -40,7 +38,7 @@ function Home() {
         }
       } catch (error) {
         console.log(error);
-        if (error.response.status === 403) {
+        if (error.response?.status === 403) {
           localStorage.removeItem("email");
         }
       }
@@ -65,82 +63,90 @@ function Home() {
   }, [userData.id]);
 
   return (
-    <div className={style.container}>
-      {!userData.id && (
-        <div className={style["container-wrap"]}>
-          {loginEnable === true ? (
-            <div className={style["login-tablet"]}>
-              <Login />
-            </div>
-          ) : (
-            <div className={style.content}>
-              {userData.role === null && (
-                <p className={style.title}>
-                  Security <br /> Awareness Training
-                </p>
-              )}
-
-              {userData.role === null && (
-                <p className={style["sub-title"]}>
-                  การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
-                  ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
-                </p>
-              )}
-            </div>
-          )}
-
-          {!userData.id && (
-            <div className={style["login-wrap"]}>
-              <Login />
-            </div>
-          )}
-
-          {!userData.id && (
-            <div className={style["login-nav"]}>
-              <p onClick={() => setLoginEnable(!loginEnable)}>
-                {loginEnable === true ? (
-                  <>{"<-"} Get Back</>
-                ) : (
-                  <>Do you want join members for study?</>
+    <div className={style.pageWrapper}>
+      <div className={style.container}>
+        {!userData.id && (
+          <div className={style["container-wrap"]}>
+            {loginEnable === true ? (
+              <div className={style["login-tablet"]}>
+                <Login />
+              </div>
+            ) : (
+              <div className={style.content}>
+                {userData.role === null && (
+                  <p className={style.title}>
+                    Security <br /> Awareness Training
+                  </p>
                 )}
+                {userData.role === null && (
+                  <p className={style["sub-title"]}>
+                    การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
+                    ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!userData.id && (
+              <div className={style["login-wrap"]}>
+                <Login />
+              </div>
+            )}
+
+            {!userData.id && (
+              <div className={style["login-nav"]}>
+                <p onClick={() => setLoginEnable(!loginEnable)}>
+                  {loginEnable === true ? (
+                    <>{"<-"} Get Back</>
+                  ) : (
+                    <>Do you want join members for study?</>
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {userData.id && userData.role === "s" && (
+          <div className={style["container-wrap"]}>
+            <UserBoard
+              email={userData.email}
+              name={userData.name}
+              role={userData.role}
+              profile_img={userData.profile_img}
+            />
+            <CourseBoard enrollment={enrollment} />
+          </div>
+        )}
+
+        {userData.id && userData.role === "t" && (
+          <div className={style["container-wrap"]}>
+            <div className={style.content}>
+              <p className={style.title}>
+                Security <br /> Awareness Training <br /> For Teacher.
               </p>
             </div>
-          )}
-        </div>
-      )}
-
-      {userData.id && userData.role === "s" && (
-        <div className={style["container-wrap"]}>
-          <UserBoard
-            email={userData.email}
-            name={userData.name}
-            role={userData.role}
-            profile_img={userData.profile_img}
-          />
-
-          <CourseBoard enrollment={enrollment} />
-        </div>
-      )}
-
-      {userData.id && userData.role === "t" && (
-        <div className={style["container-wrap"]}>
-          <div className={style.content}>
-            <p className={style.title}>
-              Security <br /> Awareness Training <br /> For Teacher.
-            </p>
           </div>
-        </div>
-      )}
+        )}
 
-      {userData.id && userData.role === "a" && (
-        <div className={style["container-wrap"]}>
-          <div className={style.content}>
-            <p className={style.title}>
-              Security <br /> Awareness Training <br /> For Admin.
-            </p>
+        {userData.id && userData.role === "a" && (
+          <div className={style["container-wrap"]}>
+            <div className={style.content}>
+              <p className={style.title}>
+                Security <br /> Awareness Training <br /> For Admin.
+              </p>
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className={style.footer}>
+        <div className={style.footerContent}>
+          <p>&copy; footer</p>
+          <p>Contact us: contact@example.com</p>
         </div>
-      )}
+      </footer>
     </div>
   );
 }

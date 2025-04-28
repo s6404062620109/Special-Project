@@ -14,10 +14,10 @@ export const autofillTextFieldSx = {
     transition: 'background-color 9999s ease-in-out 0s',
   },
   '& .MuiInputBase-root': {
-    color: 'white',
+    color: 'black',
   },
   '& .MuiInputLabel-root': {
-    color: 'white',
+    color: 'black',
   }
 };
 
@@ -68,7 +68,7 @@ function Login() {
               sx={autofillTextFieldSx}
               slotProps={{
                 input: {
-                  sx: { color: 'white'},
+                  sx: { color: 'black'},
                 }
               }}
               type='text'
@@ -84,7 +84,7 @@ function Login() {
               label="PASSWORD"
               slotProps={{
                 input: {
-                  sx: { color: 'white' },
+                  sx: { color: 'black' },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -93,8 +93,8 @@ function Login() {
                         edge="end"
                       >
                         {showPassword ? 
-                          <VisibilityIcon sx={{color: 'white'}}/> : 
-                          <VisibilityOffIcon sx={{color: 'white'}}/>
+                          <VisibilityIcon sx={{color: 'black'}}/> : 
+                          <VisibilityOffIcon sx={{color: 'black'}}/>
                         }
                       </IconButton>
                     </InputAdornment>
@@ -124,5 +124,34 @@ function Login() {
     </div>
   )
 }
-
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-section">
+      <h3>About Us</h3>
+      <p>เราคือทีมพัฒนาที่มุ่งมั่นสร้างเว็บที่ดีที่สุด</p>
+    </div>
+    <div class="footer-section">
+      <h3>Links</h3>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>Follow Us</h3>
+      <div class="social-icons">
+        <a href="#"><img src="icon-facebook.png" alt="Facebook"/></a>
+        <a href="#"><img src="icon-twitter.png" alt="Twitter"/></a>
+        <a href="#"><img src="icon-instagram.png" alt="Instagram"/></a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 Your Website | All Rights Reserved
+  </div>
+</footer>
 export default Login
+
+

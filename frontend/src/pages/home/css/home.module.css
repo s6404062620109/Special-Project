@@ -1,94 +1,121 @@
-.container {
+.pageWrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .container {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
     height: 100%;
-}
-.container-wrap{
+  }
+  
+  .container-wrap {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 80%;
     height: 100%;
     gap: 20px;
-}
-
-.content{
+  }
+  
+  .content {
     width: 50%;
-}
-
-.content > p {
+  }
+  
+  .content > p {
     margin: 0;
     font-family: 'Kdam Thmor', sans-serif;
-    color: white;
-}
-.content > .title{
+    color: black;
+  }
+  
+  .content > .title {
     font-size: 64px;
-}
-.content > .sub-title{
+  }
+  
+  .content > .sub-title {
     font-size: 24px;
     opacity: 0.5;
-}
-
-.login-wrap{
+  }
+  
+  .login-wrap {
     width: 40%;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.login-nav, .login-tablet{
+  }
+  
+  .login-nav, .login-tablet {
     display: none;
-}
-
-/* tablet screen */
-@media screen and (max-width: 1024px) {
-    .container-wrap{
-        flex-direction: column;
-        height: auto;
+  }
+  
+  /* Tablet responsive */
+  @media screen and (max-width: 1024px) {
+    .container-wrap {
+      flex-direction: column;
+      height: auto;
     }
-    
-    .content{
-        width: 100%;
+  
+    .content {
+      width: 100%;
     }
-    
-    .login-wrap{
-        display: none;
+  
+    .login-wrap {
+      display: none;
     }
-
-    .login-nav{
-        display: block;
+  
+    .login-nav {
+      display: block;
     }
-    .login-nav > p{
-        color: white;
-        font-size: 20px;
-        opacity: 0.5;
-        position: relative;
-        display: inline-block;
+    .login-nav > p {
+      color: white;
+      font-size: 20px;
+      opacity: 0.5;
+      position: relative;
+      display: inline-block;
     }
-
     .login-nav > p:hover {
-        cursor: pointer;
-        opacity: 1;
+      cursor: pointer;
+      opacity: 1;
     }
     .login-nav > p::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: -2px; 
-        width: 0; 
-        height: 2px; 
-        background-color: white; 
-        transition: width 0.3s ease-in-out;
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 0;
+      height: 2px;
+      background-color: white;
+      transition: width 0.3s ease-in-out;
     }
     .login-nav > p:hover::after {
-        width: 100%; 
+      width: 100%;
     }
-
-    .login-tablet{
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+  
+    .login-tablet {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-}
+  }
+  
+  /* Footer */
+  .footer {
+    background-color: #333;
+    color: white;
+    padding: 30px 20px 20px 20px;
+    border-top: 1px solid #555;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .footerContent {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  

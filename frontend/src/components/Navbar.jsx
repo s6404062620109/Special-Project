@@ -66,22 +66,22 @@ function Navbar() {
           <div onClick={() => navigate('/')}>หน้าหลัก</div>
 
           {userData.role === "t" && (
-            <div onClick={() => navigate('/my-courses')}>MY COURSES</div>
+            <div onClick={() => navigate('/my-courses')}>คอร์สของฉัน</div>
           )}
 
           {userData.role === "a" && (
             <>
-              <div onClick={() => navigate('/manageUser')}>USERS</div>
-              <div onClick={() => navigate('/manageCourse')}>COURSES</div>
+              <div onClick={() => navigate('/manageUser')}>ผู้ใช้งาน</div>
+              <div onClick={() => navigate('/manageCourse')}>คอร์สออนไลน์</div>
             </>
           )}
 
           {(userData.role === "s" || userData.role === null) && (
-            <div onClick={() => navigate('/courses')}>COURSES</div>
+            <div onClick={() => navigate('/courses')}>คอร์สออนไลน์</div>
+            
           )}
-
-          
-          <div>GUIDE</div>
+          <div>คู่มือการใช้งาน</div>
+          <div>ร่วมงานกับเรา</div>
         </div>
 
         {userData.name !== null &&(
