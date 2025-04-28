@@ -87,7 +87,7 @@ function Courses() {
             })}
           </tbody>
         </table>
-        <div>sdfdsjglfjgljf</div>
+        
       </div>
     </div>
     

@@ -44,25 +44,26 @@ function Navbar() {
 
         <div className={style.functionsContainer}>
           {userData.role === "t" && (
-            <Link to='/my-courses'>MY COURSES</Link>
+            <Link to='/my-courses'>คอร์สของฉัน</Link>
           )}
           {userData.role === "a" && (
             <>
-              <Link to='/manageUser'>USERS</Link>
-              <Link to='/manageCourse'>COURSES</Link>
+              <Link to='/manageUser'>ผู้ใช้งาน</Link>
+              <Link to='/manageCourse'>คอร์สออนไลน์</Link>
             </>
           )}
           {(userData.role === "s" || userData.role === null) && (
-            <Link to='/courses'>COURSES</Link>
+            <Link to='/courses'>คอร์สออนไลน์</Link>
           )}
-          <Link>GUIDE</Link>
+          <Link>คู่มือการใช้งาน</Link>
+          <Link>ร่วมงานกับเรา</Link>
         </div>
 
         <div 
           className={`${style["functionsContainer-mobile"]} ${sidebarVisible ? style.showSidebar : ''}`}
           onClick={() => setSidebarVisible(!sidebarVisible)}
         >
-          <div onClick={() => navigate('/')}>Home</div>
+          <div onClick={() => navigate('/')}>หน้าหลัก</div>
 
           {userData.role === "t" && (
             <div onClick={() => navigate('/my-courses')}>MY COURSES</div>
