@@ -27,7 +27,9 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
 
   const fetchLatestProgress = async () => {
     try {
-      const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}`);
+      const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
 
       if (response.status === 200) {
         navigate(`/course/${courseId}/${response.data.inProgress}`);

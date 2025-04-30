@@ -19,7 +19,9 @@ function Courses() {
       }
 
       if (userData.id) {
-        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
+        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {
+          withCredentials: true,
+        });
         if(response.status === 200){
           setProgress(response.data.results);
         }
@@ -34,7 +36,7 @@ function Courses() {
     fetchData();
   }, [userData]);
 
-  console.log(courses);
+
   return (
     
     <div className={style.content}>

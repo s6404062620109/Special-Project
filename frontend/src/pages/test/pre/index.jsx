@@ -13,59 +13,59 @@ function Pretest() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (userData.id !== null) {
-      const checkPretestCompletion = async () => {
-        try {
-          const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
+  const checkPretestCompletion = async () => {
+    try {
+      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
 
-          if (response.status === 200) {
-            const pretestProgress = response.data.results.filter(
-              (item) => item.type === 'Pre'
-            );
+      if (response.status === 200) {
+        const pretestProgress = response.data.results.filter(
+          (item) => item.type === 'Pre'
+        );
 
-            const areAllPretestsCompleted = pretestProgress.every(
-              (item) => item.is_completed === 1
-            );
+        const areAllPretestsCompleted = pretestProgress.every(
+          (item) => item.is_completed === 1
+        );
 
-            if (areAllPretestsCompleted) {
-              alert('You already complete all Pretest questions.');
-              navigate(`/courses`);
-            }
-          }
-        } catch (error) {
-          console.log(error);
+        if (areAllPretestsCompleted) {
+          alert('You already complete all Pretest questions.');
+          navigate(`/courses`);
         }
-      };
-
-      checkPretestCompletion();
+      }
+    } catch (error) {
+      console.log(error);
     }
-  }, [userData.id, enrollmentId, courseId, navigate]);
+  };
+
+  const fetchPretestData = async () => {
+    try{
+      const response = await backend.get(`/pretest/getPretest/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
+      console.log(response)
+      if(response.status === 200){
+        setQuestionsWithChoices(response.data.questions);
+      }
+        
+    } catch(error){
+      console.log(error);
+      if(error.response.status === 404){
+        alert("Please enroll this course before pretest.");
+        navigate('/');
+      }
+    }
+  }
 
   useEffect(() => {
     if(userData.id===null){
       alert("Please login first.");
       navigate('/');
     }
-
-    const fetchPretestData = async () => {
-      try{
-        const response = await backend.get(`/pretest/getPretest/${enrollmentId}/${userData.id}`);
-        console.log(response)
-        if(response.status === 200){
-          setQuestionsWithChoices(response.data.questions);
-        }
-          
-      } catch(error){
-        console.log(error);
-        if(error.response.status === 404){
-          alert("Please enroll this course before pretest.");
-          navigate('/');
-        }
-      }
+    if (userData.id !== null) {
+      checkPretestCompletion();
     }
+
     fetchPretestData();
-  }, [enrollmentId, userData.id]);
+  }, [userData.id, enrollmentId, courseId, navigate]);
 
   const handleAnswerChange = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({

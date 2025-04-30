@@ -31,7 +31,7 @@ const getEnrollmentCourses = (req, res) => {
     const courseIdsArray = courseIds.split(',').map(id => parseInt(id));
 
     try{
-        db.query("SELECT id, name, icon_id FROM course WHERE id IN (?)", [courseIdsArray], (err, results) => {
+        db.query("SELECT id, name, icon FROM course WHERE id IN (?)", [courseIdsArray], (err, results) => {
             if (err) {
                 return res.status(500).send("Database query error");
             }

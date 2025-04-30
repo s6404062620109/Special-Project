@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import backend from "../../api/backend";
 import Login from "../authenticate/login";
@@ -7,58 +8,26 @@ import CourseBoard from "./CourseBoard";
 
 import style from "./css/home.module.css";
 
+
 function Home() {
-  const [userData, setUserData] = useState({
-    id: null,
-    email: null,
-    name: null,
-    role: null,
-    profile_img: null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
-  const [loginEnable, setLoginEnable] = useState(false);
-  const [enrollment, setEnrollment] = useState([]);
-  const navigate = useNavigate();
+  const { userData } = useContext(AuthContext);
+  const [ loginEnable, setLoginEnable ] = useState(false);
+  const [ enrollment, setEnrollment ] = useState([]);
+
+  const fetchEnrollment = async () => {
+    try {
+      const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {
+        withCredentials: true,
+      });
+      if (response.status === 200) {
+        setEnrollment(response.data.results);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await backend.get(
-          `/auth/authorization/${emailrefStorage}`,
-          { withCredentials: true }
-        );
-        if (response.status === 200) {
-          setUserData({
-            id: response.data.id,
-            email: response.data.email,
-            name: response.data.name,
-            role: response.data.role,
-            profile_img: response.data.profile_img,
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        if (error.response?.status === 403) {
-          localStorage.removeItem("email");
-        }
-      }
-    };
-    fetchUserData();
-  }, [emailrefStorage]);
-
-  useEffect(() => {
-    const fetchEnrollment = async () => {
-      try {
-        const response = await backend.get(
-          `/enroll/checkCoursesEnroll/${userData.id}`
-        );
-        if (response.status === 200) {
-          setEnrollment(response.data.results);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchEnrollment();
   }, [userData.id]);
 

@@ -10,51 +10,32 @@ function CourseBoard({ enrollment }) {
     const [imgPaths, setImgPaths] = useState({});
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchCourses = async () => {
-            if (enrollment.length > 0) {
-                const courseIds = enrollment.map((enroll) => enroll.courseId);
+    const fetchCourses = async () => {
+        if (enrollment.length > 0) {
+            const courseIds = enrollment.map((enroll) => enroll.courseId);
 
-                try {
-                    const response = await backend.get(`/courses/getEnrollmentCourses/${courseIds.join(',')}`);
-
-                    if (response.status === 200) {
-                        const combinedData = response.data.map((course) => {
-                            const courseEnrollments = enrollment.filter((enroll) => enroll.courseId === course.id);
-                            const latestEnroll = courseEnrollments.at(-1);
-                            return {
-                                ...course,
-                                ...latestEnroll,
-                            };
-                        });
-
-                        setCourses(combinedData);
-                        
-                        combinedData.forEach((course) => {
-                            fetchIcon(course.courseId, course.icon_id);
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error fetching course data:", error);
-                }
-            }
-        };
-
-        const fetchIcon = async (courseId, iconId) => {
             try {
-                const response = await backend.get(`/imgrender/getIcon/${courseId}/${iconId}`);
+                const response = await backend.get(`/courses/getEnrollmentCourses/${courseIds.join(',')}`);
+
                 if (response.status === 200) {
-                    const imageUrl = `${import.meta.env.VITE_API_BASE_URL}${response.data.url}`;
+                    const combinedData = response.data.map((course) => {
+                        const courseEnrollments = enrollment.filter((enroll) => enroll.courseId === course.id);
+                        const latestEnroll = courseEnrollments.at(-1);
+                        return {
+                            ...course,
+                            ...latestEnroll,
+                        };
+                    });
 
-                    setImgPaths((prevPaths) => ({
-                        ...prevPaths, [courseId]: imageUrl,
-                    }));
+                    setCourses(combinedData);
                 }
-            } catch (err) {
-                console.error("Error fetching icon:", err);
+            } catch (error) {
+                console.error("Error fetching course data:", error);
             }
-        };
+        }
+    };
 
+    useEffect(() => {
         fetchCourses();
     }, [enrollment]);
 
@@ -71,16 +52,12 @@ function CourseBoard({ enrollment }) {
                             {courses.map((course, index) => (
                                 <tr key={index}> 
                                     <td>
-                                        {imgPaths[course.courseId] ? (
-                                            <img
-                                                src={imgPaths[course.courseId]}
-                                                alt="Course Icon"
-                                                width="50"
-                                                height="50"
-                                            />
-                                        ) : (
-                                            <p>Loading icon...</p>
-                                        )}
+                                        <img
+                                            src={course.icon}
+                                            alt="Course Icon"
+                                            width="50"
+                                            height="50"
+                                        />
 
                                         <p>{course.name}</p>
                                     </td>
