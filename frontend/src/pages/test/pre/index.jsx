@@ -1,52 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../../api/backend';
 
 import style from './css/pretest.module.css';
+import { AuthContext } from '../../../context/AuthProvider';
 
 
 function Pretest() {
   const { courseId, enrollmentId } = useParams();
+  const { userData } = useContext(AuthContext);
   const [questionsWithChoices, setQuestionsWithChoices] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [userData, setUserData] = useState({
-    id:null,
-    email:null,
-    name:null,
-    role:null,
-    profile_img:null, 
-  });
-  const emailrefStorage = localStorage.getItem("email");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try{
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-          withCredentials: true
-        });
-        if(response.status === 200){
-          setUserData({
-            id:response.data.id,
-            email:response.data.email,
-            name:response.data.name,
-            role:response.data.role,
-            profile_img:response.data.profile_img,
-          });
-        }
-
-      } catch(error){
-        console.log(error);
-        if (error.response.status === 403) {
-          localStorage.removeItem("email");
-          alert("Your session time out!");
-          navigate("/");
-        }
-      }
-      
-    }
-    fetchUserData();
-  },[emailrefStorage]);
 
   useEffect(() => {
     if (userData.id !== null) {
@@ -56,7 +21,7 @@ function Pretest() {
 
           if (response.status === 200) {
             const pretestProgress = response.data.results.filter(
-              (item) => item.type === 'pre'
+              (item) => item.type === 'Pre'
             );
 
             const areAllPretestsCompleted = pretestProgress.every(
@@ -78,25 +43,28 @@ function Pretest() {
   }, [userData.id, enrollmentId, courseId, navigate]);
 
   useEffect(() => {
-    if(userData.id!==null){
-      const fetchPretestData = async () => {
-        try{
-          const response = await backend.get(`/pretest/getPretest/${enrollmentId}/${userData.id}`);
+    if(userData.id===null){
+      alert("Please login first.");
+      navigate('/');
+    }
+
+    const fetchPretestData = async () => {
+      try{
+        const response = await backend.get(`/pretest/getPretest/${enrollmentId}/${userData.id}`);
+        console.log(response)
+        if(response.status === 200){
+          setQuestionsWithChoices(response.data.questions);
+        }
           
-          if(response.status === 200){
-            setQuestionsWithChoices(response.data.questions);
-          }
-          
-        } catch(error){
-          console.log(error);
-          if(error.response.status === 404){
-            alert("Please enroll this course before pretest.");
-            navigate('/');
-          }
+      } catch(error){
+        console.log(error);
+        if(error.response.status === 404){
+          alert("Please enroll this course before pretest.");
+          navigate('/');
         }
       }
-      fetchPretestData();
     }
+    fetchPretestData();
   }, [enrollmentId, userData.id]);
 
   const handleAnswerChange = (questionId, answerId) => {
