@@ -555,7 +555,7 @@ function AddSubject() {
   };
 
   return (
-    <div className={style["add-subject-container"]}>
+    <div className={style.pageWrapper}>
       <div className={style.container}>
         <Button 
           variant="contained" 

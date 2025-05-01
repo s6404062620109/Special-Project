@@ -1,5 +1,6 @@
-.add-subject-container{
-    width: 100%;
+.pageWrapper {
+    display: flex;
+    flex-direction: column;
 }
 
 .container{

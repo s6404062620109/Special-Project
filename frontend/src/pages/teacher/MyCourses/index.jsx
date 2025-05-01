@@ -88,7 +88,7 @@ function MyCourses() {
   };
 
   return (
-    <div className={style['my-courses-container']}>
+    <div className={style.pageWrapper}>
       <div className={style.container}>
         <div className={style.head}>
           <h2>COURSES</h2>

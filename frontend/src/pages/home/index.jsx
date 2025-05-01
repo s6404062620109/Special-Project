@@ -109,13 +109,7 @@ function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className={style.footer}>
-        <div className={style.footerContent}>
-          <p>&copy; footer</p>
-          <p>Contact us: contact@example.com</p>
-        </div>
-      </footer>
+      
     </div>
   );
 }

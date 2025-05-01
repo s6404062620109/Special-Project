@@ -69,7 +69,7 @@ function EditCourse() {
   };
 
   return (
-    <div className={style["edit-course-container"]}>
+    <div className={style.pageWrapper}>
       <div className={style.container}>
         <div className={style.head}>
           <img alt="course icon" src={data.courseInfo.icon} 

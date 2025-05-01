@@ -2,6 +2,7 @@ import { matchPath, Route, Routes, useLocation } from 'react-router-dom'
 import { useContext } from 'react';
 import { AuthContext } from './context/AuthProvider';
 
+import CopyrightIcon from '@mui/icons-material/Copyright';
 import './App.css'
 
 /*  */
@@ -42,70 +43,62 @@ function App() {
   return (
     <div className='container'>
       {showNavbar && <Navbar />}
-      {userData.role === null &&(
         <div className='container-wrap'>      
           <div className='content'>
-            <Routes>
-              <Route path='/' element={<Home/>}/>
-              <Route path='/register' element={<Register/>}/>
-              <Route path='/set-password' element={<SetPassword/>}/>
-              <Route path='/forgot-password' element={<Forgot/>}/>
-              <Route path='/reset-password' element={<Reset/>}/>
-              <Route path='/course/:courseId' element={<CourseDetail/>}/>
-              <Route path='/courses' element={<Courses/>}/>
-            </Routes>
+            {userData.role === null &&(
+              <Routes>
+                <Route path='/' element={<Home/>}/>
+                <Route path='/register' element={<Register/>}/>
+                <Route path='/set-password' element={<SetPassword/>}/>
+                <Route path='/forgot-password' element={<Forgot/>}/>
+                <Route path='/reset-password' element={<Reset/>}/>
+                <Route path='/course/:courseId' element={<CourseDetail/>}/>
+                <Route path='/courses' element={<Courses/>}/>
+              </Routes>
+            )}
+
+            {userData.role === 's' &&(
+              <Routes>
+                <Route path='/' element={<Home/>}/>
+                <Route path='/forgot-password' element={<Forgot/>}/>
+                <Route path='/reset-password' element={<Reset/>}/>
+                <Route path='/profile' element={<Profile/>}/>
+
+                <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
+                <Route path='/courses' element={<Courses/>}/>
+                <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
+                <Route path='/lab/:enrollmentId/question/:questionId' element={<RenderLab/>}/>
+                <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
+                <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
+              </Routes>
+            )}
+
+            {userData.role === 't' &&(
+              <Routes>
+                <Route path='/' element={<Home/>}/>
+                <Route path='/profile' element={<Profile/>}/>
+                <Route path='/my-courses' element={<MyCourses/>}/>
+                <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
+                <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
+              </Routes>
+            )}
+
+            {userData.role === 'a' &&(
+              <Routes>
+                <Route path='/' element={<Home/>}/>
+                <Route path='/profile' element={<Profile/>}/>
+                <Route path='/manageUser' element={<ManageUser/>}/>
+              </Routes>
+            )}
           </div>
+
+          <footer>
+            <div className='footerContent'>
+              <p><CopyrightIcon/> Security Awareness Training</p>
+              <p>Contact us: {import.meta.env.VITE_EMAIL_USER}</p>
+            </div>
+          </footer>
         </div>
-      )}
-
-      {userData.role === 's' &&(
-        <div className='container-wrap'>
-      
-          <div className='content'>
-            <Routes>
-              <Route path='/' element={<Home/>}/>
-              <Route path='/forgot-password' element={<Forgot/>}/>
-              <Route path='/reset-password' element={<Reset/>}/>
-              <Route path='/profile' element={<Profile/>}/>
-
-              <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
-              <Route path='/courses' element={<Courses/>}/>
-              <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
-              <Route path='/lab/:enrollmentId/question/:questionId' element={<RenderLab/>}/>
-              <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
-              <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
-            </Routes>
-          </div>
-        </div>
-      )}
-
-      {userData.role === "t" &&(
-        <div className='container-wrap'>
-
-          <div className='content'>
-            <Routes>
-              <Route path='/' element={<Home/>}/>
-              <Route path='/profile' element={<Profile/>}/>
-              <Route path='/my-courses' element={<MyCourses/>}/>
-              <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
-              <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
-            </Routes>
-          </div>
-        </div>
-      )}
-
-      {userData.role === "a" &&(
-        <div className='container-wrap'>
-          
-          <div className='content'>
-            <Routes>
-              <Route path='/' element={<Home/>}/>
-              <Route path='/profile' element={<Profile/>}/>
-              <Route path='/manageUser' element={<ManageUser/>}/>
-            </Routes>
-          </div>
-        </div>
-      )}
       
     </div>
   )
