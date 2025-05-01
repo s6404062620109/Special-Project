@@ -7,7 +7,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 function TestRead({ question }) {
   const location = useLocation();
-  const { courseId } = useParams();
+  const { courseId, enrollmentId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
   
@@ -38,7 +38,9 @@ function TestRead({ question }) {
     `/add-subject/${courseId}/question`,
     `/add-subject/${courseId}/submit`,
   ];
+  const pathsToSelected = [ `/course/${courseId}/pretest/${enrollmentId}` ]
   const showSelector = pathsToShow.includes(location.pathname);
+  const canSelected = pathsToSelected.includes(location.pathname);
 
   return (
     <Stack
@@ -83,8 +85,8 @@ function TestRead({ question }) {
               {currentItem.choice.map((choice, index) => (
                 <FormControlLabel 
                   key={index} 
-                  value="disabled" 
-                  disabled
+                  value={choice.id}
+                  disabled={!canSelected}
                   control={<Radio />} 
                   label={choice.content} 
                 />

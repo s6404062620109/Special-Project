@@ -3,11 +3,6 @@
     margin: auto;
 }
 
-.container > h1{
-    color: white;
-    width: 80%;
-    margin: 2rem auto;
-}
 
 .container > form{
     width: 80%;

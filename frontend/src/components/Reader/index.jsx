@@ -32,11 +32,11 @@ function Reader({
 
   return (
     <Box>
-      {(isManual && mode === "manual") && <ManualRead subjectInput={content} />}
+      {(isManual) && <ManualRead subjectInput={content} />}
 
-      {(isPDF && mode === "pdf") && <PdfRead subjectName={ isPDF ? content.name : "" } fileUrl={ isPDF ? content.file : content } />}
+      {(isPDF) && <PdfRead subjectName={ isPDF ? content.name : "" } fileUrl={ isPDF ? content.file : content } />}
 
-      {(isTest && mode === "question") && <TestRead question={question} />}
+      {(isTest) && <TestRead question={question} />}
 
       {(mode === "submit") && (
         <Box

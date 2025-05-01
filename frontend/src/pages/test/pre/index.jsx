@@ -4,12 +4,12 @@ import backend from '../../../api/backend';
 
 import style from './css/pretest.module.css';
 import { AuthContext } from '../../../context/AuthProvider';
-
+import Reader from '../../../components/Reader/index';
 
 function Pretest() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
-  const [questionsWithChoices, setQuestionsWithChoices] = useState([]);
+  const [question, setQuestion] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const navigate = useNavigate();
 
@@ -41,9 +41,10 @@ function Pretest() {
       const response = await backend.get(`/pretest/getPretest/${enrollmentId}/${courseId}`, {
         withCredentials: true
       });
-      console.log(response)
+
       if(response.status === 200){
-        setQuestionsWithChoices(response.data.questions);
+        setQuestion(response.data.questions);
+        setSelectedAnswers(response.data.questions.map((question) => ({ [question.qId]: null })));
       }
         
     } catch(error){
@@ -89,14 +90,19 @@ function Pretest() {
     }
     
   };
-  
+  console.log(selectedAnswers)
   return (
     <div className={style.container}>
       <h1>Pretest</h1>
 
       <form onSubmit={handleSubmit}>
 
-        {questionsWithChoices.map((question, index) => (
+        <Reader 
+          content={null} 
+          question={question} 
+        />
+
+        {/* {question.map((question, index) => (
           <div key={index} className={style.testCard}>
             <h3>{index+1}. {question.question}</h3>
 
@@ -118,7 +124,7 @@ function Pretest() {
               ))}
             </ul>
           </div>
-        ))}
+        ))} */}
         
         <button type="submit">Submit Answers</button>
 
