@@ -41,8 +41,8 @@ const Subjects = require("./routes/subjects");
 app.use("/subjects", Subjects);
 
 /* Pre-Test */
-const Pretest = require("./routes/pretest");
-app.use("/pretest", Pretest);
+const pretestRoutes = require("./routes/pretestRoutes");
+app.use("/pretest", pretestRoutes);
 
 /* Post-Test */
 const Posttest = require("./routes/posttest");
@@ -53,8 +53,8 @@ const enrollRoutes = require("./routes/enrollRoutes");
 app.use("/enroll", enrollRoutes);
 
 /* Progress */
-const Progress = require("./routes/progress");
-app.use("/progress", Progress);
+const progressRoutes = require("./routes/progressRoutes");
+app.use("/progress", progressRoutes);
 
 /* Lab on web */
 const lab = require("./routes/labtest");

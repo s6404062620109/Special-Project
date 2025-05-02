@@ -1,155 +1,107 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import backend from "../../api/backend";
+import { AuthContext } from "../../context/AuthProvider";
 
 import style from "./css/coursedetails.module.css";
-import SubjectCard from "./subjectCard";
+import SubjectData from "./subjectData";
 
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
-  const [data, setData] = useState([]);
-  const [courseInfo, setCourseInfo] = useState({
+  const { userData } = useContext(AuthContext);
+  const [ subjectList, setSubjectList ] = useState([]);
+  const [ courseInfo, setCourseInfo ] = useState({
     id: "",
     name: "",
     icon: "",
   });
-  const [userData, setUserData] = useState({
-    id: null,
-    email: null,
-    name: null,
-    role: null,
-    profile_img: null,
-  });
-  const [imgPath, setImgPath] = useState("");
-  const [history, setHistory] = useState([]);
-  const [progress, setProgress] = useState([]);
-  const [pretestProgress, setPretestProgress] = useState([]);
-    const [posttestProgress, setPosttestProgress] = useState([]);
-  const emailrefStorage = localStorage.getItem("email");
+  const [ history, setHistory ] = useState([]);
+  const [ progress, setProgress ] = useState([]);
+  const [ pretestProgress, setPretestProgress ] = useState([]);
+  const [ posttestProgress, setPosttestProgress ] = useState([]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await backend.get(
-          `/auth/authorization/${emailrefStorage}`,
-          {
-            withCredentials: true,
-          }
-        );
-        if (response.status === 200) {
-          setUserData({
-            id: response.data.id,
-            email: response.data.email,
-            name: response.data.name,
-            role: response.data.role,
-            profile_img: response.data.profile_img,
-          });
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchUserData();
-  }, [emailrefStorage]);
+  const fetchCourseInfo = async () => {
+    try {
+      const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
-
+      if(response.status === 200){
         let responseCourse = response.data.courseInfo[0];
-
         setCourseInfo({
           id: responseCourse.id,
           name: responseCourse.name,
-          icon: responseCourse.icon_id,
+          icon: responseCourse.icon,
         });
-        setData(response.data.subject);
-      } catch (err) {
-        console.log(err);
+        setSubjectList(response.data.subject);
       }
-    };
+      
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-    fetchData();
-
-    const fetchHistory = async () => {
-      try {
-        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`);
-        if (response.status === 200) {
-          const courseIdNum = Number(courseId);
-          const enrollmentIdNum = Number(enrollmentId);
-    
-          const filteredHistory = response.data.results.filter(
-            (record) => record.courseId === courseIdNum && record.id === enrollmentIdNum
-          );
-    
-          console.log("Filtered History:", filteredHistory);
-          setHistory(filteredHistory);
-        }
-      } catch (err) {
-        console.log("Error fetching history:", err);
+  const fetchHistory = async () => {
+    try {
+      const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {
+        withCredentials: true,
+      });
+      if (response.status === 200) {
+        const courseIdNum = Number(courseId);
+        const enrollmentIdNum = Number(enrollmentId);
+  
+        const filteredHistory = response.data.results.filter(
+          (record) => record.courseId === courseIdNum && record.id === enrollmentIdNum
+        );
+        setHistory(filteredHistory);
       }
-    };    
+    } catch (err) {
+      console.log("Error fetching history:", err);
+    }
+  };
 
+  const fethProgress = async () => {
+    try {
+      const response = await backend.get(`/progress/checkCourseProgress/${history[0].id}/${courseId}`, {
+        withCredentials: true,
+      });
+
+      if (response.status === 200) {
+        console.log(response)
+        const pretest = response.data.results.filter(
+          (item) => item.type === "Pre"
+        );
+        const posttest = response.data.results.filter(
+          (item) => item.type === "Post"
+        );
+        setPretestProgress(pretest);
+        setPosttestProgress(posttest);
+        setProgress(response.data.results);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };    
+
+  useEffect(() => {
+    fetchCourseInfo();
     fetchHistory();
   }, [courseId, userData.id]);
 
   useEffect(() => {
-    const fetchIcon = async () => {
-      try {
-        const response = await backend.get(`/imgrender/getIcon/${courseId}/${courseInfo.icon}`);
-
-        if (response.status === 200) {
-          setImgPath(`${import.meta.env.VITE_API_BASE_URL}${response.data.url}`);
-        }
-      } catch (err) {
-        console.log("Error fetching icon:", err);
-      }
-    };
-    fetchIcon();
-
-    const fethProgress = async () => {
-      try {
-        const response = await backend.get(`/progress/checkCourseProgress/${history[0].id}`);
-
-        if (response.status === 200) {
-          const pretest = response.data.results.filter(
-            (item) => item.type === "pre"
-          );
-          const posttest = response.data.results.filter(
-            (item) => item.type === "post"
-          );
-          setPretestProgress(pretest);
-          setPosttestProgress(posttest);
-          setProgress(response.data.results);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
     if (history.length > 0) {
       fethProgress();
     }
-  }, [courseId, courseInfo.icon, history]);
+  }, [history]);
 
-  const isPreTestCompleted =
-    pretestProgress.length > 0 &&
-    pretestProgress.every((item) => item.is_completed === 1);
-  const preTestScore = isPreTestCompleted
-    ? pretestProgress.reduce((acc, item) => acc + item.score, 0)
-    : null;
+  const isPreTestCompleted = pretestProgress.length > 0 && pretestProgress.every((item) => item.is_completed === 1);
+  const preTestScore = isPreTestCompleted ? pretestProgress.reduce((acc, item) => acc + item.score, 0) : null;
 
-  const isPostTestCompleted =
-    posttestProgress.length > 0 &&
-    posttestProgress.every((item) => item.is_completed === 1);
-  const postTestScore = isPostTestCompleted
-    ? posttestProgress.reduce((acc, item) => acc + item.score, 0)
-    : null;
+  const isPostTestCompleted = posttestProgress.length > 0 && posttestProgress.every((item) => item.is_completed === 1);
+  const postTestScore = isPostTestCompleted ? posttestProgress.reduce((acc, item) => acc + item.score, 0) : null;
 
   return (
     <div className={style.container}>
       <div className={style.head}>
-        <img alt="Course Icon Image" src={imgPath} />
+        <img alt="Course Icon Image" src={courseInfo.icon} />
         <p>{courseInfo.name}</p>
       </div>
 
@@ -165,8 +117,8 @@ function CourseDetail() {
           </thead>
 
           <tbody>
-            {data.map((subject, index) => (
-              <SubjectCard
+            {subjectList.map((subject, index) => (
+              <SubjectData
                 key={index}
                 id={subject.id}
                 name={subject.name}
@@ -181,39 +133,47 @@ function CourseDetail() {
 
       <div className={style.testSection}>
         <div className={style.testItem}>
-          <p
-            className={isPreTestCompleted ? style.disabledTest : ""}
-            onClick={() => {
-              if (!userData.id) {
-                alert("Please login first");
-                window.location.href = "/";
-              } else if (!isPreTestCompleted) {
-                window.location.href = `/course/${courseId}/pretest/${enrollmentId}`;
-              }
-            }}
-          >
-            {isPreTestCompleted
-              ? `PreTest Score: ${preTestScore} / ${pretestProgress.length}`
-              : "PreTest"}
-          </p>
+          {userData.id ? (
+            <p
+              className={isPreTestCompleted ? style.disabledTest : ""}
+              onClick={() => {
+                if (!userData.id) {
+                  alert("Please login first");
+                  window.location.href = "/";
+                } else if (!isPreTestCompleted) {
+                  window.location.href = `/course/${courseId}/pretest/${enrollmentId}`;
+                }
+              }}
+            >
+              {isPreTestCompleted
+                ? `PreTest Score: ${preTestScore} / ${pretestProgress.length}`
+                : "PreTest"}
+            </p>
+          ) : (
+            <></>
+          )}
         </div>
 
         <div className={style.testItem}>
-          <p
-            className={isPostTestCompleted ? style.disabledTest : ""}
-            onClick={() => {
-              if (!userData.id) {
-                alert("Please login first"); 
-                window.location.href = "/";
-              } else if (!isPostTestCompleted) {
-                window.location.href = `/course/${courseId}/posttest/${enrollmentId}`;
-              }
-            }}
-          >
-            {isPostTestCompleted
-              ? `PostTest Score: ${postTestScore} / ${posttestProgress.length}`
-              : "PostTest"}
-          </p>
+          {userData.id ? (
+            <p
+              className={isPostTestCompleted ? style.disabledTest : ""}
+              onClick={() => {
+                if (!userData.id) {
+                  alert("Please login first"); 
+                  window.location.href = "/";
+                } else if (!isPostTestCompleted) {
+                  window.location.href = `/course/${courseId}/posttest/${enrollmentId}`;
+                }
+              }}
+            >
+              {isPostTestCompleted
+                ? `PostTest Score: ${postTestScore} / ${posttestProgress.length}`
+                : "PostTest"}
+            </p>
+          ) : (
+            <></>
+          )}
         </div>
       </div>
     </div>

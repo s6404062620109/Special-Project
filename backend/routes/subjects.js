@@ -2,33 +2,13 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const db = require("../database");
+const subjectController = require("../controller/subjectController");
 
 const router = express.Router();
 
 router.use('/courses', express.static(path.join(__dirname, '../courses')));
 
-router.get("/getAllSubject/:courseId", (req, res) => {
-  const courseId = req.params.courseId;
-
-  db.query(`SELECT * FROM course WHERE id = ?`,
-    [courseId], (err, courseResult) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Database course query error" });
-      }
-      db.query(`SELECT * FROM subject WHERE courseId = ? `,
-        [courseId], (err, subjectResults) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Database subject query error" });
-          }
-
-          return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
-        }
-      );
-    }
-  );
-});
+router.get("/getAllSubject/:courseId", subjectController.getAll);
 
 router.get("/getSubject/:courseId/:subjectId", (req, res) => {
   const { courseId, subjectId } = req.params;
