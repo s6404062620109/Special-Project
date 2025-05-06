@@ -4,27 +4,26 @@ import backend from '../../../api/backend';
 
 import style from './css/pretest.module.css';
 import { AuthContext } from '../../../context/AuthProvider';
-import Reader from '../../../components/Reader/index';
+import TestRead from '../../../components/Reader/TestRead';
+import { Button } from '@mui/material';
 
 function Pretest() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
-  const [question, setQuestion] = useState([]);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [ question, setQuestion ] = useState([]);
+  const [ selectedAnswers, setSelectedAnswers ] = useState({});
   const navigate = useNavigate();
 
   const checkPretestCompletion = async () => {
     try {
-      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
+      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
 
       if (response.status === 200) {
-        const pretestProgress = response.data.results.filter(
-          (item) => item.type === 'Pre'
-        );
+        const pretestProgress = response.data.results.filter((item) => item.type === 'Pre');
 
-        const areAllPretestsCompleted = pretestProgress.every(
-          (item) => item.is_completed === 1
-        );
+        const areAllPretestsCompleted = pretestProgress.every((item) => item.is_completed === 1);
 
         if (areAllPretestsCompleted) {
           alert('You already complete all Pretest questions.');
@@ -44,7 +43,12 @@ function Pretest() {
 
       if(response.status === 200){
         setQuestion(response.data.questions);
-        setSelectedAnswers(response.data.questions.map((question) => ({ [question.qId]: null })));
+        setSelectedAnswers(
+          response.data.questions.reduce((acc, question) => {
+            acc[question.qId] = null;
+            return acc;
+          }, {})
+        );
       }
         
     } catch(error){
@@ -78,7 +82,9 @@ function Pretest() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await backend.put('/pretest/submitPretest', { answer: selectedAnswers, enrollmentId });
+      const response = await backend.put(`/pretest/submitPretest/${courseId}`, { answer: selectedAnswers, enrollmentId }, {
+        withCredentials: true
+      });
 
       if(response.status === 200 && response.data.message === "Progress pretest update completed."){
         navigate(`/course/${courseId}/subject/${response.data.firstSubject}/${enrollmentId}`);
@@ -90,43 +96,20 @@ function Pretest() {
     }
     
   };
-  console.log(selectedAnswers)
+
   return (
     <div className={style.container}>
       <h1>Pretest</h1>
 
       <form onSubmit={handleSubmit}>
 
-        <Reader 
-          content={null} 
-          question={question} 
+        <TestRead 
+          question={question}
+          handleAnswerChange={handleAnswerChange}
+          selectedAnswers={selectedAnswers}
         />
-
-        {/* {question.map((question, index) => (
-          <div key={index} className={style.testCard}>
-            <h3>{index+1}. {question.question}</h3>
-
-            <ul>
-              {question.choices.map((choice, idx) => (
-                <li key={idx}>
-                  <label>
-                    <input
-                      type="radio"
-                      name={`question-${question.qId}`}
-                      value={choice.aId}
-                      checked={selectedAnswers[question.qId] === choice.aId}
-                      onChange={() => handleAnswerChange(question.qId, choice.aId)}
-                      required
-                    />
-                    {choice.label}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))} */}
         
-        <button type="submit">Submit Answers</button>
+        <Button variant="contained" color="primary" type="submit">Submit Answers</Button>
 
       </form>
 

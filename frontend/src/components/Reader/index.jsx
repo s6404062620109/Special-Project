@@ -6,10 +6,7 @@ import PdfRead from './PdfRead';
 import TestRead from './TestRead';
 import { Box, MenuItem, Select, Stack, Typography } from '@mui/material';
 
-function Reader({ 
-  content,
-  question, 
-}) {
+function Reader({ content = null, question = null }) {
   const { mode } = useParams();
   const isPDF = ( typeof content === 'string' && content.endsWith('.pdf') ) || (
     typeof content === 'object' &&

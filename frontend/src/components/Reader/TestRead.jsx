@@ -5,7 +5,7 @@ import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typ
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-function TestRead({ question }) {
+function TestRead({ question, handleAnswerChange = () => {}, selectedAnswers = null }) {
   const location = useLocation();
   const { courseId, enrollmentId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
@@ -38,7 +38,11 @@ function TestRead({ question }) {
     `/add-subject/${courseId}/question`,
     `/add-subject/${courseId}/submit`,
   ];
-  const pathsToSelected = [ `/course/${courseId}/pretest/${enrollmentId}` ]
+  const pathsToSelected = [ 
+    `/course/${courseId}/pretest/${enrollmentId}`,
+    `/course/${courseId}/posttest/${enrollmentId}`
+  ]
+  
   const showSelector = pathsToShow.includes(location.pathname);
   const canSelected = pathsToSelected.includes(location.pathname);
 
@@ -81,14 +85,17 @@ function TestRead({ question }) {
             <RadioGroup
               aria-labelledby="demo-radio-buttons-group-label"
               name="radio-buttons-group"
+              value={selectedAnswers[currentItem.qId] || ''}
+              onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value)}
             >
               {currentItem.choice.map((choice, index) => (
                 <FormControlLabel 
                   key={index} 
-                  value={choice.id}
+                  value={choice.aId}
                   disabled={!canSelected}
                   control={<Radio />} 
-                  label={choice.content} 
+                  label={choice.content}
+                  checked={selectedAnswers[currentItem.qId] === String(choice.aId)}  
                 />
               ))}
             </RadioGroup>

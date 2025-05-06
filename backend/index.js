@@ -45,8 +45,8 @@ const pretestRoutes = require("./routes/pretestRoutes");
 app.use("/pretest", pretestRoutes);
 
 /* Post-Test */
-const Posttest = require("./routes/posttest");
-app.use("/posttest", Posttest);
+const posttestRoutes = require("./routes/posttestRoutes");
+app.use("/posttest", posttestRoutes);
 
 /* Enrollment */
 const enrollRoutes = require("./routes/enrollRoutes");

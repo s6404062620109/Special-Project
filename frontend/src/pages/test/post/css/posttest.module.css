@@ -3,11 +3,6 @@
     margin: auto;
 }
 
-.container > h1{
-    color: white;
-    width: 80%;
-    margin: 2rem auto;
-}
 
 .container > form{
     width: 80%;
@@ -16,16 +11,4 @@
     border: .063rem solid;
     border-radius: 1rem;
     padding: .625rem;
-}
-
-.testCard ul li > label{
-    line-height: 1.8;
-}
-
-.testCard{
-    width: 90%;
-    margin: auto;
-}
-.testCard > ul{
-    list-style: none;
 }

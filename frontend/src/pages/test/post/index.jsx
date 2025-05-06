@@ -1,96 +1,75 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import backend from "../../../api/backend";
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import backend from '../../../api/backend';
 
 import style from "./css/posttest.module.css";
+import { AuthContext } from '../../../context/AuthProvider';
+import TestRead from '../../../components/Reader/TestRead';
+import { Button } from '@mui/material';
 
 function PostTest() {
   const { courseId, enrollmentId } = useParams();
-  const [questionsWithChoices, setQuestionsWithChoices] = useState([]);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [userData, setUserData] = useState({
-    id: null,
-    email: null,
-    name: null,
-    role: null,
-    profile_img: null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
+  const { userData } = useContext(AuthContext);
+  const [ question, setQuestion ] = useState([]);
+  const [ selectedAnswers, setSelectedAnswers ] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`,
-          { withCredentials: true }
-        );
+  const checkLabCompletion = async () => {
+    try {
+      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
 
-        if (response.status === 200) {
-          setUserData({
-            id: response.data.id,
-            email: response.data.email,
-            name: response.data.name,
-            role: response.data.role,
-            profile_img: response.data.profile_img,
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        if (error.response.status === 403) {
-          localStorage.removeItem("email");
-          alert("Your session time out!");
-          window.location.href = "/";
+      if (response.status === 200) {
+        const labProgress = response.data.results.filter(item => item.type.includes("Lab"));
+
+        const areAllLabsCompleted = labProgress.every(item => item.is_completed === 1);
+
+        if (!areAllLabsCompleted) {
+          alert("You must complete all Labs before taking the PostTest.");
+          navigate(`/courses`);
         }
       }
-    };
-    fetchUserData();
-  }, [emailrefStorage]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchPosttestData = async () => {
+    try {
+      const response = await backend.get(`/posttest/getPosttest/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        setQuestion(response.data.questions);
+        setSelectedAnswers(
+          response.data.questions.reduce((acc, question) => {
+            acc[question.qId] = null;
+            return acc;
+          }, {})
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      if(error.response.status === 404){
+        alert("Please enroll this course before posttest.");
+        navigate('/');
+      }
+    }
+  };
 
   useEffect(() => {
+    if (userData.id === null) {
+      alert("Please login first.");
+      navigate('/');
+    }
     if (userData.id !== null) {
-      const checkLabCompletion = async () => {
-        try {
-          const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
-
-          if (response.status === 200) {
-            const labProgress = response.data.results.filter(item => item.type.includes("lab"));
-
-            const areAllLabsCompleted = labProgress.every(item => item.is_completed === 1);
-
-            if (!areAllLabsCompleted) {
-              alert("You must complete all Labs before taking the PostTest.");
-              navigate(`/courses`);
-            }
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      };
-
       checkLabCompletion();
     }
+
+    fetchPosttestData();
   }, [userData.id, enrollmentId, courseId, navigate]);
-
-  useEffect(() => {
-    if (userData.id !== null) {
-      const fetchPretestData = async () => {
-        try {
-          const response = await backend.get(`/posttest/getPosttest/${enrollmentId}/${userData.id}`);
-
-          if (response.status === 200) {
-            setQuestionsWithChoices(response.data.questions);
-          }
-        } catch (error) {
-          console.log(error);
-          if(error.response.status === 404){
-            alert("Please enroll this course before posttest.");
-            navigate('/');
-          }
-        }
-      };
-      fetchPretestData();
-    }
-  }, [enrollmentId, userData.id]);
 
   const handleAnswerChange = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({
@@ -102,9 +81,8 @@ function PostTest() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await backend.put("/posttest/submitPosttest", {
-        answer: selectedAnswers,
-        enrollmentId,
+      const response = await backend.put(`/posttest/submitPosttest/${courseId}`, { answer: selectedAnswers, enrollmentId }, {
+        withCredentials: true
       });
 
       if (response.status === 200 ) {
@@ -120,35 +98,13 @@ function PostTest() {
       <h1>Posttest</h1>
 
       <form onSubmit={handleSubmit}>
-        {questionsWithChoices.map((question, index) => (
-          <div key={index} className={style.testCard}>
-            <h3>
-              {index + 1}. {question.question}
-            </h3>
+        <TestRead 
+          question={question}
+          handleAnswerChange={handleAnswerChange}
+          selectedAnswers={selectedAnswers}
+        />
 
-            <ul>
-              {question.choices.map((choice, idx) => (
-                <li key={idx}>
-                  <label>
-                    <input
-                      type="radio"
-                      name={`question-${question.qId}`}
-                      value={choice.aId}
-                      checked={selectedAnswers[question.qId] === choice.aId}
-                      onChange={() =>
-                        handleAnswerChange(question.qId, choice.aId)
-                      }
-                      required
-                    />
-                    {choice.label}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-
-        <button type="submit">Submit Answers</button>
+        <Button variant="contained" color="primary" type="submit">Submit Answers</Button>
       </form>
     </div>
   );

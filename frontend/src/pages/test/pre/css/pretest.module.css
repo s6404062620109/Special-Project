@@ -12,15 +12,3 @@
     border-radius: 1rem;
     padding: .625rem;
 }
-
-.testCard ul li > label{
-    line-height: 1.8;
-}
-
-.testCard{
-    width: 90%;
-    margin: auto;
-}
-.testCard > ul{
-    list-style: none;
-}
