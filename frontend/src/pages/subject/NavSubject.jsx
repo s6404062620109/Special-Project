@@ -1,67 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import backend from '../../api/backend';
 
 import style from "./css/navsubject.module.css";
+import { AuthContext } from "../../context/AuthProvider";
 
 function NavSubject({ subjectList, courseId, enrollmentId }) {
 
-  const [userData, setUserData] = useState({
-      id:null,
-      email:null,
-      name:null,
-      role:null,
-      profile_img:null,
-  });
-  const emailrefStorage = localStorage.getItem("email");
+  const { userData } = useContext(AuthContext);
   const [ progress, setProgress ] = useState({
     pretest: [],
     posttest: [],
     lab: []
   });
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try{
-        const response = await backend.get(`/auth/authorization/${emailrefStorage}`, {
-          withCredentials: true
-        });
-        if(response.status === 200){
-          setUserData({
-            id:response.data.id,
-            email:response.data.email,
-            name:response.data.name,
-            role:response.data.role,
-            profile_img:response.data.profile_img,
-          });
-        }
+  const fetchProgress = async () => {
+    try{
+      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
 
-      } catch(error){
-        console.log(error);
+      if(response.status === 200){
+        const pretest = response.data.results.filter(item => item.type.includes("Pre"));
+        const posttest = response.data.results.filter(item => item.type.includes("Post"));
+        const lab = response.data.results.filter(item => item.type.includes("Lab"));
+
+        setProgress({ pretest, posttest, lab });
       }
       
+    } catch(error) {
+      console.log(error);
     }
-    fetchUserData();
-  },[emailrefStorage]);
+  }
 
   useEffect(() => {
-    const fetchProgress = async () => {
-      try{
-        const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
-
-        if(response.status === 200){
-          const pretest = response.data.results.filter(item => item.type === "pre");
-          const posttest = response.data.results.filter(item => item.type === "post");
-          const lab = response.data.results.filter(item => item.type.includes("lab"));
-
-          setProgress({ pretest, posttest, lab });
-        }
-        
-      } catch(error) {
-        console.log(error);
-      }
-      
-    }
-
     fetchProgress();
   } ,[enrollmentId]);
   

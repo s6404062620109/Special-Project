@@ -1,242 +1,82 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
 import NavSubject from './NavSubject';
+import Reader from '../../components/Reader';
+import { Box, Stack } from '@mui/material';
 
 function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();
-    const [ data, setData ] = useState({
-        name: null,
-        images: null,
-    });
-    const [ dataContent, setDataContent ] = useState({
-        content: { title: '', description: '' },
-        subcontent: [],
-        summary: ''
-    });
-    const [ pdfUrl, setPdfUrl ] = useState(null);
     const [ subjectList, setSubjectList ] = useState([]);
-    const [ imgPath, setImgPath ] = useState('');
-    const [ questionList, setQuestionList ] = useState([]);
-    const [ useLab, setUseLab ] = useState(false);
-    const [ navsubjectMobile, setNavsubjectMobile ] = useState(false);
-    const [ currentImageIndex, setCurrentImageIndex ] = useState(0);
-    const [ isLabCompleted, setIsLabCompleted ] = useState(false);
-    const navigate = useNavigate();
+    const [ content, setContent ] = useState({
+        name: "",
+        content: null
+    });
+
+    const fetchSubjectData = async () => {
+        try {
+            const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`, {
+                withCredentials: true
+            });
+
+            if (response.status === 200) {
+                const { subjectname, jsonData, pdfUrl } = response.data;
+    
+                setContent({
+                    name: subjectname || "",
+                    content: jsonData || pdfUrl || null,
+                });
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const fetcSubjectList = async () => { 
+        try{
+            const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
+
+            if(response.status === 200){
+                setSubjectList(response.data.subject);
+            }
+        } catch(error){
+            console.log(error);
+        }
+    }
 
     useEffect(() => {
-        const fetchSubjectData = async () => {
-            try {
-                const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`);
-
-                if (response.status === 200) {
-                    let resultResponse = response.data.result[0];
-
-                    setData({
-                        name: resultResponse.name,
-                        images: resultResponse.images ? resultResponse.images.split(",").map(img => img.trim()) : [],
-                    });
-                    
-                    if (response.data.jsonData) {
-                        setDataContent(response.data.jsonData);
-                    } 
-                    if (response.data.pdfUrl) {
-                        setPdfUrl(response.data.pdfUrl);
-                    }
-                }
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
         fetchSubjectData();
-       
-        const fetcSubjectList = async () => { 
-            try{
-                const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
-
-                if(response.status === 200){
-                    setSubjectList(response.data.subject);
-                }
-            } catch(error){
-                console.log(error);
-            }
-        }
         fetcSubjectList();
     }, [courseId, subjectId]);
-
-    useEffect(() => {
-        const fetchQuestion = async () => {
-            try{
-                const response = await backend.get(`/lab/getLabquestion/${subjectId}`);
-
-                if(response.status === 200){
-                    setQuestionList(response.data.questionResult);
-                }
-
-            } catch(error){
-                console.log(error);
-            }
-        }
-
-        fetchQuestion();
-        if(questionList.length > 0){
-            setUseLab(true);
-        }
-    }, [subjectId]);
-
-    useEffect(() => {
-        if (questionList.length === 0) return;
-
-        const fetchProgressData = async () => {
-            try {
-                const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}`);
-                
-                if (response.status === 200) {
-                    const progressData = response.data.results;
-
-                    const pretestProgress = progressData.filter(item => item.type === 'pre');
-                    const allPretestsCompleted = pretestProgress.every(item => item.is_completed === 1);
-                    if (!allPretestsCompleted) {
-                        alert('You must complete all Pretest questions before proceeding.');
-                        navigate(`/course/${courseId}/pretest/${enrollmentId}`);
-                        return;
-                    }
-
-                    const allLabsCompleted = questionList.every(q => 
-                        progressData.some(p => p.questionId === q.id && p.is_completed === 1)
-                    );
-                    setIsLabCompleted(allLabsCompleted);
-                }
-            } catch (error) {
-                console.log(error);
-                if (error.response?.status === 500) {
-                    alert("You are not enrolled in this course.");
-                    window.location.href = '/courses';
-                }
-            }
-        };
     
-        fetchProgressData();
-    }, [enrollmentId, questionList, courseId, navigate]);
-
-    useEffect(() => {
-        const fetchImages = async () => {
-            try {
-                if (data.images.length > 0) {
-                    const imageRequests = data.images.map(async (img) => {
-                        const response = await backend.get(`/imgrender/getContentImage/${courseId}/${subjectId}/${img}`);
-                        return response.data.url ? `${import.meta.env.VITE_API_BASE_URL}${response.data.url}` : null;
-                    });
-    
-                    const imagePaths = await Promise.all(imageRequests);
-                    setImgPath(imagePaths.filter(path => path !== null));
-                }
-            } catch (err) {
-                console.log("Error fetching images:", err);
-            }
-        };
-        fetchImages();
-    }, [courseId, subjectId, data.images]);
-
-    useEffect(() => {
-        setUseLab(questionList.length > 0);
-    },[questionList]);
-
-    const formatContent = (content) => {
-        if (!content) return null;
-    
-        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([\w\-]{11})/gi;
-    
-        // Split content by new lines and process each line
-        return content.split("\n").map((line, index) => {
-            // Trim leading and trailing spaces from the line
-            const trimmedLine = line.trim();
-    
-            // Skip empty lines
-            if (!trimmedLine) {
-                return <br key={index} />; // Render a line break for empty lines
-            }
-    
-            // Check if the line contains a YouTube link
-            const youtubeMatch = trimmedLine.match(youtubeRegex);
-            if (youtubeMatch) {
-                const videoId = youtubeMatch[0].includes("youtu.be")
-                    ? youtubeMatch[0].split("/")[3]
-                    : youtubeMatch[0].split("v=")[1].split("&")[0];
-    
-                return (
-                    <React.Fragment key={index}>
-                        <div className={style["video-wrapper"]}>
-                            <iframe
-                                width="560"
-                                height="315"
-                                src={`https://www.youtube.com/embed/${videoId}`}
-                                title="YouTube video"
-                                frameBorder="0"
-                                allowFullScreen
-                            />
-                        </div>
-                    </React.Fragment>
-                );
-            }
-    
-            // Check if the line contains an image file name
-            const imageMatch = data.images.find(img => trimmedLine.includes(img));
-            if (imageMatch) {
-                const imageIndex = data.images.indexOf(imageMatch);
-                return (
-                    <React.Fragment key={index}>
-                        <img
-                            src={imgPath[imageIndex]}
-                            alt={imageMatch}
-                            className={style.Picture}
-                        />
-                        <br />
-                    </React.Fragment>
-                );
-            }
-    
-            // Render the line as text, preserving spaces and formatting
-            return (
-                <React.Fragment key={index}>
-                    {trimmedLine.split(" ").map((word, wordIndex) => (
-                        <span key={wordIndex}>
-                            {word}{" "} {/* Add a space after each word */}
-                        </span>
-                    ))}
-                    <br />
-                </React.Fragment>
-            );
-        });
-    };
-
-    const prevImage = () => {
-        setCurrentImageIndex(prevIndex => (prevIndex === 0 ? imgPath.length - 1 : prevIndex - 1));
-    };
-
-    const nextImage = () => {
-        setCurrentImageIndex(prevIndex => (prevIndex === imgPath.length - 1 ? 0 : prevIndex + 1));
-    };
-
   return (
     <div className={style.container}>
         
-        <div className={style["container-wrap"]}>
-
-            
-            
-            <div className={style["navsubject-wrap"]}>
-                <NavSubject 
-                    courseId={courseId}
-                    subjectList={subjectList}
+        <Stack
+            direction="row"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            sx={{ width: '100%', gap: 2 }}
+        >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Reader 
+                    content={content} 
                     enrollmentId={enrollmentId}
+                    subjectId={subjectId}
                 />
-            </div>
-        </div>
+            </Box>
+
+            <Box className={style["navsubject-wrap"]}>
+                <NavSubject 
+                courseId={courseId}
+                subjectList={subjectList}
+                enrollmentId={enrollmentId}
+                />
+            </Box>
+        </Stack>
 
     </div>
   )

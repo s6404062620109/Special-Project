@@ -7,8 +7,7 @@ import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 
 function PdfReader({ subjectName, fileUrl }) {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
-  const [pdfUrl, setPdfUrl] = useState('');
-
+  const [ pdfUrl, setPdfUrl ] = useState('');
 
   useEffect(() => {
     if (!fileUrl) return;
@@ -29,10 +28,14 @@ function PdfReader({ subjectName, fileUrl }) {
 
   return (
     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-      <Stack gap={2}>
-        <Typography variant='h5' fontWeight='600'>{subjectName}</Typography>
-        <Viewer fileUrl={pdfUrl} plugins={[defaultLayoutPluginInstance]} />
-      </Stack>
+      <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+        <Stack gap={2}>
+          <Typography variant='h5' fontWeight='600'>{subjectName}</Typography>
+          <Box sx={{ width: '100%', overflow: 'auto' }}>
+            <Viewer fileUrl={pdfUrl} plugins={[defaultLayoutPluginInstance]} />
+          </Box>
+        </Stack>
+      </Box>
     </Worker>
   );
 }

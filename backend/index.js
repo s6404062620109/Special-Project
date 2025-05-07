@@ -37,8 +37,8 @@ const courseRoutes = require("./routes/courseRoutes");
 app.use("/courses", courseRoutes);
 
 /* Subject */
-const Subjects = require("./routes/subjects");
-app.use("/subjects", Subjects);
+const subjectsRoutes = require("./routes/subjectsRoutes");
+app.use("/subjects", subjectsRoutes);
 
 /* Pre-Test */
 const pretestRoutes = require("./routes/pretestRoutes");

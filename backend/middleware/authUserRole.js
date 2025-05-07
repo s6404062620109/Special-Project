@@ -168,7 +168,7 @@ const verifiedStudentEnrollCourse = (req, res, next) => {
           if (err) {
             return res.status(500).json({ message: "Database error while fetching courses." });
           }
-          console.log(courses.length)
+
           if (courses.length === 0) {
             return res.status(404).json({ message: "No courses found." });
           }

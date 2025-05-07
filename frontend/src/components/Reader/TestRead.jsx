@@ -5,7 +5,7 @@ import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typ
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-function TestRead({ question, handleAnswerChange = () => {}, selectedAnswers = null }) {
+function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const location = useLocation();
   const { courseId, enrollmentId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
@@ -46,6 +46,8 @@ function TestRead({ question, handleAnswerChange = () => {}, selectedAnswers = n
   const showSelector = pathsToShow.includes(location.pathname);
   const canSelected = pathsToSelected.includes(location.pathname);
 
+  const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
+
   return (
     <Stack
       gap={2}
@@ -82,23 +84,40 @@ function TestRead({ question, handleAnswerChange = () => {}, selectedAnswers = n
           
           <FormControl>
             <FormLabel id="demo-radio-buttons-group-label">{currentIndex + 1}. {currentItem.content}</FormLabel>
-            <RadioGroup
-              aria-labelledby="demo-radio-buttons-group-label"
-              name="radio-buttons-group"
-              value={selectedAnswers[currentItem.qId] || ''}
-              onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value)}
-            >
-              {currentItem.choice.map((choice, index) => (
-                <FormControlLabel 
-                  key={index} 
-                  value={choice.aId}
-                  disabled={!canSelected}
-                  control={<Radio />} 
-                  label={choice.content}
-                  checked={selectedAnswers[currentItem.qId] === String(choice.aId)}  
-                />
-              ))}
-            </RadioGroup>
+            {isInteractive ? (
+              <RadioGroup
+                aria-labelledby="question-label"
+                name="radio-buttons-group"
+                value={selectedAnswers[currentItem.qId] || ''}
+                onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value)}
+              >
+                {currentItem.choice.map((choice, index) => (
+                  <FormControlLabel
+                    key={index}
+                    value={choice.aId}
+                    disabled={!canSelected}
+                    control={<Radio />}
+                    label={choice.content}
+                    checked={selectedAnswers[currentItem.qId] === String(choice.aId)}
+                  />
+                ))}
+              </RadioGroup>
+            ) : (
+              <RadioGroup
+                aria-labelledby="question-label"
+                name="radio-buttons-group"
+              >
+                {currentItem.choice.map((choice, index) => (
+                  <FormControlLabel
+                    key={index}
+                    value={choice.aId}
+                    disabled={!canSelected}
+                    control={<Radio />}
+                    label={choice.content}
+                  />
+                ))}
+              </RadioGroup>
+            )}
           </FormControl>
         </Stack>
       )}

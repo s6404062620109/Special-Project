@@ -1,22 +1,35 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useLocation, useParams } from 'react-router-dom';
 
 import ManualRead from './ManualRead'
 import PdfRead from './PdfRead';
 import TestRead from './TestRead';
 import { Box, MenuItem, Select, Stack, Typography } from '@mui/material';
 
-function Reader({ content = null, question = null }) {
-  const { mode } = useParams();
-  const isPDF = ( typeof content === 'string' && content.endsWith('.pdf') ) || (
+function Reader({ 
+  content = null, 
+  question = null, 
+  enrollmentId = null, 
+  subjectId = null 
+}) {
+  const { mode, courseId } = useParams();
+  const location = useLocation();
+  const isPDF = content &&
+    (
+      (typeof content === 'string' && content.endsWith('.pdf')) ||
+      (typeof content === 'object' && content !== null && (
+        ('name' in content && 'file' in content && content.file instanceof File && content.file.type === 'application/pdf') ||
+        ('content' in content && typeof content.content === 'string' && content.content.endsWith('.pdf'))
+      ))
+    );
+
+  const isManual = content &&
     typeof content === 'object' &&
-    content !== null &&
-    'name' in content &&
-    'file' in content &&
-    content.file instanceof File &&
-    content.file.type === 'application/pdf'
-  );
-  const isManual = typeof content === 'object' && !isPDF && content;
+    !isPDF &&
+    (
+      (Array.isArray(content.content) && content.content.length > 0) ||
+      !Array.isArray(content.content)
+    );
   const isTest = Array.isArray(question) && question.length > 0;
 
   const availableModes = [
@@ -27,13 +40,28 @@ function Reader({ content = null, question = null }) {
   .map(item => item.label);
   const [ confirmMode, setConfirmMode ] = useState(availableModes[0]);
 
+  const pathShow = [
+    `/add-subject/${courseId}/manual`, 
+    `/add-subject/${courseId}/pdf`,
+    `/add-subject/${courseId}/question`,
+    `/course/${courseId}/subject/${subjectId}/${enrollmentId}`,
+    `/course/${courseId}/pretest/${enrollmentId}`,
+    `/course/${courseId}/posttest/${enrollmentId}`,
+  ]
+  const showContent = pathShow.includes(location.pathname);
+
   return (
     <Box>
-      {(isManual) && <ManualRead subjectInput={content} />}
+      {(isManual && showContent) && <ManualRead subjectInput={content} />}
 
-      {(isPDF) && <PdfRead subjectName={ isPDF ? content.name : "" } fileUrl={ isPDF ? content.file : content } />}
+      {(isPDF && showContent) && 
+        <PdfRead 
+          subjectName={ isPDF ? content.name : "" } 
+          fileUrl={ isPDF&&content.file ? content.file : `${import.meta.env.VITE_API_BASE_URL}/subjects${content.content}` } 
+        />
+      }
 
-      {(isTest) && <TestRead question={question} />}
+      {(isTest && showContent) && <TestRead question={question} />}
 
       {(mode === "submit") && (
         <Box

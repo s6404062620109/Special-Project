@@ -6,6 +6,8 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 function ManualRead({ subjectInput }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const isValidContent = Array.isArray(subjectInput?.content);
+  
   useEffect(() => {
     setCurrentIndex(0);
   }, [subjectInput]);
@@ -22,7 +24,11 @@ function ManualRead({ subjectInput }) {
     }
   };
 
-  const currentItem = subjectInput.content[currentIndex];
+  const currentItem = isValidContent ? subjectInput.content[currentIndex] : null;
+
+  if (!isValidContent) {
+    return <Typography variant="h6">ไม่มีเนื้อหาสำหรับแสดงผล</Typography>;
+  }
 
   return (
     <Stack 
