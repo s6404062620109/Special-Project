@@ -4,7 +4,8 @@ import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import EditIcon from '@mui/icons-material/Edit';
-import { Button, Dialog, DialogActions, DialogTitle, IconButton } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogTitle, IconButton, Typography } from "@mui/material";
+import { PieChart } from '@mui/x-charts/PieChart';
 
 import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
@@ -15,6 +16,12 @@ function EditCourse() {
   const [ data, setData ] = useState({
     courseInfo: {},
     subject: [],
+  });
+  const [ chartData, setChartData ] = useState({
+    Pretest_pass: [],
+    Posttest_pass: [],
+    Pretest_fail: [],
+    Posttest_fail: []
   });
   const [ editPopupOpen, setEditPopupOpen ] = useState(false);
   const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
@@ -35,9 +42,78 @@ function EditCourse() {
     }
   };
 
+  const fetchCourseTestInfo = async () => {
+    try {
+      const response = await backend.get(`/teacher/courseTestProgress/${courseId}`, {
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        const rawCounts = {
+          Pretest_pass: {},
+          Pretest_fail: {},
+          Posttest_pass: {},
+          Posttest_fail: {}
+        };
+
+        response.data.forEach(item => {
+          if (item.is_completed === 1) {
+            const subjectId = item.subjectId;
+            const score = item.score;
+
+            if (item.type.includes('Pre')) {
+              if (score === 0) {
+                rawCounts.Pretest_fail[subjectId] = (rawCounts.Pretest_fail[subjectId] || 0) + 1;
+              } else {
+                rawCounts.Pretest_pass[subjectId] = (rawCounts.Pretest_pass[subjectId] || 0) + 1;
+              }
+            }
+
+            if (item.type.includes('Post')) {
+              if (score === 0) {
+                rawCounts.Posttest_fail[subjectId] = (rawCounts.Posttest_fail[subjectId] || 0) + 1;
+              } else {
+                rawCounts.Posttest_pass[subjectId] = (rawCounts.Posttest_pass[subjectId] || 0) + 1;
+              }
+            }
+          }
+        });
+
+        const subjectMap = {};
+        data.subject.forEach(sub => {
+          subjectMap[sub.id] = sub.name;
+        });
+
+        const buildList = (obj) =>
+          Object.entries(obj).map(([subjectId, counter]) => ({
+            subjectId: parseInt(subjectId),
+            subjectName: subjectMap[subjectId],
+            counter
+          }));
+
+        const formatted = {
+          Pretest_pass: buildList(rawCounts.Pretest_pass),
+          Pretest_fail: buildList(rawCounts.Pretest_fail),
+          Posttest_pass: buildList(rawCounts.Posttest_pass),
+          Posttest_fail: buildList(rawCounts.Posttest_fail),
+        };
+
+        setChartData(formatted);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    fetchSubjects();
+  fetchSubjects();
   }, [courseId]);
+
+  useEffect(() => {
+    if (data.subject.length > 0) {
+      fetchCourseTestInfo();
+    }
+  }, [data.subject]);
 
   const handleEdit = (subjectId) => {
     navigate(`/edit-subject/${courseId}/${subjectId}`);
@@ -67,7 +143,7 @@ function EditCourse() {
     setEditPopupOpen(false);
     fetchSubjects();
   };
-
+  console.log(chartData)
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -122,6 +198,32 @@ function EditCourse() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className={style.footer}>
+          <Typography variant="h6">Pretest Chart</Typography>
+          { (chartData.Pretest_pass.length + chartData.Pretest_fail.length) > 0 && 
+            <PieChart
+              series={[
+                {
+                  data: [
+                    ...chartData.Pretest_pass.map(item => ({
+                      id: `pass-${item.subjectId}`,
+                      value: item.counter,
+                      label: `${item.subjectName} (Pass)`
+                    })),
+                    ...chartData.Pretest_fail.map(item => ({
+                      id: `fail-${item.subjectId}`,
+                      value: item.counter,
+                      label: `${item.subjectName} (Fail)`
+                    }))
+                  ]
+                }
+              ]}
+              width={200}
+              height={200}
+            />
+          }
         </div>
       </div>
 

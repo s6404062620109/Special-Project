@@ -65,7 +65,6 @@ function Reset() {
                 label="PASSWORD"
                 slotProps={{
                   input: {
-                    sx: { color: 'white' },
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
@@ -74,8 +73,8 @@ function Reset() {
                           edge="end"
                         >
                           {showPassword.password ? 
-                            <VisibilityIcon sx={{color: 'white'}}/> : 
-                            <VisibilityOffIcon sx={{color: 'white'}}/>
+                            <VisibilityIcon/> : 
+                            <VisibilityOffIcon/>
                           }
                         </IconButton>
                       </InputAdornment>
@@ -98,7 +97,6 @@ function Reset() {
                 label="CONFIRM PASSWORD"
                 slotProps={{
                   input: {
-                    sx: { color: 'white' },
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
@@ -107,8 +105,8 @@ function Reset() {
                           edge="end"
                         >
                           {showPassword.cpassword ? 
-                            <VisibilityIcon sx={{color: 'white'}}/> : 
-                            <VisibilityOffIcon sx={{color: 'white'}}/>
+                            <VisibilityIcon/> : 
+                            <VisibilityOffIcon/>
                           }
                         </IconButton>
                       </InputAdornment>

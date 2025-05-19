@@ -25,6 +25,75 @@ const getMyCourses = (req, res) => {
     }
 }
 
+const courseTestProgress = (req, res) => {
+  const { courseId } = req.params;
+
+  if(!courseId){
+    return res.status(400).send({ message: "Required course ID." });
+  }
+
+  try{
+    db.query("SELECT id FROM enrollment WHERE courseId = ?", [courseId], (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Database enrollment query error." });
+      }
+
+      const enrollmentIds = result.map(item => item.id);
+      if (enrollmentIds.length === 0) {
+        return res.status(404).send({ message: "No enrollment found." });
+      }
+
+      db.query("SELECT * FROM progress WHERE enrollmentId IN (?)", [enrollmentIds], (error, progressResult) => {
+        if (error) {
+          console.log(error);
+          return res.status(500).send({ message: "Database progress query error" });
+        }
+
+        const questionIds = progressResult.map(item => item.questionId);
+        if (questionIds.length === 0) {
+          return res.status(404).send({ message: "No question found." });
+        }
+
+        db.query("SELECT id, type, subjectId FROM question WHERE id IN (?)", [questionIds], (error, questionResult) => {
+          if (error) {
+            console.log(error);
+            return res.status(500).send({ message: "Database question query error" });
+          }
+
+          const questionInfoMap = {};
+          questionResult.forEach(item => {
+            questionInfoMap[item.id] = {
+              type: item.type,
+              subjectId: item.subjectId
+            };
+          });
+
+          const filteredProgress = progressResult
+            .filter(item => {
+              const type = questionInfoMap[item.questionId]?.type;
+              return type?.includes('Pre') || type?.includes('Post');
+            })
+            .map(item => {
+              const questionInfo = questionInfoMap[item.questionId];
+              return {
+                ...item,
+                type: questionInfo?.type || null,
+                subjectId: questionInfo?.subjectId || null
+              };
+            });
+
+          return res.status(200).send(filteredProgress);
+        });
+      });
+    });
+
+  } catch(error){
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+}
+
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -265,6 +334,7 @@ const addPdfSubject = (req, res) => {
 
 module.exports = {
     getMyCourses,
+    courseTestProgress,
     createCourse,
     updateCourse,
     deleteCourse,
