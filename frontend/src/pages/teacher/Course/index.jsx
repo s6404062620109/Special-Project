@@ -4,7 +4,7 @@ import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import EditIcon from '@mui/icons-material/Edit';
-import { Button, Dialog, DialogActions, DialogTitle, IconButton, Typography } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
 import { PieChart } from '@mui/x-charts/PieChart';
 
 import style from "./css/editcourse.module.css";
@@ -143,7 +143,7 @@ function EditCourse() {
     setEditPopupOpen(false);
     fetchSubjects();
   };
-  console.log(chartData)
+
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -201,29 +201,68 @@ function EditCourse() {
         </div>
 
         <div className={style.footer}>
-          <Typography variant="h6">Pretest Chart</Typography>
-          { (chartData.Pretest_pass.length + chartData.Pretest_fail.length) > 0 && 
-            <PieChart
-              series={[
-                {
-                  data: [
-                    ...chartData.Pretest_pass.map(item => ({
-                      id: `pass-${item.subjectId}`,
-                      value: item.counter,
-                      label: `${item.subjectName} (Pass)`
-                    })),
-                    ...chartData.Pretest_fail.map(item => ({
-                      id: `fail-${item.subjectId}`,
-                      value: item.counter,
-                      label: `${item.subjectName} (Fail)`
-                    }))
-                  ]
-                }
-              ]}
-              width={200}
-              height={200}
-            />
-          }
+          <Typography variant="h5">ผลการทดสอบคอร์สเรียน</Typography>
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="space-around"
+            alignItems="center"
+          > 
+            <Stack
+              direction="column"
+              spacing={2}
+            >
+              <Typography variant="h6">รายวิชาที่สอบผ่าน</Typography>
+
+              { (chartData.Pretest_pass.length + chartData.Pretest_fail.length) > 0 ? (
+                <PieChart
+                  series={[
+                    {
+                      data: [
+                        ...chartData.Pretest_pass.map(item => ({
+                          id: `${item.subjectId}`,
+                          value: item.counter,
+                          label: `${item.subjectName}`
+                        })),
+                      ]
+                    }
+                  ]}
+                  width={200}
+                  height={200}
+                /> ) : (
+                  <Typography variant="h6">ไม่มีข้อมูล</Typography>
+                )
+              }
+            </Stack>
+            
+            <Stack
+              direction="column"
+              spacing={2}
+            >
+              <Typography variant="h6">รายวิชาที่สอบไม่ผ่าน</Typography>
+
+              { (chartData.Pretest_pass.length + chartData.Pretest_fail.length) > 0 ? (
+                <PieChart
+                  series={[
+                    {
+                      data: [
+                        ...chartData.Pretest_fail.map(item => ({
+                          id: `fail-${item.subjectId}`,
+                          value: item.counter,
+                          label: `${item.subjectName} (Fail)`
+                        }))
+                      ]
+                    }
+                  ]}
+                  width={200}
+                  height={200}
+                /> ) : (
+                  <Typography variant="h6">ไม่มีข้อมูล</Typography>
+                )
+              }
+            </Stack>
+          </Stack>
+          
         </div>
       </div>
 
