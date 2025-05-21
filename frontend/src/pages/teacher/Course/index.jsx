@@ -4,7 +4,8 @@ import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import EditIcon from '@mui/icons-material/Edit';
-import { Button, Dialog, DialogActions, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Button, Dialog, DialogActions, DialogTitle, IconButton, Stack, Typography, useMediaQuery } from "@mui/material";
 import { PieChart } from '@mui/x-charts/PieChart';
 
 import style from "./css/editcourse.module.css";
@@ -144,6 +145,8 @@ function EditCourse() {
     fetchSubjects();
   };
 
+  const tabletQuery = useMediaQuery('(max-width:720px)');
+
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -169,24 +172,57 @@ function EditCourse() {
                     <tr key={subject.id}>
                       <td>{subject.name}</td>
                       <td>
-                        <button
-                          className={style.editButton}
-                          onClick={() => handleEdit(subject.id)}
-                        >
-                          <img src="/My_Coursesp/Edit.svg" alt="Edit button" />
-                          <p>Edit</p>
-                          
-                        </button>
+                        {tabletQuery ? (
+                          <IconButton
+                            sx={{
+                              backgroundColor: "rgb(25, 118, 210)",
+                              color: "white",
+                              "&:hover": {
+                                backgroundColor: "rgb(25, 118, 210)",
+                              },
+                            }}
+                            onClick={() => handleEdit(subject.id)}
+                          >
+                            <EditIcon/>
+                          </IconButton>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            startIcon={<EditIcon/>}
+                            onClick={() => handleEdit(subject.id)}
+                          >
+                            <Typography variant="body1">Edit</Typography>
+                            
+                          </Button>
+                        )}
+                        
                       </td>
                       <td>
-                        <button
-                          className={style.deleteButton}
-                          onClick={() => handleDelete(subject.id)}
-                        >
-                          <img src="/My_Coursesp/Bin.svg" alt="Delete button" />
-                          <p>Delete</p>
-                          
-                        </button>
+                        {tabletQuery ? (
+                          <IconButton
+                            sx={{
+                              backgroundColor: "rgb(255, 87, 51)",
+                              color: "white",
+                              "&:hover": {
+                                backgroundColor: "rgb(255, 87, 51)",
+                              },
+                            }}
+                            onClick={() => handleDelete(subject.id)}
+                          >
+                            <DeleteIcon/>
+                          </IconButton>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<DeleteIcon/>}
+                            onClick={() => handleDelete(subject.id)}
+                          >
+                            <Typography variant="body1">Delete</Typography>
+                            
+                        </Button>
+                        )}
+                        
                       </td>
                     </tr>
                   ))
@@ -203,10 +239,11 @@ function EditCourse() {
         <div className={style.footer}>
           <Typography variant="h5">ผลการทดสอบคอร์สเรียน</Typography>
           <Stack
-            direction="row"
-            spacing={2}
+            direction={ tabletQuery ? "column" : "row"}
             justifyContent="space-around"
             alignItems="center"
+            gap={2}
+            sx={{ flexWrap: 'wrap', width: '100%' }}
           > 
             <Stack
               direction="column"
