@@ -10,7 +10,7 @@ import style from "./css/subject.module.css";
 import AddManual from "./addContents/addManual";
 import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
-import Preview from "./addContents/Preview";
+import Preview from "./Preview";
 import Reader from "../../../components/Reader";
 
 function SlideTransition(props) {

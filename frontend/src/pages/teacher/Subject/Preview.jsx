@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Dialog, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import Reader from '../../../../components/Reader';
+import Reader from '../../../components/Reader';
 
 function Preview({
   subjectInput,

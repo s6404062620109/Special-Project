@@ -13,7 +13,7 @@ router.use(express.urlencoded({ extended: true }));
 
 router.get("/getMyCourses/:userId", authUserRole.checkTeacherRole, teacherController.getMyCourses);
 
-router.get("/courseTestProgress/:courseId", authUserRole.checkTeacherRole, teacherController.courseTestProgress);
+router.get("/courseTestProgress/:courseId", authUserRole.verifiedTeacherCourse, teacherController.courseTestProgress);
 
 router.post("/addCourse", authUserRole.checkTeacherRole, teacherController.createCourse);
 
@@ -24,6 +24,8 @@ router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCou
 const NoneFileMulter = multer();
 
 router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(), teacherController.addManualSubject);
+
+router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
 const pdfStorage = multer.memoryStorage(); 
 const pdfUpload = multer({ 
