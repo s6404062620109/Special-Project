@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: May 19, 2025 at 10:38 AM
+-- Generation Time: May 22, 2025 at 09:29 AM
 -- Server version: 9.2.0
 -- PHP Version: 8.2.27
 
@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `answer` (
   `id` int NOT NULL,
-  `content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `type` tinyint(1) NOT NULL DEFAULT '0',
   `questionId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -77,8 +77,8 @@ INSERT INTO `answer` (`id`, `content`, `type`, `questionId`) VALUES
 
 CREATE TABLE `course` (
   `id` int NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `icon` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `icon` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
   `teacherId` int NOT NULL,
   `enable` tinyint(1) NOT NULL DEFAULT '0',
   `createat` datetime NOT NULL,
@@ -152,9 +152,9 @@ INSERT INTO `progress` (`id`, `is_completed`, `score`, `questionId`, `enrollment
 
 CREATE TABLE `question` (
   `id` int NOT NULL,
-  `content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `img` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
-  `type` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `img` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `subjectId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -180,7 +180,7 @@ INSERT INTO `question` (`id`, `content`, `img`, `type`, `subjectId`) VALUES
 
 CREATE TABLE `subject` (
   `id` int NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `courseId` int NOT NULL,
   `createat` datetime NOT NULL,
   `updateat` datetime DEFAULT NULL
@@ -202,14 +202,14 @@ INSERT INTO `subject` (`id`, `name`, `courseId`, `createat`, `updateat`) VALUES
 
 CREATE TABLE `user` (
   `id` int NOT NULL,
-  `email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `role` char(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `profile_img` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
-  `verified_key` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `role` char(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `profile_img` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `verified_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `verified_expired` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `user`
