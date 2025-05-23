@@ -1,14 +1,54 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../../api/backend';
+
+import style from "./css/subject.module.css";
+import EditManual from './editContents/editManual';
+
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import { Button } from '@mui/material';
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Format Functions */
+
+const useSubjectForm = () => {
+    const [ subjectData, setSubjectData ] = useState({
+        jsonData: [],
+        question: [],
+        pdfUrl: "",
+        subjectName: ""
+    });
+    const [ subjectInput, setSubjectInput ] = useState({
+        jsonData: [],
+        question: [],
+        pdfUrl: "",
+        subjectName: ""
+    });
+
+    useEffect(() => {
+        setSubjectInput(subjectData);
+    }, [subjectData]);
+
+    return {
+        subjectData,
+        setSubjectData,
+        subjectInput,
+        setSubjectInput,
+    };
+};
+
+/* Input Format Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function EditSubject() {
     const { courseId, subjectId } = useParams();
-    const [ subjectData, setSubjectData ] = useState({
-        jsonData: [],
-        pdfUrl: "",
-        subjectName: ""
-    }); 
+    const navigate = useNavigate();
+    const { 
+        subjectData, 
+        setSubjectData, 
+        subjectInput, 
+        setSubjectInput, 
+    } = useSubjectForm();
 
     const fetchSubjectData = async () => {
         try {
@@ -17,8 +57,8 @@ function EditSubject() {
             if(response.status === 200){
                 const subjectData = response.data;
                 
-                if(subjectData.subjectname){
-                    setSubjectData({ ...subjectData, subjectName: subjectData.subjectname });
+                if(subjectData.subjectname && subjectData.question.length > 0){
+                    setSubjectData({ ...subjectData, subjectName: subjectData.subjectname, question: subjectData.question });
 
                     if (Array.isArray(subjectData.jsonData) && subjectData.jsonData.length > 0) {
                         setSubjectData({ ...subjectData, jsonData: subjectData.jsonData });
@@ -40,9 +80,30 @@ function EditSubject() {
     useEffect(() => {
         fetchSubjectData();
     }, [courseId, subjectId]);
-    console.log(subjectData)
+
   return (
-    <div>EditSubject</div>
+    <div className={style.pageWrapper}>
+        <div className={style.container}>
+            <Button 
+                variant="contained" 
+                startIcon={<ArrowLeftIcon />}
+                onClick={() => navigate(-1)}
+            >
+                Back
+            </Button>
+
+            {(subjectData.subjectName !== "" && subjectData.jsonData.length > 0) ? (
+                <EditManual
+                    subjectData={subjectData}
+                    setSubjectData={setSubjectData}
+                    subjectInput={subjectInput}
+                    setSubjectInput={setSubjectInput}
+                />
+            ) : (
+                <></>
+            )}
+        </div>
+    </div>
   )
 }
 

@@ -334,6 +334,7 @@ const getSubject = (req, res) => {
   const { courseId, subjectId } = req.params;
   const jsonFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.json`);
   const pdfFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.pdf`);
+  let question = [];
 
   try{
     db.query(`SELECT name FROM subject WHERE id = ? AND courseId = ?`,
@@ -343,7 +344,50 @@ const getSubject = (req, res) => {
           return res.status(500).json({ message: "Database subject query error" });
         }
 
-        // ตรวจสอบไฟล์ JSON และ PDF พร้อมกัน
+        db.query('SELECT courseId FROM subject WHERE id = ?', [subjectId], (err, subjectResult) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database subject query error" });
+          }
+          const subjectCourseId = String(subjectResult[0].courseId);
+          if(subjectCourseId === courseId){
+            db.query('SELECT * FROM question WHERE subjectId = ?', [subjectId], (err, questionResult) => {
+              if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Database question query error" });
+              }
+              const questionIds = questionResult.map(item => item.id);
+              if (questionIds.length === 0) {
+                return res.status(404).json({ message: "No question found." });
+              }
+
+              db.query('SELECT * FROM answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
+                if (err) {
+                  console.log(err);
+                  return res.status(500).json({ message: "Database answer query error" });
+                }
+
+                question = questionResult.map(item => {
+                  const answers = answerResult.filter(answer => answer.questionId === item.id);
+                  return {
+                    id: item.id,
+                    content: item.content,
+                    type: item.type,
+                    choice: answers.map(answer => ({
+                      content: answer.content,
+                      isCorrect: answer.type
+                    }))
+                  };
+                });
+              });
+
+            });
+          }
+          else{
+            return res.status(404).json({ message: "Subject not found in course." });
+          }
+        });
+
         fs.access(jsonFilePath, fs.constants.F_OK, (jsonErr) => {
           fs.access(pdfFilePath, fs.constants.F_OK, (pdfErr) => {
             const subjectname = result[0].name;
@@ -360,7 +404,7 @@ const getSubject = (req, res) => {
                 try {
                   const jsonData = JSON.parse(data);
                         
-                  return res.status(200).json({ jsonData, subjectname });
+                  return res.status(200).json({ jsonData, subjectname, question });
                 } catch (parseError) {
                   console.error("Error parsing content.json:", parseError);
                   return res.status(500).json({ message: "Invalid JSON format" });
@@ -368,7 +412,7 @@ const getSubject = (req, res) => {
               });
             } else if (!pdfErr) {
               // ถ้าไม่มี content.json แต่มี PDF
-              return res.status(200).json({ pdfUrl, subjectname });
+              return res.status(200).json({ pdfUrl, subjectname, question });
             } else {
               return res.status(404).json({ message: "No subject content available" });
             }

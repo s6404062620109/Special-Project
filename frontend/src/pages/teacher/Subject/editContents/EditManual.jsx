@@ -1,5 +1,4 @@
 import React from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,20 +19,12 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-function AddManual({ 
-  subjectInput, 
-  setSubjectInput, 
-  addContent, 
-  removeContent, 
-  handleChange, 
-  handleImageUpload, 
-  removeImage,
-  handlePreview,
-  handleSubmit 
+function EditManual({
+    subjectData, 
+    setSubjectData, 
+    subjectInput, 
+    setSubjectInput, 
 }) {
-  const navigate = useNavigate();
-  const { courseId } = useParams();
-
   return (
     <Stack
       justifyContent='space-around'
@@ -62,7 +53,6 @@ function AddManual({
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
-            onClick={handlePreview}
           >
             Preview
           </Button>
@@ -72,8 +62,8 @@ function AddManual({
           id="outlined-basic" 
           variant="outlined" 
           label="Subject Name"
-          value={subjectInput.name}
-          onChange={(e) => setSubjectInput({ ...subjectInput, name: e.target.value })}
+          value={subjectInput.subjectname}
+          onChange={(e) => setSubjectInput({ ...subjectInput, subjectname: e.target.value })}
           sx={{
             '& input:-webkit-autofill': {
               WebkitBoxShadow: '0 0 0 1000px white inset',
@@ -87,7 +77,7 @@ function AddManual({
           gap={1}
         >
           <Typography variant="h5">Content</Typography>
-          {subjectInput.content.map((item, index) => (
+          {subjectInput.jsonData.map((item, index) => (
             <Stack key={index} 
               gap={1} 
               sx={{ 
@@ -117,7 +107,7 @@ function AddManual({
               />
               <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
                 Upload Image
-                <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple />
+                {/* <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple /> */}
               </Button>
               <Stack gap={1}>
                 {item.imgs.map((img, imgIndex) => (
@@ -156,7 +146,6 @@ function AddManual({
           <Button 
             variant="contained" 
             startIcon={<AddIcon />} 
-            onClick={addContent}
           >
             Add Content
           </Button>
@@ -186,7 +175,6 @@ function AddManual({
           sx={{
             width: { xs: '100%', sm: '50%' }
           }}
-          onClick={handleSubmit}
         >
           Next
         </Button>
@@ -196,4 +184,4 @@ function AddManual({
   )
 }
 
-export default AddManual
+export default EditManual
