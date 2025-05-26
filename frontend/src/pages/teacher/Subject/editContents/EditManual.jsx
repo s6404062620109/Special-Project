@@ -21,8 +21,6 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 function EditManual({
-    subjectData, 
-    setSubjectData, 
     subjectInput, 
     setSubjectInput,
     addContent,
@@ -68,7 +66,7 @@ function EditManual({
           id="outlined-basic" 
           variant="outlined" 
           label="Subject Name"
-          value={subjectInput.subjectname}
+          value={subjectInput.name}
           onChange={(e) => setSubjectInput({ ...subjectInput, subjectname: e.target.value })}
           sx={{
             '& input:-webkit-autofill': {
@@ -83,7 +81,7 @@ function EditManual({
           gap={1}
         >
           <Typography variant="h5">Content</Typography>
-          {subjectInput.jsonData.map((item, index) => (
+          {subjectInput.content.map((item, index) => (
             <Stack key={index} 
               gap={1} 
               sx={{ 

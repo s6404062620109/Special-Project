@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../../api/backend';
 
 import style from "./css/subject.module.css";
-import EditManual from './editContents/editManual';
+import EditManual from './editContents/EditManual';
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import { Button } from '@mui/material';
@@ -12,40 +12,21 @@ import { Button } from '@mui/material';
 /* Input Format Functions */
 
 const useSubjectForm = () => {
-    const [ subjectData, setSubjectData ] = useState({
-        jsonData: [],
-        question: [],
-        pdfUrl: "",
-        subjectName: ""
-    });
-    const [ subjectInput, setSubjectInput ] = useState({
-        jsonData: [],
-        question: [],
-        pdfUrl: "",
-        subjectName: ""
-    });
-
-    useEffect(() => {
-        setSubjectInput(subjectData);
-    }, [subjectData]);
+    const [ subjectInput, setSubjectInput ] = useState({ name: "", content: [] });
 
     const addContent = () => {
         setSubjectInput(prev => ({
         ...prev,
-        jsonData: [...prev.jsonData, { topic: "", description: "", imgs: [] }]
+        content: [...prev.content, { topic: "", description: "", imgs: [] }]
         }));
     };
 
     const removeContent = (index) => {
-        setSubjectInput(prev => ({
-        ...prev,
-        jsonData: prev.jsonData.filter((_, i) => i !== index)
-        }));
+        const updatedContent = subjectInput.content.filter((_, i) => i !== index);
+        setSubjectInput({ ...subjectInput, content: updatedContent });
     };
 
     return {
-        subjectData,
-        setSubjectData,
         subjectInput,
         setSubjectInput,
         addContent,
@@ -59,9 +40,7 @@ const useSubjectForm = () => {
 function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
-    const { 
-        subjectData, 
-        setSubjectData, 
+    const {  
         subjectInput, 
         setSubjectInput,
         addContent,
@@ -74,15 +53,15 @@ function EditSubject() {
             
             if(response.status === 200){
                 const subjectData = response.data;
-                
-                if(subjectData.subjectname && subjectData.question.length > 0){
-                    setSubjectData({ ...subjectData, subjectName: subjectData.subjectname, question: subjectData.question });
+
+                console.log(subjectData.subjectname)
+                if(subjectData.subjectname){
 
                     if (Array.isArray(subjectData.jsonData) && subjectData.jsonData.length > 0) {
-                        setSubjectData({ ...subjectData, jsonData: subjectData.jsonData });
+                        setSubjectInput({ name: subjectData.subjectname, content: subjectData.jsonData });
                     }
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
-                        setSubjectData({ ...subjectData, pdfUrl: subjectData.pdfUrl });
+                        console.log('PDF URL:', subjectData.pdfUrl)
                     }
                     else {
                         console.warn("Missing subjectName in response");
@@ -110,10 +89,8 @@ function EditSubject() {
                 Back
             </Button>
 
-            {(subjectData.subjectName !== "" && subjectData.jsonData.length > 0) ? (
+            {(subjectInput.subjectName !== "" && subjectInput.content.length > 0) ? (
                 <EditManual
-                    subjectData={subjectData}
-                    setSubjectData={setSubjectData}
                     subjectInput={subjectInput}
                     setSubjectInput={setSubjectInput}
                     addContent={addContent}
