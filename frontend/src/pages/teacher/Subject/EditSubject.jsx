@@ -29,11 +29,27 @@ const useSubjectForm = () => {
         setSubjectInput(subjectData);
     }, [subjectData]);
 
+    const addContent = () => {
+        setSubjectInput(prev => ({
+        ...prev,
+        jsonData: [...prev.jsonData, { topic: "", description: "", imgs: [] }]
+        }));
+    };
+
+    const removeContent = (index) => {
+        setSubjectInput(prev => ({
+        ...prev,
+        jsonData: prev.jsonData.filter((_, i) => i !== index)
+        }));
+    };
+
     return {
         subjectData,
         setSubjectData,
         subjectInput,
         setSubjectInput,
+        addContent,
+        removeContent
     };
 };
 
@@ -47,7 +63,9 @@ function EditSubject() {
         subjectData, 
         setSubjectData, 
         subjectInput, 
-        setSubjectInput, 
+        setSubjectInput,
+        addContent,
+        removeContent 
     } = useSubjectForm();
 
     const fetchSubjectData = async () => {
@@ -80,7 +98,7 @@ function EditSubject() {
     useEffect(() => {
         fetchSubjectData();
     }, [courseId, subjectId]);
-
+    console.log(subjectInput)
   return (
     <div className={style.pageWrapper}>
         <div className={style.container}>
@@ -98,6 +116,8 @@ function EditSubject() {
                     setSubjectData={setSubjectData}
                     subjectInput={subjectInput}
                     setSubjectInput={setSubjectInput}
+                    addContent={addContent}
+                    removeContent={removeContent}
                 />
             ) : (
                 <></>

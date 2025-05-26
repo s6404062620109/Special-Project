@@ -19,6 +19,8 @@ function EditCourse() {
     subject: [],
   });
   const [ chartData, setChartData ] = useState({
+    Pretest_quantity: 0,
+    Posttest_quantity: 0,
     Pretest_pass: [],
     Posttest_pass: [],
     Pretest_fail: [],
@@ -56,13 +58,19 @@ function EditCourse() {
           Posttest_pass: {},
           Posttest_fail: {}
         };
+        
+        let pretestQuantity = 0;
+        let posttestQuantity = 0;
 
         response.data.forEach(item => {
           if (item.is_completed === 1) {
+
             const subjectId = item.subjectId;
             const score = item.score;
 
             if (item.type.includes('Pre')) {
+              pretestQuantity++;
+
               if (score === 0) {
                 rawCounts.Pretest_fail[subjectId] = (rawCounts.Pretest_fail[subjectId] || 0) + 1;
               } else {
@@ -71,6 +79,8 @@ function EditCourse() {
             }
 
             if (item.type.includes('Post')) {
+              posttestQuantity++;
+
               if (score === 0) {
                 rawCounts.Posttest_fail[subjectId] = (rawCounts.Posttest_fail[subjectId] || 0) + 1;
               } else {
@@ -93,6 +103,8 @@ function EditCourse() {
           }));
 
         const formatted = {
+          Pretest_quantity: pretestQuantity,
+          Posttest_quantity: posttestQuantity,
           Pretest_pass: buildList(rawCounts.Pretest_pass),
           Pretest_fail: buildList(rawCounts.Pretest_fail),
           Posttest_pass: buildList(rawCounts.Posttest_pass),
@@ -105,7 +117,7 @@ function EditCourse() {
       console.log(error);
     }
   };
-
+  
   useEffect(() => {
   fetchSubjects();
   }, [courseId]);
@@ -237,69 +249,143 @@ function EditCourse() {
         </div>
 
         <div className={style.footer}>
-          <Typography variant="h5">ผลการทดสอบคอร์สเรียน</Typography>
+          <Typography variant="h5" marginBottom={"16px"}>ผลการทำแบบทดสอบของนักเรียนทั้งหมด</Typography>
           <Stack
-            direction={ tabletQuery ? "column" : "row"}
-            justifyContent="space-around"
-            alignItems="center"
-            gap={2}
-            sx={{ flexWrap: 'wrap', width: '100%' }}
-          > 
+            gap={1}
+          >
+            <Typography variant="h6">ผลการทำแบบทดสอบก่อนเรียนจำนวน {chartData.Pretest_quantity > 0 ? chartData.Pretest_quantity : "-"} ข้อ</Typography> 
             <Stack
-              direction="column"
-              spacing={2}
+              direction={ tabletQuery ? "column" : "row"}
+              justifyContent="space-around"
+              alignItems="center"
+              gap={2}
+              sx={{ flexWrap: 'wrap', width: '100%' }}
             >
-              <Typography variant="h6">รายวิชาที่สอบผ่าน</Typography>
-
-              { (chartData.Pretest_pass.length + chartData.Pretest_fail.length) > 0 ? (
-                <PieChart
-                  series={[
-                    {
-                      data: [
-                        ...chartData.Pretest_pass.map(item => ({
-                          id: `${item.subjectId}`,
-                          value: item.counter,
-                          label: `${item.subjectName}`
-                        })),
-                      ]
-                    }
-                  ]}
-                  width={200}
-                  height={200}
-                /> ) : (
+              {chartData.Pretest_pass.length > 0 ? (
+                <Stack
+                  direction="column"
+                  spacing={2}
+                >
+                  <Typography variant="h6">รายวิชาที่สอบผ่าน</Typography>
+                  
+                  <PieChart
+                    series={[
+                      {
+                        data: [
+                          ...chartData.Pretest_pass.map(item => ({
+                            id: `${item.subjectId}`,
+                            value: item.counter,
+                            label: `${item.subjectName} ${item.counter} ข้อ`
+                          })),
+                        ]
+                      }
+                    ]}
+                    width={200}
+                    height={200}
+                  /> 
+                </Stack>
+                ) : (
                   <Typography variant="h6">ไม่มีข้อมูล</Typography>
                 )
               }
-            </Stack>
-            
-            <Stack
-              direction="column"
-              spacing={2}
-            >
-              <Typography variant="h6">รายวิชาที่สอบไม่ผ่าน</Typography>
+              
+              {chartData.Pretest_fail.length > 0 ? (
+                <Stack
+                  direction="column"
+                  spacing={2}
+                >
+                  <Typography variant="h6">รายวิชาที่สอบไม่ผ่าน</Typography>
 
-              { (chartData.Pretest_pass.length + chartData.Pretest_fail.length) > 0 ? (
-                <PieChart
-                  series={[
-                    {
-                      data: [
-                        ...chartData.Pretest_fail.map(item => ({
-                          id: `fail-${item.subjectId}`,
-                          value: item.counter,
-                          label: `${item.subjectName} (Fail)`
-                        }))
-                      ]
-                    }
-                  ]}
-                  width={200}
-                  height={200}
-                /> ) : (
-                  <Typography variant="h6">ไม่มีข้อมูล</Typography>
-                )
-              }
+                  <PieChart
+                    series={[
+                      {
+                        data: [
+                          ...chartData.Pretest_fail.map(item => ({
+                            id: `fail-${item.subjectId}`,
+                            value: item.counter,
+                            label: `${item.subjectName} ${item.counter} ข้อ`
+                          }))
+                        ]
+                      }
+                    ]}
+                    width={200}
+                    height={200}
+                  /> 
+                </Stack>
+              ) : (
+                <Typography variant="h6">ไม่มีข้อมูล</Typography>
+              )}
+              
             </Stack>
           </Stack>
           
+          <Stack
+            gap={1}
+          >
+            <Typography variant="h6">ผลการทำแบบทดสอบหลังเรียนจำนวน {chartData.Posttest_quantity > 0 ? chartData.Posttest_quantity : "-"} ข้อ</Typography> 
+            <Stack
+              direction={ tabletQuery ? "column" : "row"}
+              justifyContent="space-around"
+              alignItems="center"
+              gap={2}
+              sx={{ flexWrap: 'wrap', width: '100%' }}
+            >
+              {chartData.Posttest_pass.length > 0 ? (
+                <Stack
+                  direction="column"
+                  spacing={2}
+                >
+                  <Typography variant="h6">รายวิชาที่สอบผ่าน</Typography>
+
+                  <PieChart
+                    series={[
+                      {
+                        data: [
+                          ...chartData.Posttest_pass.map(item => ({
+                            id: `${item.subjectId}`,
+                            value: item.counter,
+                            label: `${item.subjectName} ${item.counter} ข้อ`
+                          })),
+                        ]
+                      }
+                    ]}
+                    width={200}
+                    height={200}
+                  /> 
+                </Stack>
+              ) : (
+                <Typography variant="h6">ไม่มีข้อมูล</Typography>
+              )}
+              
+              {chartData.Posttest_fail.length > 0 ? (
+                <Stack
+                  direction="column"
+                  spacing={2}
+                >
+                  <Typography variant="h6">รายวิชาที่สอบไม่ผ่าน</Typography>
+
+                  <PieChart
+                    series={[
+                      {
+                        data: [
+                          ...chartData.Posttest_fail.map(item => ({
+                            id: `fail-${item.subjectId}`,
+                            value: item.counter,
+                            label: `${item.subjectName} ${item.counter} ข้อ`
+                          }))
+                        ]
+                      }
+                    ]}
+                    width={200}
+                    height={200}
+                  /> 
+                </Stack>
+              ) : (
+                <Typography variant="h6">ไม่มีข้อมูล</Typography>
+              )}
+              
+            </Stack>
+          </Stack>
         </div>
       </div>
 

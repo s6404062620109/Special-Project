@@ -6,6 +6,7 @@ import PreviewIcon from '@mui/icons-material/Preview';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from "@mui/material/styles";
 import { Box, Button, IconButton, Stack, TextField, Typography } from "@mui/material";
+import { useNavigate, useParams } from 'react-router-dom';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -23,8 +24,13 @@ function EditManual({
     subjectData, 
     setSubjectData, 
     subjectInput, 
-    setSubjectInput, 
+    setSubjectInput,
+    addContent,
+    removeContent 
 }) {
+  const { courseId } = useParams();
+  const navigate = useNavigate();
+
   return (
     <Stack
       justifyContent='space-around'
@@ -145,7 +151,8 @@ function EditManual({
           ))}
           <Button 
             variant="contained" 
-            startIcon={<AddIcon />} 
+            startIcon={<AddIcon />}
+            onClick={addContent} 
           >
             Add Content
           </Button>
