@@ -24,7 +24,8 @@ function EditManual({
     subjectInput, 
     setSubjectInput,
     addContent,
-    removeContent 
+    removeContent,
+    handleNext 
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -180,6 +181,7 @@ function EditManual({
           sx={{
             width: { xs: '100%', sm: '50%' }
           }}
+          onClick={handleNext}
         >
           Next
         </Button>

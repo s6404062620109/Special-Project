@@ -7,6 +7,7 @@ import EditManual from './editContents/EditManual';
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import { Button } from '@mui/material';
+import EditQuestion from './editContents/EditQuestion';
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Input Format Functions */
@@ -58,6 +59,7 @@ const useQuestionForm = () => {
 function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
+    const [ mode, setMode ] = useState("");
     const {  
         subjectInput, 
         setSubjectInput,
@@ -78,14 +80,17 @@ function EditSubject() {
             if(response.status === 200){
                 const subjectData = response.data;
 
-                console.log(subjectData)
                 if(subjectData.subjectname){
 
                     if (Array.isArray(subjectData.jsonData) && subjectData.jsonData.length > 0) {
                         setSubjectInput({ name: subjectData.subjectname, content: subjectData.jsonData });
+                        localStorage.setItem("editMode", "manual");
+                        setMode("manual");
                     }
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
-                        console.log('PDF URL:', subjectData.pdfUrl)
+                        console.log('PDF URL:', subjectData.pdfUrl);
+                        localStorage.setItem("editMode", "pdf");
+                        setMode("pdf");
                     }
                     if (Array.isArray(subjectData.question) && subjectData.question.length > 0) {
                         setQuestionInput(subjectData.question);
@@ -105,6 +110,15 @@ function EditSubject() {
         fetchSubjectData();
     }, [courseId, subjectId]);
 
+    const handleNext = () => {
+        if(mode === "manual" || mode === "pdf"){
+            setMode("question");
+        }
+        else if(mode === "question"){
+            setMode("submit");
+        }
+    }
+
   return (
     <div className={style.pageWrapper}>
         <div className={style.container}>
@@ -116,15 +130,25 @@ function EditSubject() {
                 Back
             </Button>
 
-            {(subjectInput.subjectName !== "" && subjectInput.content.length > 0) ? (
+            {( mode === "manual" && 
+            subjectInput.subjectName !== "" && 
+            subjectInput.content.length > 0) && (
                 <EditManual
                     subjectInput={subjectInput}
                     setSubjectInput={setSubjectInput}
                     addContent={addContent}
                     removeContent={removeContent}
+                    handleNext={handleNext}
                 />
-            ) : (
-                <></>
+            )}
+
+            {( mode === "question" && 
+            questionInput.length > 0) && (
+                <EditQuestion
+                    questionInput={questionInput}
+                    questionType={questionType}
+                    handleNext={handleNext}
+                />
             )}
         </div>
     </div>
