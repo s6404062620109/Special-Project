@@ -37,6 +37,24 @@ const useSubjectForm = () => {
 /* Input Format Functions */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Question Functions */
+
+const useQuestionForm = () => {
+    const [ questionType ] = useState([ "Pre", "Post", "Lab", "Quiz" ]);
+    const [ questionInput, setQuestionInput ] = useState([]);
+
+    return{
+        questionType,
+        questionInput,
+        setQuestionInput
+    }
+}
+
+/* Input Question Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
@@ -46,6 +64,12 @@ function EditSubject() {
         addContent,
         removeContent 
     } = useSubjectForm();
+    const {
+        questionType,
+        questionInput,
+        setQuestionInput
+    } = useQuestionForm();
+
 
     const fetchSubjectData = async () => {
         try {
@@ -54,7 +78,7 @@ function EditSubject() {
             if(response.status === 200){
                 const subjectData = response.data;
 
-                console.log(subjectData.subjectname)
+                console.log(subjectData)
                 if(subjectData.subjectname){
 
                     if (Array.isArray(subjectData.jsonData) && subjectData.jsonData.length > 0) {
@@ -62,6 +86,9 @@ function EditSubject() {
                     }
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
                         console.log('PDF URL:', subjectData.pdfUrl)
+                    }
+                    if (Array.isArray(subjectData.question) && subjectData.question.length > 0) {
+                        setQuestionInput(subjectData.question);
                     }
                     else {
                         console.warn("Missing subjectName in response");
@@ -77,7 +104,7 @@ function EditSubject() {
     useEffect(() => {
         fetchSubjectData();
     }, [courseId, subjectId]);
-    console.log(subjectInput)
+
   return (
     <div className={style.pageWrapper}>
         <div className={style.container}>
