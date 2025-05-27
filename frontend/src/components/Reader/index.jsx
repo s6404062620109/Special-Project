@@ -44,6 +44,7 @@ function Reader({
     `/add-subject/${courseId}/manual`, 
     `/add-subject/${courseId}/pdf`,
     `/add-subject/${courseId}/question`,
+    `/edit-subject/${courseId}/${subjectId}`,
     `/course/${courseId}/subject/${subjectId}/${enrollmentId}`,
     `/course/${courseId}/pretest/${enrollmentId}`,
     `/course/${courseId}/posttest/${enrollmentId}`,

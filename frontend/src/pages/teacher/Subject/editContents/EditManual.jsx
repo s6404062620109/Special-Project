@@ -25,7 +25,11 @@ function EditManual({
     setSubjectInput,
     addContent,
     removeContent,
-    handleNext 
+    handleChange,
+    handleImageUpload,
+    removeImage,
+    handleSubmit,
+    handlePreview
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -58,6 +62,7 @@ function EditManual({
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
+            onClick={handlePreview}
           >
             Preview
           </Button>
@@ -68,7 +73,7 @@ function EditManual({
           variant="outlined" 
           label="Subject Name"
           value={subjectInput.name}
-          onChange={(e) => setSubjectInput({ ...subjectInput, subjectname: e.target.value })}
+          onChange={(e) => setSubjectInput({ ...subjectInput, name: e.target.value })}
           sx={{
             '& input:-webkit-autofill': {
               WebkitBoxShadow: '0 0 0 1000px white inset',
@@ -112,7 +117,7 @@ function EditManual({
               />
               <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
                 Upload Image
-                {/* <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple /> */}
+                <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple />
               </Button>
               <Stack gap={1}>
                 {item.imgs.map((img, imgIndex) => (
@@ -181,7 +186,7 @@ function EditManual({
           sx={{
             width: { xs: '100%', sm: '50%' }
           }}
-          onClick={handleNext}
+          onClick={handleSubmit}
         >
           Next
         </Button>

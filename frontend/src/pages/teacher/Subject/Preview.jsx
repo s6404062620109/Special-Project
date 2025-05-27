@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Dialog, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Reader from '../../../components/Reader';
+import { useParams } from 'react-router-dom';
 
 function Preview({
   subjectInput,
@@ -10,6 +11,14 @@ function Preview({
   PreviewPopupOpen,
   setPreviewPopupOpen
 }) {
+  const [ isEditContents, setIsEditContents ] = useState(false);
+  const { subjectId } = useParams();
+
+  useEffect(() => {
+    if (subjectId) {
+      setIsEditContents(true);
+    }
+  }, [subjectId]);
   
   return (
     <Dialog
@@ -44,10 +53,19 @@ function Preview({
             <CloseIcon fontSize="small" />
         </IconButton>
         
-        <Reader 
-          content={subjectInput}
-          question={questionInput}
-        />
+        {isEditContents ? (
+          <Reader 
+            content={subjectInput}
+            question={questionInput}
+            subjectId={subjectId}
+          />
+        ) : (
+          <Reader 
+            content={subjectInput}
+            question={questionInput}
+          />
+        )}
+        
 
     </Dialog>
   )

@@ -10,11 +10,18 @@ import PreviewIcon from '@mui/icons-material/Preview';
 function EditQuestion({
   questionInput, 
   questionType,
-  handleNext
+  handleQuestionChange,
+  handleChoiceChange,
+  addQuestion,
+  addChoice,
+  deleteQuestion,
+  deleteChoice,
+  handleSubmit,
+  handlePreview,
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
-
+  console.log(questionInput)
   return (
     <Stack
       alignItems='center'
@@ -41,6 +48,7 @@ function EditQuestion({
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
+            onClick={handlePreview}
           >
             Preview
           </Button>
@@ -69,6 +77,7 @@ function EditQuestion({
                 </Typography>
 
                 <IconButton
+                  onClick={() => deleteQuestion(index)}
                 >
                   <DeleteIcon/>
                 </IconButton>
@@ -86,6 +95,7 @@ function EditQuestion({
                   label="Question Content"
                   fullWidth
                   value={question.content}
+                  onChange={(e) => handleQuestionChange(index, "content", e.target.value)}
                 />
                 <FormControl
                   sx={{
@@ -97,6 +107,7 @@ function EditQuestion({
                     labelId={`question-type-label-${index}`}
                     value={question.type}
                     label="Type"
+                    onChange={(e) => handleQuestionChange(index, "type", e.target.value)}
                   >
                     {questionType.map((type) => (
                       <MenuItem key={type} value={type}>
@@ -117,6 +128,7 @@ function EditQuestion({
                   <Typography variant='h6'> Choice </Typography>
 
                   <IconButton 
+                    onClick={() => addChoice(index)}
                   >
                     <AddIcon/>
                   </IconButton>
@@ -146,11 +158,13 @@ function EditQuestion({
                         label="Content"
                         fullWidth
                         value={choice.content}
+                        onChange={(e) => handleChoiceChange(index, choiceIndex, "content", e.target.value)}
                       />
                       <FormControlLabel 
                         control={
                           <Checkbox 
-                            checked={choice.isCorrect} 
+                            checked={choice.isCorrect}
+                            onChange={(e) => handleChoiceChange(index, choiceIndex, "isCorrect", e.target.checked)} 
                           />
                         } 
                         label="Correct"
@@ -161,6 +175,7 @@ function EditQuestion({
                     </Stack>
 
                     <IconButton
+                      onClick={() => deleteChoice(index, choiceIndex)}
                     >
                       <DeleteIcon/>
                     </IconButton>
@@ -175,6 +190,7 @@ function EditQuestion({
         <Button
           variant="contained"
           startIcon={<AddIcon />}
+          onClick={addQuestion}
           sx={{ marginTop: "20px" }}
         >
           Add Question
