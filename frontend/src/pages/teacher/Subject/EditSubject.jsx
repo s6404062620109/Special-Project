@@ -6,9 +6,13 @@ import style from "./css/subject.module.css";
 import EditManual from './editContents/EditManual';
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Button } from '@mui/material';
+import { Alert, Button, Slide, Snackbar } from '@mui/material';
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
+
+function SlideTransition(props) {
+  return <Slide {...props} direction="left" />;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Input Format Functions */
@@ -68,6 +72,19 @@ const useSubjectForm = () => {
         setSubjectInput({ ...subjectInput, content: updatedContent });
     };
 
+    const subjectValidation = () => {
+        if (subjectInput.name === "") return "Subject Name is required";
+        if (subjectInput.content.length === 0) return "At least one content is required";
+
+        for (let i = 0; i < subjectInput.content.length; i++) {
+        const item = subjectInput.content[i];
+        if (item.topic === "") return `Topic ${i + 1} is required`;
+        if (item.description === "") return `Description for Topic ${i + 1} is required`;
+        }
+
+        return null;
+    };
+
     return {
         subjectInput,
         setSubjectInput,
@@ -75,7 +92,8 @@ const useSubjectForm = () => {
         removeContent,
         handleChange,
         handleImageUpload,
-        removeImage
+        removeImage,
+        subjectValidation
     };
 };
 
@@ -136,6 +154,40 @@ const useQuestionForm = () => {
         setQuestionInput(newQuestions);
     };
 
+    const questionValidation = () => {
+        if(questionInput.length === 0) {
+            return "At least one question is required";
+        }
+        for (let i = 0; i < questionInput.length; i++) {
+            const item = questionInput[i];
+            if (item.content === "") {
+                return `Question ${i + 1} content is required`;
+            }
+            if (item.choice.length === 0) {
+                return `At least one choice is required for Question ${i + 1}`;
+            }
+            for (let j = 0; j < item.choice.length; j++) {
+                const choice = item.choice[j];
+                if (choice.content === "") {
+                return `Choice ${j + 1} content for Question ${i + 1} is required`;
+                }
+            }
+
+            if (item.type === "Pre" || item.type === "Post") {
+                const correctChoices = item.choice.filter(choice => choice.isCorrect);
+                if (correctChoices.length === 0) {
+                return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
+                }
+                const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
+                if (incorrectChoices.length === 0) {
+                return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
+                }
+            }
+        }
+
+        return;
+    }
+
     return{
         questionType,
         questionInput,
@@ -145,7 +197,8 @@ const useQuestionForm = () => {
         addQuestion,
         addChoice,
         deleteChoice,
-        deleteQuestion
+        deleteQuestion,
+        questionValidation
     }
 }
 
@@ -157,6 +210,8 @@ function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
     const [ mode, setMode ] = useState("");
+    const [ alertMessage, setAlertMessage ] = useState("");
+    const [ alertOpen, setAlertOpen ] = useState(false);
     const [ manualPreview, setManualPreview ] = useState(false);
     const [ questionPreview, setQuestionPreview ] = useState(false);
     const {  
@@ -166,7 +221,8 @@ function EditSubject() {
         removeContent,
         handleChange,
         handleImageUpload,
-        removeImage 
+        removeImage,
+        subjectValidation 
     } = useSubjectForm();
     const {
         questionType,
@@ -177,7 +233,8 @@ function EditSubject() {
         addQuestion,
         addChoice,
         deleteChoice,
-        deleteQuestion
+        deleteQuestion,
+        questionValidation
     } = useQuestionForm();
 
     const fetchSubjectData = async () => {
@@ -218,11 +275,28 @@ function EditSubject() {
     }, [courseId, subjectId]);
 
     const handleSubmit = () => {
-        if(mode === "manual" || mode === "pdf"){
+        let validationError;
+        if(mode === "manual"){
+            validationError = subjectValidation();
+            if (validationError) {
+                setAlertMessage(validationError);
+                setAlertOpen(true);
+                return;
+            }
+            setMode("question");
+            return;
+        }
+        else if(mode === "pdf"){
             setMode("question");
             return;
         }
         else if(mode === "question"){
+            validationError = questionValidation();
+            if(validationError){
+                setAlertMessage(validationError);
+                setAlertOpen(true);
+                return;
+            }
             setMode("submit");
             return;
         }
@@ -242,6 +316,9 @@ function EditSubject() {
                 setMode("pdf");
                 return;
             }
+        }
+        else{
+            navigate(-1);
         }
     }
 
@@ -266,6 +343,26 @@ function EditSubject() {
             >
                 Back
             </Button>
+
+            <Snackbar
+                open={alertOpen}
+                autoHideDuration={5000}
+                onClose={() => setAlertOpen(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                slots={{ transition: SlideTransition }} 
+            >
+                <Alert 
+                    onClose={() => setAlertOpen(false)} 
+                    severity={
+                        (alertMessage === "Subject updated successfully.")
+                        ? "success" : "error"
+                    }
+                    variant="filled" 
+                    sx={{ width: '100%' }}
+                >
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
 
             {( mode === "manual" && 
             subjectInput.subjectName !== "" && 

@@ -399,7 +399,7 @@ function AddSubject() {
       navigate(`/add-subject/${courseId}/question`); 
     }
     
-    if (mode === "pdf") {
+    else if (mode === "pdf") {
       const error = pdfValidation();
       if(error){
         setAlertMessage(error);
@@ -413,7 +413,7 @@ function AddSubject() {
       navigate(`/add-subject/${courseId}/question`);
     }
 
-    if (mode === "question") {
+    else if (mode === "question") {
       const error = questionValidation();
       if (error) {
         setAlertMessage(error);
@@ -423,7 +423,7 @@ function AddSubject() {
       navigate(`/add-subject/${courseId}/submit`);
     }
 
-    if (mode === "submit") {
+    else if (mode === "submit") {
       if(prevMode === "manual"){
         const inputError = inputValidation();
         const questionError = questionValidation();

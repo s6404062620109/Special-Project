@@ -186,6 +186,102 @@ const deleteCourse = (req, res) => {
 
 /* teacher_subject controller */
 
+const getSubject = (req, res) => {
+  const { courseId, subjectId } = req.params;
+  const jsonFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.json`);
+  const pdfFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.pdf`);
+  let question = [];
+
+  try{
+    db.query(`SELECT name FROM subject WHERE id = ? AND courseId = ?`,
+      [subjectId, courseId], (err, result) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Database subject query error" });
+        }
+
+        db.query('SELECT courseId FROM subject WHERE id = ?', [subjectId], (err, subjectResult) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Database subject query error" });
+          }
+          const subjectCourseId = String(subjectResult[0].courseId);
+          if(subjectCourseId === courseId){
+            db.query('SELECT * FROM question WHERE subjectId = ?', [subjectId], (err, questionResult) => {
+              if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Database question query error" });
+              }
+              const questionIds = questionResult.map(item => item.id);
+              if (questionIds.length === 0) {
+                return res.status(404).json({ message: "No question found." });
+              }
+
+              db.query('SELECT * FROM answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
+                if (err) {
+                  console.log(err);
+                  return res.status(500).json({ message: "Database answer query error" });
+                }
+
+                question = questionResult.map(item => {
+                  const answers = answerResult.filter(answer => answer.questionId === item.id);
+                  return {
+                    id: item.id,
+                    content: item.content,
+                    type: item.type,
+                    choice: answers.map(answer => ({
+                      content: answer.content,
+                      isCorrect: answer.type
+                    }))
+                  };
+                });
+              });
+
+            });
+          }
+          else{
+            return res.status(404).json({ message: "Subject not found in course." });
+          }
+        });
+
+        fs.access(jsonFilePath, fs.constants.F_OK, (jsonErr) => {
+          fs.access(pdfFilePath, fs.constants.F_OK, (pdfErr) => {
+            const subjectname = result[0].name;
+            const pdfUrl = !pdfErr ? `/courses/c${courseId}/s${subjectId}/content.pdf` : null;
+                 
+            if (!jsonErr) {
+              // ถ้ามี content.json ให้อ่านและส่งกลับพร้อม pdfUrl ถ้ามี
+              fs.readFile(jsonFilePath, "utf8", (err, data) => {
+                if (err) {
+                  console.error("Error reading content.json:", err);
+                  return res.status(500).json({ message: "Error loading subject content" });
+                }
+                      
+                try {
+                  const jsonData = JSON.parse(data);
+                        
+                  return res.status(200).json({ jsonData, subjectname, question });
+                } catch (parseError) {
+                  console.error("Error parsing content.json:", parseError);
+                  return res.status(500).json({ message: "Invalid JSON format" });
+                }
+              });
+            } else if (!pdfErr) {
+              // ถ้าไม่มี content.json แต่มี PDF
+              return res.status(200).json({ pdfUrl, subjectname, question });
+            } else {
+              return res.status(404).json({ message: "No subject content available" });
+            }
+          });
+        });
+      }
+    );
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+}
+
 const addManualSubject = (req, res) => {
     const { courseId } = req.params;
     const { name, content, question } = req.body;
@@ -330,111 +426,85 @@ const addPdfSubject = (req, res) => {
   }
 };
 
-const getSubject = (req, res) => {
+const editManualSubject = (req, res) => {
   const { courseId, subjectId } = req.params;
-  const jsonFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.json`);
-  const pdfFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.pdf`);
-  let question = [];
+  const { name, content, question } = req.body;
 
-  try{
-    db.query(`SELECT name FROM subject WHERE id = ? AND courseId = ?`,
-      [subjectId, courseId], (err, result) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Database subject query error" });
+  if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
+    return res.status(400).send({ message: "Invalid courseId or subjectId." });
+  }
+  if (!name || !content || !question) {
+    return res.status(400).json({ message: "Name, content, and question are required." });
+  }
+
+  let parsedContent;
+  let parsedQuestion;
+
+  try {
+    parsedContent = JSON.parse(content);
+    parsedQuestion = JSON.parse(question); 
+  } catch (err) {
+    return res.status(400).json({ message: "Content and question must be valid JSON strings." });
+  }
+  
+  if (!Array.isArray(parsedQuestion) || parsedQuestion.length === 0) {
+    return res.status(400).json({ message: "Questions must be an array." });
+  }
+
+  try {
+    db.query("UPDATE subject SET name = ? WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Database subject query error." });
+      }
+
+      const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+      const jsonFilePath = path.join(subjectFolderPath, "content.json");
+      fs.writeFileSync(jsonFilePath, JSON.stringify(parsedContent, null, 2));
+  
+      try {
+        for (const q of parsedQuestion) {
+          await new Promise((resolve, reject) => {
+            db.query("UPDATE question SET content = ?, type = ? WHERE id = ?",
+              [q.content, q.type, q.id], (err, questionResult) => {
+                if (err) return reject(err);
+
+                for (const c of q.choice) {
+                  db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?",
+                    [c.content, c.isCorrect, q.id], (err) => {
+                      if (err) console.log("Choice Insert Error:", err);
+                    }
+                  );
+                }
+
+                resolve();
+              }
+            );
+          });
         }
 
-        db.query('SELECT courseId FROM subject WHERE id = ?', [subjectId], (err, subjectResult) => {
-          if (err) {
-            console.log(err);
-            return res.status(500).json({ message: "Database subject query error" });
-          }
-          const subjectCourseId = String(subjectResult[0].courseId);
-          if(subjectCourseId === courseId){
-            db.query('SELECT * FROM question WHERE subjectId = ?', [subjectId], (err, questionResult) => {
-              if (err) {
-                console.log(err);
-                return res.status(500).json({ message: "Database question query error" });
-              }
-              const questionIds = questionResult.map(item => item.id);
-              if (questionIds.length === 0) {
-                return res.status(404).json({ message: "No question found." });
-              }
-
-              db.query('SELECT * FROM answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
-                if (err) {
-                  console.log(err);
-                  return res.status(500).json({ message: "Database answer query error" });
-                }
-
-                question = questionResult.map(item => {
-                  const answers = answerResult.filter(answer => answer.questionId === item.id);
-                  return {
-                    id: item.id,
-                    content: item.content,
-                    type: item.type,
-                    choice: answers.map(answer => ({
-                      content: answer.content,
-                      isCorrect: answer.type
-                    }))
-                  };
-                });
-              });
-
-            });
-          }
-          else{
-            return res.status(404).json({ message: "Subject not found in course." });
-          }
-        });
-
-        fs.access(jsonFilePath, fs.constants.F_OK, (jsonErr) => {
-          fs.access(pdfFilePath, fs.constants.F_OK, (pdfErr) => {
-            const subjectname = result[0].name;
-            const pdfUrl = !pdfErr ? `/courses/c${courseId}/s${subjectId}/content.pdf` : null;
-                 
-            if (!jsonErr) {
-              // ถ้ามี content.json ให้อ่านและส่งกลับพร้อม pdfUrl ถ้ามี
-              fs.readFile(jsonFilePath, "utf8", (err, data) => {
-                if (err) {
-                  console.error("Error reading content.json:", err);
-                  return res.status(500).json({ message: "Error loading subject content" });
-                }
-                      
-                try {
-                  const jsonData = JSON.parse(data);
-                        
-                  return res.status(200).json({ jsonData, subjectname, question });
-                } catch (parseError) {
-                  console.error("Error parsing content.json:", parseError);
-                  return res.status(500).json({ message: "Invalid JSON format" });
-                }
-              });
-            } else if (!pdfErr) {
-              // ถ้าไม่มี content.json แต่มี PDF
-              return res.status(200).json({ pdfUrl, subjectname, question });
-            } else {
-              return res.status(404).json({ message: "No subject content available" });
-            }
-          });
-        });
-      }
-    );
-  } catch(error){
-    console.log(error);
-    return res.status(500).json({ message: "Server error.", error });
-  }
+        return res.status(200).json({ message: "Subject updated successfully." });
+        } catch (err) {
+          console.error(err);
+          return res.status(500).send({ message: "Error updating questions or choices." });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: "Server error.", error });
+    }
+  
 }
-
 /* teacher_subject controller */
 
 module.exports = {
-    getMyCourses,
-    courseTestProgress,
-    createCourse,
-    updateCourse,
-    deleteCourse,
-    addManualSubject,
-    addPdfSubject,
-    getSubject,
+  getMyCourses,
+  courseTestProgress,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+  getSubject,
+  addManualSubject,
+  addPdfSubject,
+  editManualSubject,
 }

@@ -222,6 +222,7 @@ function EditQuestion({
             background: "green",
             width: { xs: '100%', sm: '50%' }
           }}
+          onClick={handleSubmit}
         >
           Confirm
         </Button>

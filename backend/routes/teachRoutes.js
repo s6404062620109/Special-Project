@@ -21,11 +21,11 @@ router.put("/update/:courseId", authUserRole.verifiedTeacherCourse, teacherContr
 
 router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteCourse);
 
+router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
+
 const NoneFileMulter = multer();
 
 router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(), teacherController.addManualSubject);
-
-router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
 const pdfStorage = multer.memoryStorage(); 
 const pdfUpload = multer({ 
@@ -42,6 +42,7 @@ const pdfUpload = multer({
 
 router.post("/addPdfSubject/:courseId", authUserRole.verifiedTeacherCourse, pdfUpload.single("file"), teacherController.addPdfSubject);
 
+router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.editManualSubject);
 
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
