@@ -7,7 +7,7 @@ import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from "@mui/material";
 
 import style from "./css/subject.module.css";
-import AddManual from "./addContents/addManual";
+import AddManual from "./addContents/AddManual";
 import AddPdf from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
 import Preview from "./Preview";

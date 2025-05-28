@@ -89,7 +89,7 @@ const useSubjectForm = () => {
 
         console.log(isNameChanged, isContentChanged)
         if (!isNameChanged && !isContentChanged) {
-            return "Please make some changes before submitting";
+            return "Subject input is not changed!";
         }
 
         if (subjectInput.name === "") return "Subject Name is required";
@@ -126,6 +126,9 @@ const useSubjectForm = () => {
 const useQuestionForm = () => {
     const [ questionType ] = useState([ "Pre", "Post", "Lab", "Quiz" ]);
     const [ questionInput, setQuestionInput ] = useState([]);
+    const [ questionData, setQuestionData ] = useState([]);
+    const [ questionDelete, setQuestionDelete ] = useState([]);
+    const [ choiceDelete, setChoiceDelete ] = useState([]);
 
     const handleQuestionChange = (index, field, value) => {
         const newQuestions = [...questionInput];
@@ -157,26 +160,70 @@ const useQuestionForm = () => {
     const addChoice = (index) => {
         const newQuestions = [...questionInput];
         newQuestions[index].choice.push({
-        content: "",
-        isCorrect: false,
+            content: "",
+            isCorrect: false,
         });
         setQuestionInput(newQuestions);
     };
     
     const deleteChoice = (questionIndex, choiceIndex) => {
+        const targetId = questionInput[questionIndex].choice[choiceIndex]?.id;
         const newQuestions = [...questionInput];
         newQuestions[questionIndex].choice.splice(choiceIndex, 1);
         setQuestionInput(newQuestions);
+
+        if (targetId) {
+            setChoiceDelete(prev => [...prev, targetId]);
+        }
     };
     
     const deleteQuestion = (index) => {
+        const targetId = questionInput[index]?.id;
         const newQuestions = questionInput.filter((_, i) => i !== index);
         setQuestionInput(newQuestions);
+        if (targetId) {
+            setQuestionDelete(prev => [...prev, targetId]);
+        }
+    };
+    
+    const isQuestionChanged = (original, input) => {
+        if (original.length !== input.length) return true;
+
+        for (let i = 0; i < original.length; i++) {
+            const q1 = original[i];
+            const q2 = input[i];
+
+            if (q1.content !== q2.content || q1.type !== q2.type) {
+                return true;
+            }
+
+            if (q1.choice.length !== q2.choice.length) return true;
+
+            for (let j = 0; j < q1.choice.length; j++) {
+                const c1 = q1.choice[j];
+                const c2 = q2.choice[j];
+
+                if (
+                    c1.id !== c2.id ||
+                    c1.content !== c2.content ||
+                    c1.isCorrect !== c2.isCorrect
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     };
 
     const questionValidation = () => {
+
         if(questionInput.length === 0) {
             return "At least one question is required";
+        }
+
+        if (!isQuestionChanged(questionData, questionInput)) {
+            return "Question input is not changed!";
         }
         for (let i = 0; i < questionInput.length; i++) {
             const item = questionInput[i];
@@ -210,8 +257,11 @@ const useQuestionForm = () => {
 
     return{
         questionType,
+        questionDelete,
+        choiceDelete,
         questionInput,
         setQuestionInput,
+        setQuestionData,
         handleQuestionChange,
         handleChoiceChange,
         addQuestion,
@@ -249,8 +299,11 @@ function EditSubject() {
     } = useSubjectForm();
     const {
         questionType,
+        questionDelete,
+        choiceDelete,
         questionInput,
         setQuestionInput,
+        setQuestionData,
         handleQuestionChange,
         handleChoiceChange,
         addQuestion,
@@ -285,7 +338,8 @@ function EditSubject() {
                         setMode("pdf");
                     }
                     if (Array.isArray(subjectData.question) && subjectData.question.length > 0) {
-                        setQuestionInput(subjectData.question);
+                        setQuestionData(subjectData.question);
+                        setQuestionInput(JSON.parse(JSON.stringify(subjectData.question)));
                     }
                     else {
                         console.warn("Missing subjectName in response");
@@ -317,6 +371,12 @@ function EditSubject() {
             formData.append('name', subjectInput.name);
             formData.append('content', JSON.stringify(subjectInput.content));
             formData.append('question', JSON.stringify(questionInput));
+            if(questionDelete.length > 0){
+                formData.append('questionDelete', JSON.stringify(questionDelete));
+            }
+            if(choiceDelete.length > 0){
+                formData.append('choiceDelete', JSON.stringify(choiceDelete));
+            }
         }
 
         // else if (editMode === "pdf") {
@@ -348,14 +408,7 @@ function EditSubject() {
     }
 
     const handleSubmit = () => {
-        let validationError;
         if(mode === "manual"){
-            validationError = subjectValidation();
-            if (validationError) {
-                setAlertMessage(validationError);
-                setAlertOpen(true);
-                return;
-            }
             setMode("question");
             return;
         }
@@ -364,14 +417,18 @@ function EditSubject() {
             return;
         }
         else if(mode === "question"){
-            validationError = questionValidation();
-            if(validationError){
-                setAlertMessage(validationError);
-                setAlertOpen(true);
+            let subjectValication = subjectValidation();
+            let questionValication = questionValidation();
+
+            if(!subjectValication || !questionValication){
+                setMode("submit");
                 return;
             }
-            setMode("submit");
-            return;
+            
+            const error = subjectValication || questionValication;
+            setAlertMessage(error);
+            setAlertOpen(true);
+            return;       
         }
         else if(mode === "submit"){
             submitUpdate();

@@ -230,6 +230,7 @@ const getSubject = (req, res) => {
                     content: item.content,
                     type: item.type,
                     choice: answers.map(answer => ({
+                      id: answer.id,
                       content: answer.content,
                       isCorrect: answer.type
                     }))
@@ -428,7 +429,7 @@ const addPdfSubject = (req, res) => {
 
 const editManualSubject = (req, res) => {
   const { courseId, subjectId } = req.params;
-  const { name, content, question } = req.body;
+  const { name, content, question, questionDelete, choiceDelete } = req.body;
 
   if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
     return res.status(400).send({ message: "Invalid courseId or subjectId." });
@@ -439,14 +440,18 @@ const editManualSubject = (req, res) => {
 
   let parsedContent;
   let parsedQuestion;
+  let parsedQuestionDelete;
+  let parsedChoiceDelete;
 
   try {
     parsedContent = JSON.parse(content);
-    parsedQuestion = JSON.parse(question); 
+    parsedQuestion = JSON.parse(question);
+    if (questionDelete) parsedQuestionDelete = JSON.parse(questionDelete);
+    if (choiceDelete) parsedChoiceDelete = JSON.parse(choiceDelete);
   } catch (err) {
-    return res.status(400).json({ message: "Content and question must be valid JSON strings." });
+    return res.status(400).json({ message: "Content, question, questionDelete and choiceDelete must be valid JSON strings." });
   }
-  
+
   if (!Array.isArray(parsedQuestion) || parsedQuestion.length === 0) {
     return res.status(400).json({ message: "Questions must be an array." });
   }
@@ -464,24 +469,57 @@ const editManualSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          await new Promise((resolve, reject) => {
-            db.query("UPDATE question SET content = ?, type = ? WHERE id = ?",
-              [q.content, q.type, q.id], (err, questionResult) => {
+          const { id: qid, content: qContent, type: qType, choice } = q;
+
+          let questionId = qid;
+          if (qid) {
+            await new Promise((resolve, reject) => {
+              db.query("UPDATE question SET content = ?, type = ? WHERE id = ?", [qContent, qType, qid], (err) => {
                 if (err) return reject(err);
-
-                for (const c of q.choice) {
-                  db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?",
-                    [c.content, c.isCorrect, q.id], (err) => {
-                      if (err) console.log("Choice Insert Error:", err);
-                    }
-                  );
-                }
-
                 resolve();
-              }
-            );
+              });
+            });
+          } else {
+            questionId = await new Promise((resolve, reject) => {
+              db.query("INSERT INTO question (subjectId, content, type) VALUES (?, ?, ?)", [subjectId, qContent, qType], (err, result) => {
+                if (err) return reject(err);
+                resolve(result.insertId);
+              });
+            });
+          }
+
+          for (const c of choice) {
+            const { id: cid, content: cContent, isCorrect } = c;
+            if (cid) {
+              db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                if (err) console.log("Choice Update Error:", err);
+              });
+            } else {
+              db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                if (err) console.log("Choice Insert Error:", err);
+              });
+            }
+          }
+        }
+
+        if (parsedQuestionDelete) {
+          db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+            if (err) {
+              console.log("Question Delete Error:", err);
+              return res.status(500).send({ message: "Error deleting questions." });
+            }
           });
         }
+
+        if (parsedChoiceDelete) {
+          db.query("DELETE FROM answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
+            if (err) {
+              console.log("Choice Delete Error:", err);
+              return res.status(500).send({ message: "Error deleting choices." });
+            }
+          });
+        }
+
 
         return res.status(200).json({ message: "Subject updated successfully." });
         } catch (err) {
