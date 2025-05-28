@@ -21,8 +21,6 @@ function SlideTransition(props) {
 const useSubjectForm = () => {
     const [ subjectInput, setSubjectInput ] = useState({ name: "", content: [] });
     const [ subjectData, setSubjectData ] = useState({ name: "", content: [] });
-    const [ alertMessage, setAlertMessage ] = useState("");
-    const [ alertOpen, setAlertOpen ] = useState(false);
 
     const addContent = () => {
         setSubjectInput(prev => ({
@@ -46,24 +44,24 @@ const useSubjectForm = () => {
         const files = Array.from(event.target.files);
         const updatedContent = [...subjectInput.content];
 
-        files.forEach(file => {
-            if (!file.type.startsWith("image/")) {
-                setAlertMessage("Only image files are allowed.");
-                setAlertOpen(true);
-                return;
-            }
+        for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+            return "Only image files are allowed.";
+        }
 
-            if (file.size <= 6 * 1024 * 1024) {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onloadend = () => {
-                    updatedContent[index].imgs.push(reader.result);
-                    setSubjectInput({ ...subjectInput, content: updatedContent });
-                };
-            } else {
-                alert("File size must be less than 6MB");
-            }
-        });
+        if (file.size > 6 * 1024 * 1024) {
+            return "File size must be less than 6MB";
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            updatedContent[index].imgs.push(reader.result);
+            setSubjectInput({ ...subjectInput, content: updatedContent });
+        };
+        reader.readAsDataURL(file);
+        }
+
+        return null;
     };
 
     const removeImage = (contentIndex, imgIndex) => {
@@ -110,10 +108,6 @@ const useSubjectForm = () => {
         setSubjectData,
         subjectInput,
         setSubjectInput,
-        alertMessage,
-        setAlertMessage,
-        alertOpen,
-        setAlertOpen,
         addContent,
         removeContent,
         handleChange,
@@ -236,6 +230,8 @@ function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
     const [ mode, setMode ] = useState("");
+    const [ alertMessage, setAlertMessage ] = useState("");
+    const [ alertOpen, setAlertOpen ] = useState(false);
     const [ manualPreview, setManualPreview ] = useState(false);
     const [ questionPreview, setQuestionPreview ] = useState(false);
     const editMode = localStorage.getItem("editMode");
@@ -244,10 +240,6 @@ function EditSubject() {
         setSubjectData,  
         subjectInput, 
         setSubjectInput,
-        alertMessage,
-        setAlertMessage,
-        alertOpen,
-        setAlertOpen,
         addContent,
         removeContent,
         handleChange,
@@ -309,6 +301,14 @@ function EditSubject() {
     useEffect(() => {
         fetchSubjectData();
     }, [courseId, subjectId]);
+
+    const onUploadImage = (index, event) => {
+        const error = handleImageUpload(index, event);
+        if (error) {
+            setAlertMessage(error);
+            setAlertOpen(true);
+        }
+    };
 
     const submitUpdate = async () => {
         const formData = new FormData();
@@ -450,7 +450,7 @@ function EditSubject() {
                     addContent={addContent}
                     removeContent={removeContent}
                     handleChange={handleChange}
-                    handleImageUpload={handleImageUpload}
+                    handleImageUpload={onUploadImage}
                     removeImage={removeImage}
                     handleSubmit={handleSubmit}
                     handlePreview={handlePreview}

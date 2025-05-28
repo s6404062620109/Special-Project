@@ -44,18 +44,25 @@ const useSubjectForm = () => {
   const handleImageUpload = (index, event) => {
     const files = Array.from(event.target.files);
     const updatedContent = [...subjectInput.content];
-    files.forEach(file => {
-      if (file.size <= 6 * 1024 * 1024) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-          updatedContent[index].imgs.push(reader.result);
-          setSubjectInput({ ...subjectInput, content: updatedContent });
-        };
-      } else {
-        alert("File size must be less than 6MB");
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        return "Only image files are allowed.";
       }
-    });
+
+      if (file.size > 6 * 1024 * 1024) {
+        return "File size must be less than 6MB";
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updatedContent[index].imgs.push(reader.result);
+        setSubjectInput({ ...subjectInput, content: updatedContent });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    return null;
   };
 
   const removeImage = (contentIndex, imgIndex) => {
@@ -307,8 +314,8 @@ function AddSubject() {
   } = usePdfForm();
   const [ previewContent, setPreviewContent ] = useState(null);
   const [ previewQuestion, setPreviewQuestion ] = useState([]); 
-  const [ alertMessage, setAlertMessage ] = useState("");
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ alertMessage, setAlertMessage ] = useState("");
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
   const [ openDialog, setOpenDialog ] = useState(false);
   const [ loading, setLoading ] = useState(true);
@@ -383,6 +390,14 @@ function AddSubject() {
       </div>
     );
   }
+
+  const onUploadImage = (index, event) => {
+    const error = handleImageUpload(index, event);
+    if (error) {
+      setAlertMessage(error);
+      setOpenSnackbar(true);
+    }
+  };
 
   const handleSubmit = async () => {
     if (mode === "manual") {
@@ -619,7 +634,7 @@ function AddSubject() {
             addContent={addContent}
             removeContent={removeContent}
             handleChange={handleChange}
-            handleImageUpload={handleImageUpload}
+            handleImageUpload={onUploadImage}
             removeImage={removeImage}
             handlePreview={handlePreview}
             handleSubmit={handleSubmit}
