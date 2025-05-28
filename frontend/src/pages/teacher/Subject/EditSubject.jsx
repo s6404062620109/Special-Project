@@ -6,9 +6,10 @@ import style from "./css/subject.module.css";
 import EditManual from './editContents/EditManual';
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Alert, Button, Slide, Snackbar } from '@mui/material';
+import { Alert, Button, Slide, Snackbar, Stack } from '@mui/material';
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
+import Reader from '../../../components/Reader';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -20,10 +21,8 @@ function SlideTransition(props) {
 const useSubjectForm = () => {
     const [ subjectInput, setSubjectInput ] = useState({ name: "", content: [] });
     const [ subjectData, setSubjectData ] = useState({ name: "", content: [] });
-
-    useEffect(() => {
-        setSubjectData(subjectInput);
-    }, [subjectInput]);
+    const [ alertMessage, setAlertMessage ] = useState("");
+    const [ alertOpen, setAlertOpen ] = useState(false);
 
     const addContent = () => {
         setSubjectInput(prev => ({
@@ -49,7 +48,8 @@ const useSubjectForm = () => {
 
         files.forEach(file => {
             if (!file.type.startsWith("image/")) {
-                alert("Only image files are allowed.");
+                setAlertMessage("Only image files are allowed.");
+                setAlertOpen(true);
                 return;
             }
 
@@ -73,21 +73,47 @@ const useSubjectForm = () => {
     };
 
     const subjectValidation = () => {
+
+        const isNameChanged = subjectInput.name !== subjectData.name;
+
+        const isContentChanged =
+            subjectInput.content.length !== subjectData.content.length ||
+            subjectInput.content.some((item, i) => {
+                const original = subjectData.content[i];
+                if (!original) return true;
+                const isImgsChanged = JSON.stringify(item.imgs) !== JSON.stringify(original.imgs);
+                return (
+                    item.topic !== original.topic ||
+                    item.description !== original.description ||
+                    isImgsChanged
+                );
+            });
+
+        console.log(isNameChanged, isContentChanged)
+        if (!isNameChanged && !isContentChanged) {
+            return "Please make some changes before submitting";
+        }
+
         if (subjectInput.name === "") return "Subject Name is required";
         if (subjectInput.content.length === 0) return "At least one content is required";
 
         for (let i = 0; i < subjectInput.content.length; i++) {
-        const item = subjectInput.content[i];
-        if (item.topic === "") return `Topic ${i + 1} is required`;
-        if (item.description === "") return `Description for Topic ${i + 1} is required`;
+            const item = subjectInput.content[i];
+            if (item.topic === "") return `Topic ${i + 1} is required`;
+            if (item.description === "") return `Description for Topic ${i + 1} is required`;
         }
 
         return null;
     };
 
     return {
+        setSubjectData,
         subjectInput,
         setSubjectInput,
+        alertMessage,
+        setAlertMessage,
+        alertOpen,
+        setAlertOpen,
         addContent,
         removeContent,
         handleChange,
@@ -210,13 +236,18 @@ function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
     const [ mode, setMode ] = useState("");
-    const [ alertMessage, setAlertMessage ] = useState("");
-    const [ alertOpen, setAlertOpen ] = useState(false);
     const [ manualPreview, setManualPreview ] = useState(false);
     const [ questionPreview, setQuestionPreview ] = useState(false);
-    const {  
+    const editMode = localStorage.getItem("editMode");
+
+    const {
+        setSubjectData,  
         subjectInput, 
         setSubjectInput,
+        alertMessage,
+        setAlertMessage,
+        alertOpen,
+        setAlertOpen,
         addContent,
         removeContent,
         handleChange,
@@ -247,7 +278,12 @@ function EditSubject() {
                 if(subjectData.subjectname){
 
                     if (Array.isArray(subjectData.jsonData) && subjectData.jsonData.length > 0) {
-                        setSubjectInput({ name: subjectData.subjectname, content: subjectData.jsonData });
+                        setSubjectData({ name: subjectData.subjectname, content: subjectData.jsonData });
+
+                        setSubjectInput({ 
+                            name: subjectData.subjectname, 
+                            content: JSON.parse(JSON.stringify(subjectData.jsonData)) 
+                        });
                         localStorage.setItem("editMode", "manual");
                         setMode("manual");
                     }
@@ -274,6 +310,43 @@ function EditSubject() {
         fetchSubjectData();
     }, [courseId, subjectId]);
 
+    const submitUpdate = async () => {
+        const formData = new FormData();
+
+        if(editMode === "manual"){
+            formData.append('name', subjectInput.name);
+            formData.append('content', JSON.stringify(subjectInput.content));
+            formData.append('question', JSON.stringify(questionInput));
+        }
+
+        // else if (editMode === "pdf") {
+        //     formData.append('name', subjectPdfInput.name);
+        //     formData.append('file', subjectPdfInput.file);
+        //     formData.append('question', JSON.stringify(questionInput));
+        // }
+        try {
+            const response = await backend.put(`/teacher/updateSubject/${courseId}/${subjectId}`, 
+                formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true
+                }
+            );
+
+            if(response.status === 200){
+                console.log(response.data);
+                setAlertMessage(response.data.message);
+                setAlertOpen(true);
+
+                setTimeout(() => {
+                    navigate(`/edit-course/${courseId}`);
+                }, 3000);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const handleSubmit = () => {
         let validationError;
         if(mode === "manual"){
@@ -298,6 +371,10 @@ function EditSubject() {
                 return;
             }
             setMode("submit");
+            return;
+        }
+        else if(mode === "submit"){
+            submitUpdate();
             return;
         }
     }
@@ -412,6 +489,52 @@ function EditSubject() {
                     PreviewPopupOpen={questionPreview}
                     setPreviewPopupOpen={setQuestionPreview}
                 />
+            )}
+
+            {( (mode === "submit") && 
+            ((editMode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0)) && 
+            (questionInput.length !== 0)) && (
+                <Stack>
+                    <Reader 
+                        content={subjectInput.name !== "" && subjectInput.content.length !== 0 ? subjectInput : ""}
+                        question={questionInput}
+                        subjectId={subjectId}
+                        mode={mode}
+                    />
+
+                    <Stack
+                        sx={{
+                            width: { xs: "60%", sm: "40%" },
+                            margin: "20px auto",
+                            gap: 2,
+                            flexDirection: { xs: "column", sm: "row" },
+                        }}
+                    >
+                        <Button 
+                            variant='outlined' 
+                            sx={{
+                            background: "red",
+                            color: "white",
+                            width: { xs: '100%', sm: '50%' }
+                            }}
+                            onClick={() => navigate(`/edit-course/${courseId}`)}
+                        >
+                            Cancel
+                        </Button>
+
+                        <Button 
+                            variant='contained'
+                            sx={{
+                            background: "green",
+                            width: { xs: '100%', sm: '50%' }
+                            }}
+                            onClick={handleSubmit}
+                        >
+                            Confirm
+                        </Button>
+                            
+                    </Stack>
+                </Stack>
             )}
         </div>
     </div>

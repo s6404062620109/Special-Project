@@ -42,7 +42,7 @@ const pdfUpload = multer({
 
 router.post("/addPdfSubject/:courseId", authUserRole.verifiedTeacherCourse, pdfUpload.single("file"), teacherController.addPdfSubject);
 
-router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.editManualSubject);
+router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(),teacherController.editManualSubject);
 
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {

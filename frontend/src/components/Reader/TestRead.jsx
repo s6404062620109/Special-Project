@@ -7,7 +7,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const location = useLocation();
-  const { courseId, enrollmentId } = useParams();
+  const { courseId, enrollmentId, subjectId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
   
@@ -37,6 +37,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const pathsToShow = [
     `/add-subject/${courseId}/question`,
     `/add-subject/${courseId}/submit`,
+    `/edit-subject/${courseId}/${subjectId}`,
   ];
   const pathsToSelected = [ 
     `/course/${courseId}/pretest/${enrollmentId}`,

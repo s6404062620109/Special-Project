@@ -26,6 +26,8 @@ function ManualRead({ subjectInput }) {
 
   const currentItem = isValidContent ? subjectInput.content[currentIndex] : null;
 
+  
+
   if (!isValidContent) {
     return <Typography variant="h6">ไม่มีเนื้อหาสำหรับแสดงผล</Typography>;
   }
@@ -50,21 +52,45 @@ function ManualRead({ subjectInput }) {
             {currentItem.topic}
           </Typography>
 
-          {currentItem.description.split('\n').map((line, i) => (
-            <Typography
-              key={i}
-              variant="body1"
-              sx={{ 
-                width: '100%',
-                mt: /^\s*$/.test(line) ? 2 : 0,
-                whiteSpace: 'pre-wrap',
-                overflowWrap: 'break-word',
-                wordBreak: 'break-word'            
-              }}
-            >
-              {line}
-            </Typography>
-          ))}
+          {currentItem.description.split('\n').map((line, i) => {
+            const youtubeMatch = line.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+            
+            if (youtubeMatch) {
+              const videoId = youtubeMatch[1];
+              return (
+                <iframe
+                  key={i}
+                  width="600"
+                  height="340"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{
+                    borderRadius: '8px',
+                    marginTop: '16px'
+                  }}
+                />
+              );
+            }
+
+            return (
+              <Typography
+                key={i}
+                variant="body1"
+                sx={{ 
+                  width: '100%',
+                  mt: /^\s*$/.test(line) ? 2 : 0,
+                  whiteSpace: 'pre-wrap',
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word'            
+                }}
+              >
+                {line}
+              </Typography>
+            );
+          })}
 
           <Stack
             gap={2}

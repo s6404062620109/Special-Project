@@ -10,9 +10,10 @@ function Reader({
   content = null, 
   question = null, 
   enrollmentId = null, 
-  subjectId = null 
+  subjectId = null,
+  mode = null 
 }) {
-  const { mode, courseId } = useParams();
+  const { courseId } = useParams();
   const location = useLocation();
   const isPDF = content &&
     (
@@ -53,16 +54,16 @@ function Reader({
 
   return (
     <Box>
-      {(isManual && showContent) && <ManualRead subjectInput={content} />}
+      {(isManual && showContent && mode !== "submit") && <ManualRead subjectInput={content} />}
 
-      {(isPDF && showContent) && 
+      {(isPDF && showContent && mode !== "submit") && 
         <PdfRead 
           subjectName={ isPDF ? content.name : "" } 
           fileUrl={ isPDF&&content.file ? content.file : `${import.meta.env.VITE_API_BASE_URL}/subjects${content.content}` } 
         />
       }
 
-      {(isTest && showContent) && <TestRead question={question} />}
+      {(isTest && showContent && mode !== "submit") && <TestRead question={question} />}
 
       {(mode === "submit") && (
         <Box

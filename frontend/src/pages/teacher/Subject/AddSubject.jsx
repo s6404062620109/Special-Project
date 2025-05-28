@@ -456,7 +456,7 @@ function AddSubject() {
     if(prevMode === "manual"){
       formData.append('name', subjectInput.name);
       formData.append('content', JSON.stringify(subjectInput.content));
-      formData.append('question', JSON.stringify(questionInput))
+      formData.append('question', JSON.stringify(questionInput));
       
       try{
         const response = await backend.post(`/teacher/addSubject/${courseId}`, 
@@ -662,6 +662,7 @@ function AddSubject() {
             <Reader 
               content={subjectInput.name !== "" && subjectInput.content.length !== 0 ? subjectInput : subjectPdfInput}
               question={questionInput}
+              mode={mode}
             />
 
             <Stack
