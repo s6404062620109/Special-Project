@@ -444,7 +444,7 @@ function EditSubject() {
     useEffect(() => {
         fetchSubjectData();
     }, [courseId, subjectId]);
-    console.log(subjectPdfInput)
+
     const onUploadImage = (index, event) => {
         const error = handleImageUpload(index, event);
         if (error) {
