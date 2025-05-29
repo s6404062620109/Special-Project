@@ -88,7 +88,6 @@ const useSubjectForm = () => {
                 );
             });
 
-        console.log(isNameChanged, isContentChanged)
         if (!isNameChanged && !isContentChanged) {
             return "Subject input is not changed!";
         }
@@ -129,6 +128,10 @@ const usePdfForm = () => {
         name: "",
         file: null,
     });
+    const [ subjectPdfData, setSubjectPdfData ] = useState({
+        name: "",
+        file: null,
+    });
     const inputRef = useRef(null);
 
     const handleBoxClick = () => {
@@ -153,28 +156,40 @@ const usePdfForm = () => {
     };
 
     const pdfValidation = () => {
-        if(subjectPdfInput.name === ""){
-        return "Subject Name is required";
+        const { name, file } = subjectPdfInput;
+        
+        const isSameName = name === subjectPdfData.name;
+        const isSameFile = file?.name === subjectPdfData.file?.name &&
+                        file?.size === subjectPdfData.file?.size &&
+                        file?.lastModified === subjectPdfData.file?.lastModified;
+
+        if (isSameName && isSameFile) {
+            return "No changes made to the PDF or name.";
         }
 
-        if(!subjectPdfInput.file){
-        return "Please select a PDF file";
+        if (!name) {
+            return "Subject Name is required.";
         }
 
-        if(subjectPdfInput.file.type !== "application/pdf"){
-        return "Please select a PDF file";
+        if (!file) {
+            return "Please select a PDF file.";
         }
 
-        if(subjectPdfInput.file.size > 16 * 1024 * 1024 ){
-        return "File size must be less than 16MB";
+        if (file.type !== "application/pdf") {
+            return "Please select a PDF file.";
+        }
+
+        if (file.size > 16 * 1024 * 1024) {
+            return "File size must be less than 16MB.";
         }
 
         return null;
-    }
+    };
 
     return{
         subjectPdfInput,
         setSubjectPdfInput,
+        setSubjectPdfData,
         inputRef,
         handleBoxClick,
         handleFileChange,
@@ -381,6 +396,7 @@ function EditSubject() {
     const { 
         subjectPdfInput,
         setSubjectPdfInput,
+        setSubjectPdfData,
         inputRef,
         handleBoxClick,
         handleFileChange,
@@ -392,15 +408,15 @@ function EditSubject() {
             const response = await backend.get(path, { withCredentials: true, responseType: 'blob' });
 
             if (response.status === 200) {
-            const pdfFile = new File([response.data], `${name}.pdf`, { type: 'application/pdf' });
-            setSubjectPdfInput({ name: name, file: pdfFile });
+                const pdfFile = new File([response.data], `${name}.pdf`, { type: 'application/pdf' });
+                setSubjectPdfInput({ name: name, file: pdfFile });
+                setSubjectPdfData({ name: name, file: pdfFile });
             }
         } catch (error) {
             console.log(error);
         }
     }
-
-    
+  
     const fetchSubjectData = async () => {
         try {
             const response = await backend.get(`/teacher/getSubject/${courseId}/${subjectId}`, { withCredentials: true });
@@ -531,6 +547,7 @@ function EditSubject() {
                 return;
             }
             else if(editMode === "pdf"){
+
                 if(!pdfValication || !questionValication ){
                     setMode("submit");
                     return;
