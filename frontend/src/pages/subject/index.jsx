@@ -71,9 +71,9 @@ function Subject() {
 
             <Box className={style["navsubject-wrap"]}>
                 <NavSubject 
-                courseId={courseId}
-                subjectList={subjectList}
-                enrollmentId={enrollmentId}
+                    courseId={courseId}
+                    subjectList={subjectList}
+                    enrollmentId={enrollmentId}
                 />
             </Box>
         </Stack>

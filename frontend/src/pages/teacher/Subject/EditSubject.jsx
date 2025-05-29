@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../../api/backend';
 
@@ -10,6 +10,7 @@ import { Alert, Button, Slide, Snackbar, Stack } from '@mui/material';
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
 import Reader from '../../../components/Reader';
+import AddPdf from './addContents/AddPdf';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -118,6 +119,70 @@ const useSubjectForm = () => {
 };
 
 /* Input Format Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Pdf Functions */
+
+const usePdfForm = () => {
+    const [ subjectPdfInput, setSubjectPdfInput ] = useState({
+        name: "",
+        file: null,
+    });
+    const inputRef = useRef(null);
+
+    const handleBoxClick = () => {
+        inputRef.current.click();
+    };
+
+    const handleFileChange = (event) => {
+        const selectedFile = event.target.files[0];
+
+        if (!selectedFile) return null;
+
+        if (selectedFile.type !== "application/pdf") {
+            return "Only PDF files are allowed.";
+        }
+
+        if (selectedFile.size > 16 * 1024 * 1024) {
+            return "File size must be less than 16MB.";
+        }
+
+        setSubjectPdfInput(prev => ({ ...prev, file: selectedFile }));
+        return null;
+    };
+
+    const pdfValidation = () => {
+        if(subjectPdfInput.name === ""){
+        return "Subject Name is required";
+        }
+
+        if(!subjectPdfInput.file){
+        return "Please select a PDF file";
+        }
+
+        if(subjectPdfInput.file.type !== "application/pdf"){
+        return "Please select a PDF file";
+        }
+
+        if(subjectPdfInput.file.size > 16 * 1024 * 1024 ){
+        return "File size must be less than 16MB";
+        }
+
+        return null;
+    }
+
+    return{
+        subjectPdfInput,
+        setSubjectPdfInput,
+        inputRef,
+        handleBoxClick,
+        handleFileChange,
+        pdfValidation
+    }
+}
+
+/* Input Pdf Functions */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,6 +348,7 @@ function EditSubject() {
     const [ alertMessage, setAlertMessage ] = useState("");
     const [ alertOpen, setAlertOpen ] = useState(false);
     const [ manualPreview, setManualPreview ] = useState(false);
+    const [ pdfPreview, setPdfPreview ] = useState(false);
     const [ questionPreview, setQuestionPreview ] = useState(false);
     const editMode = localStorage.getItem("editMode");
 
@@ -312,7 +378,29 @@ function EditSubject() {
         deleteQuestion,
         questionValidation
     } = useQuestionForm();
+    const { 
+        subjectPdfInput,
+        setSubjectPdfInput,
+        inputRef,
+        handleBoxClick,
+        handleFileChange,
+        pdfValidation 
+    } = usePdfForm();
 
+    const fetchSubjectPdf = async (name, path) => {
+        try {
+            const response = await backend.get(path, { withCredentials: true, responseType: 'blob' });
+
+            if (response.status === 200) {
+            const pdfFile = new File([response.data], `${name}.pdf`, { type: 'application/pdf' });
+            setSubjectPdfInput({ name: name, file: pdfFile });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    
     const fetchSubjectData = async () => {
         try {
             const response = await backend.get(`/teacher/getSubject/${courseId}/${subjectId}`, { withCredentials: true });
@@ -333,7 +421,8 @@ function EditSubject() {
                         setMode("manual");
                     }
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
-                        console.log('PDF URL:', subjectData.pdfUrl);
+                        // console.log('PDF URL:', subjectData.pdfUrl);
+                        fetchSubjectPdf(subjectData.subjectname, `${import.meta.env.VITE_API_BASE_URL}/subjects${subjectData.pdfUrl}`);
                         localStorage.setItem("editMode", "pdf");
                         setMode("pdf");
                     }
@@ -355,7 +444,7 @@ function EditSubject() {
     useEffect(() => {
         fetchSubjectData();
     }, [courseId, subjectId]);
-
+    console.log(subjectPdfInput)
     const onUploadImage = (index, event) => {
         const error = handleImageUpload(index, event);
         if (error) {
@@ -363,6 +452,15 @@ function EditSubject() {
             setAlertOpen(true);
         }
     };
+
+    const onUploadPdf = (event) => {
+        const error = handleFileChange(event);
+        if (error) {
+            setAlertMessage(error);
+            setAlertOpen(true);
+        }
+    };
+
 
     const submitUpdate = async () => {
         const formData = new FormData();
@@ -418,17 +516,31 @@ function EditSubject() {
         }
         else if(mode === "question"){
             let subjectValication = subjectValidation();
+            let pdfValication = pdfValidation();
             let questionValication = questionValidation();
 
-            if(!subjectValication || !questionValication){
-                setMode("submit");
+            if(editMode === "manual"){
+                if(!subjectValication || !questionValication ){
+                    setMode("submit");
+                    return;
+                }
+                
+                const error = subjectValication || questionValication;
+                setAlertMessage(error);
+                setAlertOpen(true);
                 return;
             }
-            
-            const error = subjectValication || questionValication;
-            setAlertMessage(error);
-            setAlertOpen(true);
-            return;       
+            else if(editMode === "pdf"){
+                if(!pdfValication || !questionValication ){
+                    setMode("submit");
+                    return;
+                }
+                
+                const error = pdfValication || questionValication;
+                setAlertMessage(error);
+                setAlertOpen(true);
+                return;
+            }       
         }
         else if(mode === "submit"){
             submitUpdate();
@@ -459,6 +571,10 @@ function EditSubject() {
     const handlePreview = () => {
         if(mode === "manual"){
             setManualPreview(true);
+            return;
+        }
+        else if(mode === "pdf"){
+            setPdfPreview(true);
             return;
         }
         else if(mode === "question"){
@@ -514,6 +630,19 @@ function EditSubject() {
                 />
             )}
 
+            {( mode === "pdf" && 
+            subjectPdfInput.name !== "" ) && (
+                <AddPdf
+                    subjectPdfInput={subjectPdfInput}
+                    setSubjectPdfInput={setSubjectPdfInput}
+                    inputRef={inputRef}
+                    handleBoxClick={handleBoxClick}
+                    handleFileChange={onUploadPdf}
+                    handleSubmit={handleSubmit}
+                    handlePreview={handlePreview}
+                />
+            )}
+
             {( mode === "question" && 
             questionInput.length > 0) && (
                 <EditQuestion
@@ -539,6 +668,15 @@ function EditSubject() {
                 />
             )}
 
+            {( mode === "pdf" && pdfPreview) && (
+                <Preview
+                    subjectInput={subjectPdfInput}
+                    questionInput={null}
+                    PreviewPopupOpen={pdfPreview}
+                    setPreviewPopupOpen={setPdfPreview}
+                />
+            )}
+
             {( mode === "question" && questionPreview) && (
                 <Preview
                     subjectInput={null}
@@ -549,11 +687,12 @@ function EditSubject() {
             )}
 
             {( (mode === "submit") && 
-            ((editMode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0)) && 
+            ((editMode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0) || 
+            (editMode === "pdf" && subjectPdfInput.name !== "" && subjectPdfInput.file !== null)) && 
             (questionInput.length !== 0)) && (
                 <Stack>
                     <Reader 
-                        content={subjectInput.name !== "" && subjectInput.content.length !== 0 ? subjectInput : ""}
+                        content={subjectInput.name !== "" && subjectInput.content.length !== 0 ? subjectInput : subjectPdfInput}
                         question={questionInput}
                         subjectId={subjectId}
                         mode={mode}
