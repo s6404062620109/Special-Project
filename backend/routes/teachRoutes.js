@@ -46,65 +46,6 @@ router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCo
 
 router.put("/updatePdfSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, pdfUpload.single("file"), teacherController.editPdfSubject);
 
-function deleteFolderRecursive(folderPath){
-  if (fs.existsSync(folderPath)) {
-    fs.rmSync(folderPath, { recursive: true, force: true });
-    console.log(`Deleted folder: ${folderPath}`);
-  } else {
-    console.log(`Folder does not exist: ${folderPath}`);
-  }
-};
-
-router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", (req, res) => {
-  const { courseId, subjectId, userId } = req.params;
-
-  if(!courseId || !subjectId || !userId){
-    return res.status(400).send({ message: "Course ID, Subject ID and User ID are required." });
-  }
-
-  db.query("SELECT id FROM course WHERE id = ? AND teacherId = ?", [courseId, userId], (error, result) => {
-    if(error){
-      console.log(error);
-      return res.status(500).json({ message: "Database course query error." });
-    }
-    
-    if(result.length === 0){
-      return res.status(404).json({ message: "Course not found or you do not have permission." });
-    }
-
-    if(result.length > 0){
-      db.query("SELECT id FROM subject WHERE id = ? AND courseId = ?", 
-        [subjectId, courseId, userId], (error, result) => {
-          if(error){
-            console.log(error);
-            return res.status(500).json({ message: "Database subject query error." });
-          }
-    
-          if(result.length === 0){
-            return res.status(404).json({ message: "Subject not found or you do not have permission to delete this subject." });
-          }
-    
-          if(result.length > 0){
-  
-            db.query("DELETE FROM subject WHERE id = ? AND courseId = ?",
-              [subjectId, courseId], (error) => {
-                if(error){
-                  console.log(error);
-                  return res.status(500).json({ message: "Delete subject from database error." });
-                }
-    
-                const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
-                deleteFolderRecursive(subjectFolderPath);
-
-                return res.status(200).json({ message: "Subject deleted successfully." });
-              }
-            );
-          }
-        }
-      );
-    }
-  });
-  
-});
+router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteSubject);
 
 module.exports = router;
