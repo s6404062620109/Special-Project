@@ -42,6 +42,17 @@ services:
       - "8081:80"
     depends_on:
       - db
+  
+  ubuntu-ui:
+    image: dorowu/ubuntu-desktop-lxde-vnc
+    container_name: ubuntu-ui
+    ports:
+      - "6080:80"
+    volumes:
+      - ./scripts:/scripts
+    environment:
+      - USER=root
+      - PASSWORD=root
 
 volumes:
   mysql_data_test: 
