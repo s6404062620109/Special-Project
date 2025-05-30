@@ -477,7 +477,6 @@ function EditSubject() {
         }
     };
 
-
     const submitUpdate = async () => {
         const formData = new FormData();
 
@@ -491,34 +490,64 @@ function EditSubject() {
             if(choiceDelete.length > 0){
                 formData.append('choiceDelete', JSON.stringify(choiceDelete));
             }
-        }
 
-        // else if (editMode === "pdf") {
-        //     formData.append('name', subjectPdfInput.name);
-        //     formData.append('file', subjectPdfInput.file);
-        //     formData.append('question', JSON.stringify(questionInput));
-        // }
-        try {
-            const response = await backend.put(`/teacher/updateSubject/${courseId}/${subjectId}`, 
-                formData,
-                {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    withCredentials: true
+            try {
+                const response = await backend.put(`/teacher/updateSubject/${courseId}/${subjectId}`, 
+                    formData,
+                    {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                        withCredentials: true
+                    }
+                );
+
+                if(response.status === 200){
+                    console.log(response.data);
+                    setAlertMessage(response.data.message);
+                    setAlertOpen(true);
+
+                    setTimeout(() => {
+                        navigate(`/edit-course/${courseId}`);
+                    }, 3000);
                 }
-            );
-
-            if(response.status === 200){
-                console.log(response.data);
-                setAlertMessage(response.data.message);
-                setAlertOpen(true);
-
-                setTimeout(() => {
-                    navigate(`/edit-course/${courseId}`);
-                }, 3000);
+            } catch (error) {
+                console.log(error);
             }
-        } catch (error) {
-            console.log(error);
         }
+
+        else if (editMode === "pdf") {
+            formData.append('name', subjectPdfInput.name);
+            formData.append('file', subjectPdfInput.file);
+            formData.append('question', JSON.stringify(questionInput));
+            if(questionDelete.length > 0){
+                formData.append('questionDelete', JSON.stringify(questionDelete));
+            }
+            if(choiceDelete.length > 0){
+                formData.append('choiceDelete', JSON.stringify(choiceDelete));
+            }
+
+            try {
+                const response = await backend.put(`/teacher/updatePdfSubject/${courseId}/${subjectId}`, 
+                    formData,
+                    {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                        withCredentials: true
+                    }
+                );
+
+                if(response.status === 200){
+                    console.log(response.data);
+                    setAlertMessage(response.data.message);
+                    setAlertOpen(true);
+
+                    setTimeout(() => {
+                        navigate(`/edit-course/${courseId}`);
+                    }, 3000);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        
     }
 
     const handleSubmit = () => {

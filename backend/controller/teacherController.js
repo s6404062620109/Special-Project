@@ -434,8 +434,8 @@ const editManualSubject = (req, res) => {
   if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
     return res.status(400).send({ message: "Invalid courseId or subjectId." });
   }
-  if (!name || !content || !question) {
-    return res.status(400).json({ message: "Name, content, and question are required." });
+  if (!courseId || !subjectId ||!name || !content || !question) {
+    return res.status(400).json({ message: "CourseId, subjectId, name, content, and question are required." });
   }
 
   let parsedContent;
@@ -457,7 +457,7 @@ const editManualSubject = (req, res) => {
   }
 
   try {
-    db.query("UPDATE subject SET name = ? WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error, result) => {
+    db.query("UPDATE subject SET name = ? WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error) => {
       if (error) {
         console.log(error);
         return res.status(500).send({ message: "Database subject query error." });
@@ -533,6 +533,112 @@ const editManualSubject = (req, res) => {
     }
   
 }
+
+const editPdfSubject = (req, res) => {
+  const { courseId, subjectId } = req.params;
+  const { name, question, questionDelete, choiceDelete } = req.body;
+  const file = req.file;
+
+  if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
+    return res.status(400).send({ message: "Invalid courseId or subjectId." });
+  }
+  if (!courseId || !subjectId || !name || !question || !file) {
+    return res.status(400).json({ message: "CourseId, subjectId, name, file, and question are required." });
+  }
+
+  let parsedQuestion;
+  let parsedQuestionDelete;
+  let parsedChoiceDelete;
+
+  try {
+    parsedQuestion = JSON.parse(question);
+    if (questionDelete) parsedQuestionDelete = JSON.parse(questionDelete);
+    if (choiceDelete) parsedChoiceDelete = JSON.parse(choiceDelete);
+  } catch (err) {
+    return res.status(400).json({ message: "Question, questionDelete and choiceDelete must be valid JSON strings." });
+  }
+
+  if (!Array.isArray(parsedQuestion) || parsedQuestion.length === 0) {
+    return res.status(400).json({ message: "Questions must be an array." });
+  }
+
+  try{
+    db.query("UPDATE subject SET name = ? WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Database subject query error." });
+      }
+
+      const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+      const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
+      fs.writeFileSync(pdfFilePath, file.buffer);
+  
+      try {
+        for (const q of parsedQuestion) {
+          const { id: qid, content: qContent, type: qType, choice } = q;
+
+          let questionId = qid;
+          if (qid) {
+            await new Promise((resolve, reject) => {
+              db.query("UPDATE question SET content = ?, type = ? WHERE id = ?", [qContent, qType, qid], (err) => {
+                if (err) return reject(err);
+                resolve();
+              });
+            });
+          } else {
+            questionId = await new Promise((resolve, reject) => {
+              db.query("INSERT INTO question (subjectId, content, type) VALUES (?, ?, ?)", [subjectId, qContent, qType], (err, result) => {
+                if (err) return reject(err);
+                resolve(result.insertId);
+              });
+            });
+          }
+
+          for (const c of choice) {
+            const { id: cid, content: cContent, isCorrect } = c;
+            if (cid) {
+              db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                if (err) console.log("Choice Update Error:", err);
+              });
+            } else {
+              db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                if (err) console.log("Choice Insert Error:", err);
+              });
+            }
+          }
+        }
+
+        if (parsedQuestionDelete) {
+          db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+            if (err) {
+              console.log("Question Delete Error:", err);
+              return res.status(500).send({ message: "Error deleting questions." });
+            }
+          });
+        }
+
+        if (parsedChoiceDelete) {
+          db.query("DELETE FROM answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
+            if (err) {
+              console.log("Choice Delete Error:", err);
+              return res.status(500).send({ message: "Error deleting choices." });
+            }
+          });
+        }
+
+
+        return res.status(200).json({ message: "Subject updated successfully." });
+        } catch (err) {
+          console.error(err);
+          return res.status(500).send({ message: "Error updating questions or choices." });
+        }
+      });
+  } catch(error){
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+}
+
 /* teacher_subject controller */
 
 module.exports = {
@@ -545,4 +651,5 @@ module.exports = {
   addManualSubject,
   addPdfSubject,
   editManualSubject,
+  editPdfSubject
 }
