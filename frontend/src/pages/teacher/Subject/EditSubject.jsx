@@ -6,7 +6,7 @@ import style from "./css/subject.module.css";
 import EditManual from './editContents/EditManual';
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Alert, Button, Slide, Snackbar, Stack } from '@mui/material';
+import { Alert, Button, Slide, Snackbar, Stack, Typography } from '@mui/material';
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
 import Reader from '../../../components/Reader';
@@ -128,10 +128,7 @@ const usePdfForm = () => {
         name: "",
         file: null,
     });
-    const [ subjectPdfData, setSubjectPdfData ] = useState({
-        name: "",
-        file: null,
-    });
+    const [ subjectPdfData, setSubjectPdfData ] = useState({ name: "", file: null });
     const inputRef = useRef(null);
 
     const handleBoxClick = () => {
@@ -159,28 +156,23 @@ const usePdfForm = () => {
         const { name, file } = subjectPdfInput;
         
         const isSameName = name === subjectPdfData.name;
-        const isSameFile = file?.name === subjectPdfData.file?.name &&
-                        file?.size === subjectPdfData.file?.size &&
-                        file?.lastModified === subjectPdfData.file?.lastModified;
 
-        if (isSameName && isSameFile) {
-            return "No changes made to the PDF or name.";
+        if (isSameName && !file) {
+            return "No changes made to the PDF or Question input.";
         }
 
         if (!name) {
             return "Subject Name is required.";
         }
 
-        if (!file) {
-            return "Please select a PDF file.";
-        }
+        if (file) {
+            if (file.type !== "application/pdf") {
+                return "Please select a PDF file.";
+            }
 
-        if (file.type !== "application/pdf") {
-            return "Please select a PDF file.";
-        }
-
-        if (file.size > 16 * 1024 * 1024) {
-            return "File size must be less than 16MB.";
+            if (file.size > 16 * 1024 * 1024) {
+                return "File size must be less than 16MB.";
+            }
         }
 
         return null;
@@ -189,6 +181,7 @@ const usePdfForm = () => {
     return{
         subjectPdfInput,
         setSubjectPdfInput,
+        subjectPdfData,
         setSubjectPdfData,
         inputRef,
         handleBoxClick,
@@ -396,6 +389,7 @@ function EditSubject() {
     const { 
         subjectPdfInput,
         setSubjectPdfInput,
+        subjectPdfData,
         setSubjectPdfData,
         inputRef,
         handleBoxClick,
@@ -409,8 +403,7 @@ function EditSubject() {
 
             if (response.status === 200) {
                 const pdfFile = new File([response.data], `${name}.pdf`, { type: 'application/pdf' });
-                setSubjectPdfInput({ name: name, file: pdfFile });
-                setSubjectPdfData({ name: name, file: pdfFile });
+                setSubjectPdfData({ name: subjectPdfInput.name, file: pdfFile });
             }
         } catch (error) {
             console.log(error);
@@ -438,6 +431,7 @@ function EditSubject() {
                     }
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
                         // console.log('PDF URL:', subjectData.pdfUrl);
+                        setSubjectPdfInput({ ...subjectPdfInput, name: subjectData.subjectname });
                         fetchSubjectPdf(subjectData.subjectname, `${import.meta.env.VITE_API_BASE_URL}/subjects${subjectData.pdfUrl}`);
                         localStorage.setItem("editMode", "pdf");
                         setMode("pdf");
@@ -576,7 +570,6 @@ function EditSubject() {
                 return;
             }
             else if(editMode === "pdf"){
-
                 if(!pdfValication || !questionValication ){
                     setMode("submit");
                     return;
@@ -676,8 +669,7 @@ function EditSubject() {
                 />
             )}
 
-            {( mode === "pdf" && 
-            subjectPdfInput.name !== "" ) && (
+            {( mode === "pdf" ) && (
                 <AddPdf
                     subjectPdfInput={subjectPdfInput}
                     setSubjectPdfInput={setSubjectPdfInput}
@@ -705,7 +697,7 @@ function EditSubject() {
                 />
             )}
 
-            {( mode === "manual" && manualPreview) && (
+            {( mode === "manual" && manualPreview ) && (
                 <Preview
                     subjectInput={subjectInput}
                     questionInput={null}
@@ -714,9 +706,9 @@ function EditSubject() {
                 />
             )}
 
-            {( mode === "pdf" && pdfPreview) && (
+            {( mode === "pdf" && pdfPreview ) && (
                 <Preview
-                    subjectInput={subjectPdfInput}
+                    subjectInput={ subjectPdfInput.name !== "" && subjectPdfInput.file ? subjectPdfInput : subjectPdfData }
                     questionInput={null}
                     PreviewPopupOpen={pdfPreview}
                     setPreviewPopupOpen={setPdfPreview}
@@ -734,9 +726,14 @@ function EditSubject() {
 
             {( (mode === "submit") && 
             ((editMode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0) || 
-            (editMode === "pdf" && subjectPdfInput.name !== "" && subjectPdfInput.file !== null)) && 
-            (questionInput.length !== 0)) && (
-                <Stack>
+            (editMode === "pdf" )) && (questionInput.length !== 0)) && (
+                <Stack
+                    sx={{
+                        margin: "20px auto",
+                    }}
+                >
+                    <Typography variant='h5' fontWeight='600'>ตัวอย่างเนื้อหาที่ปรับปรุงของบทเรียน { editMode === "manual" ? subjectInput.name : subjectPdfInput.name }</Typography>
+
                     <Reader 
                         content={subjectInput.name !== "" && subjectInput.content.length !== 0 ? subjectInput : subjectPdfInput}
                         question={questionInput}

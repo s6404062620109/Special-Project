@@ -24,9 +24,7 @@ function Reader({
       ))
     );
 
-  const isManual = content &&
-    typeof content === 'object' &&
-    !isPDF &&
+  const isManual = content && 'content' in content && !isPDF &&
     (
       (Array.isArray(content.content) && content.content.length > 0) ||
       !Array.isArray(content.content)

@@ -542,8 +542,8 @@ const editPdfSubject = (req, res) => {
   if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
     return res.status(400).send({ message: "Invalid courseId or subjectId." });
   }
-  if (!courseId || !subjectId || !name || !question || !file) {
-    return res.status(400).json({ message: "CourseId, subjectId, name, file, and question are required." });
+  if (!courseId || !subjectId || !name || !question ) {
+    return res.status(400).json({ message: "CourseId, subjectId, name and question are required." });
   }
 
   let parsedQuestion;
@@ -563,15 +563,17 @@ const editPdfSubject = (req, res) => {
   }
 
   try{
-    db.query("UPDATE subject SET name = ? WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error) => {
+    db.query("UPDATE subject SET name = ?, updateat = NOW() WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error) => {
       if (error) {
         console.log(error);
         return res.status(500).send({ message: "Database subject query error." });
       }
 
-      const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
-      const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
-      fs.writeFileSync(pdfFilePath, file.buffer);
+      if (file) {
+        const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+        const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
+        fs.writeFileSync(pdfFilePath, file.buffer);
+      }
   
       try {
         for (const q of parsedQuestion) {

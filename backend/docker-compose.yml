@@ -49,7 +49,7 @@ services:
     ports:
       - "6080:80"
     volumes:
-      - ./scripts:/scripts
+      - ./courses:/usr/src/app/courses
     environment:
       - USER=root
       - PASSWORD=root
