@@ -36,7 +36,6 @@ function Courses() {
     fetchData();
   }, [userData]);
 
-
   return (
     <div className={style.pageWrapper}>
       <div className={style.content}>

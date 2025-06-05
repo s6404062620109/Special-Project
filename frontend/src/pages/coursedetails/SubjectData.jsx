@@ -2,7 +2,8 @@ import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthProvider";
 
-import style from "./css/subjectcard.module.css";
+import style from "./css/subjectdata.module.css";
+import { Typography } from "@mui/material";
 
 function SubjectData({ id, name, courseId, progress, enrollmentId }) {
   const { userData } = useContext(AuthContext);
@@ -23,19 +24,18 @@ function SubjectData({ id, name, courseId, progress, enrollmentId }) {
   );
 
   return (
-    <tr className={style.content}>
+    <tr 
+      className={style.content}
+      onClick={handleStart}
+    >
       <td>
-        <p>{name}</p>
+        <Typography variant="body1">{name}</Typography>
       </td>
 
       {userData.id && (
         <td>
-          {matchedProgress && matchedProgress.is_completed === 1 ? (
-            <p>Completed</p>
-          ) : (
-            <button onClick={handleStart}>
-              Start
-            </button>
+          {(matchedProgress && matchedProgress.is_completed === 1) && (
+            <Typography variant="h6">Lab Completed</Typography>
           )}
         </td>
       )}

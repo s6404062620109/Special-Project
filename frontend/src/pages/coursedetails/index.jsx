@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
+
+import { Button, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from "@mui/material";
+import CircleIcon from '@mui/icons-material/Circle';
 
 import style from "./css/coursedetails.module.css";
 import SubjectData from "./subjectData";
@@ -19,6 +22,7 @@ function CourseDetail() {
   const [ progress, setProgress ] = useState([]);
   const [ pretestProgress, setPretestProgress ] = useState([]);
   const [ posttestProgress, setPosttestProgress ] = useState([]);
+  const navigate = useNavigate();
 
   const fetchCourseInfo = async () => {
     try {
@@ -47,14 +51,14 @@ function CourseDetail() {
       if (response.status === 200) {
         const courseIdNum = Number(courseId);
         const enrollmentIdNum = Number(enrollmentId);
-  
+
         const filteredHistory = response.data.results.filter(
           (record) => record.courseId === courseIdNum && record.id === enrollmentIdNum
         );
         setHistory(filteredHistory);
       }
     } catch (err) {
-      console.log("Error fetching history:", err);
+      console.log(err);
     }
   };
 
@@ -65,7 +69,7 @@ function CourseDetail() {
       });
 
       if (response.status === 200) {
-        console.log(response)
+
         const pretest = response.data.results.filter(
           (item) => item.type === "Pre"
         );
@@ -79,7 +83,21 @@ function CourseDetail() {
     } catch (error) {
       console.log(error);
     }
-  };    
+  };
+
+  const fetchLatestProgress = async () => {
+    try {
+      const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        navigate(`/course/${courseId}/${response.data.inProgress}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchCourseInfo();
@@ -110,7 +128,7 @@ function CourseDetail() {
           <thead>
             <tr>
               <th>
-                <p>SUBJECT</p>
+                <p>บทเรียน</p>
               </th>
               <th></th>
             </tr>
@@ -132,49 +150,113 @@ function CourseDetail() {
       </div>
 
       <div className={style.testSection}>
-        <div className={style.testItem}>
-          {userData.id ? (
-            <p
-              className={isPreTestCompleted ? style.disabledTest : ""}
-              onClick={() => {
-                if (!userData.id) {
-                  alert("Please login first");
-                  window.location.href = "/";
-                } else if (!isPreTestCompleted) {
-                  window.location.href = `/course/${courseId}/pretest/${enrollmentId}`;
-                }
-              }}
+        <Typography variant="h6">สถานะผลการทำแบบทดสอบทั้งหมด</Typography>
+        <Stack
+          sx={{
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: { xs: "center", sm: "space-between" },
+            gap: 2,
+            width: "80%",
+          }}
+        >
+          {userData.id && isPreTestCompleted ? (
+            <Stack
+              direction="column"
+              justifyContent="center"
+              alignItems="center"
             >
-              {isPreTestCompleted
-                ? `PreTest Score: ${preTestScore} / ${pretestProgress.length}`
-                : "PreTest"}
-            </p>
-          ) : (
-            <></>
-          )}
-        </div>
+              <Typography variant="h6">PreTest</Typography>
 
-        <div className={style.testItem}>
-          {userData.id ? (
-            <p
-              className={isPostTestCompleted ? style.disabledTest : ""}
-              onClick={() => {
-                if (!userData.id) {
-                  alert("Please login first"); 
-                  window.location.href = "/";
-                } else if (!isPostTestCompleted) {
-                  window.location.href = `/course/${courseId}/posttest/${enrollmentId}`;
-                }
-              }}
-            >
-              {isPostTestCompleted
-                ? `PostTest Score: ${postTestScore} / ${posttestProgress.length}`
-                : "PostTest"}
-            </p>
+              <List>
+                {subjectList.map((subject) => (
+                  <ListItem>
+                    <ListItemIcon>
+                      <CircleIcon 
+                        fontSize="small"
+                        sx={{
+                          color:
+                            posttestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Post"))?.score === 1
+                              ? "green"
+                              : "red"
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={subject.name}
+                      secondary={
+                        pretestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Pre"))?.score === 1
+                          ? "Success"
+                          : "Failed"
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+
+              <Typography
+                variant="h6"
+              >
+                คะแนน {preTestScore} / {pretestProgress.length}
+              </Typography>
+              
+            </Stack>
           ) : (
-            <></>
+              <></>
           )}
-        </div>
+
+          {userData.id && isPostTestCompleted ? (
+            <Stack
+              direction="column"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Typography variant="h6">PostTest</Typography>
+
+              <List>
+                {subjectList.map((subject) => (
+                  <ListItem>
+                    <ListItemIcon>
+                      <CircleIcon 
+                        fontSize="small"
+                        sx={{
+                          color:
+                            posttestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Post"))?.score === 1
+                              ? "green"
+                              : "red"
+                        }}
+                      />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={subject.name}
+                      secondary={
+                        posttestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Post"))?.score === 1
+                          ? "Success"
+                          : "Failed"
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+
+              <Typography
+                variant="h6"
+              >
+                คะแนน {postTestScore} / {posttestProgress.length}
+              </Typography>
+              
+            </Stack>
+          ) : (
+              <></>
+          )}
+        </Stack>
+
+        <Button 
+          variant="contained"
+          onClick={fetchLatestProgress} 
+        >
+          บทเรียนต่อไป
+        </Button>
       </div>
     </div>
   );

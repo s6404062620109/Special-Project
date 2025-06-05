@@ -5,13 +5,14 @@ import backend from '../../../api/backend';
 import style from './css/pretest.module.css';
 import { AuthContext } from '../../../context/AuthProvider';
 import TestRead from '../../../components/Reader/TestRead';
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 
 function Pretest() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
   const [ question, setQuestion ] = useState([]);
   const [ selectedAnswers, setSelectedAnswers ] = useState({});
+  const [ errorMessage, setErrorMessage ] = useState('');
   const navigate = useNavigate();
 
   const checkPretestCompletion = async () => {
@@ -71,7 +72,7 @@ function Pretest() {
 
     fetchPretestData();
   }, [userData.id, enrollmentId, courseId, navigate]);
-
+ 
   const handleAnswerChange = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -81,18 +82,30 @@ function Pretest() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const checkNullSelectedAnswer = Object.values(selectedAnswers).some(answer => answer === null);
+
+    if(checkNullSelectedAnswer){
+      setErrorMessage("Please answer all question before submit.");
+      return;
+    }
+    
     try {
       const response = await backend.put(`/pretest/submitPretest/${courseId}`, { answer: selectedAnswers, enrollmentId }, {
         withCredentials: true
       });
 
       if(response.status === 200 && response.data.message === "Progress pretest update completed."){
-        navigate(`/course/${courseId}/subject/${response.data.firstSubject}/${enrollmentId}`);
+        setErrorMessage("Pretest submitted successfully.");
+        setTimeout(() => {
+          navigate(`/course/${courseId}/${enrollmentId}`);
+        }, 3000);
       }
-      
     } 
     catch (err) {
       console.log(err);
+      if(err.response.status === 404){
+        setErrorMessage("Please answer all question before submit.");
+      }
     }
     
   };
@@ -109,6 +122,7 @@ function Pretest() {
           selectedAnswers={selectedAnswers}
         />
         
+        <Typography variant='body2' color={errorMessage === "Pretest submitted successfully." ? "green" : "red"}>{errorMessage}</Typography>
         <Button variant="contained" color="primary" type="submit">Submit Answers</Button>
 
       </form>

@@ -47,5 +47,5 @@ const getEnrollmentCourses = (req, res) => {
 
 module.exports = {
   getCourses,
-  getEnrollmentCourses
+  getEnrollmentCourses,
 }
