@@ -213,31 +213,40 @@ const getSubject = (req, res) => {
                 return res.status(500).json({ message: "Database question query error" });
               }
               const questionIds = questionResult.map(item => item.id);
-              if (questionIds.length === 0) {
+              const typeIds = questionResult.map(item => item.typeId);
+              if (questionIds.length === 0 || typeIds.length === 0) {
                 return res.status(404).json({ message: "No question found." });
               }
 
-              db.query('SELECT * FROM answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
+              db.query('SELECT * FROM type WHERE id IN (?)', [typeIds], (err, typeResult) => {
+                if (err) {
+                  console.log(err);
+                  return res.status(500).json({ message: "Database type query error" });
+                }
+
+                db.query('SELECT * FROM answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
                 if (err) {
                   console.log(err);
                   return res.status(500).json({ message: "Database answer query error" });
                 }
 
-                question = questionResult.map(item => {
-                  const answers = answerResult.filter(answer => answer.questionId === item.id);
-                  return {
-                    id: item.id,
-                    content: item.content,
-                    type: item.type,
-                    choice: answers.map(answer => ({
-                      id: answer.id,
-                      content: answer.content,
-                      isCorrect: answer.type
-                    }))
-                  };
+                  question = questionResult.map(item => {
+                    const answers = answerResult.filter(answer => answer.questionId === item.id);
+                    return {
+                      id: item.id,
+                      content: item.content,
+                      img: item.img,
+                      type: typeResult.find(type => type.id === item.typeId).name_type,
+                      inputType: typeResult.find(type => type.id === item.typeId).input_type,
+                      choice: answers.map(answer => ({
+                        id: answer.id,
+                        content: answer.content,
+                        isCorrect: answer.type
+                      }))
+                    };
+                  });
                 });
-              });
-
+              });         
             });
           }
           else{
@@ -277,6 +286,21 @@ const getSubject = (req, res) => {
         });
       }
     );
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+}
+
+const getQuestionType = (req, res) => {
+  try{
+    db.query("SELECT * FROM type", (error, result) => {
+      if(error){
+        console.log(error);
+        return res.status(500).send({ message: "Database type query error." });
+      }
+      return res.status(200).send({ result });
+    });
   } catch(error){
     console.log(error);
     return res.status(500).json({ message: "Server error.", error });
@@ -716,6 +740,7 @@ module.exports = {
   updateCourse,
   deleteCourse,
   getSubject,
+  getQuestionType,
   addManualSubject,
   addPdfSubject,
   editManualSubject,

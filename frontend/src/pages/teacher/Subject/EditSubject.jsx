@@ -197,7 +197,7 @@ const usePdfForm = () => {
 /* Input Question Functions */
 
 const useQuestionForm = () => {
-    const [ questionType ] = useState([ "Pre", "Post", "Lab", "Quiz" ]);
+    const [ questionType, setQuestionType ] = useState([]);
     const [ questionInput, setQuestionInput ] = useState([]);
     const [ questionData, setQuestionData ] = useState([]);
     const [ questionDelete, setQuestionDelete ] = useState([]);
@@ -330,6 +330,7 @@ const useQuestionForm = () => {
 
     return{
         questionType,
+        setQuestionType,
         questionDelete,
         choiceDelete,
         questionInput,
@@ -373,6 +374,7 @@ function EditSubject() {
     } = useSubjectForm();
     const {
         questionType,
+        setQuestionType,
         questionDelete,
         choiceDelete,
         questionInput,
@@ -451,8 +453,20 @@ function EditSubject() {
         }
     }
 
+    const fetchQuestionType = async () => {
+        try {
+            const response = await backend.get("/teacher/getQuestionType", { withCredentials: true });
+            if(response.status === 200){
+                setQuestionType(response.data.result);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
         fetchSubjectData();
+        fetchQuestionType();
     }, [courseId, subjectId]);
 
     const onUploadImage = (index, event) => {

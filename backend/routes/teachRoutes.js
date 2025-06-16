@@ -23,6 +23,8 @@ router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCou
 
 router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
+router.get("/getQuestionType", authUserRole.checkTeacherRole, teacherController.getQuestionType);
+
 const NoneFileMulter = multer();
 
 router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(), teacherController.addManualSubject);

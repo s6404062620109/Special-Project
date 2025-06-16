@@ -19,7 +19,7 @@ function Preview({
       setIsEditContents(true);
     }
   }, [subjectId]);
-  console.log(subjectInput)
+
   return (
     <Dialog
       open={PreviewPopupOpen}

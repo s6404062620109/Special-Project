@@ -76,9 +76,7 @@ function AddQuestion({
                 </Typography>
 
                 <IconButton
-                  onClick={
-                    () => deleteQuestion(index)
-                  }
+                  onClick={() => deleteQuestion(index)}
                 >
                   <DeleteIcon/>
                 </IconButton>
@@ -110,9 +108,9 @@ function AddQuestion({
                     label="Type"
                     onChange={(e) => handleQuestionChange(index, "type", e.target.value)}
                   >
-                    {questionType.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
+                    {questionType.map((item) => (
+                      <MenuItem key={item} value={item.name_type}>
+                        {item.name_type}
                       </MenuItem>
                     ))}
                   </Select>
@@ -125,63 +123,72 @@ function AddQuestion({
                   borderRadius: '8px',
                 }}
               > 
-                <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                  <Typography variant='h6'> Choice </Typography>
+                {(question.type === "Pre" || question.type === "Post" || question.type === "Lab-Quiz") &&(
+                  <>
+                    <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                      <Typography variant='h6'> Choice </Typography>
 
-                  <IconButton 
-                    onClick={() => addChoice(index)}
-                  >
-                    <AddIcon/>
-                  </IconButton>
-                </Stack>
-                
-                {Array.isArray(question.choice) && question.choice.map((choice, choiceIndex) => (
-                  <Stack key={choiceIndex}
-                    sx={{
-                      width: '90%',
-                      margin: '16px auto',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 2,
-                    }} 
-                  >
-                    <Typography variant='h6'>{choiceIndex + 1}</Typography>
-
-                    <Stack 
-                      sx={{
-                        width: '90%',
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        alignItems: 'center',
-                        gap: { xs: 0, sm: 2 },
-                      }}
-                    >
-                      <TextField
-                        label="Content"
-                        fullWidth
-                        value={choice.content}
-                        onChange={(e) => handleChoiceChange(index, choiceIndex, "content", e.target.value)}
-                      />
-                      <FormControlLabel 
-                        control={
-                          <Checkbox 
-                            checked={choice.isCorrect} 
-                            onChange={(e) => handleChoiceChange(index, choiceIndex, "isCorrect", e.target.checked)}
-                          />
-                        } 
-                        label="Correct"
-                        sx={{
-                          width: { xs: '100%', sm: '30%' },
-                        }} 
-                      />
+                      <IconButton 
+                        onClick={() => addChoice(index)}
+                      >
+                        <AddIcon/>
+                      </IconButton>
                     </Stack>
+              
+                    {Array.isArray(question.choice) && question.choice.map((choice, choiceIndex) => (
+                      <Stack key={choiceIndex}
+                        sx={{
+                          width: '90%',
+                          margin: '16px auto',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 2,
+                        }} 
+                      >
+                        <Typography variant='h6'>{choiceIndex + 1}</Typography>
 
-                    <IconButton
-                      onClick={() => deleteChoice(index, choiceIndex)}
-                    >
-                      <DeleteIcon/>
-                    </IconButton>
-                  </Stack>
-                ))}
+                        <Stack 
+                          sx={{
+                            width: '90%',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            alignItems: 'center',
+                            gap: { xs: 0, sm: 2 },
+                          }}
+                        >
+                          <TextField
+                            label="Content"
+                            fullWidth
+                            value={choice.content}
+                            onChange={(e) => handleChoiceChange(index, choiceIndex, "content", e.target.value)}
+                          />
+                          <FormControlLabel 
+                            control={
+                              <Checkbox 
+                                checked={choice.isCorrect}
+                                onChange={(e) => handleChoiceChange(index, choiceIndex, "isCorrect", e.target.checked)} 
+                              />
+                            } 
+                            label="Correct"
+                            sx={{
+                              width: { xs: '100%', sm: '30%' },
+                            }} 
+                          />
+                        </Stack>
+
+                        <IconButton
+                          onClick={() => deleteChoice(index, choiceIndex)}
+                        >
+                          <DeleteIcon/>
+                        </IconButton>
+                      </Stack>
+                    ))}
+                  </>
+                )}
+                
+                {(question.type === "Lab") && (
+                  <>
+                  </>
+                )}
 
               </Box>
             </Stack>

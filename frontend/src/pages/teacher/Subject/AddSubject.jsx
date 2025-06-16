@@ -103,7 +103,7 @@ const useSubjectForm = () => {
 /* Input Question Functions */
 
 const useQuestionForm = () => {
-  const [ questionType ] = useState([ "Pre", "Post", "Lab", "Quiz" ]);
+  const [ questionType, setQuestionType ] = useState([]);
   const [ questionInput, setQuestionInput ] = useState([
     {
       content: "",
@@ -212,6 +212,7 @@ const useQuestionForm = () => {
 
   return {
     questionType,
+    setQuestionType,
     questionInput,
     setQuestionInput,
     handleQuestionChange,
@@ -296,7 +297,7 @@ function AddSubject() {
   } = useSubjectForm();
   const { questionType,
     questionInput,
-    setQuestionInput,
+    setQuestionType,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -320,6 +321,22 @@ function AddSubject() {
   const [ openDialog, setOpenDialog ] = useState(false);
   const [ loading, setLoading ] = useState(true);
   const prevMode = localStorage.getItem("prevMode");
+
+  const fetchQuestionType = async () => {
+        try {
+            const response = await backend.get("/teacher/getQuestionType", { withCredentials: true });
+            if(response.status === 200){
+                setQuestionType(response.data.result);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+      fetchQuestionType();
+    }, [courseId]);
+
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
