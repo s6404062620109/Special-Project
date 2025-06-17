@@ -237,7 +237,6 @@ const getSubject = (req, res) => {
                       content: item.content,
                       img: item.img,
                       type: typeResult.find(type => type.id === item.typeId).name_type,
-                      inputType: typeResult.find(type => type.id === item.typeId).input_type,
                       choice: answers.map(answer => ({
                         id: answer.id,
                         content: answer.content,
@@ -348,8 +347,8 @@ const addManualSubject = (req, res) => {
         try {
           for (const q of parsedQuestion) {
             await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
-                [q.content, q.type, subjectId], (err, questionResult) => {
+              db.query("INSERT INTO question (content, img, type, subjectId) VALUES (?, ?, ?)",
+                [q.content, q.img, q.type, subjectId], (err, questionResult) => {
                   if (err) return reject(err);
   
                   const questionId = questionResult.insertId;
@@ -420,8 +419,8 @@ const addPdfSubject = (req, res) => {
       try {
         for (const q of parsedQuestion) {
           await new Promise((resolve, reject) => {
-            db.query("INSERT INTO question (content, type, subjectId) VALUES (?, ?, ?)",
-              [q.content, q.type, subjectId], (err, questionResult) => {
+            db.query("INSERT INTO question (content, img, type, subjectId) VALUES (?, ?, ?)",
+              [q.content, q.img, q.type, subjectId], (err, questionResult) => {
                 if (err) return reject(err);
 
                 const questionId = questionResult.insertId;

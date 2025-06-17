@@ -217,15 +217,15 @@ const useQuestionForm = () => {
 
     const addQuestion = () => {
         const newQuestion = {
-        content: "",
-        choice: [
-            {
             content: "",
-            isCorrect: false,
-            },
-        ],
-        img: "",
-        type: questionType[0],
+            choice: [
+                {
+                content: "",
+                isCorrect: false,
+                },
+            ],
+            img: "",
+            type: questionType[0],
         };
         setQuestionInput([...questionInput, newQuestion]);
     };

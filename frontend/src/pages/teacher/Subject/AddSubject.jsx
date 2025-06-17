@@ -4,11 +4,12 @@ import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from "@mui/material";
 
 import style from "./css/subject.module.css";
 import AddManual from "./addContents/AddManual";
-import AddPdf from "./addContents/AddPdf";
+import AddPdf, { VisuallyHiddenInput } from "./addContents/AddPdf";
 import AddQuestion from "./addContents/AddQuestion";
 import Preview from "./Preview";
 import Reader from "../../../components/Reader";
@@ -128,12 +129,47 @@ const useQuestionForm = () => {
       type: questionType[1]
     },
   ]);
+  const [ openImgUpload, setOpenImgUpload ] = useState(false);
+  const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
+  const questionImgInputRef = useRef(null);
 
   const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questionInput];
     newQuestions[index][field] = value;
     setQuestionInput(newQuestions);
   };
+
+  const handleOpenImgDialog = (index) => {
+    setSelectedImageIndex(index);
+    setOpenImgUpload(true);
+  };
+  const handleCloseImgUpload = () => {
+    setSelectedImageIndex(null);
+    setOpenImgUpload(false);
+  };
+
+  const handleImageQuestionUpload = (index, event) => {
+    const files = Array.from(event.target.files);
+    const updatedQuestions = [...questionInput];
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        return "Only image files are allowed.";
+      }
+
+      if (file.size > 6 * 1024 * 1024) { 
+        return "File size must be less than 6MB";
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updatedQuestions[index].img = reader.result;
+        setQuestionInput(updatedQuestions);
+      };
+      reader.readAsDataURL(file);
+    }
+    handleCloseImgUpload();
+  }
   
   const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
     const newQuestions = [...questionInput];
@@ -215,6 +251,13 @@ const useQuestionForm = () => {
     setQuestionType,
     questionInput,
     setQuestionInput,
+    openImgUpload,
+    setOpenImgUpload,
+    questionImgInputRef,
+    selectedImageIndex,
+    handleOpenImgDialog,
+    handleCloseImgUpload,
+    handleImageQuestionUpload,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -296,8 +339,15 @@ function AddSubject() {
     inputValidation
   } = useSubjectForm();
   const { questionType,
-    questionInput,
     setQuestionType,
+    questionInput,
+    openImgUpload,
+    setOpenImgUpload,
+    questionImgInputRef,
+    selectedImageIndex,
+    handleOpenImgDialog,
+    handleCloseImgUpload,
+    handleImageQuestionUpload,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -314,7 +364,6 @@ function AddSubject() {
     pdfValidation
   } = usePdfForm();
   const [ previewContent, setPreviewContent ] = useState(null);
-  const [ previewQuestion, setPreviewQuestion ] = useState([]); 
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ alertMessage, setAlertMessage ] = useState("");
   const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
@@ -323,20 +372,19 @@ function AddSubject() {
   const prevMode = localStorage.getItem("prevMode");
 
   const fetchQuestionType = async () => {
-        try {
-            const response = await backend.get("/teacher/getQuestionType", { withCredentials: true });
-            if(response.status === 200){
-                setQuestionType(response.data.result);
-            }
-        } catch (error) {
-            console.log(error);
-        }
+    try {
+      const response = await backend.get("/teacher/getQuestionType", { withCredentials: true });
+      if(response.status === 200){
+        setQuestionType(response.data.result);
+      }
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    useEffect(() => {
-      fetchQuestionType();
-    }, [courseId]);
-
+  useEffect(() => {
+    fetchQuestionType();
+  }, [courseId]);
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
@@ -553,7 +601,6 @@ function AddSubject() {
       }
 
       setPreviewContent(subjectInput);
-      setPreviewQuestion([]);
       setPreviewPopupOpen(true);
     }
 
@@ -567,7 +614,6 @@ function AddSubject() {
 
       if (subjectPdfInput.name !== "" && subjectPdfInput.file) {
         setPreviewContent(subjectPdfInput); 
-        setPreviewQuestion([]); 
         setPreviewPopupOpen(true);
       }
     }
@@ -581,7 +627,6 @@ function AddSubject() {
       }
 
       setPreviewContent(null);
-      setPreviewQuestion(questionInput);
       setPreviewPopupOpen(true);
     }
   };
@@ -675,6 +720,7 @@ function AddSubject() {
           <AddQuestion
             questionInput={questionInput}
             questionType={questionType}
+            handleOpenImgDialog={handleOpenImgDialog}
             addQuestion={addQuestion}
             deleteQuestion={deleteQuestion}
             handleQuestionChange={handleQuestionChange}
@@ -731,6 +777,60 @@ function AddSubject() {
             </Stack>
           </Stack>
         )}
+
+      <Dialog open={openImgUpload} onClose={handleCloseImgUpload}>
+        <DialogTitle>Question Image Upload</DialogTitle>
+        <DialogContent>
+          <Box
+            onClick={() => questionImgInputRef.current?.click()}
+            sx={{
+              width: '400px',
+              height: '200px', 
+              border: '1px dashed #b3b3b3',
+              borderRadius: '8px',
+              position: 'relative',
+              '&:hover': {
+                borderColor: '#888',
+                background: '#f0f0f0',
+                cursor: 'pointer'
+              }
+            }}
+          >
+            <Stack
+              direction="column"
+              justifyContent="center"
+              alignItems="center"
+              sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              {questionInput[selectedImageIndex]?.img ? (
+                <Typography variant="body1" sx={{ color: '#666', mt: 1 }}>
+                  Image selected ✔
+                </Typography>
+              ) : (
+                <Stack justifyContent="center" alignItems="center">
+                  <AddIcon sx={{ color: '#b3b3b3' }} />
+                  <Typography variant="h6" sx={{ color: '#b3b3b3' }}>
+                    Upload Image here.
+                  </Typography>
+                </Stack>
+              )}
+            </Stack>
+
+            <VisuallyHiddenInput
+              ref={questionImgInputRef}
+              type="file"
+              onChange={(e) => handleImageQuestionUpload(selectedImageIndex, e)}
+              accept="image/*"
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>ยืนยันการส่งข้อมูล</DialogTitle>

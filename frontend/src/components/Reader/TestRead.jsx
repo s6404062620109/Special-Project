@@ -83,6 +83,19 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       {currentItem && (
         <Stack gap={2}>
           
+          {currentItem.img && (
+            <img
+              src={currentItem.img}
+              alt="Question Image"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '8px',
+                objectFit: 'cover',
+              }}
+            />
+          )}
+
           <FormControl>
             <FormLabel id="demo-radio-buttons-group-label">{currentIndex + 1}. {currentItem.content}</FormLabel>
             {isInteractive ? (

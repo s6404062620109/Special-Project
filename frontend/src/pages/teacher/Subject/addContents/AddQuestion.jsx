@@ -8,7 +8,8 @@ import PreviewIcon from '@mui/icons-material/Preview';
 
 function AddQuestion({
   questionInput, 
-  questionType, 
+  questionType,
+  handleOpenImgDialog,
   addQuestion, 
   deleteQuestion, 
   handleQuestionChange, 
@@ -74,7 +75,7 @@ function AddQuestion({
                 <Typography variant='h6'>
                   Question {index + 1}
                 </Typography>
-
+                
                 <IconButton
                   onClick={() => deleteQuestion(index)}
                 >
@@ -123,6 +124,27 @@ function AddQuestion({
                   borderRadius: '8px',
                 }}
               > 
+                {question.img ? (
+                  <img
+                    src={question.img}
+                    alt="Question Image"
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      borderRadius: '8px',
+                      objectFit: 'cover',
+                    }}
+                    onClick={() => handleOpenImgDialog(index)}
+                  />
+                ):(
+                  <Button 
+                    startIcon={<AddIcon />}
+                    color='#888'
+                    onClick={() => handleOpenImgDialog(index)}
+                  >
+                    Add Picture
+                  </Button>
+                )}
                 {(question.type === "Pre" || question.type === "Post" || question.type === "Lab-Quiz") &&(
                   <>
                     <Stack direction='row' alignItems='center' justifyContent='space-between'>

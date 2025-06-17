@@ -21,8 +21,7 @@ function EditQuestion({
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  // console.log(questionInput)
-  // console.log(questionType)
+  //console.log(questionInput)
   return (
     <Stack
       alignItems='center'
