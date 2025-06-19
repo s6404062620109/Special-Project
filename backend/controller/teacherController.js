@@ -55,7 +55,7 @@ const courseTestProgress = (req, res) => {
           return res.status(404).send({ message: "No question found." });
         }
 
-        db.query("SELECT id, type, subjectId FROM question WHERE id IN (?)", [questionIds], (error, questionResult) => {
+        db.query("SELECT id, typeId, subjectId FROM question WHERE id IN (?)", [questionIds], (error, questionResult) => {
           if (error) {
             console.log(error);
             return res.status(500).send({ message: "Database question query error" });
@@ -346,9 +346,13 @@ const addManualSubject = (req, res) => {
   
         try {
           for (const q of parsedQuestion) {
+            let img = null;
+            if(q.img){
+              img = q.img;
+            }
             await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (content, img, type, subjectId) VALUES (?, ?, ?)",
-                [q.content, q.img, q.type, subjectId], (err, questionResult) => {
+              db.query("INSERT INTO question (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
+                [q.content, img, q.type, subjectId], (err, questionResult) => {
                   if (err) return reject(err);
   
                   const questionId = questionResult.insertId;
@@ -418,9 +422,14 @@ const addPdfSubject = (req, res) => {
 
       try {
         for (const q of parsedQuestion) {
+          let img = null;
+          if(q.img){
+            img = q.img;
+          }
+          console.log(q);
           await new Promise((resolve, reject) => {
-            db.query("INSERT INTO question (content, img, type, subjectId) VALUES (?, ?, ?)",
-              [q.content, q.img, q.type, subjectId], (err, questionResult) => {
+            db.query("INSERT INTO question (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
+              [q.content, img, q.type, subjectId], (err, questionResult) => {
                 if (err) return reject(err);
 
                 const questionId = questionResult.insertId;

@@ -383,8 +383,10 @@ function AddSubject() {
   }
 
   useEffect(() => {
-    fetchQuestionType();
-  }, [courseId]);
+    if(questionType.length === 0){
+      fetchQuestionType();
+    }
+  }, [courseId, questionType]);
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");

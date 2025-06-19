@@ -29,7 +29,7 @@ function AddPdf({
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  
+
   return (
     <Stack
       justifyContent='space-around'

@@ -137,7 +137,9 @@ function EditCourse() {
     if (!confirmDelete) return;
 
     try {
-      const response = await backend.delete(`/teacher/deleteSubjectOnCourse/${courseId}/${subjectId}/${userData.id}`);
+      const response = await backend.delete(`/teacher/deleteSubjectOnCourse/${courseId}/${subjectId}/${userData.id}`, {
+        withCredentials: true
+      });
       if (response.status === 200) {
         alert(response.data.message);
         setData((prevData) => ({
