@@ -10,6 +10,7 @@ import PreviewIcon from '@mui/icons-material/Preview';
 function EditQuestion({
   questionInput, 
   questionType,
+  handleOpenImgDialog,
   handleQuestionChange,
   handleChoiceChange,
   addQuestion,
@@ -21,7 +22,7 @@ function EditQuestion({
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  //console.log(questionInput)
+
   return (
     <Stack
       alignItems='center'
@@ -110,7 +111,7 @@ function EditQuestion({
                     onChange={(e) => handleQuestionChange(index, "type", e.target.value)}
                   >
                     {questionType.map((item) => (
-                      <MenuItem key={item} value={item.name_type}>
+                      <MenuItem key={item} value={item.id}>
                         {item.name_type}
                       </MenuItem>
                     ))}
@@ -124,7 +125,38 @@ function EditQuestion({
                   borderRadius: '8px',
                 }}
               > 
-                {(question.type === "Pre" || question.type === "Post" || question.type === "Lab-Quiz") &&(
+                {question.img ? (
+                  <Box
+                    component="img"
+                    src={question.img}
+                    alt="Question Image"
+                    sx={{
+                      width: '100%',
+                      height: '200px',
+                      borderRadius: '8px',
+                      objectFit: 'cover',
+                      cursor: 'pointer',
+                      transition: 'opacity 0.3s',
+                      '&:hover': {
+                        transform: 'scale(0.9)',
+                        border: "1px solid #000"
+                      },
+                    }}
+                    onClick={() => handleOpenImgDialog(index)}
+                  />
+                ):(
+                  <Button 
+                    startIcon={<AddIcon />}
+                    sx={{
+                      color: "#888"
+                    }}
+                    onClick={() => handleOpenImgDialog(index)}
+                  >
+                    Add Picture
+                  </Button>
+                )}
+
+                {(question.type === 1 || question.type === 2 || question.type === 3) &&(
                   <>
                     <Stack direction='row' alignItems='center' justifyContent='space-between'>
                       <Typography variant='h6'> Choice </Typography>
@@ -186,7 +218,7 @@ function EditQuestion({
                   </>
                 )}
                 
-                {(question.type === "Lab") && (
+                {(question.type === 4) && (
                   <>
                   </>
                 )}

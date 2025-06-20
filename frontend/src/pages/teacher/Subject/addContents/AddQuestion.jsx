@@ -152,6 +152,7 @@ function AddQuestion({
                     Add Picture
                   </Button>
                 )}
+                
                 {(question.type === 1 || question.type === 2 || question.type === 3) &&(
                   <>
                     <Stack direction='row' alignItems='center' justifyContent='space-between'>

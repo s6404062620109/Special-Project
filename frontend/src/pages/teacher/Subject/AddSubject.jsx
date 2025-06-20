@@ -342,7 +342,6 @@ function AddSubject() {
     setQuestionType,
     questionInput,
     openImgUpload,
-    setOpenImgUpload,
     questionImgInputRef,
     selectedImageIndex,
     handleOpenImgDialog,
@@ -832,7 +831,6 @@ function AddSubject() {
           </Box>
         </DialogContent>
       </Dialog>
-
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>ยืนยันการส่งข้อมูล</DialogTitle>

@@ -236,7 +236,7 @@ const getSubject = (req, res) => {
                       id: item.id,
                       content: item.content,
                       img: item.img,
-                      type: typeResult.find(type => type.id === item.typeId).name_type,
+                      type: typeResult.find(type => type.id === item.typeId).id,
                       choice: answers.map(answer => ({
                         id: answer.id,
                         content: answer.content,

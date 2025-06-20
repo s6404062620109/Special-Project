@@ -5,12 +5,13 @@ import backend from '../../../api/backend';
 import style from "./css/subject.module.css";
 import EditManual from './editContents/EditManual';
 
+import AddIcon from '@mui/icons-material/Add';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { Alert, Button, Slide, Snackbar, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from '@mui/material';
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
 import Reader from '../../../components/Reader';
-import AddPdf from './addContents/AddPdf';
+import AddPdf, { VisuallyHiddenInput } from './addContents/AddPdf';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -202,13 +203,48 @@ const useQuestionForm = () => {
     const [ questionData, setQuestionData ] = useState([]);
     const [ questionDelete, setQuestionDelete ] = useState([]);
     const [ choiceDelete, setChoiceDelete ] = useState([]);
+    const [ openImgUpload, setOpenImgUpload ] = useState(false);
+    const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
+    const questionImgInputRef = useRef(null);
 
     const handleQuestionChange = (index, field, value) => {
         const newQuestions = [...questionInput];
         newQuestions[index][field] = value;
         setQuestionInput(newQuestions);
     };
+
+    const handleOpenImgDialog = (index) => {
+        setSelectedImageIndex(index);
+        setOpenImgUpload(true);
+    };
+    const handleCloseImgUpload = () => {
+        setSelectedImageIndex(null);
+        setOpenImgUpload(false);
+    };
     
+    const handleImageQuestionUpload = (index, event) => {
+        const files = Array.from(event.target.files);
+        const updatedQuestions = [...questionInput];
+
+        for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+            return "Only image files are allowed.";
+        }
+
+        if (file.size > 6 * 1024 * 1024) { 
+            return "File size must be less than 6MB";
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            updatedQuestions[index].img = reader.result;
+            setQuestionInput(updatedQuestions);
+        };
+        reader.readAsDataURL(file);
+        }
+        handleCloseImgUpload();
+    }
+        
     const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
         const newQuestions = [...questionInput];
         newQuestions[questionIndex].choice[choiceIndex][field] = value;
@@ -334,6 +370,12 @@ const useQuestionForm = () => {
         questionDelete,
         choiceDelete,
         questionInput,
+        openImgUpload,
+        selectedImageIndex,
+        questionImgInputRef,
+        handleOpenImgDialog,
+        handleCloseImgUpload,
+        handleImageQuestionUpload,
         setQuestionInput,
         setQuestionData,
         handleQuestionChange,
@@ -378,6 +420,12 @@ function EditSubject() {
         questionDelete,
         choiceDelete,
         questionInput,
+        openImgUpload,
+        selectedImageIndex,
+        questionImgInputRef,
+        handleOpenImgDialog,
+        handleCloseImgUpload,
+        handleImageQuestionUpload,
         setQuestionInput,
         setQuestionData,
         handleQuestionChange,
@@ -700,6 +748,7 @@ function EditSubject() {
                 <EditQuestion
                     questionInput={questionInput}
                     questionType={questionType}
+                    handleOpenImgDialog={handleOpenImgDialog}
                     handleQuestionChange={handleQuestionChange}
                     handleChoiceChange={handleChoiceChange}
                     addQuestion={addQuestion}
@@ -789,6 +838,59 @@ function EditSubject() {
                     </Stack>
                 </Stack>
             )}
+
+            <Dialog open={openImgUpload} onClose={handleCloseImgUpload}>
+                <DialogTitle>Question Image Upload</DialogTitle>
+                <DialogContent>
+                    <Box
+                        onClick={() => questionImgInputRef.current?.click()}
+                        sx={{
+                        width: '400px',
+                        height: '200px', 
+                        border: '1px dashed #b3b3b3',
+                        borderRadius: '8px',
+                        position: 'relative',
+                        '&:hover': {
+                            borderColor: '#888',
+                            background: '#f0f0f0',
+                            cursor: 'pointer'
+                        }
+                        }}
+                    >
+                        <Stack
+                        direction="column"
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                        }}
+                        >
+                        {questionInput[selectedImageIndex]?.img ? (
+                            <Typography variant="body1" sx={{ color: '#666', mt: 1 }}>
+                            Image selected ✔
+                            </Typography>
+                        ) : (
+                            <Stack justifyContent="center" alignItems="center">
+                            <AddIcon sx={{ color: '#b3b3b3' }} />
+                            <Typography variant="h6" sx={{ color: '#b3b3b3' }}>
+                                Upload Image here.
+                            </Typography>
+                            </Stack>
+                        )}
+                        </Stack>
+
+                        <VisuallyHiddenInput
+                            ref={questionImgInputRef}
+                            type="file"
+                            onChange={(e) => handleImageQuestionUpload(selectedImageIndex, e)}
+                            accept="image/*"
+                        />
+                    </Box>
+                </DialogContent>
+            </Dialog>
         </div>
     </div>
   )
