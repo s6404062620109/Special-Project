@@ -130,6 +130,7 @@ function AddQuestion({
                     src={question.img}
                     alt="Question Image"
                     sx={{
+                      position: 'relative',
                       width: '100%',
                       height: '200px',
                       borderRadius: '8px',
@@ -137,7 +138,6 @@ function AddQuestion({
                       cursor: 'pointer',
                       transition: 'opacity 0.3s',
                       '&:hover': {
-                        transform: 'scale(0.9)',
                         border: "1px solid #000"
                       },
                     }}

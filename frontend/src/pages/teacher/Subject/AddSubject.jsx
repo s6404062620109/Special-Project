@@ -5,6 +5,7 @@ import { AuthContext } from "../../../context/AuthProvider";
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from "@mui/material";
 
 import style from "./css/subject.module.css";
@@ -105,30 +106,7 @@ const useSubjectForm = () => {
 
 const useQuestionForm = () => {
   const [ questionType, setQuestionType ] = useState([]);
-  const [ questionInput, setQuestionInput ] = useState([
-    {
-      content: "",
-      choice: [
-        {
-          content: "",
-          isCorrect: false
-        }
-      ],
-      img: "",
-      type: questionType[0]
-    },
-    {
-      content: "",
-      choice: [
-        {
-          content: "",
-          isCorrect: false
-        }
-      ],
-      img: "",
-      type: questionType[1]
-    },
-  ]);
+  const [ questionInput, setQuestionInput ] = useState([]);
   const [ openImgUpload, setOpenImgUpload ] = useState(false);
   const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
   const questionImgInputRef = useRef(null);
@@ -151,6 +129,13 @@ const useQuestionForm = () => {
   const handleImageQuestionUpload = (index, event) => {
     const files = Array.from(event.target.files);
     const updatedQuestions = [...questionInput];
+
+    if(files.length === 0){
+      updatedQuestions[index].img = null;
+      setQuestionInput(updatedQuestions);
+      handleCloseImgUpload();
+      return;
+    }
 
     for (const file of files) {
       if (!file.type.startsWith("image/")) {
@@ -341,6 +326,7 @@ function AddSubject() {
   const { questionType,
     setQuestionType,
     questionInput,
+    setQuestionInput,
     openImgUpload,
     questionImgInputRef,
     selectedImageIndex,
@@ -386,6 +372,25 @@ function AddSubject() {
       fetchQuestionType();
     }
   }, [courseId, questionType]);
+
+  useEffect(() => {
+  if (questionType.length > 0 && questionInput.length === 0) {
+    setQuestionInput([
+      {
+        content: "",
+        choice: [{ content: "", isCorrect: false }],
+        img: "",
+        type: questionType[0].id
+      },
+      {
+        content: "",
+        choice: [{ content: "", isCorrect: false }],
+        img: "",
+        type: questionType[1].id 
+      },
+    ]);
+  }
+}, [questionType]);
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
@@ -829,6 +834,23 @@ function AddSubject() {
               accept="image/*"
             />
           </Box>
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            sx={{
+              marginTop: "16px"
+            }}
+          >
+            <Button
+              variant="contained"
+              component="label"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={() => handleImageQuestionUpload(selectedImageIndex, { target: { files: [] } })}
+            >
+              Clear
+            </Button>
+          </Stack>
         </DialogContent>
       </Dialog>
 

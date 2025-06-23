@@ -7,6 +7,7 @@ import EditManual from './editContents/EditManual';
 
 import AddIcon from '@mui/icons-material/Add';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from '@mui/material';
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
@@ -225,6 +226,13 @@ const useQuestionForm = () => {
     const handleImageQuestionUpload = (index, event) => {
         const files = Array.from(event.target.files);
         const updatedQuestions = [...questionInput];
+
+        if(files.length === 0){
+            updatedQuestions[index].img = null;
+            setQuestionInput(updatedQuestions);
+            handleCloseImgUpload();
+            return;
+        }
 
         for (const file of files) {
         if (!file.type.startsWith("image/")) {
@@ -889,6 +897,24 @@ function EditSubject() {
                             accept="image/*"
                         />
                     </Box>
+
+                    <Stack
+                        direction="row"
+                        justifyContent="flex-end"
+                        sx={{
+                            marginTop: "16px"
+                        }}
+                    >
+                        <Button
+                            variant="contained"
+                            component="label"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleImageQuestionUpload(selectedImageIndex, { target: { files: [] } })}
+                        >
+                            Clear
+                        </Button>
+                    </Stack>
                 </DialogContent>
             </Dialog>
         </div>

@@ -501,19 +501,19 @@ const editManualSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, type: qType, choice } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice } = q;
 
           let questionId = qid;
           if (qid) {
             await new Promise((resolve, reject) => {
-              db.query("UPDATE question SET content = ?, type = ? WHERE id = ?", [qContent, qType, qid], (err) => {
+              db.query("UPDATE question SET content = ?, img = ?, typeId = ? WHERE id = ?", [qContent, qImg, qType, qid], (err) => {
                 if (err) return reject(err);
                 resolve();
               });
             });
           } else {
             questionId = await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (subjectId, content, type) VALUES (?, ?, ?)", [subjectId, qContent, qType], (err, result) => {
+              db.query("INSERT INTO question (subjectId, content, img, typeId) VALUES (?, ?, ?, ?)", [subjectId, qContent, qImg, qType], (err, result) => {
                 if (err) return reject(err);
                 resolve(result.insertId);
               });
@@ -609,19 +609,19 @@ const editPdfSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, type: qType, choice } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice } = q;
 
           let questionId = qid;
           if (qid) {
             await new Promise((resolve, reject) => {
-              db.query("UPDATE question SET content = ?, type = ? WHERE id = ?", [qContent, qType, qid], (err) => {
+              db.query("UPDATE question SET content = ?, img = ?, typeId = ? WHERE id = ?", [qContent, qImg, qType, qid], (err) => {
                 if (err) return reject(err);
                 resolve();
               });
             });
           } else {
             questionId = await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (subjectId, content, type) VALUES (?, ?, ?)", [subjectId, qContent, qType], (err, result) => {
+              db.query("INSERT INTO question (subjectId, content, img, typeId) VALUES (?, ?, ?, ?)", [subjectId, qContent, qImg, qType], (err, result) => {
                 if (err) return reject(err);
                 resolve(result.insertId);
               });
