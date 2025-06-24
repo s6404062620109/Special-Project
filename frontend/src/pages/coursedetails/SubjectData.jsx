@@ -20,7 +20,7 @@ function SubjectData({ id, name, courseId, progress, enrollmentId }) {
   }
 
   const matchedProgress = progress.find(
-    (p) => p.subjectId === id && p.type.includes("Lab")
+    (p) => p.subjectId === id && (p.typeId === 3 || p.typeId === 4)
   );
 
   return (

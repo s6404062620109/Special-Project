@@ -22,7 +22,7 @@ function Pretest() {
       });
 
       if (response.status === 200) {
-        const pretestProgress = response.data.results.filter((item) => item.type === 'Pre');
+        const pretestProgress = response.data.results.filter((item) => item.typeId === 1);
 
         const areAllPretestsCompleted = pretestProgress.every((item) => item.is_completed === 1);
 

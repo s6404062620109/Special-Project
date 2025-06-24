@@ -20,9 +20,9 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
       });
 
       if(response.status === 200){
-        const pretest = response.data.results.filter(item => item.type.includes("Pre"));
-        const posttest = response.data.results.filter(item => item.type.includes("Post"));
-        const lab = response.data.results.filter(item => item.type.includes("Lab"));
+        const pretest = response.data.results.filter(item => item.typeId === 1);
+        const posttest = response.data.results.filter(item => item.typeId === 2);
+        const lab = response.data.results.filter(item => item.typeId === 3 || item.typeId === 4);
 
         setProgress({ pretest, posttest, lab });
       }
@@ -35,7 +35,7 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
   useEffect(() => {
     fetchProgress();
   } ,[enrollmentId]);
-  
+
   const isPreTestCompleted = progress.pretest.length > 0 && progress.pretest.every(item => item.is_completed === 1);
   const preTestScore = isPreTestCompleted ? progress.pretest.reduce((acc, item) => acc + item.score, 0) : null;
 

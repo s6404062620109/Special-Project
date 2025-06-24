@@ -16,7 +16,7 @@ const getPretest = (req, res) => {
               return res.status(404).json({ message: "Not have any question in this course." });
             }
             
-            db.query("SELECT * FROM question WHERE type = 'Pre' AND id IN (?)", [questionIdList], (error, questionResult) => {
+            db.query("SELECT * FROM question WHERE typeId = 1 AND id IN (?)", [questionIdList], (error, questionResult) => {
               if (error) {
                 console.log(error);
                 return res.status(500).json({ message: "Database question query error" });

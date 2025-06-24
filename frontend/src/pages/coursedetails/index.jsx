@@ -8,6 +8,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 
 import style from "./css/coursedetails.module.css";
 import SubjectData from "./subjectData";
+import { consumeSlots } from "@mui/x-charts/internals";
 
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
@@ -71,10 +72,10 @@ function CourseDetail() {
       if (response.status === 200) {
 
         const pretest = response.data.results.filter(
-          (item) => item.type === "Pre"
+          (item) => item.typeId === 1
         );
         const posttest = response.data.results.filter(
-          (item) => item.type === "Post"
+          (item) => item.typeId === 2
         );
         setPretestProgress(pretest);
         setPosttestProgress(posttest);
@@ -116,6 +117,8 @@ function CourseDetail() {
   const isPostTestCompleted = posttestProgress.length > 0 && posttestProgress.every((item) => item.is_completed === 1);
   const postTestScore = isPostTestCompleted ? posttestProgress.reduce((acc, item) => acc + item.score, 0) : null;
 
+  const AllQuestionComplete = progress.length > 0 && progress.every(p => p.is_completed === 1);
+  
   return (
     <div className={style.container}>
       <div className={style.head}>
@@ -149,115 +152,120 @@ function CourseDetail() {
         </table>
       </div>
 
-      <div className={style.testSection}>
-        <Typography variant="h6">สถานะผลการทำแบบทดสอบทั้งหมด</Typography>
-        <Stack
-          sx={{
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: { xs: "center", sm: "space-between" },
-            gap: 2,
-            width: "80%",
-          }}
-        >
-          {userData.id && isPreTestCompleted ? (
-            <Stack
-              direction="column"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Typography variant="h6">PreTest</Typography>
-
-              <List>
-                {subjectList.map((subject) => (
-                  <ListItem>
-                    <ListItemIcon>
-                      <CircleIcon 
-                        fontSize="small"
-                        sx={{
-                          color:
-                            posttestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Post"))?.score === 1
-                              ? "green"
-                              : "red"
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={subject.name}
-                      secondary={
-                        pretestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Pre"))?.score === 1
-                          ? "Success"
-                          : "Failed"
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-
-              <Typography
-                variant="h6"
+      {userData.id && progress.length > 0 && (
+        <div className={style.testSection}>
+          <Typography variant="h6">สถานะผลการทำแบบทดสอบทั้งหมด</Typography>
+          <Stack
+            sx={{
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: { xs: "center", sm: "space-between" },
+              gap: 2,
+              width: "80%",
+            }}
+          >
+            {userData.id && isPreTestCompleted ? (
+              <Stack
+                direction="column"
+                justifyContent="center"
+                alignItems="center"
               >
-                คะแนน {preTestScore} / {pretestProgress.length}
-              </Typography>
-              
-            </Stack>
-          ) : (
-              <></>
-          )}
+                <Typography variant="h6">PreTest</Typography>
 
-          {userData.id && isPostTestCompleted ? (
-            <Stack
-              direction="column"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Typography variant="h6">PostTest</Typography>
-
-              <List>
-                {subjectList.map((subject) => (
-                  <ListItem>
-                    <ListItemIcon>
-                      <CircleIcon 
-                        fontSize="small"
-                        sx={{
-                          color:
-                            posttestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Post"))?.score === 1
-                              ? "green"
-                              : "red"
-                        }}
+                <List>
+                  {subjectList.map((subject) => (
+                    <ListItem>
+                      <ListItemIcon>
+                        <CircleIcon 
+                          fontSize="small"
+                          sx={{
+                            color:
+                              pretestProgress.find((p) => p.subjectId === subject.id)?.score === 1
+                                ? "green"
+                                : "red"
+                          }}
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={subject.name}
+                        secondary={
+                          pretestProgress.find((p) => p.subjectId === subject.id)?.score === 1
+                            ? "Success"
+                            : "Failed"
+                        }
                       />
-                    </ListItemIcon>
+                    </ListItem>
+                  ))}
+                </List>
 
-                    <ListItemText
-                      primary={subject.name}
-                      secondary={
-                        posttestProgress.find((p) => p.subjectId === subject.id && p.type.includes("Post"))?.score === 1
-                          ? "Success"
-                          : "Failed"
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
+                <Typography
+                  variant="h6"
+                >
+                  คะแนน {preTestScore} / {pretestProgress.length}
+                </Typography>
+                
+              </Stack>
+            ) : (
+                <></>
+            )}
 
-              <Typography
-                variant="h6"
+            {userData.id && isPostTestCompleted ? (
+              <Stack
+                direction="column"
+                justifyContent="center"
+                alignItems="center"
               >
-                คะแนน {postTestScore} / {posttestProgress.length}
-              </Typography>
-              
-            </Stack>
-          ) : (
-              <></>
-          )}
-        </Stack>
+                <Typography variant="h6">PostTest</Typography>
 
-        <Button 
-          variant="contained"
-          onClick={fetchLatestProgress} 
-        >
-          บทเรียนต่อไป
-        </Button>
-      </div>
+                <List>
+                  {subjectList.map((subject) => (
+                    <ListItem>
+                      <ListItemIcon>
+                        <CircleIcon 
+                          fontSize="small"
+                          sx={{
+                            color:
+                              posttestProgress.find((p) => p.subjectId === subject.id)?.score === 1
+                                ? "green"
+                                : "red"
+                          }}
+                        />
+                      </ListItemIcon>
+
+                      <ListItemText
+                        primary={subject.name}
+                        secondary={
+                          posttestProgress.find((p) => p.subjectId === subject.id)?.score === 1
+                            ? "Success"
+                            : "Failed"
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+
+                <Typography
+                  variant="h6"
+                >
+                  คะแนน {postTestScore} / {posttestProgress.length}
+                </Typography>
+                
+              </Stack>
+            ) : (
+                <></>
+            )}
+          </Stack>
+
+          {userData.id && history.length > 0 && !AllQuestionComplete && (
+            <Button 
+              variant="contained"
+              onClick={fetchLatestProgress} 
+            >
+              บทเรียนต่อไป
+            </Button>
+          )}
+        </div>
+      )}
+      
     </div>
   );
 }

@@ -16,7 +16,7 @@ const enrollCourse = (req, res) => {
       
             const subjectList = result.map((subject) => subject.id);
       
-            db.query('SELECT id, type, subjectId FROM question WHERE subjectId IN (?)', [subjectList], (error, questionResult) => {
+            db.query('SELECT id, typeId, subjectId FROM question WHERE subjectId IN (?)', [subjectList], (error, questionResult) => {
                 if (error) {
                     console.log(error);
                     return res.status(500).json({ message: "Question database query error." });
@@ -30,14 +30,14 @@ const enrollCourse = (req, res) => {
                     const subjectQuestions = questionResult.filter(q => q.subjectId === subjectId);
       
                     // Select one random 'Pre' question
-                    const preList = subjectQuestions.filter(q => q.type === "Pre");
+                    const preList = subjectQuestions.filter(q => q.typeId === 1);
                     if (preList.length > 0) {
                         const randomPre = preList[Math.floor(Math.random() * preList.length)];
                         preQuestions.push(randomPre.id);
                     }
       
                     // Select one random 'Post' question
-                    const postList = subjectQuestions.filter(q => q.type === "Post");
+                    const postList = subjectQuestions.filter(q => q.typeId === 2);
                     if (postList.length > 0) {
                         const randomPost = postList[Math.floor(Math.random() * postList.length)];
                         postQuestions.push(randomPost.id);
@@ -45,9 +45,7 @@ const enrollCourse = (req, res) => {
                 });
       
                 // Collect all 'lab' type questions
-                labQuestions = questionResult
-                  .filter(q => q.type.toLowerCase().includes('Lab'))
-                  .map(q => q.id);
+                labQuestions = questionResult.filter(q => q.typeId === 3 || q.typeId === 4).map(q => q.id);
       
                 let total_labs = labQuestions.length;
       

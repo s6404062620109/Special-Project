@@ -11,7 +11,7 @@ const checkProgress = (req, res) => {
             }
             
             const filteredResults = results.map(item => item.questionId);
-            db.query(`SELECT id, type, subjectId FROM question WHERE id IN (?)`, [filteredResults], (error, questionResults) => {
+            db.query(`SELECT id, typeId, subjectId FROM question WHERE id IN (?)`, [filteredResults], (error, questionResults) => {
               if (error) {
                 console.error(error);
                 return res.status(500).json({ message: "Database question query error" });
@@ -22,7 +22,7 @@ const checkProgress = (req, res) => {
                 return {
                   ...progress,
                   subjectId: matchedQuestion ? matchedQuestion.subjectId : null,
-                  type: matchedQuestion ? matchedQuestion.type : null
+                  typeId: matchedQuestion ? matchedQuestion.typeId : null
                 };
               });
         
@@ -47,22 +47,22 @@ const getLatest = (req, res) => {
             }
         
             const inProgressId = result[0].questionId;
-            db.query("SELECT type, subjectId FROM question WHERE id = ?", [inProgressId], (error, questionResult) => {
+            db.query("SELECT typeId, subjectId FROM question WHERE id = ?", [inProgressId], (error, questionResult) => {
               if(error){
                 console.log(error);
                 return res.status(500).json({ message: "Database question query error" });
               }
         
-              if(questionResult[0].type === "Pre"){
+              if(questionResult[0].typeId === 1){
                 return res.status(200).json({ inProgress: `pretest/${enrollmentId}` });
               }
         
-              if (questionResult[0].type.toLowerCase().includes("Lab")) {
-                return res.status(200).json({ inProgress: `subject/${questionResult[0].subjectId}/${enrollmentId}` });
-              }
-        
-              if(questionResult[0].type === "Post"){
+              if(questionResult[0].typeId === 2){
                 return res.status(200).json({ inProgress: `posttest/${enrollmentId}` });
+              }
+
+              if (questionResult[0].typeId === 3 || questionResult[0].typeId === 4) {
+                return res.status(200).json({ inProgress: `subject/${questionResult[0].subjectId}/${enrollmentId}` });
               }
             });
         });

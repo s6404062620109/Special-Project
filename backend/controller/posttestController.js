@@ -16,7 +16,7 @@ const getPosttest = (req, res) => {
               return res.status(404).json({ message: "Not have any question in this course." });
             }
             
-            db.query("SELECT * FROM question WHERE type = 'Post' AND id IN (?)", [questionIdList], (error, questionResult) => {
+            db.query("SELECT * FROM question WHERE typeId = 2  AND id IN (?)", [questionIdList], (error, questionResult) => {
               if (error) {
                 console.log(error);
                 return res.status(500).json({ message: "Database question query error" });
@@ -92,8 +92,8 @@ const submitPosttest = (req, res) => {
 
                         // ดึงคะแนนรวมของ pre และ post
                         db.query(`SELECT 
-                                SUM(CASE WHEN q.type = 'pre' THEN p.score ELSE 0 END) AS pre_score,
-                                SUM(CASE WHEN q.type = 'post' THEN p.score ELSE 0 END) AS post_score
+                                SUM(CASE WHEN q.typeId = 1 THEN p.score ELSE 0 END) AS pre_score,
+                                SUM(CASE WHEN q.typeId = 2 THEN p.score ELSE 0 END) AS post_score
                                 FROM progress p
                                 JOIN question q ON p.questionId = q.id
                                 WHERE p.enrollmentId = ?`,

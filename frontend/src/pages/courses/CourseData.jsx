@@ -198,7 +198,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
                         const response = await backend.post(`/enroll/enrollCourse`, {
                           courseId: id,
                           userId: userData.id,
-                        });
+                        }, { withCredentials: true });
 
                         if (response.status === 200) {
                           navigate(`/course/${id}/pretest/${response.data.enrollmentId}`);
