@@ -3,7 +3,7 @@
     margin: 3rem auto;
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 899px) {
     .navsubject-wrap{
         display: none;
     }

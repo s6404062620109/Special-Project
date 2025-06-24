@@ -7,7 +7,6 @@ import style from './css/courseboard.module.css';
 
 function CourseBoard({ enrollment }) {
     const [courses, setCourses] = useState([]);
-    const [imgPaths, setImgPaths] = useState({});
     const navigate = useNavigate();
 
     const fetchCourses = async () => {
@@ -50,7 +49,7 @@ function CourseBoard({ enrollment }) {
                     <table>
                         <tbody>
                             {courses.map((course, index) => (
-                                <tr key={index}> 
+                                <tr key={index} onClick={() => navigate(`/course/${course.courseId}/${course.id}`)}> 
                                     <td>
                                         <img
                                             src={course.icon}
@@ -70,12 +69,6 @@ function CourseBoard({ enrollment }) {
                                             completed_labs={course.completed_labs}
                                             total_labs={course.total_labs}
                                         />
-                                    </td>
-
-                                    <td>
-                                        <button onClick={() => navigate(`/course/${course.courseId}/${course.id}`)}>
-                                            View
-                                        </button>
                                     </td>
                                     
                                 </tr>

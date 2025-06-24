@@ -66,9 +66,9 @@ function Home() {
               <div className={style["login-nav"]}>
                 <p onClick={() => setLoginEnable(!loginEnable)}>
                   {loginEnable === true ? (
-                    <>{"<-"} Get Back</>
+                    <>{"<"} Get Back</>
                   ) : (
-                    <>Do you want join members for study?</>
+                    <>Do you want join members?</>
                   )}
                 </p>
               </div>

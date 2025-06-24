@@ -6,7 +6,9 @@ import style from './css/subject.module.css';
 import LabBox from '../../components/LabBox';
 import NavSubject from './NavSubject';
 import Reader from '../../components/Reader';
-import { Box, Stack } from '@mui/material';
+
+import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
+import ListIcon from '@mui/icons-material/List';
 
 function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();
@@ -15,6 +17,7 @@ function Subject() {
         name: "",
         content: null
     });
+    const [ navSubjectMobile, setNavSubjectMobile ] = useState(false);
 
     const fetchSubjectData = async () => {
         try {
@@ -76,6 +79,49 @@ function Subject() {
                     enrollmentId={enrollmentId}
                 />
             </Box>
+            
+            <Backdrop
+                open={navSubjectMobile}
+                sx={{ zIndex: 1300 }}
+                onClick={() => setNavSubjectMobile(false)}
+            />
+
+            {!navSubjectMobile && (
+                <IconButton
+                    onClick={() => setNavSubjectMobile(true)}
+                    sx={{
+                        display: { md: 'none', xs: 'flex' },
+                        position: 'fixed',
+                        top: "50%",
+                        right: "20px",
+                        transform: "translateY(-50%)",
+                        zIndex: 1301,
+                    }}
+                >
+                    <ListIcon fontSize="large" />
+                </IconButton>
+            )}
+
+            <Slide direction="left" in={navSubjectMobile} mountOnEnter unmountOnExit>
+                <Stack
+                    sx={{
+                        display: { md: 'none', xs: 'flex' },
+                        position: 'fixed',
+                        top: "35%",
+                        right: "20px",
+                        transform: "translateY(-50%)",
+                        zIndex: 1301,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <NavSubject
+                    courseId={courseId}
+                    subjectList={subjectList}
+                    enrollmentId={enrollmentId}
+                    setNavSubjectMobile={setNavSubjectMobile}
+                    />
+                </Stack>
+            </Slide>
         </Stack>
 
     </div>
