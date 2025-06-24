@@ -154,7 +154,7 @@ function CourseDetail() {
 
       {userData.id && progress.length > 0 && (
         <div className={style.testSection}>
-          <Typography variant="h6">สถานะผลการทำแบบทดสอบทั้งหมด</Typography>
+          <Typography variant="h6">ผลการทำแบบทดสอบ</Typography>
           <Stack
             sx={{
               flexDirection: { xs: "column", sm: "row" },
