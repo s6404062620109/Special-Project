@@ -426,7 +426,7 @@ const addPdfSubject = (req, res) => {
           if(q.img){
             img = q.img;
           }
-          console.log(q);
+
           await new Promise((resolve, reject) => {
             db.query("INSERT INTO question (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
               [q.content, img, q.type, subjectId], (err, questionResult) => {

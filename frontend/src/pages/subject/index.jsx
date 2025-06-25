@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom';
 import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
-import LabBox from '../../components/LabBox';
 import NavSubject from './NavSubject';
 import Reader from '../../components/Reader';
 
-import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
+import { Backdrop, Box, Button, IconButton, Slide, Stack } from '@mui/material';
 import ListIcon from '@mui/icons-material/List';
 
 function Subject() {
@@ -18,6 +17,8 @@ function Subject() {
         content: null
     });
     const [ navSubjectMobile, setNavSubjectMobile ] = useState(false);
+    const [ labs, setLabs ] = useState(true);
+    const navigate = useNavigate();
 
     const fetchSubjectData = async () => {
         try {
@@ -50,10 +51,36 @@ function Subject() {
         }
     }
 
+    const fetchLastProgress = async () => {
+        try {
+            const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
+                withCredentials: true
+            });
+
+            if (response.status === 200) {
+                console.log(response.data.ininProgress)
+               if(response.data.inProgress !== `subject/${subjectId}/${enrollmentId}`){
+                    setLabs(false);
+               }
+               else{
+                    setLabs(true);
+               }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     useEffect(() => {
         fetchSubjectData();
         fetcSubjectList();
+        fetchLastProgress();
     }, [courseId, subjectId]);
+
+    const handleLabsClick = () => {
+        let lab_url = `${window.location.origin}/labs/${courseId}/${subjectId}/${enrollmentId}`
+        window.open(lab_url, "_blank");
+    }
     
   return (
     <div className={style.container}>
@@ -72,13 +99,13 @@ function Subject() {
                 />
             </Box>
 
-            <Box className={style["navsubject-wrap"]}>
+            {/* <Box className={style["navsubject-wrap"]}>
                 <NavSubject 
                     courseId={courseId}
                     subjectList={subjectList}
                     enrollmentId={enrollmentId}
                 />
-            </Box>
+            </Box> */}
             
             <Backdrop
                 open={navSubjectMobile}
@@ -90,12 +117,18 @@ function Subject() {
                 <IconButton
                     onClick={() => setNavSubjectMobile(true)}
                     sx={{
-                        display: { md: 'none', xs: 'flex' },
+                        // display: { md: 'none', xs: 'flex' },
                         position: 'fixed',
-                        top: "50%",
-                        right: "20px",
+                        bottom: "40%",
+                        right: "5px",
                         transform: "translateY(-50%)",
                         zIndex: 1301,
+                        background: 'white',
+                        border: '1px solid #b3b3b3',
+                        opacity: 0.5,
+                        ':hover':{
+                            opacity: 1
+                        }
                     }}
                 >
                     <ListIcon fontSize="large" />
@@ -105,7 +138,7 @@ function Subject() {
             <Slide direction="left" in={navSubjectMobile} mountOnEnter unmountOnExit>
                 <Stack
                     sx={{
-                        display: { md: 'none', xs: 'flex' },
+                        // display: { md: 'none', xs: 'flex' },
                         position: 'fixed',
                         top: "35%",
                         right: "20px",
@@ -124,6 +157,24 @@ function Subject() {
             </Slide>
         </Stack>
 
+        {labs && (
+            <Stack
+                direction='row'
+                justifyContent='center'
+                alignItems='center'
+                sx={{
+                    margin: '20px'
+                }}
+            >
+                <Button
+                    variant="contained"
+                    onClick={handleLabsClick}
+                >
+                    Labs
+                </Button>
+            </Stack>
+        )}
+        
     </div>
   )
 }

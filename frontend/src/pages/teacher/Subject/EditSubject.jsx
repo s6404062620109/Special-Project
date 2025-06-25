@@ -268,7 +268,7 @@ const useQuestionForm = () => {
                 isCorrect: false,
                 },
             ],
-            img: "",
+            img: null,
             type: questionType[0],
         };
         setQuestionInput([...questionInput, newQuestion]);

@@ -57,12 +57,8 @@ const progressRoutes = require("./routes/progressRoutes");
 app.use("/progress", progressRoutes);
 
 /* Lab on web */
-const lab = require("./routes/labtest");
-app.use("/lab", lab);
-
-/* lab on test */
-const labTest = require('./routes/lab');
-app.use("/lab-test", labTest);
+const labsRoutes = require("./routes/labsRoutes");
+app.use("/labs", labsRoutes);
 
 /* Question */
 const Question = require("./routes/questions");
