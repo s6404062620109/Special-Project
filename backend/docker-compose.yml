@@ -14,7 +14,6 @@ services:
       - ./controller:/usr/src/app/controller
       - ./middleware:/usr/src/app/middleware
       - ./database.js:/usr/src/app/database.js
-      - ./lab:/usr/src/app/lab
       - ./courses:/usr/src/app/courses
       - ./users:/usr/src/app/users
     env_file:

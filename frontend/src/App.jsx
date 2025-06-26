@@ -13,7 +13,6 @@ import Register from './pages/authenticate/register';
 import Reset from './pages/authenticate/reset';
 import CourseDetail from './pages/coursedetails';
 import Subject from './pages/subject';
-import Labs from './pages/labs';
 import Pretest from './pages/test/pre';
 import PostTest from './pages/test/post';
 import SetPassword from './pages/authenticate/register/SetPassword';
@@ -70,7 +69,6 @@ function App() {
                 <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
                 <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
                 <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
-                <Route path='/labs/:courseId/:subjectId/:enrollmentId' element={<Labs/>}/>
               </Routes>
             )}
 

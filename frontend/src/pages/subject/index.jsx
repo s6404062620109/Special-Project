@@ -1,13 +1,41 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react'
+import { useParams } from 'react-router-dom';
 import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
 import NavSubject from './NavSubject';
 import Reader from '../../components/Reader';
+import Labs from '../labs';
 
-import { Backdrop, Box, Button, IconButton, Slide, Stack } from '@mui/material';
+import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
 import ListIcon from '@mui/icons-material/List';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
+const useLabQuestions = () => {
+    const [ questions, setQuestions ] = useState([]);
+
+    const fetchLabQuestions = async (courseId) => {
+        try{
+            const response = await backend.get(`/labs/getLabQuestions/${courseId}`,{
+                withCredentials: true
+            });
+    
+            if(response.status === 200){
+                setQuestions(response.data.questionFormat);
+            }
+    
+        } catch(error){ 
+            console.log(error);
+        }
+    }
+    
+    return{
+        questions,
+        setQuestions,
+        fetchLabQuestions,
+    }
+}
 
 function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();
@@ -16,9 +44,11 @@ function Subject() {
         name: "",
         content: null
     });
-    const [ navSubjectMobile, setNavSubjectMobile ] = useState(false);
+    const [ openNavSubject, setOpenNavSubject ] = useState(false);
     const [ labs, setLabs ] = useState(true);
-    const navigate = useNavigate();
+    const { questions, setQuestions, fetchLabQuestions } = useLabQuestions();
+    const readerRef = useRef(null);
+    const labsRef = useRef(null);
 
     const fetchSubjectData = async () => {
         try {
@@ -75,12 +105,8 @@ function Subject() {
         fetchSubjectData();
         fetcSubjectList();
         fetchLastProgress();
+        fetchLabQuestions(courseId);
     }, [courseId, subjectId]);
-
-    const handleLabsClick = () => {
-        let lab_url = `${window.location.origin}/labs/${courseId}/${subjectId}/${enrollmentId}`
-        window.open(lab_url, "_blank");
-    }
     
   return (
     <div className={style.container}>
@@ -92,11 +118,13 @@ function Subject() {
             sx={{ width: '100%', gap: 2 }}
         >
             <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Reader 
-                    content={content} 
-                    enrollmentId={enrollmentId}
-                    subjectId={subjectId}
-                />
+                <div ref={readerRef}>
+                    <Reader 
+                        content={content} 
+                        enrollmentId={enrollmentId}
+                        subjectId={subjectId}
+                    />
+                </div>
             </Box>
 
             {/* <Box className={style["navsubject-wrap"]}>
@@ -108,14 +136,14 @@ function Subject() {
             </Box> */}
             
             <Backdrop
-                open={navSubjectMobile}
+                open={openNavSubject}
                 sx={{ zIndex: 1300 }}
-                onClick={() => setNavSubjectMobile(false)}
+                onClick={() => setOpenNavSubject(false)}
             />
 
-            {!navSubjectMobile && (
+            {!openNavSubject && (
                 <IconButton
-                    onClick={() => setNavSubjectMobile(true)}
+                    onClick={() => setOpenNavSubject(true)}
                     sx={{
                         // display: { md: 'none', xs: 'flex' },
                         position: 'fixed',
@@ -135,7 +163,7 @@ function Subject() {
                 </IconButton>
             )}
 
-            <Slide direction="left" in={navSubjectMobile} mountOnEnter unmountOnExit>
+            <Slide direction="left" in={openNavSubject} mountOnEnter unmountOnExit>
                 <Stack
                     sx={{
                         // display: { md: 'none', xs: 'flex' },
@@ -148,31 +176,62 @@ function Subject() {
                     onClick={(e) => e.stopPropagation()}
                 >
                     <NavSubject
-                    courseId={courseId}
-                    subjectList={subjectList}
-                    enrollmentId={enrollmentId}
-                    setNavSubjectMobile={setNavSubjectMobile}
+                        courseId={courseId}
+                        subjectList={subjectList}
+                        enrollmentId={enrollmentId}
                     />
                 </Stack>
             </Slide>
+
+            <Stack
+                sx={{
+                    position: 'fixed',
+                    bottom: "20px",
+                    left: "40px",
+                    transform: "translateY(-50%)",
+                    zIndex: 1301,
+                }}
+            >
+                <IconButton 
+                    onClick={() => {
+                        readerRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    sx={{
+                        opacity: 0.5,
+                        ':hover':{
+                            opacity: 1,
+                            background: '#1976d2',
+                            color: 'white'
+                        }
+                    }}
+                >
+                    <ExpandLessIcon/>
+                </IconButton>
+
+                <IconButton 
+                    onClick={() => {
+                        labsRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    sx={{
+                        opacity: 0.5,
+                        ':hover':{
+                            opacity: 1,
+                            background: '#1976d2',
+                            color: 'white'
+                        }
+                    }}
+                >
+                    <ExpandMoreIcon/>
+                </IconButton>
+            </Stack>
         </Stack>
 
         {labs && (
-            <Stack
-                direction='row'
-                justifyContent='center'
-                alignItems='center'
-                sx={{
-                    margin: '20px'
-                }}
-            >
-                <Button
-                    variant="contained"
-                    onClick={handleLabsClick}
-                >
-                    Labs
-                </Button>
-            </Stack>
+            <div ref={labsRef}>
+                <Labs
+                    questions={questions}
+                />
+            </div>
         )}
         
     </div>

@@ -114,6 +114,13 @@ const useQuestionForm = () => {
   const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questionInput];
     newQuestions[index][field] = value;
+
+    if (field === "type" && value === 4) {
+      if (!newQuestions[index].Labfiles) {
+        newQuestions[index].Labfiles = [];
+      }
+    }
+
     setQuestionInput(newQuestions);
   };
 
@@ -155,7 +162,28 @@ const useQuestionForm = () => {
     }
     handleCloseImgUpload();
   }
-  
+
+  const handleLabfileUpload = (index, event) => {
+    const files = Array.from(event.target.files);
+    const updatedQuestions = [...questionInput];
+
+    // ดึงไฟล์เดิม ถ้ามี
+    const existingFiles = updatedQuestions[index].Labfiles || [];
+
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      Labfiles: [...existingFiles, ...files], // ✅ รวมเดิม + ใหม่
+    };
+
+    setQuestionInput(updatedQuestions);
+  };
+
+  const removeLabFile = (questionIndex, fileIndex) => {
+    const updatedQuestions = [...questionInput];
+    updatedQuestions[questionIndex].Labfiles.splice(fileIndex, 1);
+    setQuestionInput(updatedQuestions);
+  };
+
   const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
     const newQuestions = [...questionInput];
     newQuestions[questionIndex].choice[choiceIndex][field] = value;
@@ -243,6 +271,8 @@ const useQuestionForm = () => {
     handleOpenImgDialog,
     handleCloseImgUpload,
     handleImageQuestionUpload,
+    handleLabfileUpload,
+    removeLabFile,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -333,6 +363,8 @@ function AddSubject() {
     handleOpenImgDialog,
     handleCloseImgUpload,
     handleImageQuestionUpload,
+    handleLabfileUpload,
+    removeLabFile,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -726,6 +758,8 @@ function AddSubject() {
           <AddQuestion
             questionInput={questionInput}
             questionType={questionType}
+            handleLabfileUpload={handleLabfileUpload}
+            removeLabFile={removeLabFile}
             handleOpenImgDialog={handleOpenImgDialog}
             addQuestion={addQuestion}
             deleteQuestion={deleteQuestion}

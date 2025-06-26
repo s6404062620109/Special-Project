@@ -30,6 +30,10 @@ const getLabQuestions = (req, res) => {
                             content: item.content,
                             img: item.img,
                             type: item.typeId,
+                            choice: answers.map(answer => ({
+                                id: answer.id,
+                                content: answer.content,
+                            }))
                         });
                     }
 
@@ -39,10 +43,6 @@ const getLabQuestions = (req, res) => {
                             content: item.content,
                             img: item.img,
                             type: item.typeId,
-                            choice: answers.map(answer => ({
-                                id: answer.id,
-                                content: answer.content,
-                            }))
                         });
                     }
                 }

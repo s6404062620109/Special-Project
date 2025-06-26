@@ -1,14 +1,19 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { VisuallyHiddenInput } from './AddPdf';
 
 import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PreviewIcon from '@mui/icons-material/Preview';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 function AddQuestion({
   questionInput, 
   questionType,
+  handleLabfileUpload,
+  removeLabFile,
   handleOpenImgDialog,
   addQuestion, 
   deleteQuestion, 
@@ -21,7 +26,7 @@ function AddQuestion({
 }) {
   const navigate = useNavigate();
   const { courseId } = useParams();  
-  
+
   return (
     <Stack
       alignItems='center'
@@ -217,6 +222,54 @@ function AddQuestion({
                 
                 {(question.type === 4) && (
                   <>
+                    <Stack direction="column" alignItems="center" gap={1}>
+                      <VisuallyHiddenInput
+                        type="file"
+                        id={`lab-upload-${index}`}
+                        multiple
+                        onChange={(e) => handleLabfileUpload(index, e)}
+                      />
+
+                      <label htmlFor={`lab-upload-${index}`}>
+                        <IconButton 
+                          component="span"
+                          sx={{
+                            border: "1px solid #b3b3b3",
+                            borderRadius: "50%",
+                          }}
+                        >
+                          <CloudUploadIcon />
+                        </IconButton>
+                      </label>
+
+                      <Stack alignItems="space-between" gap={2}>
+                        {Array.isArray(question.Labfiles) && question.Labfiles.map((file, fileIndex) => (
+                          <Stack 
+                            direction="row" 
+                            justifyContent="center" 
+                            alignItems="center"
+                            key={fileIndex} 
+                          >
+                            <DescriptionIcon/>
+                            <Typography variant='body2'>{file.name}</Typography>
+                            <IconButton
+                              onClick={() => removeLabFile(index, fileIndex)}
+                            >
+                              <DeleteIcon/>
+                            </IconButton>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    </Stack>
+
+                    <Stack>
+                      <TextField
+                        label="Answer"
+                        fullWidth
+                        value={question.answer}
+                        onChange={(e) => handleQuestionChange(index, "answer", e.target.value)}
+                      />
+                    </Stack>
                   </>
                 )}
 
