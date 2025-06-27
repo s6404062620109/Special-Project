@@ -8,7 +8,9 @@ import EditManual from './editContents/EditManual';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from '@mui/material';
+
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
 import Reader from '../../../components/Reader';
@@ -198,20 +200,87 @@ const usePdfForm = () => {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Input Question Functions */
 
-const useQuestionForm = () => {
+const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     const [ questionType, setQuestionType ] = useState([]);
     const [ questionInput, setQuestionInput ] = useState([]);
     const [ questionData, setQuestionData ] = useState([]);
     const [ questionDelete, setQuestionDelete ] = useState([]);
     const [ choiceDelete, setChoiceDelete ] = useState([]);
     const [ openImgUpload, setOpenImgUpload ] = useState(false);
+    const [ openLabsUpload, setOpenLabsUpload ] = useState({ lab: false, cmd: false });
     const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
+    const [ selectedLabIndex, setSelectedLabIndex ] = useState(null);
     const questionImgInputRef = useRef(null);
 
     const handleQuestionChange = (index, field, value) => {
         const newQuestions = [...questionInput];
+
+        if (field === "type") {
+        newQuestions[index].type = value;
+
+        if (value === 4) {
+            delete newQuestions[index].choice;
+            newQuestions[index].answer = "";
+            newQuestions[index].Labfiles = newQuestions[index].Labfiles || [];
+            newQuestions[index].Cmdfile = newQuestions[index].Cmdfile || null;
+        } 
+        else {
+            delete newQuestions[index].answer;
+            newQuestions[index].choice = [
+            {
+                content: "",
+                isCorrect: false,
+            },
+            ];
+            delete newQuestions[index].Labfiles;
+            delete newQuestions[index].Cmdfile;
+        }
+        } else {
         newQuestions[index][field] = value;
+        }
+
         setQuestionInput(newQuestions);
+    };
+
+    const handleOpenLabUpload = (index, action) => {
+        setSelectedLabIndex(index);
+        setOpenLabsUpload({ ...openLabsUpload, [action]: true });
+    };
+    const handleCloseLabUpload = (action) => {
+        setSelectedLabIndex(null);
+        setOpenLabsUpload({ ...openLabsUpload, [action]: false });
+    };
+
+    const handleLabfileUpload = (index, event, action) => {
+        const files = Array.from(event.target.files);
+        const updatedQuestions = [...questionInput];
+
+        if(action === "Lab"){
+        const existingFiles = updatedQuestions[index].Labfiles || [];
+        
+        if(existingFiles.length === 4 ){
+            setAlertMessage(`Question ${index + 1}: You can upload up to 4 Lab files only.`);
+            setOpenSnackbar(true);
+            return;
+        }
+
+        updatedQuestions[index] = {
+            ...updatedQuestions[index],
+            Labfiles: [...existingFiles, ...files],
+        };
+        }
+
+        else if(action === "Cmd"){
+        if (!files[0].name.endsWith(".sh")) {
+            setAlertMessage(`Question ${index + 1}: Only .sh files are allowed for Cmdfile.`);
+            setOpenSnackbar(true);
+            return;
+        }
+
+        updatedQuestions[index].Cmdfile = files[0];
+        }
+
+        setQuestionInput(updatedQuestions);
     };
 
     const handleOpenImgDialog = (index) => {
@@ -334,39 +403,48 @@ const useQuestionForm = () => {
     };
 
     const questionValidation = () => {
-
         if(questionInput.length === 0) {
-            return "At least one question is required";
+        return "At least one question is required";
         }
 
-        if (!isQuestionChanged(questionData, questionInput)) {
-            return "Question input is not changed!";
-        }
         for (let i = 0; i < questionInput.length; i++) {
-            const item = questionInput[i];
-            if (item.content === "") {
-                return `Question ${i + 1} content is required`;
+        const item = questionInput[i];
+        if (item.content === "") {
+            return `Question ${i + 1} content is required`;
+        }
+
+        if (item.type === 4) {
+            if (item.Labfiles.length > 4) {
+            return `Question ${i + 1}: Labfiles must not exceed 4 files.`;
             }
+
+            if (item.Cmdfile) {
+            if (!item.Cmdfile.name.endsWith(".sh")) {
+                return `Question ${i + 1}: Cmdfile must be a .sh file.`;
+            }
+            }
+        }
+
+        if (item.type === 1 || item.type === 2 || item.type === 3){
             if (item.choice.length === 0) {
-                return `At least one choice is required for Question ${i + 1}`;
+            return `At least one choice is required for Question ${i + 1}`;
             }
             for (let j = 0; j < item.choice.length; j++) {
-                const choice = item.choice[j];
-                if (choice.content === "") {
+            const choice = item.choice[j];
+            if (choice.content === "") {
                 return `Choice ${j + 1} content for Question ${i + 1} is required`;
-                }
+            }
             }
 
-            if (item.type === "Pre" || item.type === "Post") {
-                const correctChoices = item.choice.filter(choice => choice.isCorrect);
-                if (correctChoices.length === 0) {
-                return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
-                }
-                const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
-                if (incorrectChoices.length === 0) {
-                return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
-                }
+            const correctChoices = item.choice.filter(choice => choice.isCorrect);
+            if (correctChoices.length === 0) {
+            return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
             }
+            const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
+            if (incorrectChoices.length === 0) {
+            return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
+            }
+        }
         }
 
         return;
@@ -381,6 +459,11 @@ const useQuestionForm = () => {
         openImgUpload,
         selectedImageIndex,
         questionImgInputRef,
+        openLabsUpload,
+        selectedLabIndex,
+        handleOpenLabUpload,
+        handleCloseLabUpload,
+        handleLabfileUpload,
         handleOpenImgDialog,
         handleCloseImgUpload,
         handleImageQuestionUpload,
@@ -431,6 +514,11 @@ function EditSubject() {
         openImgUpload,
         selectedImageIndex,
         questionImgInputRef,
+        openLabsUpload,
+        selectedLabIndex,
+        handleOpenLabUpload,
+        handleCloseLabUpload,
+        handleLabfileUpload,
         handleOpenImgDialog,
         handleCloseImgUpload,
         handleImageQuestionUpload,
@@ -443,7 +531,7 @@ function EditSubject() {
         deleteChoice,
         deleteQuestion,
         questionValidation
-    } = useQuestionForm();
+    } = useQuestionForm( setAlertMessage, setAlertOpen );
     const { 
         subjectPdfInput,
         setSubjectPdfInput,

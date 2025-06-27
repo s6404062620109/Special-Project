@@ -6,7 +6,8 @@ import { AuthContext } from "../../../context/AuthProvider";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Snackbar, Stack, Typography } from "@mui/material";
+import DescriptionIcon from '@mui/icons-material/Description';
+import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Slide, Snackbar, Stack, Typography } from "@mui/material";
 
 import style from "./css/subject.module.css";
 import AddManual from "./addContents/AddManual";
@@ -104,24 +105,52 @@ const useSubjectForm = () => {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Input Question Functions */
 
-const useQuestionForm = () => {
+const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
   const [ questionType, setQuestionType ] = useState([]);
   const [ questionInput, setQuestionInput ] = useState([]);
   const [ openImgUpload, setOpenImgUpload ] = useState(false);
+  const [ openLabsUpload, setOpenLabsUpload ] = useState({ lab: false, cmd: false });
   const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
+  const [ selectedLabIndex, setSelectedLabIndex ] = useState(null);
   const questionImgInputRef = useRef(null);
 
   const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questionInput];
-    newQuestions[index][field] = value;
 
-    if (field === "type" && value === 4) {
-      if (!newQuestions[index].Labfiles) {
-        newQuestions[index].Labfiles = [];
+    if (field === "type") {
+      newQuestions[index].type = value;
+
+      if (value === 4) {
+        delete newQuestions[index].choice;
+        newQuestions[index].answer = "";
+        newQuestions[index].Labfiles = newQuestions[index].Labfiles || [];
+        newQuestions[index].Cmdfile = newQuestions[index].Cmdfile || null;
+      } 
+      else {
+        delete newQuestions[index].answer;
+        newQuestions[index].choice = [
+          {
+            content: "",
+            isCorrect: false,
+          },
+        ];
+        delete newQuestions[index].Labfiles;
+        delete newQuestions[index].Cmdfile;
       }
+    } else {
+      newQuestions[index][field] = value;
     }
 
     setQuestionInput(newQuestions);
+  };
+
+  const handleOpenLabUpload = (index, action) => {
+    setSelectedLabIndex(index);
+    setOpenLabsUpload({ ...openLabsUpload, [action]: true });
+  };
+  const handleCloseLabUpload = (action) => {
+    setSelectedLabIndex(null);
+    setOpenLabsUpload({ ...openLabsUpload, [action]: false });
   };
 
   const handleOpenImgDialog = (index) => {
@@ -163,17 +192,34 @@ const useQuestionForm = () => {
     handleCloseImgUpload();
   }
 
-  const handleLabfileUpload = (index, event) => {
+  const handleLabfileUpload = (index, event, action) => {
     const files = Array.from(event.target.files);
     const updatedQuestions = [...questionInput];
 
-    // ดึงไฟล์เดิม ถ้ามี
-    const existingFiles = updatedQuestions[index].Labfiles || [];
+    if(action === "Lab"){
+      const existingFiles = updatedQuestions[index].Labfiles || [];
+      
+      if(existingFiles.length === 4 ){
+        setAlertMessage(`Question ${index + 1}: You can upload up to 4 Lab files only.`);
+        setOpenSnackbar(true);
+        return;
+      }
 
-    updatedQuestions[index] = {
-      ...updatedQuestions[index],
-      Labfiles: [...existingFiles, ...files], // ✅ รวมเดิม + ใหม่
-    };
+      updatedQuestions[index] = {
+        ...updatedQuestions[index],
+        Labfiles: [...existingFiles, ...files],
+      };
+    }
+
+    else if(action === "Cmd"){
+      if (!files[0].name.endsWith(".sh")) {
+        setAlertMessage(`Question ${index + 1}: Only .sh files are allowed for Cmdfile.`);
+        setOpenSnackbar(true);
+        return;
+      }
+
+      updatedQuestions[index].Cmdfile = files[0];
+    }
 
     setQuestionInput(updatedQuestions);
   };
@@ -202,6 +248,7 @@ const useQuestionForm = () => {
       img: "",
       type: questionType[0],
     };
+    
     setQuestionInput([...questionInput, newQuestion]);
   };
   
@@ -229,22 +276,36 @@ const useQuestionForm = () => {
     if(questionInput.length === 0) {
       return "At least one question is required";
     }
+
     for (let i = 0; i < questionInput.length; i++) {
       const item = questionInput[i];
       if (item.content === "") {
         return `Question ${i + 1} content is required`;
       }
-      if (item.choice.length === 0) {
-        return `At least one choice is required for Question ${i + 1}`;
-      }
-      for (let j = 0; j < item.choice.length; j++) {
-        const choice = item.choice[j];
-        if (choice.content === "") {
-          return `Choice ${j + 1} content for Question ${i + 1} is required`;
+
+      if (item.type === 4) {
+        if (item.Labfiles.length > 4) {
+          return `Question ${i + 1}: Labfiles must not exceed 4 files.`;
+        }
+
+        if (item.Cmdfile) {
+          if (!item.Cmdfile.name.endsWith(".sh")) {
+            return `Question ${i + 1}: Cmdfile must be a .sh file.`;
+          }
         }
       }
 
-      if (item.type === "Pre" || item.type === "Post") {
+      if (item.type === 1 || item.type === 2 || item.type === 3){
+        if (item.choice.length === 0) {
+          return `At least one choice is required for Question ${i + 1}`;
+        }
+        for (let j = 0; j < item.choice.length; j++) {
+          const choice = item.choice[j];
+          if (choice.content === "") {
+            return `Choice ${j + 1} content for Question ${i + 1} is required`;
+          }
+        }
+
         const correctChoices = item.choice.filter(choice => choice.isCorrect);
         if (correctChoices.length === 0) {
           return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
@@ -268,6 +329,10 @@ const useQuestionForm = () => {
     setOpenImgUpload,
     questionImgInputRef,
     selectedImageIndex,
+    selectedLabIndex,
+    openLabsUpload,
+    handleOpenLabUpload,
+    handleCloseLabUpload,
     handleOpenImgDialog,
     handleCloseImgUpload,
     handleImageQuestionUpload,
@@ -344,6 +409,13 @@ function AddSubject() {
   const { courseId, mode } = useParams();
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [ previewContent, setPreviewContent ] = useState(null);
+  const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ alertMessage, setAlertMessage ] = useState("");
+  const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
+  const [ openDialog, setOpenDialog ] = useState(false);
+  const [ loading, setLoading ] = useState(true);
+  const prevMode = localStorage.getItem("prevMode");
   const { subjectInput,
     setSubjectInput,
     addContent,
@@ -360,6 +432,10 @@ function AddSubject() {
     openImgUpload,
     questionImgInputRef,
     selectedImageIndex,
+    selectedLabIndex,
+    openLabsUpload,
+    handleOpenLabUpload,
+    handleCloseLabUpload,
     handleOpenImgDialog,
     handleCloseImgUpload,
     handleImageQuestionUpload,
@@ -372,7 +448,8 @@ function AddSubject() {
     deleteChoice,
     deleteQuestion,
     questionValidation
-  } = useQuestionForm();
+  } = useQuestionForm( setAlertMessage, setOpenSnackbar
+  );
   const { subjectPdfInput,
     setSubjectPdfInput,
     inputRef,
@@ -380,13 +457,6 @@ function AddSubject() {
     handleFileChange,
     pdfValidation
   } = usePdfForm();
-  const [ previewContent, setPreviewContent ] = useState(null);
-  const [ openSnackbar, setOpenSnackbar ] = useState(false);
-  const [ alertMessage, setAlertMessage ] = useState("");
-  const [ PreviewPopupOpen, setPreviewPopupOpen ] = useState(false);
-  const [ openDialog, setOpenDialog ] = useState(false);
-  const [ loading, setLoading ] = useState(true);
-  const prevMode = localStorage.getItem("prevMode");
 
   const fetchQuestionType = async () => {
     try {
@@ -758,8 +828,7 @@ function AddSubject() {
           <AddQuestion
             questionInput={questionInput}
             questionType={questionType}
-            handleLabfileUpload={handleLabfileUpload}
-            removeLabFile={removeLabFile}
+            handleOpenLabUpload={handleOpenLabUpload}
             handleOpenImgDialog={handleOpenImgDialog}
             addQuestion={addQuestion}
             deleteQuestion={deleteQuestion}
@@ -817,6 +886,66 @@ function AddSubject() {
             </Stack>
           </Stack>
         )}
+
+      <Dialog open={openLabsUpload.lab} onClose={() => handleCloseLabUpload("lab")}>
+        <DialogTitle>Lab Files Upload</DialogTitle>
+        <DialogContent>
+          <Box>
+            <Stack alignItems="space-between" gap={2}>
+              {Array.isArray(questionInput[selectedLabIndex]?.Labfiles) && questionInput[selectedLabIndex]?.Labfiles.map((file, fileIndex) => (
+                <Stack 
+                  direction="row" 
+                  justifyContent="center" 
+                  alignItems="center"
+                  key={fileIndex} 
+                >
+                  <DescriptionIcon/>
+                  <Typography variant='body2'>{file.name}</Typography>
+                  <IconButton
+                    onClick={() => removeLabFile(selectedLabIndex, fileIndex)}
+                  >
+                    <DeleteIcon/>
+                  </IconButton>
+                </Stack>
+              ))}
+            </Stack>
+            <Stack>
+              <VisuallyHiddenInput
+                type="file"
+                id={`lab-upload-${selectedLabIndex}`}
+                multiple
+                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Lab")}
+              />
+
+              <label htmlFor={`lab-upload-${selectedLabIndex}`}>
+                <Button variant="contained" component="span">File Upload</Button>
+              </label>
+              
+            </Stack>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openLabsUpload.cmd} onClose={() => handleCloseLabUpload("cmd")}>
+        <DialogTitle>Lab Files Upload</DialogTitle>
+        <DialogContent>
+          <Box>
+            <Stack>
+              <VisuallyHiddenInput
+                type="file"
+                id={`cmd-upload-${selectedLabIndex}`}
+                multiple
+                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Cmd")}
+              />
+
+              <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
+                <Button variant="contained" component="span">File Upload</Button>
+              </label>
+              
+            </Stack>
+          </Box>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={openImgUpload} onClose={handleCloseImgUpload}>
         <DialogTitle>Question Image Upload</DialogTitle>
