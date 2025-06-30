@@ -293,6 +293,10 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             return `Question ${i + 1}: Cmdfile must be a .sh file.`;
           }
         }
+
+        if(item.answer === ""){
+          return `Question ${i + 1}: Answer is required`;
+        }
       }
 
       if (item.type === 1 || item.type === 2 || item.type === 3){
@@ -404,6 +408,15 @@ const usePdfForm = () => {
 
 /* Input Pdf Functions */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const toBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 function AddSubject() {
   const { courseId, mode } = useParams();
@@ -644,61 +657,61 @@ function AddSubject() {
     if(prevMode === "manual"){
       formData.append('name', subjectInput.name);
       formData.append('content', JSON.stringify(subjectInput.content));
-      formData.append('question', JSON.stringify(questionInput));
-      
-      try{
-        const response = await backend.post(`/teacher/addSubject/${courseId}`, 
-          formData, { 
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials: true  
-          }
-        );
-
-        if(response.status === 200){
-          setAlertMessage(response.data.message);
-          setOpenSnackbar(true);
-
-          setTimeout(() => {
-            navigate(`/edit-course/${courseId}`);
-          }, 3000);
-        }
-      } catch(error){
-        console.log(error);
-        setAlertMessage(error.response.data.message);
-        setOpenSnackbar(true);
-      }
     }
 
     if(prevMode === "pdf"){
       formData.append('name', subjectPdfInput.name);
       formData.append('file', subjectPdfInput.file);
-      formData.append('question', JSON.stringify(questionInput));
-
-      try{
-        const response = await backend.post(`/teacher/addPdfSubject/${courseId}`, 
-          formData, { 
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials: true  
-          }
-        );
-
-        if(response.status === 200){
-          setAlertMessage(response.data.message);
-          setOpenSnackbar(true);
-
-          setTimeout(() => {
-            navigate(`/edit-course/${courseId}`);
-          }, 3000);
-        }
-      } catch(error){
-        console.log(error);
-        setAlertMessage(error.response.data.message);
-        setOpenSnackbar(true);
-      }
     }
-    
-  }
-  
+
+    const clonedQuestions = await Promise.all(
+      questionInput.map(async (q, qIndex) => {
+        const newQ = { ...q };
+
+        if (q.img && typeof q.img !== "string") {
+          newQ.img = await toBase64(q.img);
+        }
+
+        if (q.Cmdfile) {
+          formData.append(`cmdFile_${qIndex}`, q.Cmdfile);
+          newQ.Cmdfile = `cmdFile_${qIndex}`;
+        }
+
+        if (Array.isArray(q.Labfiles)) {
+          newQ.Labfiles = q.Labfiles.map((file, fileIndex) => {
+            const key = `labFile_${qIndex}_${fileIndex}`;
+            formData.append(key, file);
+            return key;
+          });
+        }
+
+        return newQ;
+      })
+    );
+
+
+    formData.append("question", JSON.stringify(clonedQuestions));
+
+    const url = prevMode === "manual" ? `/teacher/addSubject/${courseId}` : `/teacher/addPdfSubject/${courseId}`;
+
+    try {
+      const response = await backend.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        setAlertMessage(response.data.message);
+        setOpenSnackbar(true);
+        setTimeout(() => navigate(`/edit-course/${courseId}`), 3000);
+      }
+    } catch (error) {
+      console.log(error);
+      setAlertMessage(error.response?.data?.message || "Upload failed");
+      setOpenSnackbar(true);
+    }
+  };
+
   const handlePreview = () => {
     if(mode === "manual" ){
       const error = inputValidation();
@@ -888,19 +901,33 @@ function AddSubject() {
         )}
 
       <Dialog open={openLabsUpload.lab} onClose={() => handleCloseLabUpload("lab")}>
-        <DialogTitle>Lab Files Upload</DialogTitle>
+        <DialogTitle>Lab {selectedLabIndex + 1} Files Upload</DialogTitle>
         <DialogContent>
           <Box>
-            <Stack alignItems="space-between" gap={2}>
+            <Stack 
+              direction="column" 
+              justifyContent="space-between"
+              gap={2}
+            >
               {Array.isArray(questionInput[selectedLabIndex]?.Labfiles) && questionInput[selectedLabIndex]?.Labfiles.map((file, fileIndex) => (
                 <Stack 
                   direction="row" 
                   justifyContent="center" 
-                  alignItems="center"
+                  alignItems="space-between"
+                  sx={{
+                    width: "100%"
+                  }}
                   key={fileIndex} 
                 >
-                  <DescriptionIcon/>
-                  <Typography variant='body2'>{file.name}</Typography>
+                  <Stack
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={1}
+                  >
+                    <DescriptionIcon/>
+                    <Typography variant='body2'>{file.name}</Typography>
+                  </Stack>
                   <IconButton
                     onClick={() => removeLabFile(selectedLabIndex, fileIndex)}
                   >
@@ -909,7 +936,10 @@ function AddSubject() {
                 </Stack>
               ))}
             </Stack>
-            <Stack>
+            <Stack
+              justifyContent="center" 
+              alignItems="center"
+            >
               <VisuallyHiddenInput
                 type="file"
                 id={`lab-upload-${selectedLabIndex}`}
@@ -927,10 +957,35 @@ function AddSubject() {
       </Dialog>
 
       <Dialog open={openLabsUpload.cmd} onClose={() => handleCloseLabUpload("cmd")}>
-        <DialogTitle>Lab Files Upload</DialogTitle>
+        <DialogTitle>Lab {selectedLabIndex + 1} Shell File</DialogTitle>
         <DialogContent>
           <Box>
-            <Stack>
+            <Stack 
+              justifyContent="center" 
+              alignItems="center"
+            >
+              {questionInput[selectedLabIndex]?.Cmdfile && (
+                <Stack
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={1}
+                  >
+                    <DescriptionIcon/>
+                    <Typography variant='body2'>{questionInput[selectedLabIndex].Cmdfile.name}</Typography>
+
+                    <IconButton
+                      onClick={() => setQuestionInput([
+                        ...questionInput.slice(0, selectedLabIndex),
+                        { ...questionInput[selectedLabIndex], Cmdfile: null },
+                      ])
+                      }
+                    >
+                      <DeleteIcon/>
+                    </IconButton>
+                </Stack>
+              )}
+
               <VisuallyHiddenInput
                 type="file"
                 id={`cmd-upload-${selectedLabIndex}`}

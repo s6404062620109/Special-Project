@@ -27,26 +27,28 @@ router.get("/getQuestionType", authUserRole.checkTeacherRole, teacherController.
 
 const NoneFileMulter = multer();
 
-router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(), teacherController.addManualSubject);
-
-const pdfStorage = multer.memoryStorage(); 
-const pdfUpload = multer({ 
-  storage: pdfStorage,
-  limits: { fileSize: 16 * 1024 * 1024 }, 
+const subjectUpload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 16 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
+    const allowedExtensions = ['.pdf', '.sh', '.txt', '.png', '.jpg', '.jpeg', '.html', '.css', '.js'];
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExtensions.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed!'), false);
+      cb(new Error(`Unsupported file extension: ${ext}`), false);
     }
   }
 });
 
-router.post("/addPdfSubject/:courseId", authUserRole.verifiedTeacherCourse, pdfUpload.single("file"), teacherController.addPdfSubject);
+router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, subjectUpload.any(), teacherController.addManualSubject);
+
+router.post("/addPdfSubject/:courseId", authUserRole.verifiedTeacherCourse, subjectUpload.any(), teacherController.addPdfSubject);
 
 router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(),teacherController.editManualSubject);
 
-router.put("/updatePdfSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, pdfUpload.single("file"), teacherController.editPdfSubject);
+router.put("/updatePdfSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, subjectUpload.any(), teacherController.editPdfSubject);
 
 router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteSubject);
 

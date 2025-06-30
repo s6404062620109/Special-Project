@@ -309,6 +309,7 @@ const getQuestionType = (req, res) => {
 const addManualSubject = (req, res) => {
     const { courseId } = req.params;
     const { name, content, question } = req.body;
+    const files = req.files;
 
     if (typeof courseId !== 'string') {
       return res.status(400).send({ message: "Invalid Course ID." });
@@ -341,36 +342,73 @@ const addManualSubject = (req, res) => {
         const subjectId = result.insertId;
         const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
         createFolder(subjectFolderPath);
+
         const jsonFilePath = path.join(subjectFolderPath, "content.json");
         fs.writeFileSync(jsonFilePath, JSON.stringify(parsedContent, null, 2));
   
         try {
           for (const q of parsedQuestion) {
+            console.log(q);
             let img = null;
+            let questionId;
             if(q.img){
               img = q.img;
             }
+
             await new Promise((resolve, reject) => {
               db.query("INSERT INTO question (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
                 [q.content, img, q.type, subjectId], (err, questionResult) => {
                   if (err) return reject(err);
-  
-                  const questionId = questionResult.insertId;
-  
-                  for (const c of q.choice) {
-                    db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
-                      [c.content, c.isCorrect, questionId], (err) => {
-                        if (err) console.log("Choice Insert Error:", err);
-                      }
-                    );
-                  }
+
+                  questionId = questionResult.insertId;
                   resolve();
                 }
               );
             });
+
+            if (q.type === 4) {
+              const labFolderPath = path.join(subjectFolderPath, `lab${questionId}`);
+              createFolder(labFolderPath);
+
+              if (typeof q.Cmdfile === "string") {
+                const cmdFile = files.find(f => f.fieldname === q.Cmdfile);
+                if (cmdFile) {
+                  const cmdPath = path.join(labFolderPath, cmdFile.originalname);
+                  fs.writeFileSync(cmdPath, cmdFile.buffer);
+                }
+              }
+
+              if (Array.isArray(q.Labfiles)) {
+                for (const labKey of q.Labfiles) {
+                  const labFile = files.find(f => f.fieldname === labKey);
+                  if (labFile) {
+                    const labPath = path.join(labFolderPath, labFile.originalname);
+                    fs.writeFileSync(labPath, labFile.buffer);
+                  }
+                }
+              }
+            }
+
+            if (Array.isArray(q.choice)) {
+              for (const c of q.choice) {
+                db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                  [c.content, c.isCorrect, questionId], (err) => {
+                    if (err) console.log("Choice Insert Error:", err);
+                  }
+                );
+              }
+            }
+            if(q.answer){
+              db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                [q.answer, 1, questionId], (err) => {
+                  if (err) console.log("Choice Insert Error:", err);
+                }
+              );
+            }
+
           }
-  
-          return res.status(200).json({ message: "Subject created successfully." });
+
+          return res.status(200).json({ message: "PDF subject created successfully." });
         } catch (err) {
           console.error(err);
           return res.status(500).send({ message: "Error inserting questions or choices." });
@@ -385,13 +423,13 @@ const addManualSubject = (req, res) => {
 const addPdfSubject = (req, res) => {
   const { courseId } = req.params;
   const { name, question } = req.body;
-  const file = req.file;
+  const files = req.files;
 
   if (typeof courseId !== 'string') {
     return res.status(400).send({ message: "Invalid Course ID." });
   }
-  if (!name || !question || !file) {
-    return res.status(400).json({ message: "Name, file, and question are required." });
+  if (!name || !question || !files) {
+    return res.status(400).json({ message: "Name, files, and question are required." });
   }
 
   let parsedQuestion;
@@ -417,12 +455,17 @@ const addPdfSubject = (req, res) => {
       const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
       createFolder(subjectFolderPath);
 
+      const pdfFile = files.find(f => f.fieldname === "file");
+      if (!pdfFile) return res.status(400).send({ message: "Missing PDF file." });
+
       const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
-      fs.writeFileSync(pdfFilePath, file.buffer);
+      fs.writeFileSync(pdfFilePath, pdfFile.buffer);
 
       try {
         for (const q of parsedQuestion) {
+          console.log(q);
           let img = null;
+          let questionId;
           if(q.img){
             img = q.img;
           }
@@ -432,19 +475,52 @@ const addPdfSubject = (req, res) => {
               [q.content, img, q.type, subjectId], (err, questionResult) => {
                 if (err) return reject(err);
 
-                const questionId = questionResult.insertId;
-
-                for (const c of q.choice) {
-                  db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
-                    [c.content, c.isCorrect, questionId], (err) => {
-                      if (err) console.log("Choice Insert Error:", err);
-                    }
-                  );
-                }
+                questionId = questionResult.insertId;
                 resolve();
               }
             );
           });
+
+          if (q.type === 4) {
+            const labFolderPath = path.join(subjectFolderPath, `lab${questionId}`);
+            createFolder(labFolderPath);
+
+            if (typeof q.Cmdfile === "string") {
+              const cmdFile = files.find(f => f.fieldname === q.Cmdfile);
+              if (cmdFile) {
+                const cmdPath = path.join(labFolderPath, cmdFile.originalname);
+                fs.writeFileSync(cmdPath, cmdFile.buffer);
+              }
+            }
+
+            if (Array.isArray(q.Labfiles)) {
+              for (const labKey of q.Labfiles) {
+                const labFile = files.find(f => f.fieldname === labKey);
+                if (labFile) {
+                  const labPath = path.join(labFolderPath, labFile.originalname);
+                  fs.writeFileSync(labPath, labFile.buffer);
+                }
+              }
+            }
+          }
+
+          if (Array.isArray(q.choice)) {
+            for (const c of q.choice) {
+              db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                [c.content, c.isCorrect, questionId], (err) => {
+                  if (err) console.log("Choice Insert Error:", err);
+                }
+              );
+            }
+          }
+          if(q.answer){
+            db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+              [q.answer, 1, questionId], (err) => {
+                if (err) console.log("Choice Insert Error:", err);
+              }
+            );
+          }
+
         }
 
         return res.status(200).json({ message: "PDF subject created successfully." });

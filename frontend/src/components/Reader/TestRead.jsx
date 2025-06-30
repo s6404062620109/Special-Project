@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
-import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton } from '@mui/material'
+import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton, TextField } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -48,7 +48,6 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const canSelected = pathsToSelected.includes(location.pathname);
 
   const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
-
   return (
     <Stack
       gap={2}
@@ -73,7 +72,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
           >
             {uniqueTypes.map((type, index) => (
               <MenuItem key={index} value={type}>
-                {type === 'all' ? 'All' : type}
+                {type === 'all' && 'All'}
+                {type === 1 && "Pre"}
+                {type === 2 && "Post"}
+                {type === 3 && "lab-Quiz"}
+                {type === 4 && "Lab"}
+                {type !== 1 && type !== 2 && type !== 3 && type !== 4 && type !== 'all' && type}
               </MenuItem>
             ))}
           </Select>
@@ -95,44 +99,82 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               }}
             />
           )}
+        
+          {(currentItem.type === 1 || currentItem.type === 2 || currentItem.type === 3) && (
+            <FormControl>
+              <FormLabel id="demo-radio-buttons-group-label">{currentIndex + 1}. {currentItem.content}</FormLabel>
+              {isInteractive ? (
+                <RadioGroup
+                  aria-labelledby="question-label"
+                  name="radio-buttons-group"
+                  value={selectedAnswers[currentItem.qId] || ''}
+                  onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value)}
+                >
+                  {currentItem.choice.map((choice, index) => (
+                    <FormControlLabel
+                      key={index}
+                      value={choice.aId}
+                      disabled={!canSelected}
+                      control={<Radio />}
+                      label={choice.content}
+                      checked={selectedAnswers[currentItem.qId] === String(choice.aId)}
+                    />
+                  ))}
+                </RadioGroup>
+              ) : (
+                <RadioGroup
+                  aria-labelledby="question-label"
+                  name="radio-buttons-group"
+                >
+                  {currentItem.choice.map((choice, index) => (
+                    <FormControlLabel
+                      key={index}
+                      value={choice.aId}
+                      disabled={!canSelected}
+                      control={<Radio />}
+                      label={choice.content}
+                    />
+                  ))}
+                </RadioGroup>
+              )}
+            </FormControl>
+          )}
+          
+          {(currentItem.type === 4) && (
+            <Stack
+              gap={2}
+            >
+              <Typography variant="h6">{currentIndex + 1}. {currentItem.content}</Typography>
 
-          <FormControl>
-            <FormLabel id="demo-radio-buttons-group-label">{currentIndex + 1}. {currentItem.content}</FormLabel>
-            {isInteractive ? (
-              <RadioGroup
-                aria-labelledby="question-label"
-                name="radio-buttons-group"
-                value={selectedAnswers[currentItem.qId] || ''}
-                onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value)}
+              <Stack
+                direction="row"
+                alignItems="flex-start"
+                justifyContent="center"
+                gap={2}
               >
-                {currentItem.choice.map((choice, index) => (
-                  <FormControlLabel
-                    key={index}
-                    value={choice.aId}
-                    disabled={!canSelected}
-                    control={<Radio />}
-                    label={choice.content}
-                    checked={selectedAnswers[currentItem.qId] === String(choice.aId)}
-                  />
-                ))}
-              </RadioGroup>
-            ) : (
-              <RadioGroup
-                aria-labelledby="question-label"
-                name="radio-buttons-group"
-              >
-                {currentItem.choice.map((choice, index) => (
-                  <FormControlLabel
-                    key={index}
-                    value={choice.aId}
-                    disabled={!canSelected}
-                    control={<Radio />}
-                    label={choice.content}
-                  />
-                ))}
-              </RadioGroup>
-            )}
-          </FormControl>
+                {currentItem.Labfiles.length>0 &&(
+                  <Stack>
+                    <Typography variant="h6">Lab Files</Typography>
+                    {currentItem.Labfiles.map((file, index) => (
+                      <Typography key={index} variant="body2">{index+1}. {file.name}</Typography>
+                    ))}
+                  </Stack>
+                )}
+                {currentItem.Cmdfile && (
+                  <Stack>
+                    <Typography variant="h6">Cmd File</Typography>
+                    <Typography variant="body2">- {currentItem.Cmdfile.name}</Typography>
+                  </Stack>
+                )}
+              </Stack>
+
+              <TextField
+                label="Answer"
+                value={currentItem.answer || ""}
+                disabled={!canSelected}
+              />
+            </Stack>
+          )}
         </Stack>
       )}
 
