@@ -232,17 +232,45 @@ const getSubject = (req, res) => {
 
                   question = questionResult.map(item => {
                     const answers = answerResult.filter(answer => answer.questionId === item.id);
-                    return {
+
+                    const questionFormat = {
                       id: item.id,
                       content: item.content,
                       img: item.img,
                       type: typeResult.find(type => type.id === item.typeId).id,
-                      choice: answers.map(answer => ({
-                        id: answer.id,
-                        content: answer.content,
-                        isCorrect: answer.type
-                      }))
                     };
+
+                    if(item.typeId === 1 || item.typeId === 2 || item.typeId === 3){
+                      return {
+                        ...questionFormat,
+                        choice: answers.map(answer => ({
+                          id: answer.id,
+                          content: answer.content,  
+                          isCorrect: answer.type
+                        }))
+                      };
+                    }
+                    if( item.typeId === 4 ){
+                      const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
+                      let Labfiles = [];
+                      let Cmdfile = null;
+
+                      if (fs.existsSync(labFolderPath)) {
+                        const allFiles = fs.readdirSync(labFolderPath);
+                        Cmdfile = allFiles.includes("run.sh") ? `/courses/c${courseId}/s${subjectId}/lab${item.id}/run.sh` : null;
+                        Labfiles = allFiles
+                          .filter(file => file !== "run.sh")
+                          .map(file => `/courses/c${courseId}/s${subjectId}/lab${item.id}/${file}`);
+                      }
+
+                      return {
+                        ...questionFormat,
+                        answer: answers[0].type === 1 ? answers[0].content : null,
+                        Cmdfile: { name: Cmdfile.split("/").pop(), path: Cmdfile },
+                        Labfiles: Labfiles.map(file => ({ name: file.split("/").pop(), path: file }))
+                      };
+                    }
+                    
                   });
                 });
               });         
@@ -373,7 +401,7 @@ const addManualSubject = (req, res) => {
               if (typeof q.Cmdfile === "string") {
                 const cmdFile = files.find(f => f.fieldname === q.Cmdfile);
                 if (cmdFile) {
-                  const cmdPath = path.join(labFolderPath, cmdFile.originalname);
+                  const cmdPath = path.join(labFolderPath, "run.sh");
                   fs.writeFileSync(cmdPath, cmdFile.buffer);
                 }
               }
@@ -463,7 +491,7 @@ const addPdfSubject = (req, res) => {
 
       try {
         for (const q of parsedQuestion) {
-          console.log(q);
+  
           let img = null;
           let questionId;
           if(q.img){
@@ -488,7 +516,7 @@ const addPdfSubject = (req, res) => {
             if (typeof q.Cmdfile === "string") {
               const cmdFile = files.find(f => f.fieldname === q.Cmdfile);
               if (cmdFile) {
-                const cmdPath = path.join(labFolderPath, cmdFile.originalname);
+                const cmdPath = path.join(labFolderPath, "run.sh");
                 fs.writeFileSync(cmdPath, cmdFile.buffer);
               }
             }

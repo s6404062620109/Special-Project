@@ -5,11 +5,12 @@ import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, Input
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PreviewIcon from '@mui/icons-material/Preview';
-
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 function EditQuestion({
   questionInput, 
   questionType,
+  handleOpenLabUpload,
   handleOpenImgDialog,
   handleQuestionChange,
   handleChoiceChange,
@@ -220,7 +221,47 @@ function EditQuestion({
                 
                 {(question.type === 4) && (
                   <>
-                  
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      sx={{
+                        width: "100%",
+                        gap: 2,
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        startIcon={<CloudUploadIcon />}
+                        onClick={() => handleOpenLabUpload(index, "lab")}
+                        sx={{
+                          width: "100%"
+                        }}
+                      >
+                        Lab Files
+                      </Button>
+
+                      <Button 
+                        variant="outlined"
+                        color='secondary' 
+                        startIcon={<CloudUploadIcon />}
+                        onClick={() => handleOpenLabUpload(index, "cmd")}
+                        sx={{
+                          width: "100%",
+                        }}
+                      >
+                        Cmd File
+                      </Button>
+                    </Stack>
+
+                    <Stack>
+                      <TextField
+                        label="Answer"
+                        fullWidth
+                        value={question.answer}
+                        onChange={(e) => handleQuestionChange(index, "answer", e.target.value)}
+                      />
+                    </Stack>
                   </>
                 )}
 
