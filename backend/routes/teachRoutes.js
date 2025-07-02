@@ -46,7 +46,7 @@ router.post("/addSubject/:courseId", authUserRole.verifiedTeacherCourse, subject
 
 router.post("/addPdfSubject/:courseId", authUserRole.verifiedTeacherCourse, subjectUpload.any(), teacherController.addPdfSubject);
 
-router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, NoneFileMulter.none(),teacherController.editManualSubject);
+router.put("/updateSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, subjectUpload.any(),teacherController.editManualSubject);
 
 router.put("/updatePdfSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, subjectUpload.any(), teacherController.editPdfSubject);
 

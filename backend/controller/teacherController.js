@@ -265,6 +265,7 @@ const getSubject = (req, res) => {
 
                       return {
                         ...questionFormat,
+                        answerId: answers[0].id,
                         answer: answers[0].type === 1 ? answers[0].content : null,
                         Cmdfile: { name: Cmdfile.split("/").pop(), path: Cmdfile },
                         Labfiles: Labfiles.map(file => ({ name: file.split("/").pop(), path: file }))
@@ -565,7 +566,8 @@ const addPdfSubject = (req, res) => {
 
 const editManualSubject = (req, res) => {
   const { courseId, subjectId } = req.params;
-  const { name, content, question, questionDelete, choiceDelete } = req.body;
+  const { name, content, question, questionDelete, choiceDelete, filePathDelete } = req.body;
+  const files = req.files;
 
   if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
     return res.status(400).send({ message: "Invalid courseId or subjectId." });
@@ -573,17 +575,15 @@ const editManualSubject = (req, res) => {
   if (!courseId || !subjectId ||!name || !content || !question) {
     return res.status(400).json({ message: "CourseId, subjectId, name, content, and question are required." });
   }
-
-  let parsedContent;
-  let parsedQuestion;
-  let parsedQuestionDelete;
-  let parsedChoiceDelete;
+  
+  let parsedContent, parsedQuestion, parsedQuestionDelete, parsedChoiceDelete, parsedFilePathDelete;
 
   try {
     parsedContent = JSON.parse(content);
     parsedQuestion = JSON.parse(question);
     if (questionDelete) parsedQuestionDelete = JSON.parse(questionDelete);
     if (choiceDelete) parsedChoiceDelete = JSON.parse(choiceDelete);
+    if (filePathDelete) parsedFilePathDelete = JSON.parse(filePathDelete);
   } catch (err) {
     return res.status(400).json({ message: "Content, question, questionDelete and choiceDelete must be valid JSON strings." });
   }
@@ -605,7 +605,7 @@ const editManualSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, img: qImg, type: qType, choice } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Labfiles, Cmdfile } = q;
 
           let questionId = qid;
           if (qid) {
@@ -624,26 +624,84 @@ const editManualSubject = (req, res) => {
             });
           }
 
-          for (const c of choice) {
-            const { id: cid, content: cContent, isCorrect } = c;
-            if (cid) {
-              db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
-                if (err) console.log("Choice Update Error:", err);
-              });
-            } else {
-              db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
-                if (err) console.log("Choice Insert Error:", err);
-              });
+          if(choice){
+            for (const c of choice) {
+              const { id: cid, content: cContent, isCorrect } = c;
+              if (cid) {
+                db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                  if (err) console.log("Choice Update Error:", err);
+                });
+              } else {
+                db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                  if (err) console.log("Choice Insert Error:", err);
+                });
+              }
+            }
+          }
+          if(answer && answerId){
+            db.query("UPDATE answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
+              if (err) console.log("Choice Update Error:", err);
+            });
+          }
+
+          if (qType === 4) {
+            const labFolder = path.join(courseFolder, `lab${questionId}`);
+            if (!fs.existsSync(labFolder)) fs.mkdirSync(labFolder, { recursive: true });
+
+            if (typeof Cmdfile === "string") {
+              const cmdFile = files.find(f => f.fieldname === Cmdfile);
+              if (cmdFile) {
+                const cmdPath = path.join(labFolder, "run.sh");
+                fs.writeFileSync(cmdPath, cmdFile.buffer);
+              }
+            }
+
+            if (Array.isArray(Labfiles)) {
+              for (const labField of Labfiles) {
+                if (typeof labField === "string") {
+                  const labFile = files.find(f => f.fieldname === labField);
+                  if (labFile) {
+                    const labPath = path.join(labFolder, labFile.originalname);
+                    fs.writeFileSync(labPath, labFile.buffer);
+                  }
+                }
+              }
             }
           }
         }
 
+        if (Array.isArray(parsedFilePathDelete)) {
+          for (const filePath of parsedFilePathDelete) {
+            const fullPath = path.join(__dirname, `../${filePath}`);
+            if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+          }
+        }
+
         if (parsedQuestionDelete) {
-          db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+          db.query("SELECT id, typeId FROM question WHERE id IN (?)", [parsedQuestionDelete], (err, result) => {
             if (err) {
-              console.log("Question Delete Error:", err);
-              return res.status(500).send({ message: "Error deleting questions." });
+              console.log(err);
+              return res.status(500).send({ message: "Database question query error" });
             }
+
+            const labQuestionIds = result.filter(q => q.typeId === 4).map(q => q.id);
+
+            if (labQuestionIds.length > 0) {
+              for (const labId of labQuestionIds) {
+                const labFolder = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${labId}`);
+                if (fs.existsSync(labFolder)) {
+                  fs.rmSync(labFolder, { recursive: true, force: true });
+                  console.log(`Deleted lab folder: lab${labId}`);
+                }
+              }
+            }
+
+            db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+              if (err) {
+                console.log("Question Delete Error:", err);
+                return res.status(500).send({ message: "Error deleting questions." });
+              }
+            });
           });
         }
 
@@ -655,7 +713,6 @@ const editManualSubject = (req, res) => {
             }
           });
         }
-
 
         return res.status(200).json({ message: "Subject updated successfully." });
         } catch (err) {
@@ -667,13 +724,12 @@ const editManualSubject = (req, res) => {
       console.log(error);
       return res.status(500).send({ message: "Server error.", error });
     }
-  
 }
 
 const editPdfSubject = (req, res) => {
   const { courseId, subjectId } = req.params;
-  const { name, question, questionDelete, choiceDelete } = req.body;
-  const file = req.file;
+  const { name, question, questionDelete, choiceDelete, filePathDelete } = req.body;
+  const files = req.files;
 
   if (typeof courseId !== 'string' || typeof subjectId !== 'string') {
     return res.status(400).send({ message: "Invalid courseId or subjectId." });
@@ -682,14 +738,13 @@ const editPdfSubject = (req, res) => {
     return res.status(400).json({ message: "CourseId, subjectId, name and question are required." });
   }
 
-  let parsedQuestion;
-  let parsedQuestionDelete;
-  let parsedChoiceDelete;
+  let parsedQuestion, parsedQuestionDelete, parsedChoiceDelete, parsedFilePathDelete;
 
   try {
     parsedQuestion = JSON.parse(question);
     if (questionDelete) parsedQuestionDelete = JSON.parse(questionDelete);
     if (choiceDelete) parsedChoiceDelete = JSON.parse(choiceDelete);
+    if (filePathDelete) parsedFilePathDelete = JSON.parse(filePathDelete);
   } catch (err) {
     return res.status(400).json({ message: "Question, questionDelete and choiceDelete must be valid JSON strings." });
   }
@@ -698,6 +753,8 @@ const editPdfSubject = (req, res) => {
     return res.status(400).json({ message: "Questions must be an array." });
   }
 
+  const courseFolder = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+
   try{
     db.query("UPDATE subject SET name = ?, updateat = NOW() WHERE id = ? AND courseId = ?", [name, subjectId, courseId], async (error) => {
       if (error) {
@@ -705,15 +762,15 @@ const editPdfSubject = (req, res) => {
         return res.status(500).send({ message: "Database subject query error." });
       }
 
-      if (file) {
-        const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
-        const pdfFilePath = path.join(subjectFolderPath, "content.pdf");
-        fs.writeFileSync(pdfFilePath, file.buffer);
+      const pdfFile = files.find(f => f.fieldname === 'file');
+      if (pdfFile) {
+        const pdfFilePath = path.join(courseFolder, "content.pdf");
+        fs.writeFileSync(pdfFilePath, pdfFile.buffer);
       }
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, img: qImg, type: qType, choice } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Labfiles, Cmdfile } = q;
 
           let questionId = qid;
           if (qid) {
@@ -732,26 +789,84 @@ const editPdfSubject = (req, res) => {
             });
           }
 
-          for (const c of choice) {
-            const { id: cid, content: cContent, isCorrect } = c;
-            if (cid) {
-              db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
-                if (err) console.log("Choice Update Error:", err);
-              });
-            } else {
-              db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
-                if (err) console.log("Choice Insert Error:", err);
-              });
+          if(choice){
+            for (const c of choice) {
+              const { id: cid, content: cContent, isCorrect } = c;
+              if (cid) {
+                db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                  if (err) console.log("Choice Update Error:", err);
+                });
+              } else {
+                db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                  if (err) console.log("Choice Insert Error:", err);
+                });
+              }
+            }
+          }
+          if(answer && answerId){
+            db.query("UPDATE answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
+              if (err) console.log("Choice Update Error:", err);
+            });
+          }
+
+          if (qType === 4) {
+            const labFolder = path.join(courseFolder, `lab${questionId}`);
+            if (!fs.existsSync(labFolder)) fs.mkdirSync(labFolder, { recursive: true });
+
+            if (typeof Cmdfile === "string") {
+              const cmdFile = files.find(f => f.fieldname === Cmdfile);
+              if (cmdFile) {
+                const cmdPath = path.join(labFolder, "run.sh");
+                fs.writeFileSync(cmdPath, cmdFile.buffer);
+              }
+            }
+
+            if (Array.isArray(Labfiles)) {
+              for (const labField of Labfiles) {
+                if (typeof labField === "string") {
+                  const labFile = files.find(f => f.fieldname === labField);
+                  if (labFile) {
+                    const labPath = path.join(labFolder, labFile.originalname);
+                    fs.writeFileSync(labPath, labFile.buffer);
+                  }
+                }
+              }
             }
           }
         }
 
+        if (Array.isArray(parsedFilePathDelete)) {
+          for (const filePath of parsedFilePathDelete) {
+            const fullPath = path.join(__dirname, `../${filePath}`);
+            if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+          }
+        }
+
         if (parsedQuestionDelete) {
-          db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+          db.query("SELECT id, typeId FROM question WHERE id IN (?)", [parsedQuestionDelete], (err, result) => {
             if (err) {
-              console.log("Question Delete Error:", err);
-              return res.status(500).send({ message: "Error deleting questions." });
+              console.log(err);
+              return res.status(500).send({ message: "Database question query error" });
             }
+
+            const labQuestionIds = result.filter(q => q.typeId === 4).map(q => q.id);
+
+            if (labQuestionIds.length > 0) {
+              for (const labId of labQuestionIds) {
+                const labFolder = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${labId}`);
+                if (fs.existsSync(labFolder)) {
+                  fs.rmSync(labFolder, { recursive: true, force: true });
+                  console.log(`Deleted lab folder: lab${labId}`);
+                }
+              }
+            }
+
+            db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+              if (err) {
+                console.log("Question Delete Error:", err);
+                return res.status(500).send({ message: "Error deleting questions." });
+              }
+            });
           });
         }
 
@@ -763,7 +878,6 @@ const editPdfSubject = (req, res) => {
             }
           });
         }
-
 
         return res.status(200).json({ message: "Subject updated successfully." });
         } catch (err) {

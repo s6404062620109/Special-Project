@@ -208,9 +208,9 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     const [ choiceDelete, setChoiceDelete ] = useState([]);
     const [ filePathDelete, setFilePathDelete ] = useState([]);
     const [ openImgUpload, setOpenImgUpload ] = useState(false);
-    const [ openLabsUpload, setOpenLabsUpload ] = useState({ lab: false, cmd: false });
+    const [ openLabsUpload, setOpenLabsUpload ] = useState(null);
     const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
-    const [ selectedLabIndex, setSelectedLabIndex ] = useState(null);
+    const [ selectedLabIndex, setSelectedLabIndex ] = useState(-1);
     const questionImgInputRef = useRef(null);
 
     const handleQuestionChange = (index, field, value) => {
@@ -245,11 +245,11 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 
     const handleOpenLabUpload = (index, action) => {
         setSelectedLabIndex(index);
-        setOpenLabsUpload({ ...openLabsUpload, [action]: true });
+        setOpenLabsUpload(action);
     };
-    const handleCloseLabUpload = (action) => {
-        setSelectedLabIndex(null);
-        setOpenLabsUpload({ ...openLabsUpload, [action]: false });
+    const handleCloseLabUpload = () => {
+        setOpenLabsUpload(null);
+        setSelectedLabIndex(-1);
     };
 
     const handleLabfileUpload = (index, event, action) => {
@@ -282,6 +282,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         }
 
         setQuestionInput(updatedQuestions);
+        handleCloseLabUpload(action);
     };
     const handleLabFileDelete = (index, fileIndex, att) => {
         const updatedQuestions = [...questionInput];
@@ -453,6 +454,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         questionImgInputRef,
         openLabsUpload,
         selectedLabIndex,
+        filePathDelete,
         handleOpenLabUpload,
         handleCloseLabUpload,
         handleLabfileUpload,
@@ -509,6 +511,7 @@ function EditSubject() {
         questionImgInputRef,
         openLabsUpload,
         selectedLabIndex,
+        filePathDelete,
         handleOpenLabUpload,
         handleCloseLabUpload,
         handleLabfileUpload,
@@ -626,75 +629,74 @@ function EditSubject() {
     const submitUpdate = async () => {
         const formData = new FormData();
 
+        formData.append('name', editMode === "manual" ? subjectInput.name : subjectPdfInput.name);
+
         if(editMode === "manual"){
-            formData.append('name', subjectInput.name);
             formData.append('content', JSON.stringify(subjectInput.content));
-            formData.append('question', JSON.stringify(questionInput));
-            if(questionDelete.length > 0){
-                formData.append('questionDelete', JSON.stringify(questionDelete));
-            }
-            if(choiceDelete.length > 0){
-                formData.append('choiceDelete', JSON.stringify(choiceDelete));
-            }
-
-            try {
-                const response = await backend.put(`/teacher/updateSubject/${courseId}/${subjectId}`, 
-                    formData,
-                    {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                        withCredentials: true
-                    }
-                );
-
-                if(response.status === 200){
-                    console.log(response.data);
-                    setAlertMessage(response.data.message);
-                    setAlertOpen(true);
-
-                    setTimeout(() => {
-                        navigate(`/edit-course/${courseId}`);
-                    }, 3000);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        else if (editMode === "pdf") {
-            formData.append('name', subjectPdfInput.name);
+        } else if(editMode === "pdf"){
             formData.append('file', subjectPdfInput.file);
-            formData.append('question', JSON.stringify(questionInput));
-            if(questionDelete.length > 0){
-                formData.append('questionDelete', JSON.stringify(questionDelete));
-            }
-            if(choiceDelete.length > 0){
-                formData.append('choiceDelete', JSON.stringify(choiceDelete));
-            }
-
-            try {
-                const response = await backend.put(`/teacher/updatePdfSubject/${courseId}/${subjectId}`, 
-                    formData,
-                    {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                        withCredentials: true
-                    }
-                );
-
-                if(response.status === 200){
-                    console.log(response.data);
-                    setAlertMessage(response.data.message);
-                    setAlertOpen(true);
-
-                    setTimeout(() => {
-                        navigate(`/edit-course/${courseId}`);
-                    }, 3000);
-                }
-            } catch (error) {
-                console.log(error);
-            }
         }
-        
-    }
+
+        const updatedQuestions = questionInput.map((question, qIndex) => {
+            const newQuestion = { ...question };
+
+            // สำหรับ Cmdfile
+            if (question.Cmdfile instanceof File) {
+                const cmdField = `q${qIndex}_cmd`;
+                formData.append(cmdField, question.Cmdfile);
+                newQuestion.Cmdfile = cmdField; // ส่งชื่อ field ไปใน JSON
+            }
+
+            // สำหรับ Labfiles
+            if (Array.isArray(question.Labfiles)) {
+                newQuestion.Labfiles = question.Labfiles.map((file, fIndex) => {
+                    if (file instanceof File) {
+                        const labField = `q${qIndex}_lab_${fIndex}`;
+                        formData.append(labField, file);
+                        return labField; // ส่งชื่อ field ไปใน JSON
+                    }
+                    return file; // เป็น path เดิม
+                });
+            }
+
+            return newQuestion;
+        });
+
+
+        formData.append('question', JSON.stringify(updatedQuestions));
+
+        if (questionDelete.length > 0) {
+            formData.append('questionDelete', JSON.stringify(questionDelete));
+        }
+        if (choiceDelete.length > 0) {
+            formData.append('choiceDelete', JSON.stringify(choiceDelete));
+        }
+
+        if (filePathDelete.length > 0) {
+            formData.append('filePathDelete', JSON.stringify(filePathDelete));
+        }
+        const url = editMode === "manual"
+                ? `/teacher/updateSubject/${courseId}/${subjectId}`
+                : `/teacher/updatePdfSubject/${courseId}/${subjectId}`
+        try {
+            const response = await backend.put(url, formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    withCredentials: true
+                }
+            );
+
+            if (response.status === 200) {
+                setAlertMessage(response.data.message);
+                setAlertOpen(true);
+                setTimeout(() => {
+                    navigate(`/edit-course/${courseId}`);
+                }, 3000);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     const handleSubmit = () => {
         if(mode === "manual"){
@@ -930,25 +932,74 @@ function EditSubject() {
                 </Stack>
             )}
 
-            <Dialog open={openLabsUpload.lab} onClose={() => handleCloseLabUpload("lab")}>
-                <DialogTitle>Lab {selectedLabIndex + 1} Files Upload</DialogTitle>
-                <DialogContent>
-                <Box>
-                    <Stack 
-                        direction="column" 
-                        justifyContent="space-between"
-                        gap={2}
-                    >
-                        {Array.isArray(questionInput[selectedLabIndex]?.Labfiles) && questionInput[selectedLabIndex]?.Labfiles.map((file, fileIndex) => (
-                            <Stack 
-                            direction="row" 
+            {(selectedLabIndex !== -1 && openLabsUpload === "lab") && (
+                <Dialog open onClose={() => handleCloseLabUpload("lab")}>
+                    <DialogTitle>Lab {selectedLabIndex + 1} Files Upload</DialogTitle>
+                    <DialogContent>
+                    <Box>
+                        <Stack 
+                            direction="column" 
+                            justifyContent="space-between"
+                            gap={2}
+                        >
+                            {Array.isArray(questionInput[selectedLabIndex]?.Labfiles) && questionInput[selectedLabIndex]?.Labfiles.map((file, fileIndex) => (
+                                <Stack 
+                                direction="row" 
+                                justifyContent="center" 
+                                alignItems="space-between"
+                                sx={{
+                                    width: "100%"
+                                }}
+                                key={fileIndex} 
+                                >
+                                <Stack
+                                    direction="row"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    gap={1}
+                                >
+                                    <DescriptionIcon/>
+                                    <Typography variant='body2'>{file.name}</Typography>
+                                </Stack>
+                                <IconButton
+                                    onClick={() => handleLabFileDelete(selectedLabIndex, fileIndex, "Lab")}
+                                >
+                                    <DeleteIcon/>
+                                </IconButton>
+                                </Stack>
+                            ))}
+                        </Stack>
+                        <Stack
                             justifyContent="center" 
-                            alignItems="space-between"
-                            sx={{
-                                width: "100%"
-                            }}
-                            key={fileIndex} 
-                            >
+                            alignItems="center"
+                        >
+                            <VisuallyHiddenInput
+                                type="file"
+                                id={`lab-upload-${selectedLabIndex}`}
+                                multiple
+                                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Lab")}
+                            />
+
+                            <label htmlFor={`lab-upload-${selectedLabIndex}`}>
+                                <Button variant="contained" component="span">File Upload</Button>
+                            </label>
+                        
+                        </Stack>
+                    </Box>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {(selectedLabIndex !== -1 && openLabsUpload === "cmd") && (
+                <Dialog open onClose={() => handleCloseLabUpload("cmd")}>
+                    <DialogTitle>Lab {selectedLabIndex + 1} Shell File</DialogTitle>
+                    <DialogContent>
+                    <Box>
+                        <Stack 
+                        justifyContent="center" 
+                        alignItems="center"
+                        >
+                        {questionInput[selectedLabIndex]?.Cmdfile && (
                             <Stack
                                 direction="row"
                                 justifyContent="center"
@@ -956,77 +1007,32 @@ function EditSubject() {
                                 gap={1}
                             >
                                 <DescriptionIcon/>
-                                <Typography variant='body2'>{file.name}</Typography>
-                            </Stack>
-                            <IconButton
-                                onClick={() => handleLabFileDelete(selectedLabIndex, fileIndex, "Lab")}
-                            >
+                                <Typography variant='body2'>{questionInput[selectedLabIndex].Cmdfile.name}</Typography>
+
+                                <IconButton
+                                    onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Cmd")}
+                                >
                                 <DeleteIcon/>
-                            </IconButton>
+                                </IconButton>
                             </Stack>
-                        ))}
-                    </Stack>
-                    <Stack
-                        justifyContent="center" 
-                        alignItems="center"
-                    >
+                        )}
+
                         <VisuallyHiddenInput
                             type="file"
-                            id={`lab-upload-${selectedLabIndex}`}
+                            id={`cmd-upload-${selectedLabIndex}`}
                             multiple
-                            onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Lab")}
+                            onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Cmd")}
                         />
 
-                        <label htmlFor={`lab-upload-${selectedLabIndex}`}>
+                        <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
                             <Button variant="contained" component="span">File Upload</Button>
                         </label>
-                    
-                    </Stack>
-                </Box>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={openLabsUpload.cmd} onClose={() => handleCloseLabUpload("cmd")}>
-                <DialogTitle>Lab {selectedLabIndex + 1} Shell File</DialogTitle>
-                <DialogContent>
-                <Box>
-                    <Stack 
-                    justifyContent="center" 
-                    alignItems="center"
-                    >
-                    {questionInput[selectedLabIndex]?.Cmdfile && (
-                        <Stack
-                            direction="row"
-                            justifyContent="center"
-                            alignItems="center"
-                            gap={1}
-                        >
-                            <DescriptionIcon/>
-                            <Typography variant='body2'>{questionInput[selectedLabIndex].Cmdfile.name}</Typography>
-
-                            <IconButton
-                                onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Cmd")}
-                            >
-                            <DeleteIcon/>
-                            </IconButton>
+                        
                         </Stack>
-                    )}
-
-                    <VisuallyHiddenInput
-                        type="file"
-                        id={`cmd-upload-${selectedLabIndex}`}
-                        multiple
-                        onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Cmd")}
-                    />
-
-                    <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
-                        <Button variant="contained" component="span">File Upload</Button>
-                    </label>
-                    
-                    </Stack>
-                </Box>
-                </DialogContent>
-            </Dialog>
+                    </Box>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             <Dialog open={openImgUpload} onClose={handleCloseImgUpload}>
                 <DialogTitle>Question Image Upload</DialogTitle>
