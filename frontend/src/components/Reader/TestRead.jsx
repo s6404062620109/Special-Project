@@ -10,7 +10,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const { courseId, enrollmentId, subjectId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
-  
+
   useEffect(() => {
     setCurrentIndex(0);
   }, [selectedType]);

@@ -1,12 +1,13 @@
 const express = require("express");
-const path = require("path");
 const authUserRole = require("../middleware/authUserRole");
 const labsController = require("../controller/labsController");
 
 const router = express.Router();
 
-router.use("/lab", express.static(path.join(__dirname, "../lab")));
+router.get("/getLabQuestions/:courseId/:subjectId", authUserRole.verifiedStudentEnrollCourse, labsController.getLabQuestions);
 
-router.get("/getLabQuestions/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.getLabQuestions);
+router.post("/startLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.startLabSession);
+
+router.post("/clearLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.clearLabSession);
 
 module.exports = router;

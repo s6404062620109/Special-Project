@@ -36,6 +36,7 @@ const getPretest = (req, res) => {
                 const questionsWithChoices = questionResult.map(question => ({
                   qId: question.id,
                   content: question.content,
+                  type: question.typeId,
                   choice: answerResult
                     .filter(answer => answer.questionId === question.id)
                     .map(answer => ({

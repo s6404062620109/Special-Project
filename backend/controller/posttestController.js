@@ -36,6 +36,7 @@ const getPosttest = (req, res) => {
                 const questionsWithChoices = questionResult.map(question => ({
                   qId: question.id,
                   content: question.content,
+                  type: question.typeId,
                   choice: answerResult
                     .filter(answer => answer.questionId === question.id)
                     .map(answer => ({
@@ -90,7 +91,6 @@ const submitPosttest = (req, res) => {
                             return res.status(500).json({ message: "Progress posttest score update error" });
                         }
 
-                        // ดึงคะแนนรวมของ pre และ post
                         db.query(`SELECT 
                                 SUM(CASE WHEN q.typeId = 1 THEN p.score ELSE 0 END) AS pre_score,
                                 SUM(CASE WHEN q.typeId = 2 THEN p.score ELSE 0 END) AS post_score
@@ -107,7 +107,6 @@ const submitPosttest = (req, res) => {
                             const postScore = scores[0]?.post_score || 0;
                             const postTestStatus = postScore >= preScore ? true : -1;
 
-                            // อัปเดตสถานะ posttest_complete ใน enrollment
                             db.query("UPDATE enrollment SET posttest_complete = ? WHERE id = ?",
                             [postTestStatus, parseInt(enrollmentId)], (enrollError) => {
                                 if (enrollError) {
@@ -123,7 +122,6 @@ const submitPosttest = (req, res) => {
                     }
                     );
                 } else {
-                    // อัปเดตเป็น -1 หากไม่มีคำตอบที่ถูกต้อง
                     db.query("UPDATE enrollment SET posttest_complete = ? WHERE id = ?" [-1, parseInt(enrollmentId)], (enrollError) => {
                         if (enrollError) {
                             console.log(enrollError);

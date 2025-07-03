@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthProvider';
 import backend from '../../api/backend';
 
 import style from './css/subject.module.css';
 import NavSubject from './NavSubject';
 import Reader from '../../components/Reader';
-import Labs from '../labs';
+import Labs from '../../components/Labs';
 
 import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
 import ListIcon from '@mui/icons-material/List';
@@ -14,10 +16,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const useLabQuestions = () => {
     const [ questions, setQuestions ] = useState([]);
+    const [ selectedAnswers, setSelectedAnswers ] = useState({});
 
-    const fetchLabQuestions = async (courseId) => {
+    const fetchLabQuestions = async (courseId, subjectId) => {
         try{
-            const response = await backend.get(`/labs/getLabQuestions/${courseId}`,{
+            const response = await backend.get(`/labs/getLabQuestions/${courseId}/${subjectId}`,{
                 withCredentials: true
             });
     
@@ -29,16 +32,27 @@ const useLabQuestions = () => {
             console.log(error);
         }
     }
+
+    const handleAnswerChange = (questionId, answerId) => {
+        setSelectedAnswers((prev) => ({
+        ...prev,
+        [questionId]: answerId,
+        }));
+    };
     
     return{
         questions,
         setQuestions,
+        selectedAnswers,
+        handleAnswerChange,
+        setSelectedAnswers,
         fetchLabQuestions,
     }
 }
 
 function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();
+    const { userData } = useContext(AuthContext);
     const [ subjectList, setSubjectList ] = useState([]);
     const [ content, setContent ] = useState({
         name: "",
@@ -46,7 +60,13 @@ function Subject() {
     });
     const [ openNavSubject, setOpenNavSubject ] = useState(false);
     const [ labs, setLabs ] = useState(true);
-    const { questions, setQuestions, fetchLabQuestions } = useLabQuestions();
+    const { 
+        questions, 
+        selectedAnswers,
+        setSelectedAnswers,
+        handleAnswerChange,
+        fetchLabQuestions,
+    } = useLabQuestions();
     const readerRef = useRef(null);
     const labsRef = useRef(null);
 
@@ -88,7 +108,7 @@ function Subject() {
             });
 
             if (response.status === 200) {
-                console.log(response.data.ininProgress)
+                console.log(response.data.inProgress)
                if(response.data.inProgress !== `subject/${subjectId}/${enrollmentId}`){
                     setLabs(false);
                }
@@ -101,13 +121,42 @@ function Subject() {
         }
     }
 
+    const handleLabSpawn = async (questionId) => {
+        try {
+            const response = await backend.post(`/labs/startLabSession/${courseId}`, {
+                userId: userData.id,
+                subjectId,
+                questionId
+            }, {
+                withCredentials: true
+            });
+
+            if (response.status === 200) {
+                const { ubuntuUiUrl } = response.data;
+                const labWindow = window.open(ubuntuUiUrl, "_blank");
+
+                const labCheckInterval = setInterval(() => {
+                    if (labWindow.closed) {
+                        clearInterval(labCheckInterval);
+                        backend.post(`/labs/clearLabSession/${courseId}`, { userId: userData.id }, {
+                            withCredentials: true
+                        }).catch(err => console.error("cleanup error", err));
+                    }
+                }, 1000);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+
     useEffect(() => {
         fetchSubjectData();
         fetcSubjectList();
-        fetchLastProgress();
-        fetchLabQuestions(courseId);
+        //fetchLastProgress();
+        fetchLabQuestions(courseId, subjectId);
     }, [courseId, subjectId]);
-    
+
   return (
     <div className={style.container}>
         
@@ -189,6 +238,8 @@ function Subject() {
                     bottom: "20px",
                     left: "40px",
                     transform: "translateY(-50%)",
+                    height: "100px",
+                    justifyContent: "space-between",
                     zIndex: 1301,
                 }}
             >
@@ -197,11 +248,12 @@ function Subject() {
                         readerRef.current?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     sx={{
+                        color: 'black',
                         opacity: 0.5,
                         ':hover':{
                             opacity: 1,
+                            color: 'white',
                             background: '#1976d2',
-                            color: 'white'
                         }
                     }}
                 >
@@ -213,11 +265,12 @@ function Subject() {
                         labsRef.current?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     sx={{
+                        color: 'black',
                         opacity: 0.5,
                         ':hover':{
                             opacity: 1,
+                            color: 'white',
                             background: '#1976d2',
-                            color: 'white'
                         }
                     }}
                 >
@@ -230,6 +283,7 @@ function Subject() {
             <div ref={labsRef}>
                 <Labs
                     questions={questions}
+                    handleLabSpawn={handleLabSpawn}
                 />
             </div>
         )}
