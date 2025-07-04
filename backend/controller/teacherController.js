@@ -808,6 +808,11 @@ const editPdfSubject = (req, res) => {
               if (err) console.log("Choice Update Error:", err);
             });
           }
+          if(answer && !answerId){
+            db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
+              if (err) console.log("Choice Insert Error:", err);
+            });
+          }
 
           if (qType === 4) {
             const labFolder = path.join(courseFolder, `lab${questionId}`);

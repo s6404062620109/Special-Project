@@ -16,7 +16,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const useLabQuestions = () => {
     const [ questions, setQuestions ] = useState([]);
-    const [ selectedAnswers, setSelectedAnswers ] = useState({});
+    const [ answers, setAnswers ] = useState([]);
 
     const fetchLabQuestions = async (courseId, subjectId) => {
         try{
@@ -32,20 +32,12 @@ const useLabQuestions = () => {
             console.log(error);
         }
     }
-
-    const handleAnswerChange = (questionId, answerId) => {
-        setSelectedAnswers((prev) => ({
-        ...prev,
-        [questionId]: answerId,
-        }));
-    };
     
     return{
         questions,
         setQuestions,
-        selectedAnswers,
-        handleAnswerChange,
-        setSelectedAnswers,
+        answers,
+        setAnswers,
         fetchLabQuestions,
     }
 }
@@ -62,9 +54,8 @@ function Subject() {
     const [ labs, setLabs ] = useState(true);
     const { 
         questions, 
-        selectedAnswers,
-        setSelectedAnswers,
-        handleAnswerChange,
+        answers,
+        setAnswers,
         fetchLabQuestions,
     } = useLabQuestions();
     const readerRef = useRef(null);
@@ -149,13 +140,25 @@ function Subject() {
         }
     };
 
-
     useEffect(() => {
         fetchSubjectData();
         fetcSubjectList();
         //fetchLastProgress();
         fetchLabQuestions(courseId, subjectId);
     }, [courseId, subjectId]);
+
+    useEffect(() => {
+        if(questions.length > 0){
+            let questionsIds = questions.map(question => question.id);
+            setAnswers(prevAnswers => {
+                const updatedAnswers = { ...prevAnswers };
+                questionsIds.forEach(id => {
+                    updatedAnswers[id] = '';
+                });
+                return updatedAnswers;
+            });
+        }
+    }, [questions]);
 
   return (
     <div className={style.container}>
@@ -284,6 +287,8 @@ function Subject() {
                 <Labs
                     questions={questions}
                     handleLabSpawn={handleLabSpawn}
+                    answers={answers}
+                    setAnswers={setAnswers}
                 />
             </div>
         )}

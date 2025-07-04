@@ -158,12 +158,6 @@ const usePdfForm = () => {
 
     const pdfValidation = () => {
         const { name, file } = subjectPdfInput;
-        
-        const isSameName = name === subjectPdfData.name;
-
-        if (isSameName && !file) {
-            return "No changes made to the PDF or Question input.";
-        }
 
         if (!name) {
             return "Subject Name is required.";
@@ -217,25 +211,25 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         const newQuestions = [...questionInput];
 
         if (field === "type") {
-        newQuestions[index].type = value;
+            newQuestions[index].type = value;
 
-        if (value === 4) {
-            delete newQuestions[index].choice;
-            newQuestions[index].answer = "";
-            newQuestions[index].Labfiles = newQuestions[index].Labfiles || [];
-            newQuestions[index].Cmdfile = newQuestions[index].Cmdfile || null;
-        } 
-        else {
-            delete newQuestions[index].answer;
-            newQuestions[index].choice = [
-            {
-                content: "",
-                isCorrect: false,
-            },
-            ];
-            delete newQuestions[index].Labfiles;
-            delete newQuestions[index].Cmdfile;
-        }
+            if (value === 4) {
+                delete newQuestions[index].choice;
+                newQuestions[index].answer = "";
+                newQuestions[index].Labfiles = newQuestions[index].Labfiles || [];
+                newQuestions[index].Cmdfile = newQuestions[index].Cmdfile || null;
+            } 
+            else {
+                delete newQuestions[index].answer;
+                newQuestions[index].choice = [
+                {
+                    content: "",
+                    isCorrect: false,
+                },
+                ];
+                delete newQuestions[index].Labfiles;
+                delete newQuestions[index].Cmdfile;
+            }
         } else {
         newQuestions[index][field] = value;
         }
@@ -361,7 +355,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 },
             ],
             img: null,
-            type: questionType[0],
+            type: questionType[0].id,
         };
         setQuestionInput([...questionInput, newQuestion]);
     };
@@ -397,7 +391,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 
     const questionValidation = () => {
         if(questionInput.length === 0) {
-        return "At least one question is required";
+            return "At least one question is required";
         }
 
         for (let i = 0; i < questionInput.length; i++) {
@@ -407,14 +401,23 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             }
 
             if (item.type === 4) {
+                console.log(item)
                 if (item.Labfiles.length > 4) {
                 return `Question ${i + 1}: Labfiles must not exceed 4 files.`;
+                }
+
+                if (item.Cmdfile === null) {
+                    return `Question ${i + 1}: Cmdfile is required.`;
                 }
 
                 if (item.Cmdfile) {
                     if (!item.Cmdfile.name.endsWith(".sh")) {
                         return `Question ${i + 1}: Cmdfile must be a .sh file.`;
                     }
+                }
+
+                if(item.answer === ""){
+                    return `Question ${i + 1}: Answer is required`;
                 }
             }
 
@@ -713,27 +716,27 @@ function EditSubject() {
             let questionValication = questionValidation();
 
             if(editMode === "manual"){
-                if(!subjectValication || !questionValication ){
-                    setMode("submit");
+                if(subjectValication || questionValication){
+                    const error = subjectValication || questionValication;
+                    setAlertMessage(error);
+                    setAlertOpen(true);
                     return;
                 }
-                
-                const error = subjectValication || questionValication;
-                setAlertMessage(error);
-                setAlertOpen(true);
+
+                setMode("submit");
                 return;
             }
             else if(editMode === "pdf"){
-                if(!pdfValication || !questionValication ){
-                    setMode("submit");
+                if(pdfValication || questionValication){
+                    const error = pdfValication || questionValication;
+                    setAlertMessage(error);
+                    setAlertOpen(true);
                     return;
                 }
-                
-                const error = pdfValication || questionValication;
-                setAlertMessage(error);
-                setAlertOpen(true);
+
+                setMode("submit");
                 return;
-            }       
+            } 
         }
         else if(mode === "submit"){
             submitUpdate();
