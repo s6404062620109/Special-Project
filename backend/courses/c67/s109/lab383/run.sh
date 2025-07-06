@@ -1,19 +1,18 @@
 #!/bin/bash
 
-# สร้าง directory lab พร้อมไฟล์ตัวอย่าง
-mkdir -p /tmp/lab-test-dir
+mkdir /root/Desktop/lab
 
 # สร้างไฟล์ข้อความ
-echo "This is a test file for Linux Lab." > /tmp/lab-test-dir/info.txt
+echo "This is a test file for Linux Lab." > /root/Desktop/lab/info.txt
 
 # สร้างผู้ใช้จำลอง (ถ้ายังไม่มี)
 id labuser &>/dev/null || useradd labuser
 
 # เปลี่ยน owner ของไฟล์ให้กับ labuser
-chown labuser:labuser /tmp/lab-test-dir/info.txt
+chown labuser:labuser /root/Desktop/lab/info.txt
 
 # ให้ permission แก่ทุกคนอ่านไฟล์ได้
-chmod 644 /tmp/lab-test-dir/info.txt
+chmod 644 /root/Desktop/lab/info.txt
 
 # บันทึกว่า lab เริ่มแล้ว
-echo "Lab setup complete." > /tmp/lab-setup-status.txt
+echo "Lab setup complete." > /root/Desktop/lab

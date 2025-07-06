@@ -13,6 +13,7 @@ function EditQuestion({
   handleOpenLabUpload,
   handleOpenImgDialog,
   handleQuestionChange,
+  handleQuestionTypeChange,
   handleChoiceChange,
   addQuestion,
   addChoice,
@@ -109,10 +110,10 @@ function EditQuestion({
                     labelId={`question-type-label-${index}`}
                     value={question.type}
                     label="Type"
-                    onChange={(e) => handleQuestionChange(index, "type", e.target.value)}
+                    onChange={(e) => handleQuestionTypeChange(index, e.target.value)}
                   >
                     {questionType.map((item) => (
-                      <MenuItem key={item} value={item.id}>
+                      <MenuItem key={item.id} value={item.id}>
                         {item.name_type}
                       </MenuItem>
                     ))}

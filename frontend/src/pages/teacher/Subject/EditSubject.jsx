@@ -207,34 +207,47 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     const [ selectedLabIndex, setSelectedLabIndex ] = useState(-1);
     const questionImgInputRef = useRef(null);
 
+    const handleQuestionTypeChange = (index, type) => {
+        setQuestionInput(prevQuestions => {
+            return prevQuestions.map((question, qIndex) => {
+                if (qIndex !== index) return question;
+
+                if (type === 4) {
+                    return {
+                        type: type,
+                        content: question.content || '',
+                        img: question.img || '',
+                        answer: '',
+                        Labfiles: [],
+                        Cmdfile: null,
+                    };
+                } 
+                else {
+                    return {
+                        type: type,
+                        content: question.content || '',
+                        img: question.img || '',
+                        choice: [{ content: '', isCorrect: false }],
+                    };
+                }
+            });
+        });
+    };
+
     const handleQuestionChange = (index, field, value) => {
-        const newQuestions = [...questionInput];
-
         if (field === "type") {
-            newQuestions[index].type = value;
-
-            if (value === 4) {
-                delete newQuestions[index].choice;
-                newQuestions[index].answer = "";
-                newQuestions[index].Labfiles = newQuestions[index].Labfiles || [];
-                newQuestions[index].Cmdfile = newQuestions[index].Cmdfile || null;
-            } 
-            else {
-                delete newQuestions[index].answer;
-                newQuestions[index].choice = [
-                {
-                    content: "",
-                    isCorrect: false,
-                },
-                ];
-                delete newQuestions[index].Labfiles;
-                delete newQuestions[index].Cmdfile;
-            }
-        } else {
-        newQuestions[index][field] = value;
+            return;
         }
 
-        setQuestionInput(newQuestions);
+        setQuestionInput(prevQuestions => {
+            const question = prevQuestions[index];
+            if (!question || question[field] === value) return prevQuestions;
+
+            const updatedQuestion = { ...question, [field]: value };
+            const newQuestions = [...prevQuestions];
+            newQuestions[index] = updatedQuestion;
+            return newQuestions;
+        });
     };
 
     const handleOpenLabUpload = (index, action) => {
@@ -340,9 +353,20 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     }
         
     const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
-        const newQuestions = [...questionInput];
-        newQuestions[questionIndex].choice[choiceIndex][field] = value;
-        setQuestionInput(newQuestions);
+        setQuestionInput(prevQuestions => {
+            const newQuestions = prevQuestions.map((question, qIndex) => {
+                if (qIndex !== questionIndex) return question;
+
+                const updatedChoices = question.choice.map((choice, cIndex) => {
+                    if (cIndex !== choiceIndex) return choice;
+                    return { ...choice, [field]: value };
+                });
+
+                return { ...question, choice: updatedChoices };
+            });
+
+            return newQuestions;
+        });
     };
 
     const addQuestion = () => {
@@ -468,6 +492,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         setQuestionInput,
         setQuestionData,
         handleQuestionChange,
+        handleQuestionTypeChange,
         handleChoiceChange,
         addQuestion,
         addChoice,
@@ -525,6 +550,7 @@ function EditSubject() {
         setQuestionInput,
         setQuestionData,
         handleQuestionChange,
+        handleQuestionTypeChange,
         handleChoiceChange,
         addQuestion,
         addChoice,
@@ -846,6 +872,7 @@ function EditSubject() {
                     handleOpenLabUpload={handleOpenLabUpload}
                     handleOpenImgDialog={handleOpenImgDialog}
                     handleQuestionChange={handleQuestionChange}
+                    handleQuestionTypeChange={handleQuestionTypeChange}
                     handleChoiceChange={handleChoiceChange}
                     addQuestion={addQuestion}
                     addChoice={addChoice}

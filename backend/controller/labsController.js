@@ -89,16 +89,13 @@ const startLabSession = (req, res) => {
     labSessionLock = null;
   }, 1000 * 60 * 60);
 
-  // 🔧 Step 1: Path ฝั่ง Host
   const hostLabPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${questionId}`);
+  const containerWorkDir = `/usr/src/app/lab-session`;
+  const containerLabOutput = `/lab`;
 
-  // 🔧 Step 2: Path ฝั่ง Container
-  const containerLabPath = `/usr/src/app/lab-session`;
+  const fullCopyCommand = `docker cp "${hostLabPath}/." ubuntu-ui:"${containerWorkDir}"`;
 
-  // 🔧 Step 3: คัดลอกไฟล์ lab เข้า container
-  const copyCommand = `docker cp "${hostLabPath}/." ubuntu-ui:"${containerLabPath}"`;
-
-  exec(copyCommand, (copyErr, copyStdout, copyStderr) => {
+  exec(fullCopyCommand, (copyErr) => {
     if (copyErr) {
       console.error("❌ Copy failed:", copyErr.message);
       labSessionLock = null;
@@ -106,12 +103,11 @@ const startLabSession = (req, res) => {
       return res.status(500).json({ message: "Failed to copy lab files." });
     }
 
-    console.log("✅ Lab files copied to container.");
+    console.log("✅ Lab files copied to working dir");
 
-    // 🔧 Step 4: รัน run.sh
-    const runCommand = `docker exec ubuntu-ui bash "${containerLabPath}/run.sh"`;
+    const runCommand = `docker exec ubuntu-ui bash "${containerWorkDir}/run.sh"`;
 
-    exec(runCommand, (runErr, runStdout, runStderr) => {
+    exec(runCommand, (runErr) => {
       if (runErr) {
         console.error("❌ run.sh failed:", runErr.message);
         labSessionLock = null;
@@ -119,13 +115,28 @@ const startLabSession = (req, res) => {
         return res.status(500).json({ message: "Failed to execute run.sh" });
       }
 
-      console.log("✅ run.sh executed successfully.");
+      const prepareCopyLabCommand = `
+        docker exec ubuntu-ui bash -c '
+            mkdir -p /root/Desktop/lab &&
+            find /usr/src/app/lab-session -type f ! -name "*.sh" -exec cp {} /root/Desktop/lab/ \\;
+        '
+      `;
 
-      const ubuntuUiUrl = process.env.LINUX_UBUNTU_LAB1;
-      return res.json({
-        message: "Lab started successfully",
-        labPath: containerLabPath,
-        ubuntuUiUrl,
+      exec(prepareCopyLabCommand, (copy2Err) => {
+        if (copy2Err) {
+          console.error("❌ Failed to copy non-sh files to /lab:", copy2Err.message);
+          labSessionLock = null;
+          clearTimeout(labTimeout);
+          return res.status(500).json({ message: "Failed to expose lab files." });
+        }
+
+        console.log("✅ Lab content (non-.sh files) copied to /lab");
+
+        const ubuntuUiUrl = process.env.LINUX_UBUNTU_LAB1;
+        return res.json({
+          message: "Lab started successfully",
+          ubuntuUiUrl,
+        });
       });
     });
   });
@@ -141,7 +152,20 @@ const clearLabSession = (req, res) => {
     labSessionLock = null;
     clearTimeout(labTimeout);
 
-    res.send("Lab cleaned up and unlocked");
+    const cleanupCommand = `
+        docker exec ubuntu-ui rm -rf /usr/src/app/lab-session/* &&
+        docker exec ubuntu-ui rm -rf /root/Desktop/lab /root/Desktop/lab
+    `;
+
+    exec(cleanupCommand, (err, stdout, stderr) => {
+        if (err) {
+        console.error("❌ Failed to clean lab files:", err.message);
+        return res.status(500).json({ message: "Failed to clean lab files." });
+        }
+
+        console.log("✅ Lab files cleaned from container");
+        return res.send("Lab cleaned up and unlocked");
+    });
 }
 
 console.log(labSessionLock);
