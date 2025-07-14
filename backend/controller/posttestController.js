@@ -27,7 +27,7 @@ const getPosttest = (req, res) => {
               if (!pretestQuestionIdList.length){
                 return res.status(404).json({ message: "Not have any question pretest in this course." });
               }
-              db.query("SELECT * FROM answer WHERE questionId IN (?)", [pretestQuestionIdList], (error, answerResult) => {
+              db.query("SELECT * FROM question_answer WHERE questionId IN (?)", [pretestQuestionIdList], (error, answerResult) => {
                 if (error) {
                   console.log(error);
                   return res.status(500).json({ message: "Database answer query error" });
@@ -62,7 +62,7 @@ const submitPosttest = (req, res) => {
     const userQuestionIds = Object.keys(answer);
 
     try{
-        db.query("SELECT questionId, type FROM answer WHERE id IN (?) AND questionId IN (?)", 
+        db.query("SELECT questionId, type FROM question_answer WHERE id IN (?) AND questionId IN (?)", 
             [userAnswerIds, userQuestionIds], (error, result) => {
             if (error) {
                 console.log(error);

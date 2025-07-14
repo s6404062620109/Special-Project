@@ -15,4 +15,4 @@ chown labuser:labuser /root/Desktop/lab/info.txt
 chmod 644 /root/Desktop/lab/info.txt
 
 # บันทึกว่า lab เริ่มแล้ว
-echo "Lab setup complete." > /root/Desktop/lab
+echo "Lab setup complete." > /root/Desktop/lab/README.txt

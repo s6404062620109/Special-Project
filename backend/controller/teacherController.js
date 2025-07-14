@@ -218,13 +218,13 @@ const getSubject = (req, res) => {
                 return res.status(404).json({ message: "No question found." });
               }
 
-              db.query('SELECT * FROM type WHERE id IN (?)', [typeIds], (err, typeResult) => {
+              db.query('SELECT * FROM question_type WHERE id IN (?)', [typeIds], (err, typeResult) => {
                 if (err) {
                   console.log(err);
                   return res.status(500).json({ message: "Database type query error" });
                 }
 
-                db.query('SELECT * FROM answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
+                db.query('SELECT * FROM question_answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
                 if (err) {
                   console.log(err);
                   return res.status(500).json({ message: "Database answer query error" });
@@ -322,7 +322,7 @@ const getSubject = (req, res) => {
 
 const getQuestionType = (req, res) => {
   try{
-    db.query("SELECT * FROM type", (error, result) => {
+    db.query("SELECT * FROM question_type WHERE status = 1", (error, result) => {
       if(error){
         console.log(error);
         return res.status(500).send({ message: "Database type query error." });
@@ -706,7 +706,7 @@ const editManualSubject = (req, res) => {
         }
 
         if (parsedChoiceDelete) {
-          db.query("DELETE FROM answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
+          db.query("DELETE FROM question_answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
             if (err) {
               console.log("Choice Delete Error:", err);
               return res.status(500).send({ message: "Error deleting choices." });
@@ -876,7 +876,7 @@ const editPdfSubject = (req, res) => {
         }
 
         if (parsedChoiceDelete) {
-          db.query("DELETE FROM answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
+          db.query("DELETE FROM question_answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
             if (err) {
               console.log("Choice Delete Error:", err);
               return res.status(500).send({ message: "Error deleting choices." });

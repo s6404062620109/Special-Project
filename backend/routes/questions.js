@@ -42,7 +42,7 @@ router.get("/getSubjectQuestion/:subjectId", (req, res) => {
     }
 
     const questionIds = questions.map((q) => q.id);
-    db.query("SELECT * FROM answer WHERE questionId IN (?)", [questionIds], (err, answers) => {
+    db.query("SELECT * FROM question_answer WHERE questionId IN (?)", [questionIds], (err, answers) => {
       if (err) {
         console.log(err);
         return res.status(500).json({ message: "Database answer query error" });
@@ -65,7 +65,7 @@ router.get("/getAlltype", (req, res) => {
     }
     const questionTypes = [...new Set(questionResults.map((row) => row.type))];
 
-    db.query("SELECT type FROM answer", (err, answerResults) => {
+    db.query("SELECT type FROM question_answer", (err, answerResults) => {
       if (err) {
         return res.status(500).json({ error: "Database answer query failed", details: err });
       }
@@ -91,7 +91,7 @@ router.delete("/:questionId", (req, res) => {
 
     const questionType = result[0].type;
 
-    db.query("DELETE FROM answer WHERE questionId = ?", [questionId], (err) => {
+    db.query("DELETE FROM question_answer WHERE questionId = ?", [questionId], (err) => {
       if (err) {
         console.error("Database delete error:", err);
         return res.status(500).json({ message: "Database delete error" });

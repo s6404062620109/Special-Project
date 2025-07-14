@@ -22,7 +22,7 @@ const getLabQuestions = (req, res) => {
                 return res.status(404).send({ message: "No question found." });
             }
 
-            db.query("SELECT * FROM answer WHERE questionId IN (?)", [questionIds], (error, answerResult) => {
+            db.query("SELECT * FROM question_answer WHERE questionId IN (?)", [questionIds], (error, answerResult) => {
                 if (error) {
                     console.log(error);
                     return res.status(500).send({ message: "Database answer query error" });
