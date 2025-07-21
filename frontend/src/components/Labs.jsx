@@ -4,7 +4,7 @@ function Labs({
     questions,
     handleLabSpawn = null,
     answers,
-    setAnswers
+    handleLabAnswerChange
  }) {
 
   return (
@@ -40,17 +40,21 @@ function Labs({
                         />
                     )}
 
-                    {question.choice && (
+                    {question.type === 3 && (
                         <RadioGroup
                             sx={{
                                 width: "80%",
                                 margin: "8px auto"
                             }}
+                            aria-labelledby="question-label"
+                            name="radio-buttons-group"
+                            value={answers[question.id]?.answer || ""}
+                            onChange={(e) => handleLabAnswerChange(question.id, e.target.value)}
                         >
                             {question.choice.map((choice, ind) => (
                                 <FormControlLabel 
                                     key={ind} 
-                                    value={choice.aId} 
+                                    value={choice.id} 
                                     control={<Radio />} 
                                     label={choice.content}
                                 />
@@ -72,7 +76,8 @@ function Labs({
                             <TextField
                                 fullWidth
                                 label="Answer"
-                                value={question.answer || ""}
+                                value={answers[question.id]?.answer || ""}
+                                onChange={(e) => handleLabAnswerChange(question.id, e.target.value)}
                                 disabled={!handleLabSpawn}
                             />
 

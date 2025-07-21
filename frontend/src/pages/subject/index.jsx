@@ -32,13 +32,24 @@ const useLabQuestions = () => {
             console.log(error);
         }
     }
-    
+
+    const handleLabAnswerChange = (questionId, value) => {
+        setAnswers(prev => ({
+            ...prev,
+            [questionId]: {
+                ...prev[questionId],
+                answer: value
+            }
+        }));
+    };
+
     return{
         questions,
         setQuestions,
         answers,
         setAnswers,
         fetchLabQuestions,
+        handleLabAnswerChange
     }
 }
 
@@ -57,6 +68,7 @@ function Subject() {
         answers,
         setAnswers,
         fetchLabQuestions,
+        handleLabAnswerChange
     } = useLabQuestions();
     const readerRef = useRef(null);
     const labsRef = useRef(null);
@@ -148,15 +160,15 @@ function Subject() {
     }, [courseId, subjectId]);
 
     useEffect(() => {
-        if(questions.length > 0){
-            let questionsIds = questions.map(question => question.id);
-            setAnswers(prevAnswers => {
-                const updatedAnswers = { ...prevAnswers };
-                questionsIds.forEach(id => {
-                    updatedAnswers[id] = '';
-                });
-                return updatedAnswers;
+        if (questions.length > 0) {
+            const initialAnswers = {};
+            questions.forEach(question => {
+                initialAnswers[question.id] = {
+                    answer: "",
+                    lab_type: question.type
+                };
             });
+            setAnswers(initialAnswers);
         }
     }, [questions]);
 
@@ -288,7 +300,7 @@ function Subject() {
                     questions={questions}
                     handleLabSpawn={handleLabSpawn}
                     answers={answers}
-                    setAnswers={setAnswers}
+                    handleLabAnswerChange={handleLabAnswerChange}
                 />
             </div>
         )}

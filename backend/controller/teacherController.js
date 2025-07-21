@@ -420,7 +420,7 @@ const addManualSubject = (req, res) => {
 
             if (Array.isArray(q.choice)) {
               for (const c of q.choice) {
-                db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+                db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
                   [c.content, c.isCorrect, questionId], (err) => {
                     if (err) console.log("Choice Insert Error:", err);
                   }
@@ -428,7 +428,7 @@ const addManualSubject = (req, res) => {
               }
             }
             if(q.answer){
-              db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+              db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
                 [q.answer, 1, questionId], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 }
@@ -535,7 +535,7 @@ const addPdfSubject = (req, res) => {
 
           if (Array.isArray(q.choice)) {
             for (const c of q.choice) {
-              db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+              db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
                 [c.content, c.isCorrect, questionId], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 }
@@ -543,7 +543,7 @@ const addPdfSubject = (req, res) => {
             }
           }
           if(q.answer){
-            db.query("INSERT INTO answer (content, type, questionId) VALUES (?, ?, ?)",
+            db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
               [q.answer, 1, questionId], (err) => {
                 if (err) console.log("Choice Insert Error:", err);
               }
@@ -628,18 +628,18 @@ const editManualSubject = (req, res) => {
             for (const c of choice) {
               const { id: cid, content: cContent, isCorrect } = c;
               if (cid) {
-                db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                db.query("UPDATE question_answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
                   if (err) console.log("Choice Update Error:", err);
                 });
               } else {
-                db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 });
               }
             }
           }
           if(answer && answerId){
-            db.query("UPDATE answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
+            db.query("UPDATE question_answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
               if (err) console.log("Choice Update Error:", err);
             });
           }
@@ -793,23 +793,23 @@ const editPdfSubject = (req, res) => {
             for (const c of choice) {
               const { id: cid, content: cContent, isCorrect } = c;
               if (cid) {
-                db.query("UPDATE answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                db.query("UPDATE question_answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
                   if (err) console.log("Choice Update Error:", err);
                 });
               } else {
-                db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 });
               }
             }
           }
           if(answer && answerId){
-            db.query("UPDATE answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
+            db.query("UPDATE question_answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
               if (err) console.log("Choice Update Error:", err);
             });
           }
           if(answer && !answerId){
-            db.query("INSERT INTO answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
+            db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
               if (err) console.log("Choice Insert Error:", err);
             });
           }

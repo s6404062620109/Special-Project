@@ -266,6 +266,40 @@ function EditQuestion({
                   </>
                 )}
 
+                {(question.type === 5) && (
+                  <>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      sx={{
+                        width: "100%",
+                        gap: 2,
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        startIcon={<CloudUploadIcon />}
+                        onClick={() => handleOpenLabUpload(index, "lab")}
+                        sx={{
+                          width: "100%"
+                        }}
+                      >
+                       HTML Files
+                      </Button>
+                    </Stack>
+
+                    <Stack>
+                      <TextField
+                        label="Answer"
+                        fullWidth
+                        value={question.answer}
+                        onChange={(e) => handleQuestionChange(index, "answer", e.target.value)}
+                      />
+                    </Stack>
+                  </>
+                )}
+
               </Box>
             </Stack>
           ))}
