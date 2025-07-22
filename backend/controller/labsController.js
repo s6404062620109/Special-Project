@@ -162,14 +162,10 @@ const clearLabSession = (req, res) => {
         console.error("❌ Failed to clean lab files:", err.message);
         return res.status(500).json({ message: "Failed to clean lab files." });
         }
-
-        console.log("✅ Lab files cleaned from container");
+        
         return res.send("Lab cleaned up and unlocked");
     });
 }
-
-console.log(labSessionLock);
-console.log(labTimeout);
 
 module.exports = {
     getLabQuestions,

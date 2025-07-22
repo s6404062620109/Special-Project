@@ -42,16 +42,56 @@ services:
     depends_on:
       - db
   
-  ubuntu-ui:
-    image: dorowu/ubuntu-desktop-lxde-vnc
-    container_name: ubuntu-ui
-    ports:
-      - "6080:80"
+  # ubuntu-ui:
+  #   image: dorowu/ubuntu-desktop-lxde-vnc
+  #   container_name: ubuntu-ui
+  #   ports:
+  #     - "6080:80"
+  #   volumes:
+  #     - ./courses:/usr/src/app/courses
+  #   environment:
+  #     - USER=root
+  #     - PASSWORD=root
+
+  linux-terminal-user1:
+    image: ubuntu:22.04
+    container_name: linux-terminal-user1
+    tty: true
+    stdin_open: true
+    command: bash
     volumes:
       - ./courses:/usr/src/app/courses
-    environment:
-      - USER=root
-      - PASSWORD=root
+    working_dir: /usr/src/app
+
+  linux-terminal-user2:
+    image: ubuntu:22.04
+    container_name: linux-terminal-user2
+    tty: true
+    stdin_open: true
+    command: bash
+    volumes:
+      - ./courses:/usr/src/app/courses
+    working_dir: /usr/src/app
+
+  linux-terminal-user3:
+    image: ubuntu:22.04
+    container_name: linux-terminal-user3
+    tty: true
+    stdin_open: true
+    command: bash
+    volumes:
+      - ./courses:/usr/src/app/courses
+    working_dir: /usr/src/app
+
+  linux-terminal-user4:
+    image: ubuntu:22.04
+    container_name: linux-terminal-user4
+    tty: true
+    stdin_open: true
+    command: bash
+    volumes:
+      - ./courses:/usr/src/app/courses
+    working_dir: /usr/src/app
 
 volumes:
   mysql_data_test: 
