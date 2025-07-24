@@ -158,7 +158,7 @@ function Subject() {
         //fetchLastProgress();
         fetchLabQuestions(courseId, subjectId);
     }, [courseId, subjectId]);
-
+    console.log(questions)
     useEffect(() => {
         if (questions.length > 0) {
             const initialAnswers = {};

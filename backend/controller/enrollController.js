@@ -45,7 +45,7 @@ const enrollCourse = (req, res) => {
                 });
       
                 // Collect all 'lab' type questions
-                labQuestions = questionResult.filter(q => q.typeId === 3 || q.typeId === 4).map(q => q.id);
+                labQuestions = questionResult.filter(q => q.typeId === 3 || q.typeId === 4 || q.typeId === 5 || q.typeId === 6).map(q => q.id);
       
                 let total_labs = labQuestions.length;
       

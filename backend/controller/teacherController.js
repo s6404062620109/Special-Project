@@ -240,7 +240,7 @@ const getSubject = (req, res) => {
                       type: typeResult.find(type => type.id === item.typeId).id,
                     };
 
-                    if(item.typeId === 1 || item.typeId === 2 || item.typeId === 3){
+                    if(item.typeId === 1 || item.typeId === 2 || item.typeId === 3 || item.typeId === 6){
                       return {
                         ...questionFormat,
                         choice: answers.map(answer => ({

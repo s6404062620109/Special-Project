@@ -10,6 +10,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const { courseId, enrollmentId, subjectId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
+  const [ QuestionType, setQuestionType ] = useState([]);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -28,7 +29,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   };
   
   const uniqueTypes = [...new Set(question.map(q => q.type)), 'all'];
-
+  
   const filteredQuestions = selectedType === 'all'
     ? question
     : question.filter(q => q.type === selectedType);
@@ -76,7 +77,9 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                 {type === 1 && "Pre"}
                 {type === 2 && "Post"}
                 {type === 3 && "lab-Quiz"}
-                {type === 4 && "Lab"}
+                {type === 4 && "Lab-VM"}
+                {type === 5 && "Lab-Web"}
+                {type === 6 && "Lab-Multiple_Correct"}
                 {type !== 1 && type !== 2 && type !== 3 && type !== 4 && type !== 'all' && type}
               </MenuItem>
             ))}
@@ -100,7 +103,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             />
           )}
         
-          {(currentItem.type === 1 || currentItem.type === 2 || currentItem.type === 3) && (
+          {(currentItem.type === 1 || currentItem.type === 2 || currentItem.type === 3 || currentItem.type === 6) && (
             <FormControl>
               <FormLabel id="demo-radio-buttons-group-label">{currentIndex + 1}. {currentItem.content}</FormLabel>
               {isInteractive ? (

@@ -445,24 +445,28 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 }
             }
 
-            if (item.type === 1 || item.type === 2 || item.type === 3){
+            if (item.type === 1 || item.type === 2 || item.type === 3 || item.type === 6){
                 if (item.choice.length === 0) {
                 return `At least one choice is required for Question ${i + 1}`;
                 }
                 for (let j = 0; j < item.choice.length; j++) {
-                const choice = item.choice[j];
-                if (choice.content === "") {
-                    return `Choice ${j + 1} content for Question ${i + 1} is required`;
-                }
+                    const choice = item.choice[j];
+                    if (choice.content === "") {
+                        return `Choice ${j + 1} content for Question ${i + 1} is required`;
+                    }
                 }
 
                 const correctChoices = item.choice.filter(choice => choice.isCorrect);
-                if (correctChoices.length === 0) {
-                return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
+                if(item.type === 6 && correctChoices.length === 1){
+                    return `Question ${i + 1} of type "${item.type}" must have than one more correct choice`
                 }
+                if (correctChoices.length === 0) {
+                    return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
+                }
+
                 const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
                 if (incorrectChoices.length === 0) {
-                return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
+                    return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
                 }
             }
         }

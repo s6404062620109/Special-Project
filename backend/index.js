@@ -60,10 +60,6 @@ app.use("/progress", progressRoutes);
 const labsRoutes = require("./routes/labsRoutes");
 app.use("/labs", labsRoutes);
 
-/* Question */
-const Question = require("./routes/questions");
-app.use("/question", Question);
-
 /* Admin */
 const admin = require("./routes/admin");
 app.use("/admin", admin); 

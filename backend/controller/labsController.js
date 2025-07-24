@@ -10,7 +10,7 @@ const getLabQuestions = (req, res) => {
     }
 
     try{
-        let labsId = [ 3, 4 ]
+        let labsId = [ 3, 4, 5, 6 ]
         db.query("SELECT * FROM question WHERE subjectId = ? AND typeId in (?)", [subjectId, labsId], (error, result) => {
             if(error){
                 console.log(error);
@@ -32,7 +32,7 @@ const getLabQuestions = (req, res) => {
                 
                 for (const item of result) {
                     const answers = answerResult.filter(answer => answer.questionId === item.id);
-                    if(item.typeId === 3){
+                    if(item.typeId === 3 || item.typeId === 6){
                         questionFormat.push({
                             id: item.id,
                             content: item.content,

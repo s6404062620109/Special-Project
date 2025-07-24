@@ -115,7 +115,7 @@ const QuestionItem = ({
       </Box>
 
       {/* เงื่อนไข Choice */}
-      {(question.type === 1 || question.type === 2 || question.type === 3) && (
+      {(question.type === 1 || question.type === 2 || question.type === 3 || question.type === 6) && (
         <>
           <Stack direction='row' justifyContent='space-between'>
             <Typography variant='h6'>Choice</Typography>
