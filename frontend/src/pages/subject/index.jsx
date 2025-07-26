@@ -7,7 +7,7 @@ import backend from '../../api/backend';
 import style from './css/subject.module.css';
 import NavSubject from './NavSubject';
 import Reader from '../../components/Reader';
-import Labs from '../../components/Labs';
+import Labs from './Labs';
 
 import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
 import ListIcon from '@mui/icons-material/List';
@@ -17,6 +17,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 const useLabQuestions = () => {
     const [ questions, setQuestions ] = useState([]);
     const [ answers, setAnswers ] = useState([]);
+    const [ errorMessage, setErrorMessage ] = useState("");
 
     const fetchLabQuestions = async (courseId, subjectId) => {
         try{
@@ -25,7 +26,8 @@ const useLabQuestions = () => {
             });
     
             if(response.status === 200){
-                setQuestions(response.data.questionFormat);
+                let questionResults = response.data.questionFormat
+                setQuestions(questionResults);
             }
     
         } catch(error){ 
@@ -33,15 +35,71 @@ const useLabQuestions = () => {
         }
     }
 
-    const handleLabAnswerChange = (questionId, value) => {
-        setAnswers(prev => ({
-            ...prev,
-            [questionId]: {
-                ...prev[questionId],
-                answer: value
-            }
-        }));
+    const handleLabAnswerChange = (questionId, questionType, value, checked = null) => {
+        setAnswers(prevAnswers => {
+            return prevAnswers.map((item) => {
+                if (item.questionId !== questionId) return item;
+
+                let updatedAnswer = item.answer;
+
+                if (questionType === 4) {
+                    updatedAnswer = value;
+                } else if (questionType === 3) {
+                    updatedAnswer = Number(value);
+                } else if (questionType === 6) {
+                    const prevArray = Array.isArray(item.answer) ? item.answer : [];
+
+                    if (checked) {
+                        updatedAnswer = [...prevArray, value];
+                    } else {
+                        updatedAnswer = prevArray.filter(v => v !== value);
+                    }
+                }
+
+                return {
+                    ...item,
+                    answer: updatedAnswer
+                };
+            });
+        });
     };
+
+    const lasbValidations = () => {
+        let valid = true;
+        answers.forEach((answer, index) => {
+            if(answer.lab_type === 3 && answer.answer === null){
+                valid = false;
+                setErrorMessage(`Lab answer ${index + 1} is required.`);
+            }
+
+            if(answer.lab_type === 6 && answer.answer.length === 0){
+                valid = false;
+                setErrorMessage(`Lab answer ${index + 1} required minimum 1 answer.`);
+            }
+        });
+        return valid;
+    }
+
+    const handleLabSubmit = async (courseId, enrollmentId) => {
+        if(!lasbValidations()){
+           return; 
+        }
+        console.log(enrollmentId)
+        try{
+            const response = await backend.put(`/labs/submitLabQuestions/${courseId}/${enrollmentId}`, {
+                answers
+            }, {
+                withCredentials: true
+            });
+
+            if(response.status === 200){
+                setErrorMessage(response.data.message);
+            }
+        } catch(error){
+            console.log(error);
+            setErrorMessage(error.response.data.message);
+        }
+    }
 
     return{
         questions,
@@ -49,7 +107,9 @@ const useLabQuestions = () => {
         answers,
         setAnswers,
         fetchLabQuestions,
-        handleLabAnswerChange
+        handleLabAnswerChange,
+        errorMessage,
+        handleLabSubmit,
     }
 }
 
@@ -68,7 +128,9 @@ function Subject() {
         answers,
         setAnswers,
         fetchLabQuestions,
-        handleLabAnswerChange
+        handleLabAnswerChange,
+        errorMessage,
+        handleLabSubmit,
     } = useLabQuestions();
     const readerRef = useRef(null);
     const labsRef = useRef(null);
@@ -158,17 +220,36 @@ function Subject() {
         //fetchLastProgress();
         fetchLabQuestions(courseId, subjectId);
     }, [courseId, subjectId]);
-    console.log(questions)
+
     useEffect(() => {
         if (questions.length > 0) {
-            const initialAnswers = {};
-            questions.forEach(question => {
-                initialAnswers[question.id] = {
-                    answer: "",
-                    lab_type: question.type
-                };
+            setAnswers(prevAnswers => {
+                const updated = [...prevAnswers];
+
+                questions.forEach(question => {
+                    const exists = updated.find(item => item.questionId === question.id);
+                    if (!exists) {
+                        let defaultAnswer = null;
+
+                        switch (question.type) {
+                            case 6: 
+                                defaultAnswer = []; 
+                                break;
+                            default: 
+                                defaultAnswer = null;
+                                break;
+                        }
+
+                        updated.push({
+                            questionId: question.id,
+                            answer: defaultAnswer,
+                            lab_type: question.type
+                        });
+                    }
+                });
+
+                return updated;
             });
-            setAnswers(initialAnswers);
         }
     }, [questions]);
 
@@ -190,14 +271,6 @@ function Subject() {
                     />
                 </div>
             </Box>
-
-            {/* <Box className={style["navsubject-wrap"]}>
-                <NavSubject 
-                    courseId={courseId}
-                    subjectList={subjectList}
-                    enrollmentId={enrollmentId}
-                />
-            </Box> */}
             
             <Backdrop
                 open={openNavSubject}
@@ -301,6 +374,8 @@ function Subject() {
                     handleLabSpawn={handleLabSpawn}
                     answers={answers}
                     handleLabAnswerChange={handleLabAnswerChange}
+                    errorMessage={errorMessage}
+                    handleLabSubmit={handleLabSubmit}
                 />
             </div>
         )}

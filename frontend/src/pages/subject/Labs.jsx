@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { Button, FormControl, FormControlLabel, FormLabel, Pagination, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material';
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Pagination, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material';
+import { useParams } from 'react-router-dom';
 
 function Labs({ 
     questions,
     handleLabSpawn = null,
     answers,
-    handleLabAnswerChange
+    handleLabAnswerChange,
+    errorMessage,
+    handleLabSubmit
  }) {
+    const { courseId, enrollmentId } = useParams();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     const handleChangePage = (event, value) => {
@@ -14,6 +18,7 @@ function Labs({
     };
 
     const currentQuestion = questions[currentQuestionIndex];
+    const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
 
   return (
     <Stack>
@@ -36,7 +41,7 @@ function Labs({
             }}
           >
             <FormLabel>{currentQuestionIndex + 1}. {currentQuestion.content}</FormLabel>
-
+            
             {currentQuestion.img && (
               <img
                 src={currentQuestion.img}
@@ -45,12 +50,12 @@ function Labs({
               />
             )}
 
-            {(currentQuestion.type === 3 || currentQuestion.type === 6) && (
+            {currentQuestion.type === 3 && (
               <RadioGroup
                 sx={{ width: "80%", margin: "8px auto" }}
                 name={`radio-group-${currentQuestion.id}`}
-                value={answers[currentQuestion.id]?.answer || ""}
-                onChange={(e) => handleLabAnswerChange(currentQuestion.id, e.target.value)}
+                value={currentAnswer?.answer}
+                onChange={(e) => handleLabAnswerChange(currentQuestion.id, currentQuestion.type, e.target.value)}
               >
                 {currentQuestion.choice.map((choice, idx) => (
                   <FormControlLabel
@@ -61,6 +66,23 @@ function Labs({
                   />
                 ))}
               </RadioGroup>
+            )}
+
+            {currentQuestion.type === 6 && (
+              <Stack sx={{ width: "80%", margin: "8px auto" }}>
+                {currentQuestion.choice.map((choice, idx) => (
+                  <FormControlLabel
+                    key={idx}
+                    control={
+                      <Checkbox
+                        checked={currentAnswer?.answer?.includes(choice.id) || false}
+                        onChange={(e) => handleLabAnswerChange(currentQuestion.id, 6, choice.id, e.target.checked)}
+                      />
+                    }
+                    label={choice.content}
+                  />
+                ))}
+              </Stack>
             )}
 
             {currentQuestion.type === 4 && handleLabSpawn && (
@@ -74,8 +96,8 @@ function Labs({
                 <TextField
                   fullWidth
                   label="Answer"
-                  value={answers[currentQuestion.id]?.answer || ""}
-                  onChange={(e) => handleLabAnswerChange(currentQuestion.id, e.target.value)}
+                    value={currentAnswer?.answer || ""}
+                    onChange={(e) => handleLabAnswerChange(currentQuestion.id, 4, e.target.value)}
                 />
                 <Button
                   variant="contained"
@@ -85,6 +107,27 @@ function Labs({
                 </Button>
               </Stack>
             )}
+
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              sx={{
+                width: "100%",
+                margin: "8px auto",
+              }}
+            >
+              <Typography>{errorMessage}</Typography>
+
+              <Button
+                variant='contained'
+                sx={{
+                  width: "25%"
+                }}
+                onClick={() => handleLabSubmit(courseId, enrollmentId)}
+              >
+                ส่งคำตอบ
+              </Button>
+            </Stack>
           </FormControl>
             
           <Pagination

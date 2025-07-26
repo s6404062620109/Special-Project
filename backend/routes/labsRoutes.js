@@ -10,4 +10,6 @@ router.post("/startLabSession/:courseId", authUserRole.verifiedStudentEnrollCour
 
 router.post("/clearLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.clearLabSession);
 
+router.put("/submitLabQuestions/:courseId/:enrollmentId", authUserRole.verifiedStudentEnrollCourse, labsController.submitLabQuestions);
+
 module.exports = router;

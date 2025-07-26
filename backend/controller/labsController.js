@@ -167,8 +167,86 @@ const clearLabSession = (req, res) => {
     });
 }
 
+const submitLabQuestions = async (req, res) => {
+  const { enrollmentId } = req.params;
+  const { answers } = req.body;
+
+  try {
+    const tasks = answers.map((answer, index) => {
+      const questionId = answer.questionId;
+
+      return new Promise((resolve, reject) => {
+        switch (answer.lab_type) {
+          case 3: {
+            db.query("SELECT type FROM question_answer WHERE id = ?", [answer.answer], (error, result) => {
+                if (error) return reject({ code: 500, msg: "DB query error" });
+
+                const type = result[0]?.type;
+                if (type === 1) {
+                  db.query("UPDATE progress SET is_completed = 1, score = 1 WHERE questionId = ? AND enrollmentId = ?",
+                    [questionId, enrollmentId], (error) => {
+                      if (error) return reject({ code: 500, msg: "DB update error" });
+                      return resolve();
+                    }
+                  );
+                } else {
+                  return reject({ code: 401, msg: `Lab question ${index + 1} is not correct!` });
+                }
+              }
+            );
+            break;
+          }
+
+          case 6: {
+            const selectedAnswers = answer.answer;
+            if (!Array.isArray(selectedAnswers) || selectedAnswers.length === 0) {
+              return reject({ code: 400, msg: `No answers provided for question ${index + 1}` });
+            }
+
+            db.query("SELECT id FROM question_answer WHERE questionId = ? AND type = 1", [questionId], (error, result) => {
+                if (error) return reject({ code: 500, msg: "DB query error" });
+
+                const correctAnswerIds = result.map((r) => r.id).sort();
+                const selectedSorted = [...selectedAnswers].sort();
+
+                const isCorrect =
+                  correctAnswerIds.length === selectedSorted.length &&
+                  correctAnswerIds.every((id, idx) => id === selectedSorted[idx]);
+
+                if (isCorrect) {
+                  db.query("UPDATE progress SET is_completed = 1, score = 1 WHERE questionId = ? AND enrollmentId = ?",
+                    [questionId, enrollmentId], (error) => {
+                      if (error) return reject({ code: 500, msg: "DB update error" });
+                      return resolve();
+                    }
+                  );
+                } else {
+                  return reject({ code: 401, msg: `Lab question ${index + 1} is not correct!` });
+                }
+              }
+            );
+            break;
+          }
+
+          default: {
+            return resolve();
+          }
+        }
+      });
+    });
+
+    await Promise.all(tasks);
+    return res.status(200).json({ message: "Lab questions evaluated." });
+  } catch (err) {
+    console.error(err);
+    return res.status(err.code || 500).json({ message: err.msg || "Server error" });
+  }
+};
+
+
 module.exports = {
     getLabQuestions,
     startLabSession,
-    clearLabSession
+    clearLabSession,
+    submitLabQuestions
 }
