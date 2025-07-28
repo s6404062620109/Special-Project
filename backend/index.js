@@ -17,6 +17,7 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
+  // origin: true, deploy same network
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
