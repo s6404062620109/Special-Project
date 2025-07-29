@@ -41,54 +41,69 @@ services:
       - "8081:80"
     depends_on:
       - db
-  
-  # ubuntu-ui:
-  #   image: dorowu/ubuntu-desktop-lxde-vnc
-  #   container_name: ubuntu-ui
-  #   ports:
-  #     - "6080:80"
-  #   volumes:
-  #     - ./courses:/usr/src/app/courses
-  #   environment:
-  #     - USER=root
-  #     - PASSWORD=root
 
   linux-terminal-user1:
-    image: ubuntu:22.04
+    build:
+      context: ./terminals
+      dockerfile: Dockerfile
     container_name: linux-terminal-user1
+    ports:
+      - "4001:4001"
+    environment:
+      - TTYD_PORT=4001
     tty: true
     stdin_open: true
-    command: bash
     volumes:
       - ./courses:/usr/src/app/courses
     working_dir: /usr/src/app
 
   linux-terminal-user2:
-    image: ubuntu:22.04
+    build:
+      context: ./terminals
+      dockerfile: Dockerfile
+      args:
+        TTYD_PORT: 4002
     container_name: linux-terminal-user2
+    ports:
+      - "4002:4002"
+    environment:
+      - TTYD_PORT=4002
     tty: true
     stdin_open: true
-    command: bash
     volumes:
       - ./courses:/usr/src/app/courses
     working_dir: /usr/src/app
 
   linux-terminal-user3:
-    image: ubuntu:22.04
+    build:
+      context: ./terminals
+      dockerfile: Dockerfile
+      args:
+        TTYD_PORT: 4003
     container_name: linux-terminal-user3
+    ports:
+      - "4003:4003"
+    environment:
+      - TTYD_PORT=4003
     tty: true
     stdin_open: true
-    command: bash
     volumes:
       - ./courses:/usr/src/app/courses
     working_dir: /usr/src/app
 
   linux-terminal-user4:
-    image: ubuntu:22.04
+    build:
+      context: ./terminals
+      dockerfile: Dockerfile
+      args:
+        TTYD_PORT: 4004
     container_name: linux-terminal-user4
+    ports:
+      - "4004:4004"
+    environment:
+      - TTYD_PORT=4004
     tty: true
     stdin_open: true
-    command: bash
     volumes:
       - ./courses:/usr/src/app/courses
     working_dir: /usr/src/app

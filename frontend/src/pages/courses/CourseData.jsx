@@ -183,7 +183,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
           )}
         </td>
       )}
-
+      
       <td>
         {filteredHistory.length > 0 ? (
           (() => {
@@ -224,10 +224,9 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
             }
           })()
         ) : (
-          <button onClick={() => handleClick(buttonText)}>{buttonText}</button>
+          <></>
         )}
       </td>
-
 
     </tr>
   );

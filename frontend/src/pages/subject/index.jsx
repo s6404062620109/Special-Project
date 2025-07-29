@@ -196,9 +196,10 @@ function Subject() {
                 withCredentials: true
             });
 
+            console.log(response.data)
             if (response.status === 200) {
-                const { ubuntuUiUrl } = response.data;
-                const labWindow = window.open(ubuntuUiUrl, "_blank");
+                const { terminalUrl } = response.data;
+                const labWindow = window.open(terminalUrl, "_blank");
 
                 const labCheckInterval = setInterval(() => {
                     if (labWindow.closed) {

@@ -68,104 +68,118 @@ const getLabQuestions = (req, res) => {
     }
 }
 
-let labSessionLock = null;
-let labTimeout = null;
+let labSessions = [
+  {
+    port: 4001,
+    container: "linux-terminal-user1",
+    inUse: false,
+    userId: null,
+    timeout: null,
+  },
+  {
+    port: 4002,
+    container: "linux-terminal-user2",
+    inUse: false,
+    userId: null,
+    timeout: null,
+  },
+  {
+    port: 4003,
+    container: "linux-terminal-user3",
+    inUse: false,
+    userId: null,
+    timeout: null,
+  },
+  {
+    port: 4004,
+    container: "linux-terminal-user4",
+    inUse: false,
+    userId: null,
+    timeout: null,
+  },
+];
 
 const startLabSession = (req, res) => {
   const { courseId } = req.params;
-  const { userId, subjectId, questionId } = req.body;
+  const { subjectId, questionId, userId } = req.body;
 
-  if (labSessionLock) {
-    return res.status(423).json({ message: "Lab is currently in use" });
+  const availableSession = labSessions.find((s) => !s.inUse);
+  if (!availableSession) {
+    return res.status(423).json({ message: "All terminals are in use." });
   }
 
-  labSessionLock = {
-    userId,
-    startAt: Date.now(),
-  };
-
-  labTimeout = setTimeout(() => {
-    console.log("Auto-cleanup lab after timeout");
-    labSessionLock = null;
-  }, 1000 * 60 * 60);
-
   const hostLabPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${questionId}`);
-  const containerWorkDir = `/usr/src/app/lab-session`;
-  const containerLabOutput = `/lab`;
+  const containerPath = "/usr/src/app/lab";
+  const runScriptPath = `${containerPath}/run.sh`;
 
-  const fullCopyCommand = `docker cp "${hostLabPath}/." ubuntu-ui:"${containerWorkDir}"`;
+  const { container, port } = availableSession;
 
-  exec(fullCopyCommand, (copyErr) => {
-    if (copyErr) {
-      console.error("❌ Copy failed:", copyErr.message);
-      labSessionLock = null;
-      clearTimeout(labTimeout);
-      return res.status(500).json({ message: "Failed to copy lab files." });
+  const copyCommand = `docker cp "${hostLabPath}/." ${container}:${containerPath}`;
+  const runCommand = `docker exec ${container} bash ${runScriptPath}`;
+
+  // Copy lab files
+  exec(copyCommand, (err) => {
+    if (err) {
+      console.error("❌ Failed to copy lab files:", err.message);
+      return res.status(500).json({ message: "Failed to prepare lab." });
     }
 
-    console.log("✅ Lab files copied to working dir");
-
-    const runCommand = `docker exec ubuntu-ui bash "${containerWorkDir}/run.sh"`;
-
-    exec(runCommand, (runErr) => {
-      if (runErr) {
-        console.error("❌ run.sh failed:", runErr.message);
-        labSessionLock = null;
-        clearTimeout(labTimeout);
-        return res.status(500).json({ message: "Failed to execute run.sh" });
+    // Run shell setup
+    exec(runCommand, (err2) => {
+      if (err2) {
+        console.error("❌ Failed to execute run.sh:", err2.message);
+        return res.status(500).json({ message: "Failed to initialize lab." });
       }
 
-      const prepareCopyLabCommand = `
-        docker exec ubuntu-ui bash -c '
-            mkdir -p /root/Desktop/lab &&
-            find /usr/src/app/lab-session -type f ! -name "*.sh" -exec cp {} /root/Desktop/lab/ \\;
-        '
-      `;
+      // Mark terminal as in-use
+      availableSession.inUse = true;
+      availableSession.userId = userId;
+      availableSession.timeout = setTimeout(() => {
+        clearLabSessionByUser(userId); // auto cleanup
+      }, 1000 * 60 * 60); // 1 hour
 
-      exec(prepareCopyLabCommand, (copy2Err) => {
-        if (copy2Err) {
-          console.error("❌ Failed to copy non-sh files to /lab:", copy2Err.message);
-          labSessionLock = null;
-          clearTimeout(labTimeout);
-          return res.status(500).json({ message: "Failed to expose lab files." });
-        }
-
-        console.log("✅ Lab content (non-.sh files) copied to /lab");
-
-        const ubuntuUiUrl = process.env.LINUX_UBUNTU_LAB1;
-        return res.json({
-          message: "Lab started successfully",
-          ubuntuUiUrl,
-        });
-      });
+      const url = `http://localhost:${port}`;
+      res.json({ message: "Lab started", terminalUrl: url });
     });
   });
 };
 
-const clearLabSession = (req, res) => {
-    const { userId } = req.body;
+function clearLabSessionByUser(userId, res = null) {
+  const session = labSessions.find((s) => s.userId === userId);
+  if (!session) {
+    if (res) res.status(404).json({ message: "Session not found" });
+    return;
+  }
 
-    if (labSessionLock?.userId !== userId) {
-        return res.status(403).json({ message: "You are not the session owner" });
+  const cleanupCommand = `
+    docker exec ${session.container} rm -rf /root/Desktop/lab
+  `;
+
+  exec(cleanupCommand, (err) => {
+    clearTimeout(session.timeout);
+    session.inUse = false;
+    session.userId = null;
+    session.timeout = null;
+
+    if (res) {
+      if (err) {
+        console.error("❌ Cleanup failed:", err.message);
+        return res.status(500).json({ message: "Failed to clean up lab." });
+      }
+      res.send("Lab cleaned and session released.");
     }
-
-    labSessionLock = null;
-    clearTimeout(labTimeout);
-
-    const cleanupCommand = `
-        docker exec ubuntu-ui rm -rf /usr/src/app/lab-session/* &&
-        docker exec ubuntu-ui rm -rf /root/Desktop/lab /root/Desktop/lab
-    `;
-
-    exec(cleanupCommand, (err, stdout, stderr) => {
-        if (err) {
-        console.error("❌ Failed to clean lab files:", err.message);
-        return res.status(500).json({ message: "Failed to clean lab files." });
-        }
-        
-        return res.send("Lab cleaned up and unlocked");
-    });
+  });
 }
+
+const clearLabSession = (req, res) => {
+  const { userId } = req.body;
+  const session = labSessions.find((s) => s.userId === userId);
+  if (!session) {
+    return res.status(403).json({ message: "No active lab session for this user." });
+  }
+
+  clearLabSessionByUser(userId, res);
+};
 
 const submitLabQuestions = async (req, res) => {
   const { enrollmentId } = req.params;
