@@ -1,6 +1,7 @@
 const { exec } = require("child_process");
 const path = require("path");
 const db = require("../database");
+const labSessions  = require("./labState");
 
 const getLabQuestions = (req, res) => {
     const { subjectId } = req.params;
@@ -68,36 +69,39 @@ const getLabQuestions = (req, res) => {
     }
 }
 
-let labSessions = [
-  {
-    port: 4001,
-    container: "linux-terminal-user1",
-    inUse: false,
-    userId: null,
-    timeout: null,
-  },
-  {
-    port: 4002,
-    container: "linux-terminal-user2",
-    inUse: false,
-    userId: null,
-    timeout: null,
-  },
-  {
-    port: 4003,
-    container: "linux-terminal-user3",
-    inUse: false,
-    userId: null,
-    timeout: null,
-  },
-  {
-    port: 4004,
-    container: "linux-terminal-user4",
-    inUse: false,
-    userId: null,
-    timeout: null,
-  },
-];
+function clearLabSessionByUser(userId, res = null) {
+  const index = labSessions.findIndex((s) => s.userId === userId);
+  if (index === -1) {
+    if (res) res.status(404).json({ message: "Session not found" });
+    return;
+  }
+
+  const session = labSessions[index];
+
+  const cleanupCommand = `docker exec ${session.container} rm -rf /usr/src/app/lab`;
+
+  exec(cleanupCommand, (err) => {
+    clearTimeout(session.timeout);
+
+    labSessions[index] = {
+      ...session,
+      inUse: false,
+      userId: null,
+      timeout: null
+    };
+
+    // console.log("✅ Updated labSessions[index]:", labSessions[index]);
+    // console.log(labSessions);
+
+    if (res) {
+      if (err) {
+        console.error("❌ Cleanup failed:", err.message);
+        return res.status(500).json({ message: "Failed to clean up lab." });
+      }
+      res.send("Lab cleaned and session released.");
+    }
+  });
+}
 
 const startLabSession = (req, res) => {
   const { courseId } = req.params;
@@ -143,33 +147,6 @@ const startLabSession = (req, res) => {
     });
   });
 };
-
-function clearLabSessionByUser(userId, res = null) {
-  const session = labSessions.find((s) => s.userId === userId);
-  if (!session) {
-    if (res) res.status(404).json({ message: "Session not found" });
-    return;
-  }
-
-  const cleanupCommand = `
-    docker exec ${session.container} rm -rf /root/Desktop/lab
-  `;
-
-  exec(cleanupCommand, (err) => {
-    clearTimeout(session.timeout);
-    session.inUse = false;
-    session.userId = null;
-    session.timeout = null;
-
-    if (res) {
-      if (err) {
-        console.error("❌ Cleanup failed:", err.message);
-        return res.status(500).json({ message: "Failed to clean up lab." });
-      }
-      res.send("Lab cleaned and session released.");
-    }
-  });
-}
 
 const clearLabSession = (req, res) => {
   const { userId } = req.body;
@@ -256,7 +233,6 @@ const submitLabQuestions = async (req, res) => {
     return res.status(err.code || 500).json({ message: err.msg || "Server error" });
   }
 };
-
 
 module.exports = {
     getLabQuestions,

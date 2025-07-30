@@ -8,7 +8,6 @@ import CircleIcon from '@mui/icons-material/Circle';
 
 import style from "./css/coursedetails.module.css";
 import SubjectData from "./subjectData";
-import { consumeSlots } from "@mui/x-charts/internals";
 
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
@@ -100,6 +99,21 @@ function CourseDetail() {
     }
   };
 
+  const enrollCourse = async () => {
+    try {
+      const response = await backend.post(`/enroll/enrollCourse`, {
+        courseId: courseId,
+        userId: userData.id,
+      }, {withCredentials: true});
+  
+      if (response.status === 200) {
+        navigate(`/course/${courseId}/pretest/${response.data.enrollmentId}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     fetchCourseInfo();
     fetchHistory();
@@ -118,12 +132,27 @@ function CourseDetail() {
   const postTestScore = isPostTestCompleted ? posttestProgress.reduce((acc, item) => acc + item.score, 0) : null;
 
   const AllQuestionComplete = progress.length > 0 && progress.every(p => p.is_completed === 1);
-  
+
   return (
     <div className={style.container}>
       <div className={style.head}>
-        <img alt="Course Icon Image" src={courseInfo.icon} />
-        <p>{courseInfo.name}</p>
+        <div>
+          <img alt="Course Icon Image" src={courseInfo.icon} />
+          <p>{courseInfo.name}</p>
+        </div>
+        
+        {(userData.id && history.length === 0) && (
+          <Button
+            variant="contained"
+            sx={{
+              width: { md: '25%', xs: '100%' }
+            }}
+            onClick={() => enrollCourse()}
+          >
+            สมัครเรียน
+          </Button>
+        )}
+
       </div>
 
       <div className={style.content}>

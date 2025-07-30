@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # สร้างโฟลเดอร์เก็บ email header ปลอม
-LAB_DIR="/root/Desktop/lab"
+LAB_DIR="/usr/src/app/lab"
 mkdir -p "$LAB_DIR"
 
 # สร้างไฟล์อีเมลจำลอง 2 ฉบับ

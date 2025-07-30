@@ -84,7 +84,7 @@ const useLabQuestions = () => {
         if(!lasbValidations()){
            return; 
         }
-        console.log(enrollmentId)
+
         try{
             const response = await backend.put(`/labs/submitLabQuestions/${courseId}/${enrollmentId}`, {
                 answers
@@ -196,7 +196,6 @@ function Subject() {
                 withCredentials: true
             });
 
-            console.log(response.data)
             if (response.status === 200) {
                 const { terminalUrl } = response.data;
                 const labWindow = window.open(terminalUrl, "_blank");

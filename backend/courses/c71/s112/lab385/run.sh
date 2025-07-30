@@ -1,15 +1,15 @@
 #!/bin/bash
 
-mkdir /root/Desktop/lab
+mkdir /usr/src/app/lab
 
-cat <<EOF > /root/Desktop/lab/email1.txt
+cat <<EOF > /usr/src/app/lab/email1.txt
 From: support@secure-bank.com
 Click here to verify your account: http://badsite.xyz/login
 EOF
 
-cat <<EOF > /root/Desktop/lab/email2.txt
+cat <<EOF > /usr/src/app/lab/email2.txt
 From: hr@company.com
 Please review your benefits document.
 EOF
 
-echo "Phishing lab ready at /root/Desktop/lab"
+echo "Phishing lab ready at /usr/src/app/lab"

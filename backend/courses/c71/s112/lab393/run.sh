@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # เตรียมโฟลเดอร์
-LAB_DIR="/root/Desktop/lab"
+LAB_DIR="/usr/src/app/lab"
 mkdir -p "$LAB_DIR"
 
 # สร้างอีเมลตัวอย่างที่มีลิงก์ปลอม
