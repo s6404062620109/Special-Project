@@ -163,6 +163,8 @@ const submitLabQuestions = async (req, res) => {
   const { answers } = req.body;
 
   try {
+    let completedCount = 0;
+
     const tasks = answers.map((answer, index) => {
       const questionId = answer.questionId;
 
@@ -170,13 +172,14 @@ const submitLabQuestions = async (req, res) => {
         switch (answer.lab_type) {
           case 3: {
             db.query("SELECT type FROM question_answer WHERE id = ?", [answer.answer], (error, result) => {
-                if (error) return reject({ code: 500, msg: "DB query error" });
+                if (error) return reject({ code: 500, msg: "Database question_answer query error" });
 
                 const type = result[0]?.type;
                 if (type === 1) {
                   db.query("UPDATE progress SET is_completed = 1, score = 1 WHERE questionId = ? AND enrollmentId = ?",
                     [questionId, enrollmentId], (error) => {
-                      if (error) return reject({ code: 500, msg: "DB update error" });
+                      if (error) return reject({ code: 500, msg: "Database progress update error" });
+                      completedCount++;
                       return resolve();
                     }
                   );
@@ -188,6 +191,26 @@ const submitLabQuestions = async (req, res) => {
             break;
           }
 
+          case 4: {
+            db.query("SELECT content FROM question_answer WHERE questionId = ? AND type = 1", [questionId], (error, result) => {
+              if(error) return reject({ code: 500, msg: "Database question_answer query error" });
+
+              const content = result[0]?.content;
+              if (content === answer.answer) {
+                db.query("UPDATE progress SET is_completed = 1, score = 1 WHERE questionId = ? AND enrollmentId = ?",
+                  [questionId, enrollmentId], (error) => {
+                    if (error) return reject({ code: 500, msg: "Database progress update error" });
+                    completedCount++;
+                    return resolve();
+                  }
+                );
+              } else{
+                return reject({ code: 401, msg: `Lab question ${index + 1} is not correct!` });
+              }
+            });
+            break;
+          }
+
           case 6: {
             const selectedAnswers = answer.answer;
             if (!Array.isArray(selectedAnswers) || selectedAnswers.length === 0) {
@@ -195,7 +218,7 @@ const submitLabQuestions = async (req, res) => {
             }
 
             db.query("SELECT id FROM question_answer WHERE questionId = ? AND type = 1", [questionId], (error, result) => {
-                if (error) return reject({ code: 500, msg: "DB query error" });
+                if (error) return reject({ code: 500, msg: "Database question_answer query error" });
 
                 const correctAnswerIds = result.map((r) => r.id).sort();
                 const selectedSorted = [...selectedAnswers].sort();
@@ -207,7 +230,8 @@ const submitLabQuestions = async (req, res) => {
                 if (isCorrect) {
                   db.query("UPDATE progress SET is_completed = 1, score = 1 WHERE questionId = ? AND enrollmentId = ?",
                     [questionId, enrollmentId], (error) => {
-                      if (error) return reject({ code: 500, msg: "DB update error" });
+                      if (error) return reject({ code: 500, msg: "Database progress update error" });
+                      completedCount++;
                       return resolve();
                     }
                   );
@@ -227,6 +251,14 @@ const submitLabQuestions = async (req, res) => {
     });
 
     await Promise.all(tasks);
+
+    await new Promise((resolve, reject) => {
+      db.query("UPDATE enrollment SET completed_labs = completed_labs + ? WHERE id = ?", [completedCount, enrollmentId], (error) => {
+        if (error) return reject({ code: 500, msg: "Database enrollment update error" });
+        resolve();
+      });
+    });
+
     return res.status(200).json({ message: "Lab questions evaluated." });
   } catch (err) {
     console.error(err);

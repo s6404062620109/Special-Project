@@ -48,7 +48,6 @@ const getLatest = (req, res) => {
         
             const inProgressId = result[0].questionId;
             db.query("SELECT typeId, subjectId FROM question WHERE id = ?", [inProgressId], (error, questionResult) => {
-              console.log(questionResult)
               if(error){
                 console.log(error);
                 return res.status(500).json({ message: "Database question query error" });

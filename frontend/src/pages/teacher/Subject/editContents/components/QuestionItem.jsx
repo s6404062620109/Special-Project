@@ -86,8 +86,12 @@ const QuestionItem = ({
         </FormControl>
       </Stack>
 
-      {/* ภาพประกอบคำถาม */}
-      <Box sx={{ width: '100%', borderRadius: '8px' }}>
+      <Box 
+        sx={{ 
+          width: '100%', 
+          borderRadius: '8px' 
+        }}
+      >
         {question.img ? (
           <Box
             component="img"
@@ -137,18 +141,19 @@ const QuestionItem = ({
         </>
       )}
 
-      {/* เงื่อนไข Answer / Upload */}
       {(question.type === 4 || question.type === 5) && (
         <>
           <Stack direction="row" alignItems="center" gap={2}>
-            <Button
-              variant="outlined"
-              startIcon={<CloudUploadIcon />}
-              onClick={() => onUpload(index, question.type === 5 ? "lab" : "lab")}
-              fullWidth
-            >
-              {question.type === 5 ? 'HTML Files' : 'Lab Files'}
-            </Button>
+            {question.type === 5 && (
+              <Button
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                onClick={() => onUpload(index, question.type === 5 ? "lab" : "lab")}
+                fullWidth
+              >
+                HTML Files
+              </Button>
+            )}
 
             {question.type === 4 && (
               <Button

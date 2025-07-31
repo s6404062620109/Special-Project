@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthProvider';
 import backend from '../../api/backend';
@@ -18,6 +18,7 @@ const useLabQuestions = () => {
     const [ questions, setQuestions ] = useState([]);
     const [ answers, setAnswers ] = useState([]);
     const [ errorMessage, setErrorMessage ] = useState("");
+    const navigate = useNavigate();
 
     const fetchLabQuestions = async (courseId, subjectId) => {
         try{
@@ -42,10 +43,11 @@ const useLabQuestions = () => {
 
                 let updatedAnswer = item.answer;
 
-                if (questionType === 4) {
-                    updatedAnswer = value;
-                } else if (questionType === 3) {
+                if (questionType === 3) {
                     updatedAnswer = Number(value);
+                }
+                else if (questionType === 4) {
+                    updatedAnswer = String(value);
                 } else if (questionType === 6) {
                     const prevArray = Array.isArray(item.answer) ? item.answer : [];
 
@@ -67,7 +69,9 @@ const useLabQuestions = () => {
     const lasbValidations = () => {
         let valid = true;
         answers.forEach((answer, index) => {
-            if(answer.lab_type === 3 && answer.answer === null){
+            if((answer.lab_type === 3 && answer.answer === null) || 
+            (answer.lab_type === 4 && answer.answer === null) || 
+            (answer.lab_type === 5 && answer.answer === null)){
                 valid = false;
                 setErrorMessage(`Lab answer ${index + 1} is required.`);
             }
@@ -79,6 +83,20 @@ const useLabQuestions = () => {
         });
         return valid;
     }
+
+    const fetchLatestProgress = async (courseId, enrollmentId) => {
+        try {
+        const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
+            withCredentials: true
+        });
+
+        if (response.status === 200) {
+            navigate(`/course/${courseId}/${response.data.inProgress}`);
+        }
+        } catch (error) {
+        console.log(error);
+        }
+    };
 
     const handleLabSubmit = async (courseId, enrollmentId) => {
         if(!lasbValidations()){
@@ -94,6 +112,9 @@ const useLabQuestions = () => {
 
             if(response.status === 200){
                 setErrorMessage(response.data.message);
+                setTimeout(() => {
+                    fetchLatestProgress(courseId, enrollmentId);
+                }, 3000);
             }
         } catch(error){
             console.log(error);
@@ -163,26 +184,6 @@ function Subject() {
             }
         } catch(error){
             console.log(error);
-        }
-    }
-
-    const fetchLastProgress = async () => {
-        try {
-            const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
-                withCredentials: true
-            });
-
-            if (response.status === 200) {
-                console.log(response.data.inProgress)
-               if(response.data.inProgress !== `subject/${subjectId}/${enrollmentId}`){
-                    setLabs(false);
-               }
-               else{
-                    setLabs(true);
-               }
-            }
-        } catch (err) {
-            console.log(err);
         }
     }
 

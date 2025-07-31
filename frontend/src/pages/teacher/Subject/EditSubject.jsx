@@ -218,7 +218,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                         content: question.content || '',
                         img: question.img || '',
                         answer: '',
-                        Labfiles: [],
                         Cmdfile: null,
                     };
                 } 
@@ -263,47 +262,25 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         const files = Array.from(event.target.files);
         const updatedQuestions = [...questionInput];
 
-        if(action === "Lab"){
-        const existingFiles = updatedQuestions[index].Labfiles || [];
-        
-        if(existingFiles.length === 4 ){
-            setAlertMessage(`Question ${index + 1}: You can upload up to 4 Lab files only.`);
-            setOpenSnackbar(true);
-            return;
-        }
+        if(action === "Cmd"){
+            if (!files[0].name.endsWith(".sh")) {
+                setAlertMessage(`Question ${index + 1}: Only .sh files are allowed for Cmdfile.`);
+                setOpenSnackbar(true);
+                return;
+            }
 
-        updatedQuestions[index] = {
-            ...updatedQuestions[index],
-            Labfiles: [...existingFiles, ...files],
-        };
-        }
-
-        else if(action === "Cmd"){
-        if (!files[0].name.endsWith(".sh")) {
-            setAlertMessage(`Question ${index + 1}: Only .sh files are allowed for Cmdfile.`);
-            setOpenSnackbar(true);
-            return;
-        }
-
-        updatedQuestions[index].Cmdfile = files[0];
+            updatedQuestions[index].Cmdfile = files[0];
         }
 
         setQuestionInput(updatedQuestions);
         handleCloseLabUpload(action);
+        console.log(questionInput)
     };
     const handleLabFileDelete = (index, fileIndex, att) => {
         const updatedQuestions = [...questionInput];
-        const fileToDelete = updatedQuestions[index].Labfiles[fileIndex];
         const cmdPath = updatedQuestions[index].Cmdfile?.path;
 
-        if(att === "Lab"){
-            if (fileToDelete?.path) {
-                setFilePathDelete(prev => [...prev, fileToDelete.path]);
-            }
-            updatedQuestions[index].Labfiles = updatedQuestions[index].Labfiles.filter((_, i) => i !== fileIndex);
-        }
-
-        else if(att === "Cmd"){
+        if(att === "Cmd"){
             if (cmdPath) {
                 setFilePathDelete(prev => [...prev, cmdPath]);
             }
@@ -374,8 +351,8 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             content: "",
             choice: [
                 {
-                content: "",
-                isCorrect: false,
+                    content: "",
+                    isCorrect: false,
                 },
             ],
             img: null,
@@ -425,10 +402,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             }
 
             if (item.type === 4) {
-                console.log(item)
-                if (item.Labfiles.length > 4) {
-                return `Question ${i + 1}: Labfiles must not exceed 4 files.`;
-                }
 
                 if (item.Cmdfile === null) {
                     return `Question ${i + 1}: Cmdfile is required.`;
@@ -678,18 +651,6 @@ function EditSubject() {
                 const cmdField = `q${qIndex}_cmd`;
                 formData.append(cmdField, question.Cmdfile);
                 newQuestion.Cmdfile = cmdField; // ส่งชื่อ field ไปใน JSON
-            }
-
-            // สำหรับ Labfiles
-            if (Array.isArray(question.Labfiles)) {
-                newQuestion.Labfiles = question.Labfiles.map((file, fIndex) => {
-                    if (file instanceof File) {
-                        const labField = `q${qIndex}_lab_${fIndex}`;
-                        formData.append(labField, file);
-                        return labField; // ส่งชื่อ field ไปใน JSON
-                    }
-                    return file; // เป็น path เดิม
-                });
             }
 
             return newQuestion;
@@ -964,64 +925,6 @@ function EditSubject() {
                             
                     </Stack>
                 </Stack>
-            )}
-
-            {(selectedLabIndex !== -1 && openLabsUpload === "lab") && (
-                <Dialog open onClose={() => handleCloseLabUpload("lab")}>
-                    <DialogTitle>Lab {selectedLabIndex + 1} Files Upload</DialogTitle>
-                    <DialogContent>
-                    <Box>
-                        <Stack 
-                            direction="column" 
-                            justifyContent="space-between"
-                            gap={2}
-                        >
-                            {Array.isArray(questionInput[selectedLabIndex]?.Labfiles) && questionInput[selectedLabIndex]?.Labfiles.map((file, fileIndex) => (
-                                <Stack 
-                                direction="row" 
-                                justifyContent="center" 
-                                alignItems="space-between"
-                                sx={{
-                                    width: "100%"
-                                }}
-                                key={fileIndex} 
-                                >
-                                <Stack
-                                    direction="row"
-                                    justifyContent="center"
-                                    alignItems="center"
-                                    gap={1}
-                                >
-                                    <DescriptionIcon/>
-                                    <Typography variant='body2'>{file.name}</Typography>
-                                </Stack>
-                                <IconButton
-                                    onClick={() => handleLabFileDelete(selectedLabIndex, fileIndex, "Lab")}
-                                >
-                                    <DeleteIcon/>
-                                </IconButton>
-                                </Stack>
-                            ))}
-                        </Stack>
-                        <Stack
-                            justifyContent="center" 
-                            alignItems="center"
-                        >
-                            <VisuallyHiddenInput
-                                type="file"
-                                id={`lab-upload-${selectedLabIndex}`}
-                                multiple
-                                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Lab")}
-                            />
-
-                            <label htmlFor={`lab-upload-${selectedLabIndex}`}>
-                                <Button variant="contained" component="span">File Upload</Button>
-                            </label>
-                        
-                        </Stack>
-                    </Box>
-                    </DialogContent>
-                </Dialog>
             )}
 
             {(selectedLabIndex !== -1 && openLabsUpload === "cmd") && (

@@ -19,7 +19,7 @@ function Labs({
 
     const currentQuestion = questions[currentQuestionIndex];
     const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
-
+    console.log(answers)
   return (
     <Stack>
       <Typography variant="h6" align="center">Lab Questions</Typography>
@@ -54,13 +54,13 @@ function Labs({
               <RadioGroup
                 sx={{ width: "80%", margin: "8px auto" }}
                 name={`radio-group-${currentQuestion.id}`}
-                value={currentAnswer?.answer}
+                value={String(currentAnswer?.answer ?? "")}
                 onChange={(e) => handleLabAnswerChange(currentQuestion.id, currentQuestion.type, e.target.value)}
               >
                 {currentQuestion.choice.map((choice, idx) => (
                   <FormControlLabel
                     key={idx}
-                    value={choice.id}
+                    value={String(choice.id)}
                     control={<Radio />}
                     label={choice.content}
                   />
