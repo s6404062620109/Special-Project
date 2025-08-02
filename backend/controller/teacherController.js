@@ -250,25 +250,36 @@ const getSubject = (req, res) => {
                         }))
                       };
                     }
-                    if( item.typeId === 4 ){
+                    if (item.typeId === 4) {
                       const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
-                      let Labfiles = [];
                       let Cmdfile = null;
 
                       if (fs.existsSync(labFolderPath)) {
                         const allFiles = fs.readdirSync(labFolderPath);
-                        Cmdfile = allFiles.includes("run.sh") ? `/courses/c${courseId}/s${subjectId}/lab${item.id}/run.sh` : null;
-                        Labfiles = allFiles
-                          .filter(file => file !== "run.sh")
-                          .map(file => `/courses/c${courseId}/s${subjectId}/lab${item.id}/${file}`);
+                        if (allFiles.includes("run.sh")) {
+                          const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/run.sh`;
+                          const absPath = path.join(__dirname, `..${relPath}`);
+                          let content = null;
+
+                          try {
+                            content = fs.readFileSync(absPath, "utf8");
+                          } catch (readErr) {
+                            console.error(`Error reading run.sh for lab${item.id}:`, readErr);
+                          }
+
+                          Cmdfile = {
+                            name: "run.sh",
+                            path: relPath,
+                            content,
+                          };
+                        }
                       }
 
                       return {
                         ...questionFormat,
                         answerId: answers[0].id,
                         answer: answers[0].type === 1 ? answers[0].content : null,
-                        Cmdfile: { name: Cmdfile.split("/").pop(), path: Cmdfile },
-                        Labfiles: Labfiles.map(file => ({ name: file.split("/").pop(), path: file }))
+                        Cmdfile,
                       };
                     }
                     

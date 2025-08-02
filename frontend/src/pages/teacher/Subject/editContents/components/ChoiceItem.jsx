@@ -45,7 +45,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
         <FormControlLabel
           control={
             <Checkbox
-              checked={choice.isCorrect}
+              checked={Boolean(choice.isCorrect)}
               onChange={(e) => onChange("isCorrect", e.target.checked)}
             />
           }

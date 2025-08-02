@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton, TextField } from '@mui/material'
@@ -10,7 +10,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const { courseId, enrollmentId, subjectId } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
-  const [ QuestionType, setQuestionType ] = useState([]);
+  const [ cmdFileContent, setCmdFileContent ] = useState('');
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -49,6 +49,24 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const canSelected = pathsToSelected.includes(location.pathname);
 
   const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
+
+  useEffect(() => {
+    if (currentItem?.type === 4 && currentItem.Cmdfile) {
+      if (typeof currentItem.Cmdfile.content === 'string') {
+        setCmdFileContent(currentItem.Cmdfile.content);
+      } else if (currentItem.Cmdfile instanceof File) {
+        const reader = new FileReader();
+        reader.onload = (e) => setCmdFileContent(e.target.result);
+        reader.onerror = () => setCmdFileContent('ไม่สามารถอ่านไฟล์ shell script ได้');
+        reader.readAsText(currentItem.Cmdfile);
+      } else {
+        setCmdFileContent('');
+      }
+    } else {
+      setCmdFileContent('');
+    }
+  }, [currentItem]);
+
   return (
     <Stack
       gap={2}
@@ -88,7 +106,9 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       </Stack>
       
       {currentItem && (
-        <Stack gap={2}>
+        <Stack 
+          gap={2}
+        >
           
           {currentItem.img && (
             <img
@@ -146,6 +166,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
           {(currentItem.type === 4) && (
             <Stack
               gap={2}
+              fullWidth
             >
               <Typography variant="h6">{currentIndex + 1}. {currentItem.content}</Typography>
 
@@ -155,18 +176,26 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                 justifyContent="center"
                 gap={2}
               >
-                {currentItem.Labfiles.length>0 &&(
-                  <Stack>
-                    <Typography variant="h6">Lab Files</Typography>
-                    {currentItem.Labfiles.map((file, index) => (
-                      <Typography key={index} variant="body2">{index+1}. {file.name}</Typography>
-                    ))}
-                  </Stack>
-                )}
                 {currentItem.Cmdfile && (
-                  <Stack>
+                  <Stack
+                    sx={{
+                      width: "80%"
+                    }}
+                  >
                     <Typography variant="h6">Cmd File</Typography>
-                    <Typography variant="body2">- {currentItem.Cmdfile.name}</Typography>
+                    <TextField
+                      label="Shell Script Content"
+                      multiline
+                      minRows={6}
+                      value={cmdFileContent}
+                      fullWidth
+                      slotProps={{
+                        input: {
+                          readOnly: true
+                        }
+                      }}
+                    />
+
                   </Stack>
                 )}
               </Stack>
