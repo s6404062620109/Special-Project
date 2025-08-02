@@ -417,16 +417,6 @@ const addManualSubject = (req, res) => {
                   fs.writeFileSync(cmdPath, cmdFile.buffer);
                 }
               }
-
-              if (Array.isArray(q.Labfiles)) {
-                for (const labKey of q.Labfiles) {
-                  const labFile = files.find(f => f.fieldname === labKey);
-                  if (labFile) {
-                    const labPath = path.join(labFolderPath, labFile.originalname);
-                    fs.writeFileSync(labPath, labFile.buffer);
-                  }
-                }
-              }
             }
 
             if (Array.isArray(q.choice)) {
@@ -532,16 +522,6 @@ const addPdfSubject = (req, res) => {
                 fs.writeFileSync(cmdPath, cmdFile.buffer);
               }
             }
-
-            if (Array.isArray(q.Labfiles)) {
-              for (const labKey of q.Labfiles) {
-                const labFile = files.find(f => f.fieldname === labKey);
-                if (labFile) {
-                  const labPath = path.join(labFolderPath, labFile.originalname);
-                  fs.writeFileSync(labPath, labFile.buffer);
-                }
-              }
-            }
           }
 
           if (Array.isArray(q.choice)) {
@@ -616,7 +596,7 @@ const editManualSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Labfiles, Cmdfile } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Cmdfile } = q;
 
           let questionId = qid;
           if (qid) {
@@ -654,6 +634,11 @@ const editManualSubject = (req, res) => {
               if (err) console.log("Choice Update Error:", err);
             });
           }
+          if(answer && !answerId){
+            db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
+              if (err) console.log("Choice Insert Error:", err);
+            });
+          }
 
           if (qType === 4) {
             const labFolder = path.join(courseFolder, `lab${questionId}`);
@@ -664,18 +649,6 @@ const editManualSubject = (req, res) => {
               if (cmdFile) {
                 const cmdPath = path.join(labFolder, "run.sh");
                 fs.writeFileSync(cmdPath, cmdFile.buffer);
-              }
-            }
-
-            if (Array.isArray(Labfiles)) {
-              for (const labField of Labfiles) {
-                if (typeof labField === "string") {
-                  const labFile = files.find(f => f.fieldname === labField);
-                  if (labFile) {
-                    const labPath = path.join(labFolder, labFile.originalname);
-                    fs.writeFileSync(labPath, labFile.buffer);
-                  }
-                }
               }
             }
           }
@@ -781,7 +754,7 @@ const editPdfSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Labfiles, Cmdfile } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Cmdfile } = q;
 
           let questionId = qid;
           if (qid) {
@@ -834,18 +807,6 @@ const editPdfSubject = (req, res) => {
               if (cmdFile) {
                 const cmdPath = path.join(labFolder, "run.sh");
                 fs.writeFileSync(cmdPath, cmdFile.buffer);
-              }
-            }
-
-            if (Array.isArray(Labfiles)) {
-              for (const labField of Labfiles) {
-                if (typeof labField === "string") {
-                  const labFile = files.find(f => f.fieldname === labField);
-                  if (labFile) {
-                    const labPath = path.join(labFolder, labFile.originalname);
-                    fs.writeFileSync(labPath, labFile.buffer);
-                  }
-                }
               }
             }
           }

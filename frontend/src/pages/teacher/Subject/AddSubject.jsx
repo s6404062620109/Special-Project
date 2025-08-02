@@ -103,13 +103,67 @@ const useSubjectForm = () => {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* Input Pdf Functions */
+
+const usePdfForm = () => {
+  const [ subjectPdfInput, setSubjectPdfInput ] = useState({
+    name: "",
+    file: null,
+  });
+  const inputRef = useRef(null);
+
+  const handleBoxClick = () => {
+    inputRef.current.click();
+  };
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile && selectedFile.type === "application/pdf") {
+      setSubjectPdfInput({ ...subjectPdfInput, file: selectedFile });
+    }
+  };
+
+  const pdfValidation = () => {
+    if(subjectPdfInput.name === ""){
+      return "Subject Name is required";
+    }
+
+    if(!subjectPdfInput.file){
+      return "Please select a PDF file";
+    }
+
+    if(subjectPdfInput.file.type !== "application/pdf"){
+      return "Please select a PDF file";
+    }
+
+    if(subjectPdfInput.file.size > 16 * 1024 * 1024 ){
+      return "File size must be less than 16MB";
+    }
+
+    return null;
+  }
+
+  return{
+    subjectPdfInput,
+    setSubjectPdfInput,
+    inputRef,
+    handleBoxClick,
+    handleFileChange,
+    pdfValidation
+  }
+}
+
+/* Input Pdf Functions */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Input Question Functions */
 
 const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
   const [ questionType, setQuestionType ] = useState([]);
   const [ questionInput, setQuestionInput ] = useState([]);
   const [ openImgUpload, setOpenImgUpload ] = useState(false);
-  const [ openLabsUpload, setOpenLabsUpload ] = useState({ lab: false, cmd: false });
+  const [ openShellFileUpload, setOpenShellFileUpload ] = useState(false);
   const [ selectedImageIndex, setSelectedImageIndex ] = useState(null);
   const [ selectedLabIndex, setSelectedLabIndex ] = useState(null);
   const questionImgInputRef = useRef(null);
@@ -123,7 +177,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
       if (value === 4) {
         delete newQuestions[index].choice;
         newQuestions[index].answer = "";
-        newQuestions[index].Labfiles = newQuestions[index].Labfiles || [];
         newQuestions[index].Cmdfile = newQuestions[index].Cmdfile || null;
       } 
       else {
@@ -144,13 +197,13 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     setQuestionInput(newQuestions);
   };
 
-  const handleOpenLabUpload = (index, action) => {
+  const handleOpenLabUpload = (index) => {
     setSelectedLabIndex(index);
-    setOpenLabsUpload({ ...openLabsUpload, [action]: true });
+    setOpenShellFileUpload(true);
   };
-  const handleCloseLabUpload = (action) => {
+  const handleCloseLabUpload = () => {
     setSelectedLabIndex(null);
-    setOpenLabsUpload({ ...openLabsUpload, [action]: false });
+    setOpenShellFileUpload(false);
   };
 
   const handleOpenImgDialog = (index) => {
@@ -196,22 +249,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     const files = Array.from(event.target.files);
     const updatedQuestions = [...questionInput];
 
-    if(action === "Lab"){
-      const existingFiles = updatedQuestions[index].Labfiles || [];
-      
-      if(existingFiles.length === 4 ){
-        setAlertMessage(`Question ${index + 1}: You can upload up to 4 Lab files only.`);
-        setOpenSnackbar(true);
-        return;
-      }
-
-      updatedQuestions[index] = {
-        ...updatedQuestions[index],
-        Labfiles: [...existingFiles, ...files],
-      };
-    }
-
-    else if(action === "Cmd"){
+    if(action === "Cmd"){
       if (!files[0].name.endsWith(".sh")) {
         setAlertMessage(`Question ${index + 1}: Only .sh files are allowed for Cmdfile.`);
         setOpenSnackbar(true);
@@ -221,12 +259,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
       updatedQuestions[index].Cmdfile = files[0];
     }
 
-    setQuestionInput(updatedQuestions);
-  };
-
-  const removeLabFile = (questionIndex, fileIndex) => {
-    const updatedQuestions = [...questionInput];
-    updatedQuestions[questionIndex].Labfiles.splice(fileIndex, 1);
     setQuestionInput(updatedQuestions);
   };
 
@@ -284,14 +316,9 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
       }
 
       if (item.type === 4) {
-        if (item.Labfiles.length > 4) {
-          return `Question ${i + 1}: Labfiles must not exceed 4 files.`;
-        }
 
-        if (item.Cmdfile) {
-          if (!item.Cmdfile.name.endsWith(".sh")) {
-            return `Question ${i + 1}: Cmdfile must be a .sh file.`;
-          }
+        if (item.Cmdfile && !item.Cmdfile.name.endsWith(".sh")) {
+          return `Question ${i + 1}: Cmdfile must be a .sh file.`;
         }
 
         if(item.answer === ""){
@@ -334,14 +361,13 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     questionImgInputRef,
     selectedImageIndex,
     selectedLabIndex,
-    openLabsUpload,
+    openShellFileUpload,
     handleOpenLabUpload,
     handleCloseLabUpload,
     handleOpenImgDialog,
     handleCloseImgUpload,
     handleImageQuestionUpload,
     handleLabfileUpload,
-    removeLabFile,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -353,60 +379,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 }
 
 /* Input Question Functions */
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/* Input Pdf Functions */
-
-const usePdfForm = () => {
-  const [ subjectPdfInput, setSubjectPdfInput ] = useState({
-    name: "",
-    file: null,
-  });
-  const inputRef = useRef(null);
-
-  const handleBoxClick = () => {
-    inputRef.current.click();
-  };
-
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.type === "application/pdf") {
-      setSubjectPdfInput({ ...subjectPdfInput, file: selectedFile });
-    }
-  };
-
-  const pdfValidation = () => {
-    if(subjectPdfInput.name === ""){
-      return "Subject Name is required";
-    }
-
-    if(!subjectPdfInput.file){
-      return "Please select a PDF file";
-    }
-
-    if(subjectPdfInput.file.type !== "application/pdf"){
-      return "Please select a PDF file";
-    }
-
-    if(subjectPdfInput.file.size > 16 * 1024 * 1024 ){
-      return "File size must be less than 16MB";
-    }
-
-    return null;
-  }
-
-  return{
-    subjectPdfInput,
-    setSubjectPdfInput,
-    inputRef,
-    handleBoxClick,
-    handleFileChange,
-    pdfValidation
-  }
-}
-
-/* Input Pdf Functions */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const toBase64 = (file) => {
@@ -446,14 +418,13 @@ function AddSubject() {
     questionImgInputRef,
     selectedImageIndex,
     selectedLabIndex,
-    openLabsUpload,
+    openShellFileUpload,
     handleOpenLabUpload,
     handleCloseLabUpload,
     handleOpenImgDialog,
     handleCloseImgUpload,
     handleImageQuestionUpload,
     handleLabfileUpload,
-    removeLabFile,
     handleQuestionChange,
     handleChoiceChange,
     addQuestion,
@@ -900,63 +871,7 @@ function AddSubject() {
           </Stack>
         )}
 
-      <Dialog open={openLabsUpload.lab} onClose={() => handleCloseLabUpload("lab")}>
-        <DialogTitle>Lab {selectedLabIndex + 1} Files Upload</DialogTitle>
-        <DialogContent>
-          <Box>
-            <Stack 
-              direction="column" 
-              justifyContent="space-between"
-              gap={2}
-            >
-              {Array.isArray(questionInput[selectedLabIndex]?.Labfiles) && questionInput[selectedLabIndex]?.Labfiles.map((file, fileIndex) => (
-                <Stack 
-                  direction="row" 
-                  justifyContent="center" 
-                  alignItems="space-between"
-                  sx={{
-                    width: "100%"
-                  }}
-                  key={fileIndex} 
-                >
-                  <Stack
-                    direction="row"
-                    justifyContent="center"
-                    alignItems="center"
-                    gap={1}
-                  >
-                    <DescriptionIcon/>
-                    <Typography variant='body2'>{file.name}</Typography>
-                  </Stack>
-                  <IconButton
-                    onClick={() => removeLabFile(selectedLabIndex, fileIndex)}
-                  >
-                    <DeleteIcon/>
-                  </IconButton>
-                </Stack>
-              ))}
-            </Stack>
-            <Stack
-              justifyContent="center" 
-              alignItems="center"
-            >
-              <VisuallyHiddenInput
-                type="file"
-                id={`lab-upload-${selectedLabIndex}`}
-                multiple
-                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Lab")}
-              />
-
-              <label htmlFor={`lab-upload-${selectedLabIndex}`}>
-                <Button variant="contained" component="span">File Upload</Button>
-              </label>
-              
-            </Stack>
-          </Box>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={openLabsUpload.cmd} onClose={() => handleCloseLabUpload("cmd")}>
+      <Dialog open={openShellFileUpload} onClose={() => handleCloseLabUpload()}>
         <DialogTitle>Lab {selectedLabIndex + 1} Shell File</DialogTitle>
         <DialogContent>
           <Box>

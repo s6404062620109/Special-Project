@@ -229,17 +229,6 @@ function AddQuestion({
                         marginBottom: "16px",
                       }}
                     >
-                      <Button
-                        variant="outlined"
-                        startIcon={<CloudUploadIcon />}
-                        onClick={() => handleOpenLabUpload(index, "lab")}
-                        sx={{
-                          width: "100%"
-                        }}
-                      >
-                        Lab Files
-                      </Button>
-
                       <Button 
                         variant="outlined"
                         color='secondary' 

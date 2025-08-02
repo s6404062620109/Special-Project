@@ -26,6 +26,9 @@ function Preview({
       onClose={() => setPreviewPopupOpen(false)}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
+      sx={{
+        zIndex: 1301,
+      }}
       slotProps={{
         paper: {
           sx: {
