@@ -19,7 +19,7 @@ function Labs({
 
     const currentQuestion = questions[currentQuestionIndex];
     const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
-    console.log(answers)
+
   return (
     <Stack>
       <Typography variant="h6" align="center">Lab Questions</Typography>

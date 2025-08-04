@@ -152,7 +152,13 @@ function AddPdf({
             color: "white",
             width: { xs: '100%', sm: '50%' }
           }}
-          onClick={() => navigate(`/edit-course/${courseId}`)}
+          onClick={() => {
+            localStorage.removeItem('editMode');
+            localStorage.removeItem('prevMode');
+            localStorage.removeItem('selector-question-type');
+
+            navigate(`/edit-course/${courseId}`);
+          }}
         >
           Cancel
         </Button>

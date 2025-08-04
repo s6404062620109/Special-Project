@@ -148,7 +148,7 @@ const QuestionItem = ({
               <Button
                 variant="outlined"
                 startIcon={<CloudUploadIcon />}
-                onClick={() => onUpload(index, question.type === 5 ? "lab" : "lab")}
+                onClick={() => onUpload(index, "web")}
                 fullWidth
               >
                 HTML Files

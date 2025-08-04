@@ -54,7 +54,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ./courses:/usr/src/app/courses
+      - ./lab-session-data/user1:/usr/src/app:rw
     working_dir: /usr/src/app
 
   linux-terminal-user2:
@@ -71,7 +71,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ./courses:/usr/src/app/courses
+      - ./lab-session-data/user2:/usr/src/app/lab:rw
     working_dir: /usr/src/app
 
   linux-terminal-user3:
@@ -88,7 +88,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ./courses:/usr/src/app/courses
+      - ./lab-session-data/user3:/usr/src/app:rw
     working_dir: /usr/src/app
 
   linux-terminal-user4:
@@ -105,7 +105,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ./courses:/usr/src/app/courses
+      - ./lab-session-data/user4:/usr/src/app:rw
     working_dir: /usr/src/app
 
 volumes:

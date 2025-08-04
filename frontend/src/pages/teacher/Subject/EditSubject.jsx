@@ -220,6 +220,15 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                         answer: '',
                         Cmdfile: null,
                     };
+                }
+                else if (type === 5) {
+                    return {
+                        type: type,
+                        content: question.content || '',
+                        img: question.img || '',
+                        answer: '',
+                        htmlFile: null,
+                    };
                 } 
                 else {
                     return {
@@ -271,20 +280,35 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 
             updatedQuestions[index].Cmdfile = files[0];
         }
+        else if(action === "Web"){
+            if (!files[0].name.endsWith(".html")) {
+                setAlertMessage(`Question ${index + 1}: Only .html files are allowed for htmlFile.`);
+                setOpenSnackbar(true);
+                return;
+            }
+
+            updatedQuestions[index].htmlFile = files[0];
+        }
 
         setQuestionInput(updatedQuestions);
         handleCloseLabUpload(action);
-        console.log(questionInput)
     };
     const handleLabFileDelete = (index, fileIndex, att) => {
         const updatedQuestions = [...questionInput];
         const cmdPath = updatedQuestions[index].Cmdfile?.path;
+        const htmlPath = updatedQuestions[index].htmlFile?.path;
 
         if(att === "Cmd"){
             if (cmdPath) {
                 setFilePathDelete(prev => [...prev, cmdPath]);
             }
             updatedQuestions[index].Cmdfile = null;
+        }
+        else if(att === "Web"){
+            if (htmlPath) {
+                setFilePathDelete(prev => [...prev, htmlPath]);
+            }
+            updatedQuestions[index].htmlFile = null;
         }
 
         setQuestionInput(updatedQuestions);
@@ -401,23 +425,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 return `Question ${i + 1} content is required`;
             }
 
-            if (item.type === 4) {
-
-                if (item.Cmdfile === null) {
-                    return `Question ${i + 1}: Cmdfile is required.`;
-                }
-
-                if (item.Cmdfile) {
-                    if (!item.Cmdfile.name.endsWith(".sh")) {
-                        return `Question ${i + 1}: Cmdfile must be a .sh file.`;
-                    }
-                }
-
-                if(item.answer === ""){
-                    return `Question ${i + 1}: Answer is required`;
-                }
-            }
-
             if (item.type === 1 || item.type === 2 || item.type === 3 || item.type === 6){
                 if (item.choice.length === 0) {
                 return `At least one choice is required for Question ${i + 1}`;
@@ -440,6 +447,38 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
                 if (incorrectChoices.length === 0) {
                     return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
+                }
+            }
+
+            if (item.type === 5) {
+                if (item.htmlFile === null) {
+                    return `Question ${i + 1}: htmlFile is required.`;
+                }
+                if (item.htmlFile) {
+                    if (!item.htmlFile.name.endsWith(".html")) {
+                        return `Question ${i + 1}: htmlFile must be a .html file.`;
+                    }
+                }
+
+                if(item.answer === ""){
+                    return `Question ${i + 1}: Answer is required`;
+                }
+            }
+
+            if (item.type === 4) {
+
+                if (item.Cmdfile === null) {
+                    return `Question ${i + 1}: Cmdfile is required.`;
+                }
+
+                if (item.Cmdfile) {
+                    if (!item.Cmdfile.name.endsWith(".sh")) {
+                        return `Question ${i + 1}: Cmdfile must be a .sh file.`;
+                    }
+                }
+
+                if(item.answer === ""){
+                    return `Question ${i + 1}: Answer is required`;
                 }
             }
         }
@@ -713,7 +752,7 @@ function EditSubject() {
                     setAlertOpen(true);
                     return;
                 }
-
+                ocalStorage.setItem("selector-question-type", true);
                 setMode("submit");
                 return;
             }
@@ -724,10 +763,10 @@ function EditSubject() {
                     setAlertOpen(true);
                     return;
                 }
-
+                localStorage.setItem("selector-question-type", true); 
                 setMode("submit");
                 return;
-            } 
+            }
         }
         else if(mode === "submit"){
             submitUpdate();
@@ -907,7 +946,13 @@ function EditSubject() {
                             color: "white",
                             width: { xs: '100%', sm: '50%' }
                             }}
-                            onClick={() => navigate(`/edit-course/${courseId}`)}
+                            onClick={() => {
+                                localStorage.removeItem('editMode');
+                                localStorage.removeItem('prevMode');
+                                localStorage.removeItem('selector-question-type');
+
+                                navigate(`/edit-course/${courseId}`);
+                            }}
                         >
                             Cancel
                         </Button>
@@ -928,45 +973,89 @@ function EditSubject() {
             )}
 
             {(selectedLabIndex !== -1 && openLabsUpload === "cmd") && (
-                <Dialog open onClose={() => handleCloseLabUpload("cmd")}>
+                <Dialog open={openLabsUpload === "cmd"} onClose={() => handleCloseLabUpload()}>
                     <DialogTitle>Lab {selectedLabIndex + 1} Shell File</DialogTitle>
                     <DialogContent>
-                    <Box>
-                        <Stack 
-                        justifyContent="center" 
-                        alignItems="center"
-                        >
-                        {questionInput[selectedLabIndex]?.Cmdfile && (
-                            <Stack
-                                direction="row"
-                                justifyContent="center"
-                                alignItems="center"
-                                gap={1}
+                        <Box>
+                            <Stack 
+                            justifyContent="center" 
+                            alignItems="center"
                             >
-                                <DescriptionIcon/>
-                                <Typography variant='body2'>{questionInput[selectedLabIndex].Cmdfile.name}</Typography>
-
-                                <IconButton
-                                    onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Cmd")}
+                            {questionInput[selectedLabIndex]?.Cmdfile && (
+                                <Stack
+                                    direction="row"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    gap={1}
                                 >
-                                <DeleteIcon/>
-                                </IconButton>
+                                    <DescriptionIcon/>
+                                    <Typography variant='body2'>{questionInput[selectedLabIndex].Cmdfile.name}</Typography>
+
+                                    <IconButton
+                                        onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Cmd")}
+                                    >
+                                    <DeleteIcon/>
+                                    </IconButton>
+                                </Stack>
+                            )}
+
+                            <VisuallyHiddenInput
+                                type="file"
+                                id={`cmd-upload-${selectedLabIndex}`}
+                                multiple
+                                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Cmd")}
+                            />
+
+                            <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
+                                <Button variant="contained" component="span">File Upload</Button>
+                            </label>
+                            
                             </Stack>
-                        )}
+                        </Box>
+                    </DialogContent>
+                </Dialog>
+            )}
 
-                        <VisuallyHiddenInput
-                            type="file"
-                            id={`cmd-upload-${selectedLabIndex}`}
-                            multiple
-                            onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Cmd")}
-                        />
+            {(selectedLabIndex !== -1 && openLabsUpload === "web") && (
+                <Dialog open={openLabsUpload === "web"} onClose={() => handleCloseLabUpload()}>
+                    <DialogTitle>Lab {selectedLabIndex + 1} HTML Files</DialogTitle>
+                    <DialogContent>
+                        <Box>
+                            <Stack 
+                            justifyContent="center" 
+                            alignItems="center"
+                            >
+                            {questionInput[selectedLabIndex]?.htmlFile && (
+                                <Stack
+                                    direction="row"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    gap={1}
+                                >
+                                    <DescriptionIcon/>
+                                    <Typography variant='body2'>{questionInput[selectedLabIndex].htmlFile.name}</Typography>
 
-                        <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
-                            <Button variant="contained" component="span">File Upload</Button>
-                        </label>
-                        
-                        </Stack>
-                    </Box>
+                                    <IconButton
+                                        onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Cmd")}
+                                    >
+                                    <DeleteIcon/>
+                                    </IconButton>
+                                </Stack>
+                            )}
+
+                            <VisuallyHiddenInput
+                                type="file"
+                                id={`cmd-upload-${selectedLabIndex}`}
+                                multiple
+                                onChange={(e) => handleLabfileUpload(selectedLabIndex, e, "Web")}
+                            />
+
+                            <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
+                                <Button variant="contained" component="span">File Upload</Button>
+                            </label>
+                            
+                            </Stack>
+                        </Box>
                     </DialogContent>
                 </Dialog>
             )}

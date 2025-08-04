@@ -1,3 +1,4 @@
+const fs = require("fs-extra");
 const { exec } = require("child_process");
 const path = require("path");
 const db = require("../database");
@@ -78,32 +79,37 @@ function clearLabSessionByUser(userId, res = null) {
 
   const session = labSessions[index];
 
-  const cleanupCommand = `docker exec ${session.container} rm -rf /usr/src/app/lab`;
+  const containerCleanupCommand = `docker exec ${session.container} rm -rf /usr/src/app`;
 
-  exec(cleanupCommand, (err) => {
-    clearTimeout(session.timeout);
+  const userDataDir = path.join(__dirname, `../lab-session-data/user${session.port - 4000}`);
 
-    labSessions[index] = {
-      ...session,
-      inUse: false,
-      userId: null,
-      timeout: null
-    };
+  exec(containerCleanupCommand, (err) => {
+    fs.rm(userDataDir, { recursive: true, force: true }, (fsErr) => {
+      clearTimeout(session.timeout);
+      labSessions[index] = {
+        ...session,
+        inUse: false,
+        userId: null,
+        timeout: null,
+      };
 
-    // console.log("✅ Updated labSessions[index]:", labSessions[index]);
-    // console.log(labSessions);
+      if (res) {
+        if (err) {
+          console.error("❌ Container cleanup failed:", err.message);
+          return res.status(500).json({ message: "Failed to clean up container lab." });
+        }
+        if (fsErr) {
+          console.error("❌ Host folder cleanup failed:", fsErr.message);
+          return res.status(500).json({ message: "Failed to clean up user lab folder." });
+        }
 
-    if (res) {
-      if (err) {
-        console.error("❌ Cleanup failed:", err.message);
-        return res.status(500).json({ message: "Failed to clean up lab." });
+        return res.status(200).send("Lab cleaned and session released.");
       }
-      res.send("Lab cleaned and session released.");
-    }
+    });
   });
 }
 
-const startLabSession = (req, res) => {
+const startLabSession = async (req, res) => {
   const { courseId } = req.params;
   const { subjectId, questionId, userId } = req.body;
 
@@ -112,40 +118,49 @@ const startLabSession = (req, res) => {
     return res.status(423).json({ message: "All terminals are in use." });
   }
 
-  const hostLabPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${questionId}`);
-  const containerPath = "/usr/src/app/lab";
-  const runScriptPath = `${containerPath}/run.sh`;
+  const sessionIndex = labSessions.indexOf(availableSession);
+  const container = availableSession.container;
+  const port = availableSession.port;
 
-  const { container, port } = availableSession;
+  const hostSourcePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${questionId}`);
+  const hostTargetPath = path.join(__dirname, `../lab-session-data/user${sessionIndex + 1}`); 
 
-  const copyCommand = `docker cp "${hostLabPath}/." ${container}:${containerPath}`;
-  const runCommand = `docker exec ${container} bash ${runScriptPath}`;
+  try {
+    // ล้างโฟลเดอร์เก่า (ถ้ามี)
+    await fs.emptyDir(hostTargetPath);
 
-  // Copy lab files
-  exec(copyCommand, (err) => {
-    if (err) {
-      console.error("❌ Failed to copy lab files:", err.message);
-      return res.status(500).json({ message: "Failed to prepare lab." });
-    }
-
-    // Run shell setup
-    exec(runCommand, (err2) => {
-      if (err2) {
-        console.error("❌ Failed to execute run.sh:", err2.message);
-        return res.status(500).json({ message: "Failed to initialize lab." });
+    const copyCommand = `docker cp ${hostSourcePath}/. ${container}:/usr/src/app`;
+    exec(copyCommand, async (copyErr) => {
+      if (copyErr) {
+        console.error("❌ Failed to copy files:", copyErr);
+        return res.status(500).json({ message: "File copy failed" });
       }
+      // รัน shell script run.sh ใน container
+      const runScriptCommand = `docker exec ${container} bash /usr/src/app/run.sh`;
 
-      // Mark terminal as in-use
-      availableSession.inUse = true;
-      availableSession.userId = userId;
-      availableSession.timeout = setTimeout(() => {
-        clearLabSessionByUser(userId); // auto cleanup
-      }, 1000 * 60 * 60); // 1 hour
+      exec(runScriptCommand, (err2) => {
+        if (err2) {
+          console.error("❌ Failed to execute run.sh:", err2.message);
+          return res.status(500).json({ message: "Failed to initialize lab." });
+        }
 
-      const url = `http://localhost:${port}`;
-      res.json({ message: "Lab started", terminalUrl: url });
+        // ✅ mark ว่าใช้งานอยู่
+        labSessions[sessionIndex].inUse = true;
+        labSessions[sessionIndex].userId = userId;
+        labSessions[sessionIndex].timeout = setTimeout(() => {
+          clearLabSessionByUser(userId);
+        }, 1000 * 60 * 60); // 1 ชม.
+
+        return res.status(200).json({
+          message: "Lab started",
+          terminalUrl: `http://localhost:${port}`,
+        });
+      });
     });
-  });
+  } catch (err) {
+    console.error("❌ Lab file setup failed:", err.message);
+    return res.status(500).json({ message: "Failed to prepare lab files." });
+  }
 };
 
 const clearLabSession = (req, res) => {

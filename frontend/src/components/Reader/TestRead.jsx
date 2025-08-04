@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import backend from '../../api/backend';
 
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton, TextField } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -11,11 +12,27 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
   const [ cmdFileContent, setCmdFileContent ] = useState('');
+  const [ htmlFileContent, setHtmlFileContent ] = useState('');
+  const [ questionType, setQuestionType ] = useState([]);
 
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [selectedType]);
-  
+  const fetchQuestionType = async () => {
+    try{
+      const response = await backend.get(`/teacher/getQuestionType`, {withCredentials: true});
+      
+      if(response.status === 200){
+        const types_question = question.map(question => question.type);
+        const uniqueTypes = [...new Set(types_question)];
+        
+        const filtered = response.data.result.filter(type => uniqueTypes.includes(type.id));
+
+        setQuestionType(filtered);
+      }
+
+    } catch(error){
+      console.log(error);
+    }
+  }
+
   const handleNext = () => {
     if (currentIndex < question.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -28,43 +45,67 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
     }
   };
   
-  const uniqueTypes = [...new Set(question.map(q => q.type)), 'all'];
-  
   const filteredQuestions = selectedType === 'all'
     ? question
-    : question.filter(q => q.type === selectedType);
+    : question.filter(q => q.type === Number(selectedType));
 
   const currentItem = filteredQuestions[currentIndex];
   const pathsToShow = [
-    `/add-subject/${courseId}/question`,
     `/add-subject/${courseId}/submit`,
-    `/edit-subject/${courseId}/${subjectId}`,
   ];
   const pathsToSelected = [ 
     `/course/${courseId}/pretest/${enrollmentId}`,
     `/course/${courseId}/posttest/${enrollmentId}`
   ]
   
-  const showSelector = pathsToShow.includes(location.pathname);
+  const showSelector = pathsToShow.includes(location.pathname) || localStorage.getItem("selector-question-type") === "true";
   const canSelected = pathsToSelected.includes(location.pathname);
 
   const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
 
+  // question type ref from db
+  useEffect(() => {
+    fetchQuestionType();
+  }, []);
+
+  // initial currentIndex select question type 
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [selectedType]);
+  
+  // read preview cmd file & html file
   useEffect(() => {
     if (currentItem?.type === 4 && currentItem.Cmdfile) {
       if (typeof currentItem.Cmdfile.content === 'string') {
         setCmdFileContent(currentItem.Cmdfile.content);
-      } else if (currentItem.Cmdfile instanceof File) {
+      } 
+      else if (currentItem.Cmdfile instanceof File) {
         const reader = new FileReader();
         reader.onload = (e) => setCmdFileContent(e.target.result);
         reader.onerror = () => setCmdFileContent('ไม่สามารถอ่านไฟล์ shell script ได้');
         reader.readAsText(currentItem.Cmdfile);
-      } else {
+      } 
+      else {
         setCmdFileContent('');
       }
-    } else {
+    } 
+    else {
       setCmdFileContent('');
     }
+
+    if (currentItem?.type === 5 && currentItem.htmlFile instanceof File) {
+      const reader = new FileReader();
+      reader.onload = (e) => setHtmlFileContent(e.target.result);
+      reader.onerror = () => setHtmlFileContent('ไม่สามารถอ่านไฟล์ HTML ได้');
+      reader.readAsText(currentItem.htmlFile);
+    } 
+    else if (typeof currentItem?.htmlFile === 'string') {
+      setHtmlFileContent(currentItem.htmlFile);
+    } 
+    else {
+      setHtmlFileContent('');
+    }
+
   }, [currentItem]);
 
   return (
@@ -89,16 +130,10 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             onChange={(e) => setSelectedType(e.target.value)}
             sx={{ width: 200 }}
           >
-            {uniqueTypes.map((type, index) => (
-              <MenuItem key={index} value={type}>
-                {type === 'all' && 'All'}
-                {type === 1 && "Pre"}
-                {type === 2 && "Post"}
-                {type === 3 && "lab-Quiz"}
-                {type === 4 && "Lab-VM"}
-                {type === 5 && "Lab-Web"}
-                {type === 6 && "Lab-Multiple_Correct"}
-                {type !== 1 && type !== 2 && type !== 3 && type !== 4 && type !== 'all' && type}
+            <MenuItem value="all">All</MenuItem>
+            {questionType.map((type) => (
+              <MenuItem key={type.id} value={type.id}>
+                {type.name_type}
               </MenuItem>
             ))}
           </Select>
@@ -163,6 +198,24 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             </FormControl>
           )}
           
+          {currentItem.type === 5 && currentItem.htmlFile && (
+            <Stack gap={2}>
+              <Typography variant="h6">{currentIndex + 1}. {currentItem.content}</Typography>
+
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: htmlFileContent
+                }}
+                style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  backgroundColor: '#f9f9f9'
+                }}
+              />
+            </Stack>
+          )}
+
           {(currentItem.type === 4) && (
             <Stack
               gap={2}
