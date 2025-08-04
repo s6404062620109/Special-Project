@@ -685,16 +685,20 @@ function EditSubject() {
         const updatedQuestions = questionInput.map((question, qIndex) => {
             const newQuestion = { ...question };
 
-            // สำหรับ Cmdfile
-            if (question.Cmdfile instanceof File) {
+            if (question.type === 4 && question.Cmdfile instanceof File) {
                 const cmdField = `q${qIndex}_cmd`;
                 formData.append(cmdField, question.Cmdfile);
-                newQuestion.Cmdfile = cmdField; // ส่งชื่อ field ไปใน JSON
+                newQuestion.Cmdfile = cmdField; 
+            }
+
+            if (question.type === 5 && question.htmlFile instanceof File) {
+                const htmlField = question.htmlFile.name;
+                formData.append(htmlField, question.htmlFile);
+                newQuestion.Htmlfile = htmlField; 
             }
 
             return newQuestion;
         });
-
 
         formData.append('question', JSON.stringify(updatedQuestions));
 
@@ -1018,7 +1022,7 @@ function EditSubject() {
 
             {(selectedLabIndex !== -1 && openLabsUpload === "web") && (
                 <Dialog open={openLabsUpload === "web"} onClose={() => handleCloseLabUpload()}>
-                    <DialogTitle>Lab {selectedLabIndex + 1} HTML Files</DialogTitle>
+                    <DialogTitle>Lab {selectedLabIndex + 1} HTML File</DialogTitle>
                     <DialogContent>
                         <Box>
                             <Stack 
@@ -1036,7 +1040,7 @@ function EditSubject() {
                                     <Typography variant='body2'>{questionInput[selectedLabIndex].htmlFile.name}</Typography>
 
                                     <IconButton
-                                        onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Cmd")}
+                                        onClick={() => handleLabFileDelete(selectedLabIndex, 0, "Web")}
                                     >
                                     <DeleteIcon/>
                                     </IconButton>

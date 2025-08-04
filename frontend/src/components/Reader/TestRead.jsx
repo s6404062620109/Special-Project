@@ -89,20 +89,23 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
         setCmdFileContent('');
       }
     } 
-    else {
-      setCmdFileContent('');
-    }
 
-    if (currentItem?.type === 5 && currentItem.htmlFile instanceof File) {
-      const reader = new FileReader();
-      reader.onload = (e) => setHtmlFileContent(e.target.result);
-      reader.onerror = () => setHtmlFileContent('ไม่สามารถอ่านไฟล์ HTML ได้');
-      reader.readAsText(currentItem.htmlFile);
+    if (currentItem?.type === 5) {
+      if(currentItem.htmlFile instanceof File){
+        const reader = new FileReader();
+        reader.onload = (e) => setHtmlFileContent(e.target.result);
+        reader.onerror = () => setHtmlFileContent('ไม่สามารถอ่านไฟล์ HTML ได้');
+        reader.readAsText(currentItem.htmlFile);
+      }
+      if(typeof currentItem.htmlFile.content === 'string'){
+        setHtmlFileContent(currentItem.htmlFile.content);
+      }
     } 
     else if (typeof currentItem?.htmlFile === 'string') {
       setHtmlFileContent(currentItem.htmlFile);
     } 
     else {
+      setCmdFileContent('');
       setHtmlFileContent('');
     }
 
@@ -212,6 +215,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                   padding: '16px',
                   backgroundColor: '#f9f9f9'
                 }}
+              />
+
+              <TextField
+                label="Answer"
+                value={currentItem.answer || ""}
+                disabled={!canSelected}
               />
             </Stack>
           )}

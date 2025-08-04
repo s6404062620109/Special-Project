@@ -282,6 +282,38 @@ const getSubject = (req, res) => {
                         Cmdfile,
                       };
                     }
+                    if (item.typeId === 5) {
+                      const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
+                      let htmlFile = null;
+
+                      if (fs.existsSync(labFolderPath)) {
+                        const allFiles = fs.readdirSync(labFolderPath);
+                        if (allFiles.includes("index.html")) {
+                          const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/index.html`;
+                          const absPath = path.join(__dirname, `..${relPath}`);
+                          let content = null;
+
+                          try {
+                            content = fs.readFileSync(absPath, "utf8");
+                          } catch (readErr) {
+                            console.error(`Error reading index.html for lab${item.id}:`, readErr);
+                          }
+
+                          htmlFile = {
+                            name: "index.html",
+                            path: relPath,
+                            content,
+                          };
+                        }
+                      }
+
+                      return {
+                        ...questionFormat,
+                        answerId: answers[0]?.id ?? null,
+                        answer: answers[0]?.type === 1 ? answers[0].content : null,
+                        htmlFile,
+                      };
+                    }
                     
                   });
                 });
@@ -754,7 +786,7 @@ const editPdfSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Cmdfile } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Cmdfile, Htmlfile } = q;
 
           let questionId = qid;
           if (qid) {
@@ -807,6 +839,20 @@ const editPdfSubject = (req, res) => {
               if (cmdFile) {
                 const cmdPath = path.join(labFolder, "run.sh");
                 fs.writeFileSync(cmdPath, cmdFile.buffer);
+              }
+            }
+          }
+
+          if (qType === 5){
+            const labFolder = path.join(courseFolder, `lab${questionId}`);
+            if (!fs.existsSync(labFolder)) fs.mkdirSync(labFolder, { recursive: true });
+
+            if (typeof Htmlfile === "string") {
+              const htmlUploaded = files.find(f => f.fieldname === Htmlfile);
+              if (htmlUploaded) {
+                const htmlPath  = path.join(labFolder, "index.html");
+                fs.writeFileSync(htmlPath, htmlUploaded.buffer);
+                console.log("✅ HTML file written to:", htmlPath);
               }
             }
           }

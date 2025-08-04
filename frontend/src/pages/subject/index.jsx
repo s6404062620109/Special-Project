@@ -46,7 +46,7 @@ const useLabQuestions = () => {
                 if (questionType === 3) {
                     updatedAnswer = Number(value);
                 }
-                else if (questionType === 4) {
+                else if (questionType === 4 || questionType === 5) {
                     updatedAnswer = String(value);
                 } else if (questionType === 6) {
                     const prevArray = Array.isArray(item.answer) ? item.answer : [];

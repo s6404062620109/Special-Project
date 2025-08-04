@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Pagination, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 
 function Labs({ 
     questions,
@@ -12,6 +13,7 @@ function Labs({
  }) {
     const { courseId, enrollmentId } = useParams();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [ htmlFileContent, setHtmlFileContent ] = useState('');
 
     const handleChangePage = (event, value) => {
         setCurrentQuestionIndex(value - 1);
@@ -19,6 +21,39 @@ function Labs({
 
     const currentQuestion = questions[currentQuestionIndex];
     const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
+
+    useEffect(() => {
+      if (currentQuestion?.type === 5) {
+        if(currentQuestion.htmlFile instanceof File){
+          const reader = new FileReader();
+          reader.onload = (e) => setHtmlFileContent(e.target.result);
+          reader.onerror = () => setHtmlFileContent('ไม่สามารถอ่านไฟล์ HTML ได้');
+          reader.readAsText(currentQuestion.htmlFile);
+        }
+        if(typeof currentQuestion.htmlFile.content === 'string'){
+          setHtmlFileContent(currentQuestion.htmlFile.content);
+        }
+      } 
+      else if (typeof currentQuestion?.htmlFile === 'string') {
+        setHtmlFileContent(currentQuestion.htmlFile);
+      } 
+    }, [currentQuestion]);
+  
+    useEffect(() => {
+      const handleMessage = (event) => {
+        if (event.data?.source === "react-devtools-bridge") return;
+        if (typeof event.data !== "object") return;
+        const { answer } = event.data;
+
+        if (typeof answer !== "string") return;
+        if (currentQuestion?.type === 5) {
+          handleLabAnswerChange(currentQuestion.id, currentQuestion.type, answer);
+        }
+      };
+
+      window.addEventListener("message", handleMessage);
+      return () => window.removeEventListener("message", handleMessage);
+    }, [currentQuestion]);
 
   return (
     <Stack>
@@ -48,6 +83,28 @@ function Labs({
                 alt={`Question ${currentQuestionIndex + 1}`}
                 style={{ maxWidth: '100%', marginTop: 12 }}
               />
+            )}
+            {currentQuestion.htmlFile && (
+              <Stack
+                direction="column"
+                alignItems="center"
+                justifyContent="center"
+                gap={2}
+                sx={{ width: "100%", margin: "8px auto" }}
+              >
+                <iframe
+                  srcDoc={htmlFileContent}
+                  sandbox="allow-scripts allow-same-origin"
+                  style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
+                />
+                
+                <TextField
+                  fullWidth
+                  label="Answer"
+                  value={currentAnswer?.answer || ""}
+                  onChange={(e) => handleLabAnswerChange(currentQuestion.id, 5, e.target.value)}
+                />
+              </Stack>
             )}
 
             {currentQuestion.type === 3 && (

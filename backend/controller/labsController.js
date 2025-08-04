@@ -5,15 +5,27 @@ const db = require("../database");
 const labSessions  = require("./labState");
 
 const getLabQuestions = (req, res) => {
-    const { subjectId } = req.params;
+    const { courseId, subjectId } = req.params;
 
     if(!subjectId){
         return res.status(400).send({ message: "Required subject ID." });
     }
 
     try{
-        let labsId = [ 3, 4, 5, 6 ]
-        db.query("SELECT * FROM question WHERE subjectId = ? AND typeId in (?)", [subjectId, labsId], (error, result) => {
+        db.query("SELECT id, name_type FROM question_type WHERE status = 1", (error, result) => {
+          if(error){
+            console.log(error);
+            return res.status(500).send({ message: "Database question_type query error." });
+          }
+          
+          let labsId = result
+            .filter(item => item.name_type?.toLowerCase().includes("lab"))
+            .map(item => item.id);
+          if (labsId.length === 0){
+            return res.status(404).send({ message: "No question found." });
+          }
+
+          db.query("SELECT * FROM question WHERE subjectId = ? AND typeId in (?)", [subjectId, labsId], (error, result) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database question query error." });
@@ -55,6 +67,40 @@ const getLabQuestions = (req, res) => {
                             type: item.typeId,
                         });
                     }
+
+                    else if(item.typeId === 5){
+                      const htmlFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
+                      let htmlFile = null;
+
+                      if (fs.existsSync(htmlFolderPath)) {
+                        const allFiles = fs.readdirSync(htmlFolderPath);
+                        if (allFiles.includes("index.html")) {
+                          const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/index.html`;
+                          const absPath = path.join(__dirname, `..${relPath}`);
+                          let content = null;
+
+                          try {
+                            content = fs.readFileSync(absPath, "utf8");
+                          } catch (readErr) {
+                            console.error(`Error reading index.html for lab${item.id}:`, readErr);
+                          }
+
+                          htmlFile = {
+                            name: "index.html",
+                            path: relPath,
+                            content,
+                          };
+                        }
+                      }
+
+                      questionFormat.push({
+                        id: item.id,
+                        content: item.content,
+                        img: item.img,
+                        type: item.typeId,
+                        htmlFile
+                      })
+                    }
                 }
 
                 if(questionFormat.length === 0){
@@ -63,7 +109,8 @@ const getLabQuestions = (req, res) => {
 
                 return res.status(200).send({ questionFormat });
             });
-        });
+          });
+        }); 
     } catch(error){
         console.log(error);
         return res.status(500).send({ message: "Server error.", error });
