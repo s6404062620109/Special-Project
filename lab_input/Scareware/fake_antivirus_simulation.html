@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Antivirus Alert - Virus Found!</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; text-align: center; }
+        .popup { position: relative; width: 400px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(255,0,0,0.3); }
+        .popup h2 { color: red; }
+        .popup p { margin: 10px 0; }
+        .close-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: red; color: white; width: 25px; height: 25px;
+            border: none; border-radius: 50%; cursor: pointer;
+        }
+        .download-link {
+            display: inline-block; margin-top: 20px;
+            color: blue; text-decoration: underline; cursor: pointer;
+        }
+        .report-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #ccc; padding: 10px 15px; border-radius: 5px;
+            cursor: pointer; font-size: 14px;
+        }
+        .response { margin-top: 20px; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+
+    <div class="popup">
+        <button class="close-btn" onclick="recordAction('Closed the popup without action')">X</button>
+        <h2>⚠ Virus Detected! ⚠</h2>
+        <p>Full system scan completed. 3 Critical threats found!</p>
+        <p>Your PC is at risk. Download Antivirus Pro to remove all threats now.</p>
+        <span class="download-link" onclick="recordAction('Clicked to Download Antivirus')">Download Antivirus Pro</span>
+    </div>
+
+    <div class="response" id="responseBox"></div>
+
+    <script>
+        function recordAction(action) {
+            document.getElementById('responseBox').innerText = 'Your Action: ' + action;
+            window.parent.postMessage({ questionId: 1, answer: action }, "*");
+        }
+    </script>
+
+</body>
+</html>

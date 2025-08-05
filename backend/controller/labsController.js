@@ -273,6 +273,26 @@ const submitLabQuestions = async (req, res) => {
             break;
           }
 
+          case 5: {
+            db.query("SELECT content FROM question_answer WHERE questionId = ? AND type = 1", [questionId], (error, result) => {
+              if(error) return reject({ code: 500, msg: "Database question_answer query error" });
+
+              const content = result[0]?.content;
+              if (content === answer.answer) {
+                db.query("UPDATE progress SET is_completed = 1, score = 1 WHERE questionId = ? AND enrollmentId = ?",
+                  [questionId, enrollmentId], (error) => {
+                    if (error) return reject({ code: 500, msg: "Database progress update error" });
+                    completedCount++;
+                    return resolve();
+                  }
+                );
+              } else{
+                return reject({ code: 401, msg: `Lab question ${index + 1} is not correct!` });
+              }
+            });
+            break;
+          }
+
           case 6: {
             const selectedAnswers = answer.answer;
             if (!Array.isArray(selectedAnswers) || selectedAnswers.length === 0) {

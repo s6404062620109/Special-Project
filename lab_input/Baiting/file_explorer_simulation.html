@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Explorer - USB Flash Drive</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eaeaea; padding: 20px; }
+        .explorer { background: white; width: 600px; margin: auto; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .file { padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd; }
+        .file:hover { background: #f0f0f0; }
+        .action { margin-top: 20px; padding: 10px; background: #ddd; cursor: pointer; display: inline-block; border-radius: 4px; }
+        .response { margin-top: 20px; font-weight: bold; color: green; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="explorer">
+        <h3>USB Flash Drive (E:)</h3>
+        <div class="file" onclick="recordAction('Opened Suspicious File')">Confidential_Employee_List.xlsx</div>
+        <div class="file" onclick="recordAction('Opened harmless file')">ReadMe.txt</div>
+        <div class="action" onclick="recordAction('Ejected USB and reported to IT')">Eject USB & Report to IT</div>
+    </div>
+
+    <div class="response" id="responseBox"></div>
+
+    <script>
+        function recordAction(action) {
+            document.getElementById('responseBox').innerText = 'Your Action: ' + action;
+            window.parent.postMessage({ answer: action }, "*");
+        }
+    </script>
+
+</body>
+</html>
