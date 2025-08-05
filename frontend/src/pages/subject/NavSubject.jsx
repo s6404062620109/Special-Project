@@ -22,7 +22,7 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
       if(response.status === 200){
         const pretest = response.data.results.filter(item => item.typeId === 1);
         const posttest = response.data.results.filter(item => item.typeId === 2);
-        const lab = response.data.results.filter(item => item.typeId === 3 || item.typeId === 4);
+        const lab = response.data.results.filter(item => item.typeId === 3 || item.typeId === 4 || item.typeId === 5 || item.typeId === 6);
 
         setProgress({ pretest, posttest, lab });
       }

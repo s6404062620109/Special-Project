@@ -13,7 +13,7 @@ function PostTest() {
   const [ question, setQuestion ] = useState([]);
   const [ selectedAnswers, setSelectedAnswers ] = useState({});
   const navigate = useNavigate();
-
+  
   const checkLabCompletion = async () => {
     try {
       const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
@@ -60,6 +60,7 @@ function PostTest() {
   };
 
   useEffect(() => {
+    localStorage.removeItem("selector-question-type");
     if (userData.id === null) {
       alert("Please login first.");
       navigate('/');
