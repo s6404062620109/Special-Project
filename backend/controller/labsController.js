@@ -200,7 +200,7 @@ const startLabSession = async (req, res) => {
 
         return res.status(200).json({
           message: "Lab started",
-          terminalUrl: `http://localhost:${port}`,
+          terminalUrl: `http://192.168.1.45:${port}`,
         });
       });
     });
