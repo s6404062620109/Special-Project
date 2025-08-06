@@ -183,7 +183,8 @@ const startLabSession = async (req, res) => {
         return res.status(500).json({ message: "File copy failed" });
       }
       // รัน shell script run.sh ใน container
-      const runScriptCommand = `docker exec ${container} bash /usr/src/app/run.sh`;
+      const runScriptCommand = `docker exec ${container} sh -c "dos2unix /usr/src/app/run.sh && bash /usr/src/app/run.sh"`;
+
 
       exec(runScriptCommand, (err2) => {
         if (err2) {

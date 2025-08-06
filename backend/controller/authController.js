@@ -190,11 +190,13 @@ const login = (req, res) => {
 
           const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "4h" });
 
+          const isProduction = process.env.FRONTEND_URL?.startsWith("https");
+
           res.cookie("authToken", token, {
             maxAge: 4 * 60 * 60 * 1000,
-            secure: true,
+            secure: isProduction, 
             httpOnly: true,
-            sameSite: "none",
+            sameSite: isProduction ? "none" : "lax",
             // before deploy secure: true, sameSite: "none"
           });
 
