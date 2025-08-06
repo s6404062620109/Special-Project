@@ -26,6 +26,7 @@ services:
       - ./database.js:/usr/src/app/database.js
       - ./courses:/usr/src/app/courses
       - ./users:/usr/src/app/users
+      - ./lab-session-data:/usr/src/app/lab-session-data
     env_file:
       - .env
       
@@ -67,56 +68,56 @@ services:
       - ./lab-session-data/user1:/usr/src/app:rw
     working_dir: /usr/src/app
 
-  linux-terminal-user2:
-    build:
-      context: ./terminals
-      dockerfile: Dockerfile
-      args:
-        TTYD_PORT: 4002
-    container_name: linux-terminal-user2
-    ports:
-      - "4002:4002"
-    environment:
-      - TTYD_PORT=4002
-    tty: true
-    stdin_open: true
-    volumes:
-      - ./lab-session-data/user2:/usr/src/app/lab:rw
-    working_dir: /usr/src/app
+  # linux-terminal-user2:
+  #   build:
+  #     context: ./terminals
+  #     dockerfile: Dockerfile
+  #     args:
+  #       TTYD_PORT: 4002
+  #   container_name: linux-terminal-user2
+  #   ports:
+  #     - "4002:4002"
+  #   environment:
+  #     - TTYD_PORT=4002
+  #   tty: true
+  #   stdin_open: true
+  #   volumes:
+  #     - ./lab-session-data/user2:/usr/src/app/lab:rw
+  #   working_dir: /usr/src/app
 
-  linux-terminal-user3:
-    build:
-      context: ./terminals
-      dockerfile: Dockerfile
-      args:
-        TTYD_PORT: 4003
-    container_name: linux-terminal-user3
-    ports:
-      - "4003:4003"
-    environment:
-      - TTYD_PORT=4003
-    tty: true
-    stdin_open: true
-    volumes:
-      - ./lab-session-data/user3:/usr/src/app:rw
-    working_dir: /usr/src/app
+  # linux-terminal-user3:
+  #   build:
+  #     context: ./terminals
+  #     dockerfile: Dockerfile
+  #     args:
+  #       TTYD_PORT: 4003
+  #   container_name: linux-terminal-user3
+  #   ports:
+  #     - "4003:4003"
+  #   environment:
+  #     - TTYD_PORT=4003
+  #   tty: true
+  #   stdin_open: true
+  #   volumes:
+  #     - ./lab-session-data/user3:/usr/src/app:rw
+  #   working_dir: /usr/src/app
 
-  linux-terminal-user4:
-    build:
-      context: ./terminals
-      dockerfile: Dockerfile
-      args:
-        TTYD_PORT: 4004
-    container_name: linux-terminal-user4
-    ports:
-      - "4004:4004"
-    environment:
-      - TTYD_PORT=4004
-    tty: true
-    stdin_open: true
-    volumes:
-      - ./lab-session-data/user4:/usr/src/app:rw
-    working_dir: /usr/src/app
+  # linux-terminal-user4:
+    # build:
+    #   context: ./terminals
+    #   dockerfile: Dockerfile
+    #   args:
+    #     TTYD_PORT: 4004
+    # container_name: linux-terminal-user4
+    # ports:
+    #   - "4004:4004"
+    # environment:
+    #   - TTYD_PORT=4004
+    # tty: true
+    # stdin_open: true
+    # volumes:
+    #   - ./lab-session-data/user4:/usr/src/app:rw
+    # working_dir: /usr/src/app
 
 volumes:
   mysql_data_test: 

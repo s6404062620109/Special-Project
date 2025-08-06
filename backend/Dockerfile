@@ -1,6 +1,7 @@
 FROM node:18
 
 RUN apt-get update && \
+    apt-get install -y docker.io && \
     apt-get install -y dos2unix && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

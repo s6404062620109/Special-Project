@@ -4,8 +4,9 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     curl wget build-essential cmake git \
     libjson-c-dev libwebsockets-dev libssl-dev \
-    zlib1g-dev pkg-config bash && \
-    apt-get clean
+    zlib1g-dev pkg-config bash dos2unix && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # ติดตั้ง ttyd
 RUN git clone https://github.com/tsl0922/ttyd.git && \
