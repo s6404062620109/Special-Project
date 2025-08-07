@@ -20,6 +20,6 @@ COPY routes/ ./routes/
 # Make the wait-for-it.sh script executable
 RUN chmod +x wait-for-it.sh
 
-EXPOSE 3001
+EXPOSE 3002
 
 CMD ["./wait-for-it.sh", "db:3306", "--", "node", "index.js"]
