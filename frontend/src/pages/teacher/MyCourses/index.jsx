@@ -26,6 +26,7 @@ function MyCourses() {
   const [ editPopupOpen, setEditPopupOpen ] = useState(false);
   const [ anchorEl, setAnchorEl ] = useState(null);
   const [ selecedCourse, setSelectedCourse ] = useState(null);
+  const [ menuCourse, setMenuCourse ] = useState(null); 
   const navigate = useNavigate();
 
   const fetchMyCourses = async () => {
@@ -86,7 +87,7 @@ function MyCourses() {
     setEditPopupOpen(false);
     fetchMyCourses();
   };
-
+  
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -130,7 +131,8 @@ function MyCourses() {
                       <td>
                         <IconButton onClick={(e) => {
                           e.stopPropagation();
-                          setAnchorEl(e.currentTarget)
+                          setAnchorEl(e.currentTarget);
+                          setMenuCourse(course);
                         }}>
                           <MoreVertOutlinedIcon sx={{ color: "black" }}/>
                         </IconButton>
@@ -148,7 +150,10 @@ function MyCourses() {
                             horizontal: 'right',
                           }}
                           open={Boolean(anchorEl)}
-                          onClose={() => setAnchorEl(null)}
+                          onClose={() => {
+                            setAnchorEl(null);
+                            setMenuCourse(null); 
+                          }}
                         >
                           <MenuItem 
                             sx={menuItemStyle}
@@ -156,10 +161,10 @@ function MyCourses() {
                               e.stopPropagation();
                               setAnchorEl(null);
                               setSelectedCourse({
-                                name: course.name,
-                                icon: course.icon,
-                                enable: course.enable,
-                                id: course.id,
+                                name: menuCourse.name,
+                                icon: menuCourse.icon,
+                                enable: menuCourse.enable,
+                                id: menuCourse.id,
                               });
                               setEditPopupOpen(true);
                             }}
@@ -173,7 +178,7 @@ function MyCourses() {
                             onClick={(e) => {
                               e.stopPropagation();
                               setAnchorEl(null);
-                              handleDeleteCourse(course.id)
+                              handleDeleteCourse(menuCourse.id)
                             }}
                           >
                             <DeleteIcon/>

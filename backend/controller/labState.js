@@ -6,13 +6,13 @@ const labSessions = [
     userId: null,
     timeout: null,
   },
-  // {
-  //   port: 4002,
-  //   container: "linux-terminal-user2",
-  //   inUse: false,
-  //   userId: null,
-  //   timeout: null,
-  // },
+  {
+    port: 4002,
+    container: "linux-terminal-user2",
+    inUse: false,
+    userId: null,
+    timeout: null,
+  },
   // {
   //   port: 4003,
   //   container: "linux-terminal-user3",

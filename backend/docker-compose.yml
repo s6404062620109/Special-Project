@@ -3,14 +3,14 @@
 version: '4' 
 services:
 
-  react-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    depends_on:
-      - node-server
+  # react-frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3001:3001"
+  #   depends_on:
+  #     - node-server
 
   node-server: 
     build: . 
@@ -20,7 +20,7 @@ services:
       - db
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./routes:/usr/src/app/router
+      - ./routes:/usr/src/app/routes
       - ./controller:/usr/src/app/controller
       - ./middleware:/usr/src/app/middleware
       - ./database.js:/usr/src/app/database.js
@@ -68,22 +68,22 @@ services:
       - ./lab-session-data/user1:/usr/src/app:rw
     working_dir: /usr/src/app
 
-  # linux-terminal-user2:
-  #   build:
-  #     context: ./terminals
-  #     dockerfile: Dockerfile
-  #     args:
-  #       TTYD_PORT: 4002
-  #   container_name: linux-terminal-user2
-  #   ports:
-  #     - "4002:4002"
-  #   environment:
-  #     - TTYD_PORT=4002
-  #   tty: true
-  #   stdin_open: true
-  #   volumes:
-  #     - ./lab-session-data/user2:/usr/src/app/lab:rw
-  #   working_dir: /usr/src/app
+  linux-terminal-user2:
+    build:
+      context: ./terminals
+      dockerfile: Dockerfile
+      args:
+        TTYD_PORT: 4002
+    container_name: linux-terminal-user2
+    ports:
+      - "4002:4002"
+    environment:
+      - TTYD_PORT=4002
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./lab-session-data/user2:/usr/src/app/lab:rw
+    working_dir: /usr/src/app
 
   # linux-terminal-user3:
   #   build:
