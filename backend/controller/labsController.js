@@ -176,33 +176,23 @@ const startLabSession = async (req, res) => {
     // ล้างโฟลเดอร์เก่า (ถ้ามี)
     await fs.emptyDir(hostTargetPath);
 
-    const copyCommand = `docker cp ${hostSourcePath}/. ${container}:/usr/src/app`;
+   const copyCommand = `docker cp "${hostSourcePath}/." ${container}:/usr/src/app/lab`;
     exec(copyCommand, async (copyErr) => {
       if (copyErr) {
         console.error("❌ Failed to copy files:", copyErr);
         return res.status(500).json({ message: "File copy failed" });
       }
-      // รัน shell script run.sh ใน container
-      const runScriptCommand = `docker exec ${container} sh -c "dos2unix /usr/src/app/run.sh && bash /usr/src/app/run.sh"`;
 
+      // ✅ mark ว่าใช้งานอยู่
+      labSessions[sessionIndex].inUse = true;
+      labSessions[sessionIndex].userId = userId;
+      labSessions[sessionIndex].timeout = setTimeout(() => {
+        clearLabSessionByUser(userId);
+      }, 1000 * 60 * 60); // 1 ชม.
 
-      exec(runScriptCommand, (err2) => {
-        if (err2) {
-          console.error("❌ Failed to execute run.sh:", err2.message);
-          return res.status(500).json({ message: "Failed to initialize lab." });
-        }
-
-        // ✅ mark ว่าใช้งานอยู่
-        labSessions[sessionIndex].inUse = true;
-        labSessions[sessionIndex].userId = userId;
-        labSessions[sessionIndex].timeout = setTimeout(() => {
-          clearLabSessionByUser(userId);
-        }, 1000 * 60 * 60); // 1 ชม.
-
-        return res.status(200).json({
-          message: "Lab started",
-          terminalUrl: `http://192.168.1.45:${port}`,
-        });
+      return res.status(200).json({
+        message: "Lab started",
+        terminalUrl: `http://49.0.81.242:${port}`,
       });
     });
   } catch (err) {

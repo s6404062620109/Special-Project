@@ -8,11 +8,12 @@ const app = express();
 app.use(cookieParser());
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  process.env.LINUX_TERMINAL_LAB1,
-  process.env.LINUX_TERMINAL_LAB2,
-  process.env.LINUX_TERMINAL_LAB3,
-  process.env.LINUX_TERMINAL_LAB4,
+  "*"
+  // process.env.FRONTEND_URL,
+  // process.env.LINUX_TERMINAL_LAB1,
+  // process.env.LINUX_TERMINAL_LAB2,
+  // process.env.LINUX_TERMINAL_LAB3,
+  // process.env.LINUX_TERMINAL_LAB4,
 ];
 
 const corsOptions = {

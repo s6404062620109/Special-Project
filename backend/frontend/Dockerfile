@@ -7,5 +7,5 @@ COPY dist/ /usr/share/nginx/html
 # copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3001
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
