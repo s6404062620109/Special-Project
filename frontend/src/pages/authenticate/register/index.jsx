@@ -58,6 +58,7 @@ function Register() {
               type='text'
               value={data.email}
               onChange={(e) => setData({ ...data, email:e.target.value })}
+              required
             />
           </div>
 
@@ -75,6 +76,7 @@ function Register() {
               type='text'
               value={data.name}
               onChange={(e) => setData({ ...data, name:e.target.value })}
+              required
             />
           </div>
         </div>

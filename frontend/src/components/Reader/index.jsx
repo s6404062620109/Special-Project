@@ -57,7 +57,7 @@ function Reader({
       {(isPDF && showContent && mode !== "submit") && 
         <PdfRead 
           subjectName={ isPDF ? content.name : "" } 
-          fileUrl={ isPDF&&content.file ? content.file : `${import.meta.env.VITE_API_BASE_URL}/subjects${content.content}` } 
+          fileUrl={ isPDF&&content.file ? content.file : `http://${import.meta.env.VITE_DEV_URL}:${import.meta.env.VITE_BACKEND_PORT}/subjects${content.content}` } 
         />
       }
 

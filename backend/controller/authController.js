@@ -36,7 +36,7 @@ const register = (req, res) => {
               return res.status(500).json({ message: "Register Failed!!!" });
             } 
             else {
-              const resetLink = `${process.env.FRONTEND_URL}/set-password?token=${verificationToken}&email=${email}`;
+              const resetLink = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}/set-password?token=${verificationToken}&email=${email}`;
 
               const transporter = nodemailer.createTransport({
                 service: "gmail",
@@ -190,7 +190,7 @@ const login = (req, res) => {
 
           const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "4h" });
 
-          const isProduction = process.env.FRONTEND_URL?.startsWith("https");
+          const isProduction = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}`?.startsWith("https");
 
           res.cookie("authToken", token, {
             maxAge: 4 * 60 * 60 * 1000,
@@ -316,7 +316,7 @@ const forgot_password = (req, res) => {
             return res.status(500).send({ message: "Error storing reset token." });
           }
 
-          const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+          const resetLink = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}/reset-password?token=${resetToken}`;
 
           const transporter = nodemailer.createTransport({
             service: "gmail",

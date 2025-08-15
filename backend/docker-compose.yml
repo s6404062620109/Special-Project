@@ -3,14 +3,14 @@
 version: '4' 
 services:
 
-  react-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3003:80"
-    depends_on:
-      - node-server
+  # react-frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3003:80"
+  #   depends_on:
+  #     - node-server
 
   node-server: 
     build: . 

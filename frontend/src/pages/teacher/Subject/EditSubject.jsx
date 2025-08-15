@@ -620,7 +620,10 @@ function EditSubject() {
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
                         // console.log('PDF URL:', subjectData.pdfUrl);
                         setSubjectPdfInput({ ...subjectPdfInput, name: subjectData.subjectname });
-                        fetchSubjectPdf(subjectData.subjectname, `${import.meta.env.VITE_API_BASE_URL}/subjects${subjectData.pdfUrl}`);
+                        fetchSubjectPdf(
+                            subjectData.subjectname, 
+                            `http://${import.meta.env.VITE_DEV_URL}:${import.meta.env.VITE_BACKEND_PORT}/subjects${subjectData.pdfUrl}`
+                        );
                         localStorage.setItem("editMode", "pdf");
                         setMode("pdf");
                     }

@@ -1,43 +1,58 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Email Phishing Simulation</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
-        .email-box { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .clickable { color: blue; text-decoration: underline; cursor: pointer; }
-        .response { margin-top: 20px; font-weight: bold; color: green; }
-    </style>
+<meta charset="UTF-8">
+<title>Email Phishing Simulation</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f1f3f4; margin: 0; padding: 0; }
+    .topbar { background: #ffffff; padding: 10px; display: flex; align-items: center; border-bottom: 1px solid #ccc; }
+    .topbar .actions { margin-left: auto; }
+    .topbar button { background: none; border: none; cursor: pointer; padding: 6px; margin-left: 5px; font-size: 16px; }
+    .topbar button:hover { background: #e8eaed; border-radius: 4px; }
+    .email-container { background: white; max-width: 800px; margin: 20px auto; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .email-header { padding: 20px; border-bottom: 1px solid #ddd; }
+    .email-header h2 { margin: 0; font-size: 20px; }
+    .email-header .meta { color: #555; font-size: 14px; margin-top: 5px; }
+    .email-body { padding: 20px; font-size: 15px; line-height: 1.5; }
+    .clickable { color: #1a73e8; text-decoration: underline; cursor: pointer; }
+    .response { margin-top: 20px; font-weight: bold; color: green; text-align: center; }
+</style>
 </head>
 <body>
 
-    <div class="email-box">
-        <h2>Subject: Urgent Account Verification Required!</h2>
-        <p>From: RealBank Security &lt;security@realbank-support.com&gt;</p>
-        <p>To: you@example.com</p>
-        <hr>
+<div class="topbar">
+    <div class="logo">📧 MyMail</div>
+    <div class="actions">
+        <button title="Report as Phishing" onclick="recordAction('Report Email as Phishing')">🚩</button>
+        <button title="Delete Email" onclick="recordAction('Delete Email')">🗑</button>
+        <button title="Reply to Email" onclick="recordAction('Reply to Email')">↩</button>
+    </div>
+</div>
+
+<div class="email-container">
+    <div class="email-header">
+        <h2>Urgent Account Verification Required!</h2>
+        <div class="meta">
+            From: RealBank Security &lt;security@realbank-support.com&gt;<br>
+            To: you@example.com
+        </div>
+    </div>
+    <div class="email-body">
         <p>Dear Customer,</p>
         <p>We detected unusual activity in your account. Please <span class="clickable" onclick="recordAction('Click Link')">click here</span> to verify your account immediately.</p>
         <p>If you do not verify within 24 hours, your account will be suspended.</p>
         <p>Thank you,<br>RealBank Security Team</p>
     </div>
+</div>
 
-    <div style="text-align:center; margin-top:20px;">
-        <button onclick="recordAction('Report Email as Phishing')">Report as Phishing</button>
-        <button onclick="recordAction('Delete Email')">Delete Email</button>
-        <button onclick="recordAction('Reply to Email')">Reply to Email</button>
-    </div>
+<div class="response" id="responseBox"></div>
 
-    <div class="response" id="responseBox"></div>
-
-    <script>
-        function recordAction(action) {
-            document.getElementById('responseBox').innerText = 'Your selected action: ' + action;
-            window.parent.postMessage({ answer: action }, "*");
-        }
-    </script>
+<script>
+    function recordAction(action) {
+        document.getElementById('responseBox').innerText = 'Your selected action: ' + action;
+        window.parent.postMessage({ answer: action }, "*");
+    }
+</script>
 
 </body>
 </html>

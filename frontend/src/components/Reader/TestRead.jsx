@@ -75,7 +75,9 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   
   // read preview cmd file & html file
   useEffect(() => {
-    if (currentItem?.type === 4 && currentItem.Cmdfile) {
+    if (!currentItem) return;
+
+    if (currentItem.type === 4 && currentItem.Cmdfile) {
       if (typeof currentItem.Cmdfile.content === 'string') {
         setCmdFileContent(currentItem.Cmdfile.content);
       } 
@@ -89,15 +91,18 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
         setCmdFileContent('');
       }
     } 
+    else {
+      setCmdFileContent('');
+    }
 
-    if (currentItem?.type === 5) {
-      if(currentItem.htmlFile instanceof File){
+    if (currentItem.type === 5 && currentItem.htmlFile) {
+      if (currentItem.htmlFile instanceof File) {
         const reader = new FileReader();
         reader.onload = (e) => setHtmlFileContent(e.target.result);
         reader.onerror = () => setHtmlFileContent('ไม่สามารถอ่านไฟล์ HTML ได้');
         reader.readAsText(currentItem.htmlFile);
-      }
-      if(typeof currentItem.htmlFile.content === 'string'){
+      } 
+      else if (typeof currentItem.htmlFile?.content === 'string') {
         setHtmlFileContent(currentItem.htmlFile.content);
       }
     } 
@@ -105,11 +110,10 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       setHtmlFileContent(currentItem.htmlFile);
     } 
     else {
-      setCmdFileContent('');
       setHtmlFileContent('');
     }
-
   }, [currentItem]);
+
 
   return (
     <Stack

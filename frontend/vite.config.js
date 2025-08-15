@@ -7,6 +7,6 @@ export default defineConfig({
   // deploy same network
   server: {
     // host: '0.0.0.0',
-    port: 3001            
+    port: 3003            
   },
 })

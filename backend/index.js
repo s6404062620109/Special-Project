@@ -8,23 +8,18 @@ const app = express();
 app.use(cookieParser());
 
 const allowedOrigins = [
-  "*"
-  // process.env.FRONTEND_URL,
-  // process.env.LINUX_TERMINAL_LAB1,
-  // process.env.LINUX_TERMINAL_LAB2,
-  // process.env.LINUX_TERMINAL_LAB3,
-  // process.env.LINUX_TERMINAL_LAB4,
+  `http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`
 ];
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  // origin: true, deploy same network
+  // origin: (origin, callback) => {
+  //   if (!origin || allowedOrigins.includes(origin)) {
+  //     callback(null, true);
+  //   } else {
+  //     callback(new Error("Not allowed by CORS"));
+  //   }
+  // },
+  origin: true,
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],

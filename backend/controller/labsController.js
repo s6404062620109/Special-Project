@@ -3,6 +3,7 @@ const { exec } = require("child_process");
 const path = require("path");
 const db = require("../database");
 const labSessions  = require("./labState");
+require("dotenv").config();
 
 const getLabQuestions = (req, res) => {
     const { courseId, subjectId } = req.params;
@@ -170,29 +171,36 @@ const startLabSession = async (req, res) => {
   const port = availableSession.port;
 
   const hostSourcePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${questionId}`);
-  const hostTargetPath = path.join(__dirname, `../lab-session-data/user${sessionIndex + 1}`); 
+  const hostTargetPath = path.join(__dirname, `../lab-session-data/user${sessionIndex + 1}`);
 
   try {
-    // ล้างโฟลเดอร์เก่า (ถ้ามี)
     await fs.emptyDir(hostTargetPath);
 
-   const copyCommand = `docker cp "${hostSourcePath}/." ${container}:/usr/src/app/lab`;
-    exec(copyCommand, async (copyErr) => {
+    const copyCommand = `docker cp "${hostSourcePath}/." ${container}:/usr/src/app/lab`;
+    exec(copyCommand, (copyErr) => {
       if (copyErr) {
         console.error("❌ Failed to copy files:", copyErr);
         return res.status(500).json({ message: "File copy failed" });
       }
 
-      // ✅ mark ว่าใช้งานอยู่
-      labSessions[sessionIndex].inUse = true;
-      labSessions[sessionIndex].userId = userId;
-      labSessions[sessionIndex].timeout = setTimeout(() => {
-        clearLabSessionByUser(userId);
-      }, 1000 * 60 * 60); // 1 ชม.
+      const runCommand = `docker exec ${container} bash /usr/src/app/lab/run.sh`;
+      exec(runCommand, (runErr, stdout, stderr) => {
+        if (runErr) {
+          console.error("❌ Failed to run run.sh:", runErr);
+          return res.status(500).json({ message: "Failed to execute run.sh" });
+        }
+        if (stderr) console.warn("⚠️ run.sh stderr:", stderr);
 
-      return res.status(200).json({
-        message: "Lab started",
-        terminalUrl: `http://49.0.81.242:${port}`,
+        labSessions[sessionIndex].inUse = true;
+        labSessions[sessionIndex].userId = userId;
+        labSessions[sessionIndex].timeout = setTimeout(() => {
+          clearLabSessionByUser(userId);
+        }, 1000 * 60 * 60);
+
+        return res.status(200).json({
+          message: "Lab started",
+          terminalUrl: `http://${process.env.DEV_URL}:${port}`,
+        });
       });
     });
   } catch (err) {
