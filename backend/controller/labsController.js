@@ -176,14 +176,14 @@ const startLabSession = async (req, res) => {
   try {
     await fs.emptyDir(hostTargetPath);
 
-    const copyCommand = `docker cp "${hostSourcePath}/." ${container}:/usr/src/app/lab`;
+    const copyCommand = `docker cp "${hostSourcePath}/." ${container}:/usr/src/app`;
     exec(copyCommand, (copyErr) => {
       if (copyErr) {
         console.error("❌ Failed to copy files:", copyErr);
         return res.status(500).json({ message: "File copy failed" });
       }
 
-      const runCommand = `docker exec ${container} bash /usr/src/app/lab/run.sh`;
+      const runCommand = `docker exec ${container} bash /usr/src/app/run.sh`;
       exec(runCommand, (runErr, stdout, stderr) => {
         if (runErr) {
           console.error("❌ Failed to run run.sh:", runErr);

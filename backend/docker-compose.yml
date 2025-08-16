@@ -65,8 +65,11 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - ./lab-session-data/user1:/usr/src/app:rw
+      - user_data:/usr/src/app:rw
+    tmpfs:
+    - /tmp
     working_dir: /usr/src/app
+    user: 1000:1000
 
   # linux-terminal-user2:
   #   build:
@@ -121,4 +124,6 @@ services:
 
 volumes:
   mysql_data_test: 
+    driver: local
+  user_data:
     driver: local

@@ -1,8 +1,8 @@
 
 #!/bin/bash
 echo "You received a suspicious email. Analyze its header for phishing indicators."
-mkdir -p /usr/src/app
-cat <<EOF > /usr/src/app/email_header.txt
+mkdir -p /tmp
+cat <<EOF > /tmp/email_header.txt
 Received: from suspicious-domain.fakebank.com (unknown [203.0.113.45])
     by mail.receiver.com with ESMTP id abc123xyz
     for <victim@receiver.com>; Thu, 4 Aug 2025 10:00:00 +0700
@@ -18,6 +18,6 @@ MIME-Version: 1.0
 Content-Type: text/html; charset=UTF-8
 EOF
 
-cd /usr/src/app
-echo "File created at /usr/src/app/email_header.txt"
+cd /tmp
+echo "File created at /tmp/email_header.txt"
 echo "Use commands like 'cat', 'grep', 'less' to investigate email_header.txt"

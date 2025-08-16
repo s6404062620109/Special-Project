@@ -74,6 +74,7 @@ function Login() {
               type='text'
               value={dataInput.email}
               onChange={(e) => setDatainput({...dataInput, email: e.target.value})}
+              required
             />
           </div>
 
@@ -104,6 +105,7 @@ function Login() {
               type={showPassword ? 'text' : 'password'}
               value={dataInput.password}
               onChange={(e) => setDatainput({...dataInput, password: e.target.value})}
+              required
             />
           </div>
         </div>
