@@ -216,7 +216,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                     return {
                         type: type,
                         content: question.content || '',
-                        img: question.img || '',
+                        img: question.img || null,
                         answer: '',
                         Cmdfile: null,
                     };
@@ -225,7 +225,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                     return {
                         type: type,
                         content: question.content || '',
-                        img: question.img || '',
+                        img: question.img || null,
                         answer: '',
                         htmlFile: null,
                     };
@@ -234,7 +234,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                     return {
                         type: type,
                         content: question.content || '',
-                        img: question.img || '',
+                        img: question.img || null,
                         choice: [{ content: '', isCorrect: false }],
                     };
                 }

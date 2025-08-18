@@ -127,33 +127,25 @@ function clearLabSessionByUser(userId, res = null) {
 
   const session = labSessions[index];
 
-  const containerCleanupCommand = `docker exec ${session.container} rm -rf /usr/src/app`;
+  const cleanupCommand = `docker exec -u 0 ${session.container} sh -c "rm -rf /usr/src/app/* /usr/src/app/.[!.]* /usr/src/app/..?* /tmp/*"`;
 
-  const userDataDir = path.join(__dirname, `../lab-session-data/user${session.port - 4000}`);
+  exec(cleanupCommand, (err) => {
+    clearTimeout(session.timeout);
 
-  exec(containerCleanupCommand, (err) => {
-    fs.rm(userDataDir, { recursive: true, force: true }, (fsErr) => {
-      clearTimeout(session.timeout);
-      labSessions[index] = {
-        ...session,
-        inUse: false,
-        userId: null,
-        timeout: null,
-      };
+    labSessions[index] = {
+      ...session,
+      inUse: false,
+      userId: null,
+      timeout: null
+    };
 
-      if (res) {
-        if (err) {
-          console.error("❌ Container cleanup failed:", err.message);
-          return res.status(500).json({ message: "Failed to clean up container lab." });
-        }
-        if (fsErr) {
-          console.error("❌ Host folder cleanup failed:", fsErr.message);
-          return res.status(500).json({ message: "Failed to clean up user lab folder." });
-        }
-
-        return res.status(200).send("Lab cleaned and session released.");
+    if (res) {
+      if (err) {
+        console.error("❌ Volume cleanup failed:", err.message);
+        return res.status(500).json({ message: "Failed to clean up lab volume." });
       }
-    });
+      return res.status(200).send("Lab cleaned and session released.");
+    }
   });
 }
 

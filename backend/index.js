@@ -75,7 +75,6 @@ app.use("/teacher", teachRoutes);
 const Img = require("./routes/imagerender");
 app.use("/imgrender", Img);
 
-const port = 3002;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(process.env.BACKEND_PORT, () => {
+  console.log(`Server is running on port ${process.env.BACKEND_PORT}`);
 });
