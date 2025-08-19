@@ -731,6 +731,9 @@ function EditSubject() {
                 setAlertOpen(true);
                 setTimeout(() => {
                     navigate(`/edit-course/${courseId}`);
+                    localStorage.removeItem('editMode');
+                    localStorage.removeItem('prevMode');
+                    localStorage.removeItem('selector-question-type');
                 }, 3000);
             }
         } catch (error) {
