@@ -438,7 +438,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 
                 const correctChoices = item.choice.filter(choice => choice.isCorrect);
                 if(item.type === 6 && correctChoices.length === 1){
-                    return `Question ${i + 1} of type "${item.type}" must have than one more correct choice`
+                    return `Question ${i + 1} of type Lab multiple choice must have than one more correct choice.`
                 }
                 if (correctChoices.length === 0) {
                     return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
@@ -466,7 +466,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             }
 
             if (item.type === 4) {
-
                 if (item.Cmdfile === null) {
                     return `Question ${i + 1}: Cmdfile is required.`;
                 }
@@ -483,6 +482,20 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             }
         }
 
+        let pretestMin = 1;
+        let posttestMin = 1;
+
+        const pretestCount = questionInput.filter(q => q.type === 1).length;
+        const posttestCount = questionInput.filter(q => q.type === 2).length;
+
+        if (pretestCount < pretestMin) {
+            return `Required question pretest at least ${pretestMin} question.`;
+        }
+
+        if (posttestCount < posttestMin) {
+            return `Required question posttest at least ${posttestMin} question.`;
+        }
+        
         return;
     }
 

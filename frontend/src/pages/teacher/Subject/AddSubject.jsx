@@ -348,6 +348,20 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
       }
     }
 
+    let pretestMin = 1;
+    let posttestMin = 1;
+
+    const pretestCount = questionInput.filter(q => q.type === 1).length;
+    const posttestCount = questionInput.filter(q => q.type === 2).length;
+
+    if (pretestCount < pretestMin) {
+      return `Required question pretest at least ${pretestMin} question.`;
+    }
+
+    if (posttestCount < posttestMin) {
+      return `Required question posttest at least ${posttestMin} question.`;
+    }
+
     return;
   }
 
