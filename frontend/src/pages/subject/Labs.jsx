@@ -99,6 +99,7 @@ function Labs({
                 />
                 
                 <TextField
+                  disabled
                   fullWidth
                   label="Answer"
                   value={currentAnswer?.answer || ""}

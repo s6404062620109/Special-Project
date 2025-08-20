@@ -155,6 +155,7 @@ function Subject() {
     } = useLabQuestions();
     const readerRef = useRef(null);
     const labsRef = useRef(null);
+    const navigate = useNavigate();
 
     const fetchSubjectData = async () => {
         try {
@@ -172,6 +173,10 @@ function Subject() {
             }
         } catch (err) {
             console.log(err);
+            if(err.response.status === 404 || err.response.data.message === "No courses found."){
+                alert("โปรดลงทะเบียนเรียนใหม่ก่อนเข้าเรียน");
+                window.location.href = "/";
+            }
         }
     };
 
@@ -183,6 +188,24 @@ function Subject() {
                 setSubjectList(response.data.subject);
             }
         } catch(error){
+            console.log(error);
+        }
+    }
+
+    const fetchLastProgress = async () => {
+        try {
+            const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
+                withCredentials: true
+            });
+
+            if (response.status === 200){
+                if(response.data.inProgress === `pretest/${enrollmentId}`){
+                    navigate(`/course/${courseId}/${response.data.inProgress}`);
+                    return;
+                }
+            }
+        } 
+        catch (error) {
             console.log(error);
         }
     }
@@ -218,7 +241,7 @@ function Subject() {
     useEffect(() => {
         fetchSubjectData();
         fetcSubjectList();
-        //fetchLastProgress();
+        fetchLastProgress();
         fetchLabQuestions(courseId, subjectId);
     }, [courseId, subjectId]);
 

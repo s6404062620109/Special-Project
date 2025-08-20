@@ -64,25 +64,24 @@ const courseTestProgress = (req, res) => {
           const questionInfoMap = {};
           questionResult.forEach(item => {
             questionInfoMap[item.id] = {
-              type: item.type,
+              typeId: item.typeId,
               subjectId: item.subjectId
             };
           });
 
           const filteredProgress = progressResult
             .filter(item => {
-              const type = questionInfoMap[item.questionId]?.type;
-              return type?.includes('Pre') || type?.includes('Post');
+              const typeId = questionInfoMap[item.questionId]?.typeId;
+              return typeId === 1 || typeId === 2;
             })
             .map(item => {
               const questionInfo = questionInfoMap[item.questionId];
               return {
                 ...item,
-                type: questionInfo?.type || null,
+                typeId: questionInfo?.typeId || null,
                 subjectId: questionInfo?.subjectId || null
               };
             });
-
           return res.status(200).send(filteredProgress);
         });
       });

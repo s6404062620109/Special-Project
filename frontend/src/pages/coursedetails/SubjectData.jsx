@@ -12,10 +12,12 @@ function SubjectData({ id, name, courseId, progress, enrollmentId }) {
   const handleStart = () =>{
     if(userData.id){
       navigate(`/course/${courseId}/subject/${id}/${enrollmentId}`);
+      return;
     }
     else{
-      alert('Please login first');
+      alert('โปรดเข้าสู่ระบบก่อนเข้าเรียน');
       navigate('/');
+      return;
     }
   }
 
