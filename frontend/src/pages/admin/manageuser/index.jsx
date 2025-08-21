@@ -56,13 +56,13 @@ function ManageUser() {
 
   const handleAddUser = async () => {
     if(!userData.id){
-        alert("Please authentication first");
+        alert("กรุณาเข้าสู่ระบบก่อน");
         window.location.href = "/";
         return;
     }
     
     try {
-      const response = await backend.post(`/admin/addUser/${userData.id}`, newUser);
+      const response = await backend.post(`/admin/addUser`, newUser, { withCredentials: true });
       if (response.status === 201) {
         setMessage({ text: response.data.message, status: "success" });
         setNewUser({ name: "", email: "", role: "s" });
@@ -87,7 +87,7 @@ function ManageUser() {
     if (!confirmDelete) return;
     
     try{
-        const response = await backend.delete(`/admin/deleteUser/${userId}/${userData.id}`);
+        const response = await backend.delete(`/admin/deleteUser/${userId}`, { withCredentials: true });
 
         if (response.status === 200) {
             alert(response.data.message);
@@ -131,9 +131,7 @@ function ManageUser() {
         profile_img: selectedImage || currentProfileImg,
       };
 
-      const response = await backend.put(`/admin/updateUser/${selectedUser.id}/${userData.id}`,
-        updatedUser
-      );
+      const response = await backend.put(`/admin/updateUser/${selectedUser.id}`, updatedUser, { withCredentials: true });
       if (response.status === 200) {
         setMessage({ text: response.data.message, status: "success" });
         setTimeout(() => window.location.reload(), 2000);

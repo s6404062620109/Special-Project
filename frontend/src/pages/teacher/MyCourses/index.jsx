@@ -48,7 +48,10 @@ function MyCourses() {
 
   const handleAddCourse = async ({ name, icon, enable }) => {
     try {
-      const response = await backend.post("/teacher/addCourse", { name, icon, enable, teacherId: userData.id }, { withCredentials: true });
+      const response = await backend.post("/teacher/addCourse", 
+        { name, icon, enable, teacherId: userData.id }, 
+        { withCredentials: true }
+      );
     
       if (response.status === 200) {
         window.location.reload();

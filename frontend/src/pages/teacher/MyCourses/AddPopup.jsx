@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { FormControlLabel, Switch, TextField } from "@mui/material";
+import { Alert, FormControlLabel, Slide, Snackbar, Switch, TextField } from "@mui/material";
 
 import style from "./css/addPopup.module.css";
+
+function SlideTransition(props) {
+  return <Slide {...props} direction="left" />;
+}
 
 function AddPopup({ onClose, onAddCourse }) {
   const [courseData, setCourseData] = useState({
@@ -9,15 +13,33 @@ function AddPopup({ onClose, onAddCourse }) {
     icon: "",
     enable: false
   });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success"
+  });
 
   const handleSubmit = (e) => {
     if(courseData.name === "" || courseData.icon === ""){
-      alert("Name and icon are required.");
+      e.preventDefault();
+      setSnackbar({
+        open: true,
+        message: "Name and icon are required.",
+        severity: "error"
+      });      
       return;
     }
-    e.preventDefault();
+
     onAddCourse(courseData);
-    onClose();
+    setSnackbar({
+      open: true,
+      message: "Course added successfully!",
+      severity: "success"
+    });
+
+    setTimeout(() => {
+      onClose();
+    }, 1200);
   }
 
   const handleFileChange = (e) => {
@@ -58,7 +80,6 @@ function AddPopup({ onClose, onAddCourse }) {
                 accept="image/*"
                 onChange={handleFileChange}
                 style={{ display: "none" }}
-                required
               />
             </div>
 
@@ -72,7 +93,6 @@ function AddPopup({ onClose, onAddCourse }) {
                 onChange={(e) =>
                   setCourseData({ ...courseData, name: e.target.value })
                 }
-                required
               />
 
               <FormControlLabel 
@@ -95,6 +115,22 @@ function AddPopup({ onClose, onAddCourse }) {
           </div>
         </form>
       </div>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={2000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        slots={{ transition: SlideTransition }} 
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

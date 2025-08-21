@@ -7,15 +7,16 @@
 .container {
     width: 60%;
     height: auto;
-    min-height: 600px;
+    min-height: 400px;
     border-radius: 12px;
-    margin: 50px auto;
+    margin: 40px auto;
     background: white;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    padding: 30px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: space-evenly;
+    gap: 30px;
 }
 
 .head{
@@ -30,8 +31,19 @@
 }
 
 .tableWrapper {
+    max-height: 400px; 
     overflow-y: auto; 
     border-radius: 8px;
+}
+
+.subjectTable th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+    padding: 10px;
+    border-bottom: 2px solid #ddd;
+    text-align: left;
 }
 
 .subjectTable td {

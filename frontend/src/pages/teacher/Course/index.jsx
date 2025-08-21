@@ -179,6 +179,13 @@ function EditCourse() {
         <div className={style.body}>
           <div className={style.tableWrapper}>
             <table className={style.subjectTable}>
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
               <tbody>
                 {data.subject.length > 0 ? (
                   data.subject.map((subject) => (

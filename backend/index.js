@@ -64,7 +64,7 @@ const labsRoutes = require("./routes/labsRoutes");
 app.use("/labs", labsRoutes);
 
 /* Admin */
-const admin = require("./routes/admin");
+const admin = require("./routes/adminRoutes");
 app.use("/admin", admin); 
 
 /* Teacher */

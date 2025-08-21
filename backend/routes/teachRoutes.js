@@ -11,11 +11,11 @@ const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
-router.get("/getMyCourses/:userId", authUserRole.checkTeacherRole, teacherController.getMyCourses);
+router.get("/getMyCourses/:userId", authUserRole.checkCourseCreation, teacherController.getMyCourses);
 
 router.get("/courseTestProgress/:courseId", authUserRole.verifiedTeacherCourse, teacherController.courseTestProgress);
 
-router.post("/addCourse", authUserRole.checkTeacherRole, teacherController.createCourse);
+router.post("/addCourse", authUserRole.checkCourseCreation, teacherController.createCourse);
 
 router.put("/update/:courseId", authUserRole.verifiedTeacherCourse, teacherController.updateCourse);
 
@@ -23,9 +23,7 @@ router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCou
 
 router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
-router.get("/getQuestionType", authUserRole.checkTeacherRole, teacherController.getQuestionType);
-
-const NoneFileMulter = multer();
+router.get("/getQuestionType", authUserRole.checkCourseCreation, teacherController.getQuestionType);
 
 const subjectUpload = multer({ 
   storage: multer.memoryStorage(),
