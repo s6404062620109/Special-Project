@@ -1,9 +1,12 @@
+const WebSocket = require("ws");
 const fs = require("fs-extra");
 const { exec } = require("child_process");
 const path = require("path");
 const db = require("../database");
 const labSessions  = require("./labState");
 require("dotenv").config();
+
+const wss = new WebSocket.Server({ port: 8080 });
 
 const getLabQuestions = (req, res) => {
     const { courseId, subjectId } = req.params;
@@ -118,6 +121,14 @@ const getLabQuestions = (req, res) => {
     }
 }
 
+function updateSessionActivity(userId) {
+  const session = labSessions.find(s => s.userId === userId);
+  if (session) {
+    session.lastActive = Date.now();
+    console.log(`✅ Activity updated for user ${userId} at ${new Date().toISOString()}`);
+  }
+}
+
 function clearLabSessionByUser(userId, res = null) {
   const index = labSessions.findIndex((s) => s.userId === userId);
   if (index === -1) {
@@ -136,7 +147,8 @@ function clearLabSessionByUser(userId, res = null) {
       ...session,
       inUse: false,
       userId: null,
-      timeout: null
+      timeout: null,
+      lastActive: null,
     };
 
     if (res) {
@@ -148,6 +160,35 @@ function clearLabSessionByUser(userId, res = null) {
     }
   });
 }
+
+setInterval(() => {
+  const now = Date.now();
+  const idleLimit = 15*60*1000;
+  console.log(labSessions) 
+
+  labSessions.forEach(session => {
+    if (session.inUse && session.lastActive && now - session.lastActive > idleLimit) {
+      console.log(`⏰ User ${session.userId} idle > 15 mins. Clearing session...`);
+      clearLabSessionByUser(session.userId);
+    }
+  });
+}, 60*1000);
+
+wss.on('connection', (ws, req) => {
+  const params = new URLSearchParams(req.url.replace('/', ''));
+  const userId = params.get('userId');
+
+  console.log(`🔌 User ${userId} connected via WebSocket`);
+
+  ws.on('message', (msg) => {
+    console.log(`⌨️  User ${userId} typed: ${msg}`);
+    updateSessionActivity(userId);
+  });
+
+  ws.on('close', () => {
+    console.log(`❌ User ${userId} disconnected`);
+  });
+});
 
 const startLabSession = async (req, res) => {
   const { courseId } = req.params;
@@ -183,11 +224,13 @@ const startLabSession = async (req, res) => {
         }
         if (stderr) console.warn("⚠️ run.sh stderr:", stderr);
 
-        labSessions[sessionIndex].inUse = true;
-        labSessions[sessionIndex].userId = userId;
-        labSessions[sessionIndex].timeout = setTimeout(() => {
-          clearLabSessionByUser(userId);
-        }, 1000 * 60 * 60);
+        labSessions[sessionIndex] = {
+          ...availableSession,
+          inUse: true,
+          userId,
+          timeout: setTimeout(() => clearLabSessionByUser(userId), 60*60*1000),
+          lastActive: Date.now(),
+        };
 
         return res.status(200).json({
           message: "Lab started",

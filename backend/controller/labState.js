@@ -5,6 +5,7 @@ const labSessions = [
     inUse: false,
     userId: null,
     timeout: null,
+    lastActive: null,
   },
   // {
   //   port: 4002,
@@ -12,6 +13,7 @@ const labSessions = [
   //   inUse: false,
   //   userId: null,
   //   timeout: null,
+  //   lastActive: null,
   // },
   // {
   //   port: 4003,
@@ -19,6 +21,7 @@ const labSessions = [
   //   inUse: false,
   //   userId: null,
   //   timeout: null,
+  //   lastActive: null,
   // },
   // {
   //   port: 4004,
@@ -26,6 +29,7 @@ const labSessions = [
   //   inUse: false,
   //   userId: null,
   //   timeout: null,
+  //   lastActive: null,
   // },
 ];
 
