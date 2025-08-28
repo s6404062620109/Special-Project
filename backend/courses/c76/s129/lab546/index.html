@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab - Password Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+    h2 { text-align: center; margin-bottom: 20px; color: #0d47a1; }
+    input {
+      width: 100%; padding: 8px;
+      margin-bottom: 12px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #0d47a1;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { background: #1565c0; }
+    .response {
+      margin-top: 16px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 14px;
+    }
+    .checklist { margin: 10px 0; font-size: 14px; }
+    .checklist li { margin: 4px 0; }
+    .valid { color: green; }
+    .invalid { color: red; }
+    .strength-bar {
+      height: 10px;
+      border-radius: 6px;
+      background: #ddd;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>สมัครสมาชิก</h2>
+    <input type="text" id="username" placeholder="Username" oninput="updateChecklist()" required>
+    <input type="password" id="password" placeholder="Password" oninput="updateChecklist()" required>
+    <input type="password" id="confirm" placeholder="Confirm Password" oninput="updateChecklist()" required>
+
+    <!-- Strength meter -->
+    <div class="strength-bar">
+      <div class="strength-fill" id="strengthFill"></div>
+    </div>
+
+    <!-- Checklist -->
+    <ul class="checklist">
+      <li id="user" class="invalid">❌ กรุณาใส่ Username</li>
+      <li id="len" class="invalid">❌ อย่างน้อย 12 ตัวอักษร</li>
+      <li id="upper" class="invalid">❌ มีตัวอักษรพิมพ์ใหญ่ (A-Z)</li>
+      <li id="lower" class="invalid">❌ มีตัวอักษรพิมพ์เล็ก (a-z)</li>
+      <li id="num" class="invalid">❌ มีตัวเลข (0-9)</li>
+      <li id="sym" class="invalid">❌ มีสัญลักษณ์พิเศษ</li>
+      <li id="common" class="invalid">❌ ไม่ใช้รหัสผ่านยอดนิยม</li>
+      <li id="match" class="invalid">❌ Password และ Confirm ต้องตรงกัน</li>
+    </ul>
+
+    <button onclick="checkPassword()">Register</button>
+    <div class="response" id="responseBox">ยังไม่มีการตรวจสอบ</div>
+  </div>
+
+<script>
+    function recordAction(action) {
+        document.getElementById('responseBox').innerText = action;
+        window.parent.postMessage({ questionId: 2, answer: action }, "*");
+    }
+
+    function getStrengthLabel(percent) {
+        if (percent < 50) return "รหัสผ่านอ่อน (Weak)";
+        if (percent < 80) return "รหัสผ่านปานกลาง (Medium)";
+        return "รหัสผ่านแข็งแรง (Strong)";
+    }
+
+    function updateChecklist() {
+        const username = document.getElementById('username').value;
+        const pw = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm').value;
+        const strengthFill = document.getElementById('strengthFill');
+
+        const rules = {
+            user: username !== "",
+            len: pw.length >= 12,
+            upper: /[A-Z]/.test(pw),
+            lower: /[a-z]/.test(pw),
+            num: /[0-9]/.test(pw),
+            sym: /[^a-zA-Z0-9]/.test(pw),
+            common: !["password","123456","qwerty","admin","iloveyou","true","false"].includes(pw.toLowerCase()),
+            match: pw !== "" && pw === confirm,
+        };
+
+        let score = 0;
+        Object.entries(rules).forEach(([id, valid]) => {  
+            const el = document.getElementById(id);
+            if (valid) {
+                el.className = "valid"; 
+                el.innerText = "✅ " + el.innerText.replace("❌ ","").replace("✅ ","");
+                score++;
+            } else {
+                el.className = "invalid"; 
+                el.innerText = "❌ " + el.innerText.replace("❌ ","").replace("✅ ","");
+            }
+        });
+
+        const percent = (score / Object.keys(rules).length) * 100;
+        strengthFill.style.width = percent + "%";
+        strengthFill.style.background = percent < 50 ? "red" : percent < 80 ? "orange" : "green";
+
+        const label = getStrengthLabel(percent);
+        document.getElementById('responseBox').innerText = label;
+    }
+
+    function checkPassword() {
+        const checklist = document.querySelectorAll('.checklist li');
+        for (let li of checklist) {
+            if (li.classList.contains("invalid")) {
+                const strengthFill = document.getElementById('strengthFill');
+                const percent = parseInt(strengthFill.style.width) || 0;
+                recordAction(getStrengthLabel(percent));
+                return;
+            }
+        }
+        recordAction("สมัครสมาชิกสำเร็จ(Strong Password)");
+    }
+</script>
+
+</body>
+</html>

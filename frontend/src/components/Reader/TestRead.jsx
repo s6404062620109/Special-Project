@@ -209,16 +209,10 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             <Stack gap={2}>
               <Typography variant="h6">{currentIndex + 1}. {currentItem.content}</Typography>
 
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: htmlFileContent
-                }}
-                style={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  backgroundColor: '#f9f9f9'
-                }}
+              <iframe
+                srcDoc={htmlFileContent}
+                style={{ width: "100%", height: "600px", border: "none" }}
+                sandbox="allow-scripts allow-same-origin"
               />
 
               <TextField
