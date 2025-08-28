@@ -156,6 +156,7 @@ function clearLabSessionByUser(userId, res = null) {
         console.error("❌ Volume cleanup failed:", err.message);
         return res.status(500).json({ message: "Failed to clean up lab volume." });
       }
+      console.log(labSessions)
       return res.status(200).send("Lab cleaned and session released.");
     }
   });
@@ -164,7 +165,6 @@ function clearLabSessionByUser(userId, res = null) {
 setInterval(() => {
   const now = Date.now();
   const idleLimit = 15*60*1000;
-  console.log(labSessions) 
 
   labSessions.forEach(session => {
     if (session.inUse && session.lastActive && now - session.lastActive > idleLimit) {
@@ -232,6 +232,7 @@ const startLabSession = async (req, res) => {
           lastActive: Date.now(),
         };
 
+        console.log(labSessions)
         return res.status(200).json({
           message: "Lab started",
           terminalUrl: `http://${process.env.DEV_URL}:${port}`,

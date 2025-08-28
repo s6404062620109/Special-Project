@@ -8,8 +8,6 @@ echo "=== MITM Attack Simulation (Safe Mode) ==="
 echo "[+] สร้างไฟล์ hosts จำลองที่ $HOSTS_FILE"
 echo ""
 
-mkdir -p $LAB_DIR
-
 cat <<EOF > $HOSTS_FILE
 127.0.0.1   localhost
 192.168.1.10 realbank.com
