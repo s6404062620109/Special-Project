@@ -557,6 +557,16 @@ function EditSubject() {
         removeImage,
         subjectValidation 
     } = useSubjectForm();
+    const { 
+        subjectPdfInput,
+        setSubjectPdfInput,
+        subjectPdfData,
+        setSubjectPdfData,
+        inputRef,
+        handleBoxClick,
+        handleFileChange,
+        pdfValidation 
+    } = usePdfForm();
     const {
         questionType,
         setQuestionType,
@@ -587,16 +597,6 @@ function EditSubject() {
         deleteQuestion,
         questionValidation
     } = useQuestionForm( setAlertMessage, setAlertOpen );
-    const { 
-        subjectPdfInput,
-        setSubjectPdfInput,
-        subjectPdfData,
-        setSubjectPdfData,
-        inputRef,
-        handleBoxClick,
-        handleFileChange,
-        pdfValidation 
-    } = usePdfForm();
 
     const fetchSubjectPdf = async (name, path) => {
         try {
@@ -775,7 +775,7 @@ function EditSubject() {
                     setAlertOpen(true);
                     return;
                 }
-                ocalStorage.setItem("selector-question-type", true);
+                localStorage.setItem("selector-question-type", true);
                 setMode("submit");
                 return;
             }
@@ -937,9 +937,8 @@ function EditSubject() {
                 />
             )}
 
-            {( (mode === "submit") && 
-            ((editMode === "manual" && subjectInput.name !== "" && subjectInput.content.length !== 0) || 
-            (editMode === "pdf" )) && (questionInput.length !== 0)) && (
+            {( (mode === "submit") && (questionInput.length !== 0) && (editMode === "manual" || editMode === "pdf") ) 
+            && (
                 <Stack
                     sx={{
                         margin: "20px auto",

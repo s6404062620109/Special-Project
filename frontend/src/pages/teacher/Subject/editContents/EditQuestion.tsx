@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PreviewIcon from '@mui/icons-material/Preview';
-import QuestionItem from './components/QuestionItem';
+import QuestionItem from '../components/QuestionItem';
 
 function EditQuestion({
   questionInput, 

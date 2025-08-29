@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Button, IconButton, Stack, TextField, Typography, FormControl, InputLabel, MenuItem, Select
+  Box, 
+  Button, 
+  IconButton, 
+  Stack, 
+  TextField, 
+  Typography, 
+  FormControl, 
+  InputLabel, 
+  MenuItem, 
+  Select
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,13 +42,13 @@ const QuestionItem = ({
 
     const handleBlurContent = () => {
         if (content !== question.content) {
-        onQuestionChange(index, 'content', content);
+          onQuestionChange(index, 'content', content);
         }
     };
 
     const handleBlurAnswer = () => {
         if (answer !== question.answer) {
-        onQuestionChange(index, 'answer', answer);
+          onQuestionChange(index, 'answer', answer);
         }
     };
     

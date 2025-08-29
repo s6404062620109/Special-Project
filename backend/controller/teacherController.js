@@ -419,7 +419,7 @@ const addManualSubject = (req, res) => {
   
         try {
           for (const q of parsedQuestion) {
-            console.log(q);
+
             let img = null;
             let questionId;
             if(q.img){
@@ -446,6 +446,20 @@ const addManualSubject = (req, res) => {
                 if (cmdFile) {
                   const cmdPath = path.join(labFolderPath, "run.sh");
                   fs.writeFileSync(cmdPath, cmdFile.buffer);
+                }
+              }
+            }
+
+            if (q.type === 5){
+              const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
+              createFolder(labFolder);
+
+              if (typeof q.Htmlfile === "string") {
+                const htmlUploaded = files.find(f => f.fieldname === q.Htmlfile);
+                if (htmlUploaded) {
+                  const htmlPath  = path.join(labFolder, "index.html");
+                  fs.writeFileSync(htmlPath, htmlUploaded.buffer);
+                  console.log("✅ HTML file written to:", htmlPath);
                 }
               }
             }
@@ -555,6 +569,20 @@ const addPdfSubject = (req, res) => {
             }
           }
 
+          if (q.type === 5){
+            const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
+            createFolder(labFolder);
+
+            if (typeof q.Htmlfile === "string") {
+              const htmlUploaded = files.find(f => f.fieldname === q.Htmlfile);
+              if (htmlUploaded) {
+                const htmlPath  = path.join(labFolder, "index.html");
+                fs.writeFileSync(htmlPath, htmlUploaded.buffer);
+                console.log("✅ HTML file written to:", htmlPath);
+              }
+            }
+          }
+
           if (Array.isArray(q.choice)) {
             for (const c of q.choice) {
               db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
@@ -627,7 +655,7 @@ const editManualSubject = (req, res) => {
   
       try {
         for (const q of parsedQuestion) {
-          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Cmdfile } = q;
+          const { id: qid, content: qContent, img: qImg, type: qType, choice, answer, answerId, Cmdfile, Htmlfile } = q;
 
           let questionId = qid;
           if (qid) {
@@ -672,14 +700,28 @@ const editManualSubject = (req, res) => {
           }
 
           if (qType === 4) {
-            const labFolder = path.join(courseFolder, `lab${questionId}`);
-            if (!fs.existsSync(labFolder)) fs.mkdirSync(labFolder, { recursive: true });
+            const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
+            createFolder(labFolder);
 
             if (typeof Cmdfile === "string") {
               const cmdFile = files.find(f => f.fieldname === Cmdfile);
               if (cmdFile) {
                 const cmdPath = path.join(labFolder, "run.sh");
                 fs.writeFileSync(cmdPath, cmdFile.buffer);
+              }
+            }
+          }
+
+          if (qType === 5){
+            const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
+            createFolder(labFolder);
+
+            if (typeof Htmlfile === "string") {
+              const htmlUploaded = files.find(f => f.fieldname === Htmlfile);
+              if (htmlUploaded) {
+                const htmlPath  = path.join(labFolder, "index.html");
+                fs.writeFileSync(htmlPath, htmlUploaded.buffer);
+                console.log("✅ HTML file written to:", htmlPath);
               }
             }
           }
@@ -831,7 +873,7 @@ const editPdfSubject = (req, res) => {
 
           if (qType === 4) {
             const labFolder = path.join(courseFolder, `lab${questionId}`);
-            if (!fs.existsSync(labFolder)) fs.mkdirSync(labFolder, { recursive: true });
+            createFolder(labFolder);
 
             if (typeof Cmdfile === "string") {
               const cmdFile = files.find(f => f.fieldname === Cmdfile);
@@ -844,7 +886,7 @@ const editPdfSubject = (req, res) => {
 
           if (qType === 5){
             const labFolder = path.join(courseFolder, `lab${questionId}`);
-            if (!fs.existsSync(labFolder)) fs.mkdirSync(labFolder, { recursive: true });
+            createFolder(labFolder);
 
             if (typeof Htmlfile === "string") {
               const htmlUploaded = files.find(f => f.fieldname === Htmlfile);
