@@ -216,7 +216,7 @@ const startLabSession = async (req, res) => {
         return res.status(500).json({ message: "File copy failed" });
       }
 
-      const runCommand = `docker exec ${container} bash /usr/src/app/run.sh`;
+      const runCommand = `docker exec -u root ${container} bash /usr/src/app/run.sh`;
       exec(runCommand, (runErr, stdout, stderr) => {
         if (runErr) {
           console.error("❌ Failed to run run.sh:", runErr);

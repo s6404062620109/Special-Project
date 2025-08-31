@@ -7,25 +7,32 @@ require('dotenv').config();
 const app = express();
 app.use(cookieParser());
 
-const allowedOrigins = [
-  `http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`
-];
+// const allowedOrigins = [
+//   `http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`
+// ];
 
-const corsOptions = {
-  // origin: (origin, callback) => {
-  //   if (!origin || allowedOrigins.includes(origin)) {
-  //     callback(null, true);
-  //   } else {
-  //     callback(new Error("Not allowed by CORS"));
-  //   }
-  // },
-  origin: true,
-  credentials: true,
+// const corsOptions = {
+//   // origin: (origin, callback) => {
+//   //   if (!origin || allowedOrigins.includes(origin)) {
+//   //     callback(null, true);
+//   //   } else {
+//   //     callback(new Error("Not allowed by CORS"));
+//   //   }
+//   // },
+//   origin: true,
+//   credentials: true,
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+// };
+
+// app.use(cors(corsOptions));
+
+app.use(cors({
+  origin: [`http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-};
-
-app.use(cors(corsOptions));
+  credentials: true,
+}));
 
 
 app.use(express.json());

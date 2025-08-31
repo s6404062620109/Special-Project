@@ -65,11 +65,13 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - user_data:/usr/src/app:rw
+      - user1_data:/usr/src/app:rw
     tmpfs:
-    - /tmp
+      - /tmp
     working_dir: /usr/src/app
     user: 1000:1000
+    mem_limit: 512m
+    cpus: 0.25
 
   # linux-terminal-user2:
   #   build:
@@ -85,8 +87,13 @@ services:
   #   tty: true
   #   stdin_open: true
   #   volumes:
-  #     - ./lab-session-data/user2:/usr/src/app/lab:rw
+  #     - user2_data:/usr/src/app:rw
+  #   tmpfs:
+  #     - /tmp
   #   working_dir: /usr/src/app
+  #   user: 1000:1000
+  #   mem_limit: 512m
+  #   cpus: 0.25
 
   # linux-terminal-user3:
   #   build:
@@ -102,28 +109,44 @@ services:
   #   tty: true
   #   stdin_open: true
   #   volumes:
-  #     - ./lab-session-data/user3:/usr/src/app:rw
+  #     - user3_data:/usr/src/app:rw
+  #   tmpfs:
+  #     - /tmp
   #   working_dir: /usr/src/app
+  #   user: 1000:1000
+  #   mem_limit: 512m
+  #   cpus: 0.25
 
   # linux-terminal-user4:
-    # build:
-    #   context: ./terminals
-    #   dockerfile: Dockerfile
-    #   args:
-    #     TTYD_PORT: 4004
-    # container_name: linux-terminal-user4
-    # ports:
-    #   - "4004:4004"
-    # environment:
-    #   - TTYD_PORT=4004
-    # tty: true
-    # stdin_open: true
-    # volumes:
-    #   - ./lab-session-data/user4:/usr/src/app:rw
-    # working_dir: /usr/src/app
+  #   build:
+  #     context: ./terminals
+  #     dockerfile: Dockerfile
+  #     args:
+  #       TTYD_PORT: 4004
+  #   container_name: linux-terminal-user4
+  #   ports:
+  #     - "4004:4004"
+  #   environment:
+  #     - TTYD_PORT=4004
+  #   tty: true
+  #   stdin_open: true
+  #   volumes:
+  #     - user4_data:/usr/src/app:rw
+  #   tmpfs:
+  #     - /tmp
+  #   working_dir: /usr/src/app
+  #   user: 1000:1000
+  #   mem_limit: 512m
+  #   cpus: 0.25
 
 volumes:
   mysql_data_test: 
     driver: local
-  user_data:
+  user1_data:
+    driver: local
+  user2_data:
+    driver: local
+  user3_data:
+    driver: local
+  user4_data:
     driver: local
