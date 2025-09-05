@@ -45,11 +45,8 @@
     </div>
 </div>
 
-<div class="response" id="responseBox"></div>
-
 <script>
     function recordAction(action) {
-        document.getElementById('responseBox').innerText = 'Your selected action: ' + action;
         window.parent.postMessage({ answer: action }, "*");
     }
 </script>

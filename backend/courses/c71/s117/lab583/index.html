@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab - Technical Support Scam</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .popup-window {
+      width: 420px;
+      background: #fff;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .popup-titlebar {
+      background: #9a2b2b;
+      color: #fff;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 6px 6px 0 0;
+    }
+    .popup-titlebar .close-btn {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      color: #fff;
+      background: transparent;
+      border: none;
+    }
+    .popup-body {
+      padding: 20px;
+      text-align: center;
+      font-size: 15px;
+      color: #333;
+    }
+    .popup-body p { margin: 10px 0; }
+    .popup-actions {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .danger { background: #c62828; color: #fff; }
+    .warn { background: #ef6c00; color: #fff; }
+    #responseBox { text-align: center; margin: 10px; font-weight: bold; color: #222; }
+  </style>
+</head>
+<body>
+
+  <div class="popup-window">
+    <div class="popup-titlebar">
+      🔒 Microsoft Security Alert
+      <button class="close-btn" onclick="recordAction('ปิดหน้าต่าง')">✕</button>
+    </div>
+    <div class="popup-body">
+      <h3 style="color:#b71c1c">⚠ ตรวจพบไวรัสในระบบของคุณ!</h3>
+      <p>คอมพิวเตอร์ของคุณถูกล็อกเพื่อความปลอดภัย</p>
+      <p>กรุณา <b>โทร 02-999-8888</b> หรือ <b>ชำระเงิน</b> เพื่อแก้ไขทันที</p>
+    </div>
+    <div class="popup-actions">
+      <button class="danger" onclick="recordAction('ชำระเงินหลอกลวง')">💳 ชำระเงิน</button>
+      <button class="warn" onclick="recordAction('โทรหา Support ปลอม')">📞 โทรหา Support</button>
+    </div>
+  </div>
+
+<script>
+  function recordAction(action) {
+    window.parent.postMessage({ answer: action }, "*");
+  }
+</script>
+
+</body>
+</html>

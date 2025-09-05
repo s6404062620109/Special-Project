@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Antivirus Alert</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: rgba(0,0,0,0.4);
+      margin: 0; padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .popup {
+      position: relative;
+      width: 420px;
+      background: #fff;
+      border: 2px solid #c62828;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .titlebar {
+      background: #c62828;
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px 4px 0 0;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .popup-body {
+      padding: 20px;
+      text-align: center;
+    }
+    .popup-body h2 {
+      color: #b71c1c;
+      margin-bottom: 10px;
+    }
+    .popup-body p { margin: 8px 0; }
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .btn-danger { background: #c62828; color: #fff; }
+    .btn-safe { background: #2e7d32; color: #fff; }
+    #responseBox {
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="popup">
+    <div class="titlebar">
+      🛑 Antivirus Security Alert
+      <button class="close-btn" onclick="recordAction('Closed popup')">✕</button>
+    </div>
+    <div class="popup-body">
+      <h2>⚠ Virus Detected!</h2>
+      <p>System scan completed: <b>3 Critical threats found</b>.</p>
+      <p>Your PC is at serious risk. Purchase <b>Antivirus Pro</b> to remove threats immediately!</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-danger" onclick="recordAction('Clicked Buy Antivirus')">💳 Buy Antivirus Pro</button>
+      <button class="btn btn-danger" onclick="recordAction('Clicked Download Trial')">⬇ Download Free Trial</button>
+    </div>
+  </div>
+
+<script>
+    function recordAction(action) {
+    window.parent.postMessage({ questionId: 1, answer: action }, "*");
+    }
+</script>
+
+</body>
+</html>

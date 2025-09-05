@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lab - Spam Email Simulation</title>
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #f1f3f4;
+    margin: 0;
+  }
+  .topbar {
+    background: #ffffff;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+  }
+  .logo {
+    font-weight: bold;
+    font-size: 18px;
+    color: #d93025;
+  }
+  .inbox {
+    max-width: 900px;
+    margin: 20px auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .email-item {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  .email-item:hover {
+    background: #f9f9f9;
+  }
+  .from {
+    font-weight: bold;
+    width: 220px;
+    flex-shrink: 0;
+  }
+  .subject {
+    flex: 1;
+  }
+  .detail {
+    display: none;
+    padding: 16px;
+    border-top: 1px solid #ccc;
+    background: #fafafa;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .actions {
+    margin-top: 12px;
+  }
+  .actions button {
+    margin-right: 8px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    background: #f5f5f5;
+    cursor: pointer;
+  }
+  .actions button:hover {
+    background: #eee;
+  }
+  .response {
+    margin: 16px auto;
+    text-align: center;
+    font-weight: bold;
+    color: #0d47a1;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">📧 MyMail Inbox</div>
+</div>
+
+<div class="inbox">
+  <div class="email-item" onclick="toggleDetail('d1')">
+    <div class="from">university@ac.th</div>
+    <div class="subject">[ประกาศ] ตารางสอบกลางภาค</div>
+  </div>
+  <div class="detail" id="d1">
+    <p>เรียน นศ. ทุกท่าน ตารางสอบกลางภาคได้ประกาศแล้ว กรุณาตรวจสอบที่ระบบนักศึกษา</p>
+    <div class="actions">
+      <button onclick="recordAction('เปิดอ่านอีเมล')">เปิดอ่าน</button>
+      <button id="mail1" onclick="recordAction('รายงานอีเมล'+id)">รายงานอีเมล</button>
+      <button onclick="recordAction('ลบอีเมล')">ลบ</button>
+    </div>
+  </div>
+
+  <div class="email-item" onclick="toggleDetail('d3')">
+    <div class="from">security@realbank-support.com</div>
+    <div class="subject">[เร่งด่วน] บัญชีของคุณถูกระงับ!</div>
+  </div>
+  <div class="detail" id="d3">
+    <p>เพื่อความปลอดภัย กรุณากรอก username และ password ของคุณที่นี่ 👉 <a href="#" onclick="recordAction('เปิดหน้าเว็บไซต์ตามลิงค์นี้')">secure-realbank.com</a></p>
+    <div class="actions">
+      <button onclick="recordAction('เปิดอ่านอีเมล')">เปิดอ่าน</button>
+      <button id="mail2" onclick="recordAction('รายงานอีเมล '+id)">รายงานอีเมล</button>
+      <button onclick="recordAction('ลบอีเมล')">ลบ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+    function toggleDetail(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+    function recordAction(action) {
+      window.parent.postMessage({ answer: action }, "*");
+    }
+</script>
+
+</body>
+</html>
