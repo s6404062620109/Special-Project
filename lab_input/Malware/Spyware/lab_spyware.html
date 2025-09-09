@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Free PDF Converter Setup</title>
+  <style>
+    body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
+    .installer-window { width: 500px; margin: 80px auto; background: #fff; border: 1px solid #90a4ae; border-radius: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .title-bar { background: #1976d2; color: #fff; padding: 8px 12px; font-weight: bold; border-top-left-radius: 6px; border-top-right-radius: 6px; }
+    .content { padding: 20px; }
+    h2 { font-size: 18px; margin: 0 0 15px 0; color: #0d47a1; }
+    p { font-size: 14px; margin: 10px 0; }
+    label { display: block; margin: 8px 0; cursor: pointer; font-size: 13px; }
+    input[type="checkbox"] { margin-right: 6px; }
+    .optional-offer { color: #555; font-size: 12px; margin-left: 20px; }
+    .buttons { text-align: right; margin-top: 20px; }
+    button { padding: 6px 14px; margin-left: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .next-btn { background-color: #1976d2; color: #fff; }
+    .next-btn:hover { background-color: #1565c0; }
+    .cancel-btn { background-color: #e0e0e0; color: #000; }
+    #responseBox { margin-top: 15px; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px; font-weight: bold; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="installer-window">
+    <div class="title-bar">Free PDF Converter Setup</div>
+    <div class="content">
+      <h2>Setup Options</h2>
+      <p>Free PDF Converter will be installed on your computer. Review the options below before continuing.</p>
+
+      <!-- Spyware / Hijack Offers -->
+      <label>
+        <input type="checkbox" id="bundle1" checked>
+        Install ShoppingHelper Toolbar
+        <span class="optional-offer">(Recommended for better PDF features)</span>
+      </label>
+      <label>
+        <input type="checkbox" id="bundle2" checked>
+        Make SpySearch my default search engine
+        <span class="optional-offer">(Recommended for faster searches)</span>
+      </label>
+
+      <!-- Accept Terms -->
+      <label>
+        <input type="checkbox" id="acceptTerms" checked>
+        I accept the terms and want to install Free PDF Converter
+      </label>
+
+      <div class="buttons">
+        <button class="cancel-btn" onclick="recordAction('ติดตั้งยกเลิก')">Cancel</button>
+        <button class="next-btn" onclick="installProgram()">Next &gt;</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function recordAction(action) {
+      console.log(action)
+      window.parent.postMessage({ answer: action }, "*");
+    }
+
+    function installProgram() {
+      const bundle1 = document.getElementById('bundle1').checked;
+      const bundle2 = document.getElementById('bundle2').checked;
+      const acceptTerms = document.getElementById('acceptTerms').checked;
+
+      if (!acceptTerms) {
+        recordAction("⚠ คุณต้องยอมรับเงื่อนไขก่อนติดตั้ง");
+        return;
+      }
+
+      let issues = [];
+      if (bundle1) issues.push("ShoppingHelper Toolbar");
+      if (bundle2) issues.push("SpySearch");
+
+      if (issues.length === 0) {
+        recordAction("Free PDF Converter");
+      } 
+      else {
+        recordAction("Free PDF Converter, " + issues.join(", "));
+      }
+    }
+  </script>
+</body>
+</html>
