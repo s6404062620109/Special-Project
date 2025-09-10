@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab - Suspicious Email (Ransomware)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
+    .email-client { width: 720px; margin: auto; background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .toolbar { display: flex; justify-content: flex-end; background: #f5f5f5; padding: 8px; border-bottom: 1px solid #ddd; }
+    .toolbar button { margin-left: 8px; border: none; background: none; cursor: pointer; font-size: 14px; padding: 6px 10px; border-radius: 4px; }
+    .toolbar button:hover { background: #ddd; }
+    .header { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .header p { margin: 2px 0; }
+    .email-body { padding: 20px; font-size: 14px; line-height: 1.5; }
+    .attachment { border: 1px solid #ccc; padding: 10px; margin-top: 15px; background: #f8f9fa; border-radius: 4px; cursor: pointer; }
+    .attachment:hover { background: #e0e0e0; }
+    #response { margin: 15px; font-weight: bold; color: #0d47a1; }
+  </style>
+</head>
+<body>
+  <div class="email-client">
+    <div class="toolbar">
+      <button onclick="recordAction('ลบอีเมลนี้ทันที')">🗑 Delete</button>
+      <button onclick="recordAction('รายงานอีเมลนี้')">🚩 Report</button>
+      <button onclick="recordAction('ส่งต่อให้คนอื่น')">↪ Forward</button>
+    </div>
+    <div class="header">
+      <p><b>From:</b> finance-dept@secure-support.com</p>
+      <p><b>To:</b> you@company.com</p>
+      <p><b>Subject:</b> Urgent! Invoice Payment Required</p>
+      <p><b>Date:</b> Tue, 19 Aug 2025 10:24:35 +0700</p>
+    </div>
+    <div class="email-body">
+      <p>เรียน ผู้ใช้,</p>
+      <p>ตามที่บริษัทได้แจ้งไว้ก่อนหน้านี้ กรุณาตรวจสอบใบแจ้งหนี้ล่าสุดอย่างเร่งด่วน<br>
+         และทำการชำระภายใน 24 ชั่วโมงเพื่อหลีกเลี่ยงค่าปรับ</p>
+      <p>ไฟล์แนบนี้มีรายละเอียดครบถ้วน:</p>
+      
+      <div class="attachment" onclick="recordAction('เปิดไฟล์แนบ Invoice_Aug2025.docm')">
+        📎 <b>Invoice_Aug2025.docm</b> (Microsoft Word Macro-Enabled Document)  
+        <br><i>⚠ คำเตือน: ไฟล์นี้อาจมีมาโครที่เป็นอันตราย</i>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function recordAction(action) {
+      window.parent.postMessage({ answer: action }, "*");
+    }
+  </script>
+</body>
+</html>

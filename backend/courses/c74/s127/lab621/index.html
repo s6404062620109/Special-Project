@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Bank Secure Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="https://via.placeholder.com/16.png?text=B" type="image/png">
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #eef2f5;
+    margin: 0;
+    padding: 0;
+  }
+  .browser {
+    width: 60%;
+    margin: 40px auto;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  .tab-bar {
+    background: #ddd;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+  }
+  .back-btn {
+    font-size: 18px;
+    margin-right: 10px;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+  }
+  .address-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  .address-bar input {
+    width: 100%;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #aaa;
+    font-family: monospace;
+    font-size: 14px;
+  }
+  .ssl-indicator {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    display: inline-block;
+    border-radius: 50%;
+    background: red;
+  }
+  .page {
+    padding: 20px;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .logo {
+    width: 60px;
+    height: 60px;
+    background: url('https://via.placeholder.com/60x60.png?text=B') no-repeat center/contain;
+    margin-right: 10px;
+  }
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #0d47a1;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  input[type="text"], input[type="password"] {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  button {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-primary {
+    background: #1976d2;
+    color: #fff;
+  }
+  .warning {
+    color: red;
+    font-size: 12px;
+    margin-top: 8px;
+    text-align: center;
+  }
+  #responseBox {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ffb74d;
+    background: #ffe0b2;
+    font-weight: bold;
+    color: #e65100;
+    text-align: center;
+  }
+  .footer {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="browser">
+  <div class="tab-bar">
+    <span class="back-btn" id="goBack">⟵</span>
+    <div class="address-bar">
+      <span class="ssl-indicator" title="SSL certificate not valid"></span>
+      <input type="text" value="http://securebank.com/login" readonly />
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="header">
+      <div class="logo"></div>
+      <h2>Bank Secure Login</h2>
+    </div>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Enter your username" required />
+      <input type="password" id="password" placeholder="Enter your password" required />
+      <button type="button" class="btn-primary" id="loginBtn">Login</button>
+    </form>
+    <div class="warning">* โปรดตรวจสอบ URL และไอคอน SSL ก่อนกรอกข้อมูล</div>
+    <div class="footer">
+      © 2025 Bank Secure. All rights reserved.
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function recordAction(action) {
+    window.parent.postMessage({ answer: action }, "*");
+  }
+
+  document.getElementById("loginBtn").onclick = () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    if (!username || !password) {
+      recordAction("กรุณากรอก Username และ Password ก่อน");
+      return;
+    }
+
+    recordAction("เข้าสู่ระบบสำเร็จ");
+  };
+
+  document.getElementById("goBack").onclick = () => {
+    recordAction("ออกจากหน้าเว็บ");
+  };
+</script>
+
+</body>
+</html>

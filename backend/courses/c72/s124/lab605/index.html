@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <title>Lab - Adware Simulation (Popup & Real Button)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f6f8;
+    }
+    .browser {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      max-width: 90%;
+    }
+    .tab-bar {
+      background: #e0e0e0;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+    }
+    .tab {
+      background: #fff;
+      border-radius: 6px 6px 0 0;
+      padding: 6px 12px;
+      margin-right: 6px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .address-bar {
+      flex: 1;
+      margin-left: 10px;
+    }
+    .address-bar input {
+      width: 100%;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+    }
+    .page {
+      position: relative;
+      min-height: 500px;
+      padding: 16px;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .popup {
+      background: #fff;
+      border-radius: 10px;
+      width: 500px;
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      position: relative;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .popup h2 {
+      margin: 0 0 10px 0;
+      color: #d32f2f;
+    }
+    .popup p {
+      margin: 10px 0 20px;
+      color: #444;
+    }
+    .close-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: #ccc;
+      border: none;
+      border-radius: 50%;
+      width: 24px; height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+      line-height: 22px;
+    }
+
+    .btn-download {
+      display: block;
+      width: 50%;
+      margin: 20px auto;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-download:hover { background: #1565c0; }
+
+    .btn-fake {
+      background: #4caf50;
+      font-size: 20px;
+      padding: 18px;
+      border: none;
+      border-radius: 6px;
+      width: 90%;
+      margin: 14px auto;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    .btn-fake:hover { background: #388e3c; }
+
+    #realSection { display: none; }
+
+    .details {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .details h3 { margin-top: 0; color: #333; }
+    .stats { font-size: 14px; color: #555; margin-top: 10px; }
+    .reviews { margin-top: 20px; font-size: 14px; color: #444; }
+    .review { border-top: 1px solid #eee; padding: 8px 0; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="browser">
+    <div class="tab-bar">
+      <div class="tab">Free Downloads</div>
+      <div class="address-bar">
+        <input type="text" value="http://freedownloads.example.com/app" readonly />
+      </div>
+    </div>
+
+    <div class="page">
+
+      <div class="overlay" id="adPopup">
+        <div class="popup">
+          <button class="close-btn" onclick="closePopup()">x</button>
+          <h2>🎉 ดาวน์โหลดฟรีตอนนี้!</h2>
+          <p>คุณได้รับสิทธิพิเศษ ดาวน์โหลดตัวติดตั้งความเร็วสูง</p>
+          <button class="btn-fake" onclick="recordAction('ดาวน์โหลดจาก Popup')">
+            ⬇ Fast Download
+          </button>
+          <small style="display:block; margin-top:10px; color:#999;">
+            *ข้อเสนอพิเศษจากผู้สนับสนุนเว็บไซต์
+          </small>
+        </div>
+      </div>
+
+      <div id="realSection">
+        <h2>📥 Download Center - FreeApp v2.5</h2>
+        <div class="details">
+          <h3>รายละเอียดไฟล์</h3>
+          <p>ชื่อไฟล์: FreeApp_Setup.exe</p>
+          <p>ขนาด: 45 MB</p>
+          <p>ประเภท: Freeware</p>
+          <p>ผู้พัฒนา: FreeSoft Inc.</p>
+          <div class="stats">
+            ⭐ 4.5/5 (จากผู้ใช้ 2,345 คน) | ดาวน์โหลดแล้ว: 120,000 ครั้ง
+          </div>
+        </div>
+
+        <button class="btn-download" onclick="recordAction('ดาวน์โหลดจากเว็บไซต์')">
+          ⬇ Download Now
+        </button>
+
+        <div class="reviews">
+          <div class="review">"ใช้งานดีมาก ติดตั้งง่าย" – Somchai</div>
+          <div class="review">"ระวังโฆษณาเยอะ กดพลาดไปเกือบติดตั้ง Toolbar" – Anong</div>
+          <div class="review">"โปรแกรมฟรีจริง แต่ต้องหาปุ่มดาวน์โหลดแท้ให้เจอ" – Kanya</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function recordAction(action) {
+      window.parent.postMessage({ answer: action }, "*");
+    }
+
+    function closePopup() {
+      document.getElementById("adPopup").style.display = "none";
+      document.getElementById("realSection").style.display = "block";
+      recordAction("ปิด Popup Adware");
+    }
+  </script>
+</body>
+</html>
