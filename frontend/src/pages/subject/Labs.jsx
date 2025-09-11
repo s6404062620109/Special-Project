@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Pagination, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -75,7 +75,16 @@ function Labs({
               borderRadius: "8px",
             }}
           >
-            <FormLabel>{currentQuestionIndex + 1}. {currentQuestion.content}</FormLabel>
+            <FormLabel>
+              {currentQuestionIndex + 1}.
+
+              {currentQuestion.content.split("\\n").map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+            </FormLabel>
             
             {currentQuestion.img && (
               <img

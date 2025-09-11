@@ -6,7 +6,7 @@ const getAll = (req, res) => {
     const courseId = req.params.courseId;
 
     try{
-        db.query(`SELECT * FROM course WHERE id = ?`, [courseId], (err, courseResult) => {
+        db.query(`SELECT * FROM course WHERE id = ? AND enable = 1`, [courseId], (err, courseResult) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "Database course query error" });
@@ -16,8 +16,13 @@ const getAll = (req, res) => {
                     console.error(err);
                     return res.status(500).json({ message: "Database subject query error" });
                 }
-        
-                return res.status(200).json({ courseInfo: courseResult, subject: subjectResults });
+                db.query(`SELECT name, email, profile_img FROM user WHERE id = ?`, [courseResult[0].teacherId], (err, teacherResult) => {
+                    if (err) {
+                      console.log(err);
+                      return res.status(500).json({ message: "Database user query error" });
+                    }
+                    return res.status(200).json({ courseInfo: courseResult[0], subject: subjectResults, teacherInfo: teacherResult[0] });
+                });
             });
         });
     } catch(error){

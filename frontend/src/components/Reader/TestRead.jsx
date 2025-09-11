@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import backend from '../../api/backend';
 
@@ -52,13 +52,14 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const currentItem = filteredQuestions[currentIndex];
   const pathsToShow = [
     `/add-subject/${courseId}/submit`,
+    `/edit-subject/${courseId}/${subjectId}`
   ];
   const pathsToSelected = [ 
     `/course/${courseId}/pretest/${enrollmentId}`,
     `/course/${courseId}/posttest/${enrollmentId}`
   ]
   
-  const showSelector = pathsToShow.includes(location.pathname) || localStorage.getItem("selector-question-type") === "true";
+  const showSelector = pathsToShow.includes(location.pathname);
   const canSelected = pathsToSelected.includes(location.pathname);
 
   const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
@@ -113,7 +114,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       setHtmlFileContent('');
     }
   }, [currentItem]);
-
+  console.log(questionType)
 
   return (
     <Stack
@@ -135,7 +136,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             defaultValue='All'
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            sx={{ width: 200 }}
+            MenuProps={{
+              disablePortal: true
+            }}
+            sx={{ 
+              width: 200,
+            }}
           >
             <MenuItem value="all">All</MenuItem>
             {questionType.map((type) => (
@@ -167,7 +173,16 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
         
           {(currentItem.type === 1 || currentItem.type === 2 || currentItem.type === 3 || currentItem.type === 6) && (
             <FormControl>
-              <FormLabel id="demo-radio-buttons-group-label">{currentIndex + 1}. {currentItem.content}</FormLabel>
+              <FormLabel 
+                id="demo-radio-buttons-group-label"
+              >
+                {currentItem.content.split("\\n").map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </FormLabel>
               {isInteractive ? (
                 <RadioGroup
                   aria-labelledby="question-label"
@@ -207,7 +222,16 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
           
           {currentItem.type === 5 && currentItem.htmlFile && (
             <Stack gap={2}>
-              <Typography variant="h6">{currentIndex + 1}. {currentItem.content}</Typography>
+              <Typography 
+                variant="h6"
+              >
+                {currentItem.content.split("\\n").map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </Typography>
 
               <iframe
                 srcDoc={htmlFileContent}
@@ -228,7 +252,16 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               gap={2}
               fullWidth
             >
-              <Typography variant="h6">{currentIndex + 1}. {currentItem.content}</Typography>
+              <Typography 
+                variant="h6"
+              >
+                {currentItem.content.split("\\n").map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </Typography>
 
               <Stack
                 direction="row"

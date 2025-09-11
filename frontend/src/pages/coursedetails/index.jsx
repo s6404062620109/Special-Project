@@ -8,6 +8,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 
 import style from "./css/coursedetails.module.css";
 import SubjectData from "./subjectData";
+import TeacherData from "./TeacherData";
 
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
@@ -17,6 +18,13 @@ function CourseDetail() {
     id: "",
     name: "",
     icon: "",
+    createat: null,
+    updateat: null
+  });
+  const [ teacherInfo, setTeacherInfo ] = useState({
+    name: "",
+    email: "",
+    profile_img: null
   });
   const [ history, setHistory ] = useState([]);
   const [ progress, setProgress ] = useState([]);
@@ -27,14 +35,25 @@ function CourseDetail() {
   const fetchCourseInfo = async () => {
     try {
       const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
-
+      console.log(response.data)
       if(response.status === 200){
-        let responseCourse = response.data.courseInfo[0];
+        let responseCourse = response.data.courseInfo;
+        let teacherInfo = response.data.teacherInfo;
+
         setCourseInfo({
           id: responseCourse.id,
           name: responseCourse.name,
           icon: responseCourse.icon,
+          createat: responseCourse.createat,
+          updateat: responseCourse.updateat,
         });
+        
+        setTeacherInfo({
+          name: teacherInfo.name,
+          email: teacherInfo.email,
+          profile_img: teacherInfo.profile_img
+        });
+
         setSubjectList(response.data.subject);
       }
       
@@ -294,6 +313,48 @@ function CourseDetail() {
           )}
         </div>
       )}
+
+      <Stack
+        justifyContent="space-evenly"
+        alignItems="center"
+        sx={{
+          flexDirection: { xs: "column", sm: "row" },
+          margin: "16px 0px",
+          gap: 2
+        }}
+      >
+        <Typography variant="body1">
+          สร้างเมื่อ : 
+          {" "}
+          {courseInfo.createat
+            ? new Date(courseInfo.createat).toLocaleString("th-TH", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "Asia/Bangkok"
+            })
+            : "-"
+          }
+        </Typography>
+
+        <Typography variant="body1">
+          แก้ไขล่าสุด : 
+          {" "}
+          {courseInfo.updateat
+            ? new Date(courseInfo.updateat).toLocaleString("th-TH", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "Asia/Bangkok"
+            })
+            : "-"
+          }
+        </Typography> 
+      </Stack>
+
+      <TeacherData
+        name={teacherInfo.name}
+        email={teacherInfo.email}
+        profile_img={teacherInfo.profile_img ? teacherInfo.profile_img : null}
+      />
       
     </div>
   );

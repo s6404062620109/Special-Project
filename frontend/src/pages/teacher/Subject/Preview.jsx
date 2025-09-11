@@ -37,7 +37,7 @@ function Preview({
             boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
             backgroundColor: 'white',
             width: { xs: '90%', sm: '70%' },
-            maxWidth: questionInput ? '50%' : '100%',
+            maxWidth: questionInput ? '80%' : '100%',
             position: 'relative'
           }
         }

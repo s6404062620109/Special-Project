@@ -746,7 +746,6 @@ function EditSubject() {
                     navigate(`/edit-course/${courseId}`);
                     localStorage.removeItem('editMode');
                     localStorage.removeItem('prevMode');
-                    localStorage.removeItem('selector-question-type');
                 }, 3000);
             }
         } catch (error) {
@@ -775,7 +774,6 @@ function EditSubject() {
                     setAlertOpen(true);
                     return;
                 }
-                localStorage.setItem("selector-question-type", true);
                 setMode("submit");
                 return;
             }
@@ -786,7 +784,6 @@ function EditSubject() {
                     setAlertOpen(true);
                     return;
                 }
-                localStorage.setItem("selector-question-type", true); 
                 setMode("submit");
                 return;
             }
@@ -971,7 +968,6 @@ function EditSubject() {
                             onClick={() => {
                                 localStorage.removeItem('editMode');
                                 localStorage.removeItem('prevMode');
-                                localStorage.removeItem('selector-question-type');
 
                                 navigate(`/edit-course/${courseId}`);
                             }}

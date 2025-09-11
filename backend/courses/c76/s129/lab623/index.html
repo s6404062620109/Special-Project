@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - MyService</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #fff;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      font-size: 22px;
+      color: #0d47a1;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #0d47a1;
+    }
+    label {
+      font-size: 14px;
+      display: block;
+      margin: 8px 0 4px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #0d47a1;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { background: #1565c0; }
+    .strength-bar {
+      height: 8px;
+      border-radius: 6px;
+      background: #ddd;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .hint {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 8px;
+    }
+    .response {
+      margin-top: 16px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo">🔒 MyService</div>
+    <h2>สมัครสมาชิก</h2>
+
+    <label for="fullname">Full Name</label>
+    <input type="text" id="fullname" placeholder="ชื่อ-นามสกุล">
+
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="example@mail.com">
+
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="Username">
+
+    <label for="password">Password</label>
+    <input type="password" id="password" oninput="updateStrength()" placeholder="••••••••">
+    <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+    <div class="hint" id="pwMessage">ควรมีอย่างน้อย 12 ตัวอักษร มี A-Z, a-z, ตัวเลข และสัญลักษณ์</div>
+
+    <label for="confirm">Confirm Password</label>
+    <input type="password" id="confirm" placeholder="ยืนยันรหัสผ่าน">
+
+    <button onclick="checkPassword()">Register</button>
+
+    <div class="response" id="responseBox"></div>
+  </div>
+
+<script>
+function recordAction(action) {
+  document.getElementById('responseBox').innerText = action;
+  window.parent.postMessage({ questionId: 1, answer: action }, "*");
+}
+
+function getStrengthLabel(score) {
+  if (score <= 2) return "รหัสผ่านอ่อน (Weak)";
+  if (score <= 4) return "รหัสผ่านปานกลาง (Medium)";
+  return "รหัสผ่านแข็งแรง (Strong)";
+}
+
+function updateStrength() {
+  const pw = document.getElementById('password').value;
+  const strengthFill = document.getElementById('strengthFill');
+  const pwMessage = document.getElementById('pwMessage');
+
+  let score = 0;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^a-zA-Z0-9]/.test(pw)) score++;
+  if (!["password","123456","qwerty","admin","iloveyou","true","false"].includes(pw.toLowerCase())) score++;
+
+  const percent = (score / 6) * 100;
+  strengthFill.style.width = percent + "%";
+  strengthFill.style.background = percent < 40 ? "red" : percent < 70 ? "orange" : "green";
+
+  pwMessage.innerText = getStrengthLabel(score);
+}
+
+function checkPassword() {
+  const email = document.getElementById('email').value;
+  const username = document.getElementById('username').value;
+  const pw = document.getElementById('password').value;
+  const confirm = document.getElementById('confirm').value;
+  const pwMessage = document.getElementById('pwMessage').innerText;
+
+  if (!email || !username || !pw || !confirm) {
+    recordAction("โปรดกรอกข้อมูลให้ครบ");
+    return;
+  }
+  if (pw !== confirm) {
+    recordAction("Password และ Confirm ไม่ตรงกัน");
+    return;
+  }
+  if (pwMessage.includes("Weak")) {
+    recordAction("รหัสผ่านอ่อนแอเกินไป");
+    return;
+  }
+  if (pwMessage.includes("Medium")) {
+    recordAction("ควรใช้รหัสผ่านที่แข็งแรงกว่านี้");
+    return;
+  }
+  recordAction("สมัครสมาชิกสำเร็จ");
+}
+</script>
+
+</body>
+</html>

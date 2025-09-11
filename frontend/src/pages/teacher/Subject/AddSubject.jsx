@@ -1008,7 +1008,6 @@ function AddSubject() {
                   onClick={() => {
                     localStorage.removeItem("editMode");
                     localStorage.removeItem("prevMode");
-                    localStorage.removeItem("selector-question-type");
 
                     navigate(`/edit-course/${courseId}`);
                   }}
