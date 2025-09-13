@@ -43,7 +43,7 @@ function EditPopup({ courseInfo, onClose, onSave }) {
       reader.readAsDataURL(file);
     }
   };
-  console.log(courseData)
+
   return (
     <div className={style.popupOverlay}>
       <div className={style.popupContent}>

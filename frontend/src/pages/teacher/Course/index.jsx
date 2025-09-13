@@ -36,7 +36,7 @@ function EditCourse() {
 
       if (response.status === 200) {
         setData({
-          courseInfo: response.data.courseInfo[0],
+          courseInfo: response.data.courseInfo,
           subject: response.data.subject,
         });
       }
@@ -164,16 +164,27 @@ function EditCourse() {
     <div className={style.pageWrapper}>
       <div className={style.container}>
         <div className={style.head}>
-          <img alt="course icon" src={data.courseInfo.icon} 
-            style={{
-              "width": "50px", 
-              "height": "50px", 
-              "borderRadius": "8px"
-            }}/>
-          <h2>{data.courseInfo.name}</h2>
-          <IconButton onClick={() => setEditPopupOpen(true)}>
-            <EditIcon/>
-          </IconButton>
+          <div className={style["info-wrapper"]}>
+            <img alt="course icon" src={data.courseInfo.icon} 
+              style={{
+                "width": "50px", 
+                "height": "50px", 
+                "borderRadius": "8px"
+              }}/>
+            <h2>{data.courseInfo.name}</h2>
+            <IconButton onClick={() => setEditPopupOpen(true)}>
+              <EditIcon/>
+            </IconButton>
+          </div>
+          
+          <Button 
+            variant="contained"
+            sx={{
+              width: { xs: "100%", sm: "25%" }
+            }}
+          >
+            รายชื่อผู้เรียน
+          </Button>
         </div>
 
         <div className={style.body}>

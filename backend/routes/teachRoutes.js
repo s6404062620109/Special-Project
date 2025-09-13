@@ -21,6 +21,8 @@ router.put("/update/:courseId", authUserRole.verifiedTeacherCourse, teacherContr
 
 router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteCourse);
 
+router.get("/sumEnrollments/:courseId", authUserRole.verifiedTeacherCourse, teacherController.enrollSummary);
+
 router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
 router.get("/getQuestionType", authUserRole.checkCourseCreation, teacherController.getQuestionType);
