@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 11, 2025 at 11:18 AM
+-- Generation Time: Sep 13, 2025 at 09:58 AM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -67,6 +67,13 @@ CREATE TABLE `enrollment` (
   `userId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `enrollment`
+--
+
+INSERT INTO `enrollment` (`id`, `courseId`, `pretest_complete`, `posttest_complete`, `completed_labs`, `total_labs`, `userId`) VALUES
+(165, 72, 1, 0, 0, 20, 18);
+
 -- --------------------------------------------------------
 
 --
@@ -80,6 +87,46 @@ CREATE TABLE `progress` (
   `questionId` int NOT NULL,
   `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `progress`
+--
+
+INSERT INTO `progress` (`id`, `is_completed`, `score`, `questionId`, `enrollmentId`) VALUES
+(2382, 1, 0, 588, 165),
+(2383, 1, 0, 356, 165),
+(2384, 1, 0, 441, 165),
+(2385, 1, 0, 358, 165),
+(2386, 1, 0, 359, 165),
+(2387, 1, 0, 475, 165),
+(2388, 1, 0, 487, 165),
+(2389, 0, 0, 590, 165),
+(2390, 0, 0, 591, 165),
+(2391, 0, 0, 594, 165),
+(2392, 0, 0, 595, 165),
+(2393, 0, 0, 596, 165),
+(2394, 0, 0, 597, 165),
+(2395, 0, 0, 598, 165),
+(2396, 0, 0, 599, 165),
+(2397, 0, 0, 600, 165),
+(2398, 0, 0, 601, 165),
+(2399, 0, 0, 602, 165),
+(2400, 0, 0, 603, 165),
+(2401, 0, 0, 604, 165),
+(2402, 0, 0, 605, 165),
+(2403, 0, 0, 606, 165),
+(2404, 0, 0, 607, 165),
+(2405, 0, 0, 608, 165),
+(2406, 0, 0, 609, 165),
+(2407, 0, 0, 610, 165),
+(2408, 0, 0, 611, 165),
+(2409, 0, 0, 589, 165),
+(2410, 0, 0, 436, 165),
+(2411, 0, 0, 445, 165),
+(2412, 0, 0, 451, 165),
+(2413, 0, 0, 468, 165),
+(2414, 0, 0, 477, 165),
+(2415, 0, 0, 490, 165);
 
 -- --------------------------------------------------------
 
@@ -1282,13 +1329,13 @@ ALTER TABLE `course`
 -- AUTO_INCREMENT for table `enrollment`
 --
 ALTER TABLE `enrollment`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=165;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=166;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2382;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2416;
 
 --
 -- AUTO_INCREMENT for table `question`
