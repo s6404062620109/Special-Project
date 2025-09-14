@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 import {
   Table,
@@ -13,8 +13,10 @@ import {
   Collapse,
   Box,
   Typography,
+  Button,
+  Stack,
 } from "@mui/material";
-import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import { KeyboardArrowDown, KeyboardArrowLeft, KeyboardArrowUp } from "@mui/icons-material";
 
 function ProgressRow({ prog }) {
   const [open, setOpen] = useState(false);
@@ -100,6 +102,7 @@ function Row({ row }) {
 
 function EnrollSum() {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);
 
   const fetchSumEnrollment = async () => {
@@ -118,7 +121,36 @@ function EnrollSum() {
   }, [courseId]);
 
   return (
-    <Box sx={{ width: "80%", margin: "0 auto" }}>
+    <Stack
+      gap={2} 
+      sx={{ 
+        width: "80%", 
+        margin: "16px auto",
+      }}
+    >
+      <Stack
+        direction="row"
+        justifyContent="flex-start"
+        alignItems="center"
+      >
+        <Button 
+          variant="contained"
+          onClick={() => navigate(-1)}
+          startIcon={<KeyboardArrowLeft/>}
+        >
+          ย้อนกลับ
+        </Button>
+      </Stack>
+      
+      <Typography 
+        variant="h5"
+        sx={{
+          textAlign: "center",
+        }}
+      >
+        รายชื่อนักเรียนทั้งหมด
+      </Typography>
+      
       <TableContainer component={Paper} sx={{ mt: 3 }}>
         <Table>
           <TableHead>
@@ -134,10 +166,23 @@ function EnrollSum() {
             {enrollments.map((row) => (
               <Row key={row.id} row={row} />
             ))}
+            {enrollments.length === 0 &&(
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <Typography 
+                    variant="h6" 
+                    color="error.main"
+                    textAlign="center"
+                  >
+                    ไม่พบข้อมูลนักเรียนในรายวิชานี้
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </Stack>
   );
 }
 

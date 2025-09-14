@@ -258,7 +258,6 @@ const enrollSummary = (req, res) => {
                 questions: questionFormat.filter(question => question.id === item.questionId)
               }
             });
-            console.log(progressFormat);
             
             let finalFormat = result.map(item => {
               return {
@@ -431,7 +430,6 @@ const getSubject = (req, res) => {
             const pdfUrl = !pdfErr ? `/courses/c${courseId}/s${subjectId}/content.pdf` : null;
                  
             if (!jsonErr) {
-              // ถ้ามี content.json ให้อ่านและส่งกลับพร้อม pdfUrl ถ้ามี
               fs.readFile(jsonFilePath, "utf8", (err, data) => {
                 if (err) {
                   console.error("Error reading content.json:", err);
@@ -448,7 +446,6 @@ const getSubject = (req, res) => {
                 }
               });
             } else if (!pdfErr) {
-              // ถ้าไม่มี content.json แต่มี PDF
               return res.status(200).json({ pdfUrl, subjectname, question });
             } else {
               return res.status(404).json({ message: "No subject content available" });

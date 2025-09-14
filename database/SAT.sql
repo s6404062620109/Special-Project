@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Sep 13, 2025 at 09:58 AM
+-- Generation Time: Sep 14, 2025 at 10:34 AM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -72,7 +72,7 @@ CREATE TABLE `enrollment` (
 --
 
 INSERT INTO `enrollment` (`id`, `courseId`, `pretest_complete`, `posttest_complete`, `completed_labs`, `total_labs`, `userId`) VALUES
-(165, 72, 1, 0, 0, 20, 18);
+(165, 72, 1, 0, 3, 20, 18);
 
 -- --------------------------------------------------------
 
@@ -113,9 +113,9 @@ INSERT INTO `progress` (`id`, `is_completed`, `score`, `questionId`, `enrollment
 (2399, 0, 0, 602, 165),
 (2400, 0, 0, 603, 165),
 (2401, 0, 0, 604, 165),
-(2402, 0, 0, 605, 165),
-(2403, 0, 0, 606, 165),
-(2404, 0, 0, 607, 165),
+(2402, 1, 1, 605, 165),
+(2403, 1, 1, 606, 165),
+(2404, 1, 1, 607, 165),
 (2405, 0, 0, 608, 165),
 (2406, 0, 0, 609, 165),
 (2407, 0, 0, 610, 165),

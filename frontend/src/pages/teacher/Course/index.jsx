@@ -182,6 +182,7 @@ function EditCourse() {
             sx={{
               width: { xs: "100%", sm: "25%" }
             }}
+            onClick={() => navigate(`/enrollment-summary/${courseId}`)}
           >
             รายชื่อผู้เรียน
           </Button>

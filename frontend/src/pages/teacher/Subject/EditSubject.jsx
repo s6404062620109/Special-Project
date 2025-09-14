@@ -631,7 +631,6 @@ function EditSubject() {
                         setMode("manual");
                     }
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
-                        // console.log('PDF URL:', subjectData.pdfUrl);
                         setSubjectPdfInput({ ...subjectPdfInput, name: subjectData.subjectname });
                         fetchSubjectPdf(
                             subjectData.subjectname, 

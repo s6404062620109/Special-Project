@@ -114,7 +114,6 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       setHtmlFileContent('');
     }
   }, [currentItem]);
-  console.log(questionType)
 
   return (
     <Stack
