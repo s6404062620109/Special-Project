@@ -1,55 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Email Phishing Simulation</title>
-<style>
-    body { font-family: Arial, sans-serif; background: #f1f3f4; margin: 0; padding: 0; }
-    .topbar { background: #ffffff; padding: 10px; display: flex; align-items: center; border-bottom: 1px solid #ccc; }
-    .topbar .actions { margin-left: auto; }
-    .topbar button { background: none; border: none; cursor: pointer; padding: 6px; margin-left: 5px; font-size: 16px; }
-    .topbar button:hover { background: #e8eaed; border-radius: 4px; }
-    .email-container { background: white; max-width: 800px; margin: 20px auto; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .email-header { padding: 20px; border-bottom: 1px solid #ddd; }
-    .email-header h2 { margin: 0; font-size: 20px; }
-    .email-header .meta { color: #555; font-size: 14px; margin-top: 5px; }
-    .email-body { padding: 20px; font-size: 15px; line-height: 1.5; }
-    .clickable { color: #1a73e8; text-decoration: underline; cursor: pointer; }
-    .response { margin-top: 20px; font-weight: bold; color: green; text-align: center; }
-</style>
-</head>
-<body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Email Phishing Simulation - Hook Icon</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f1f3f4;
+        margin: 0;
+        padding: 0;
+      }
+      .topbar {
+        background: #fff;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #ccc;
+      }
+      .topbar .actions {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+      }
+      .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        cursor: pointer;
+        padding: 8px 12px;
+        font-size: 14px;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+      .report {
+        background: #fff3f2;
+        color: #b0001a;
+        border: 1px solid #ffdede;
+      }
+      .report:hover {
+        background: #ffdede;
+      }
+      .delete {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #e0e0e0;
+      }
+      .reply {
+        background: #eaf3ff;
+        color: #1a73e8;
+        border: 1px solid #d6e6ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="logo">📧 MyMail</div>
+      <div class="actions">
+        <button
+          class="action-btn report"
+          onclick="recordAction('Report Email as Phishing')"
+          aria-label="Report phishing"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M20 7c0 4.418-3.582 8-8 8-1.657 0-3-1.343-3-3 0-1.105.895-2 2-2s2 .895 2 2"
+              stroke="#D93025"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M12 3v4"
+              stroke="#D93025"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M14 7h-4"
+              stroke="#D93025"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M16 11s0 3-4 3"
+              stroke="#D93025"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>Report Phishing</span>
+        </button>
 
-<div class="topbar">
-    <div class="logo">📧 MyMail</div>
-    <div class="actions">
-        <button title="Report as Phishing" onclick="recordAction('Report Email as Phishing')">🚩</button>
-        <button title="Delete Email" onclick="recordAction('Delete Email')">🗑</button>
-        <button title="Reply to Email" onclick="recordAction('Reply to Email')">↩</button>
-    </div>
-</div>
+        <button
+          class="action-btn delete"
+          onclick="recordAction('Delete Email')"
+          aria-label="Delete email"
+        >
+          🗑 Delete
+        </button>
 
-<div class="email-container">
-    <div class="email-header">
-        <h2>Urgent Account Verification Required!</h2>
-        <div class="meta">
-            From: RealBank Security &lt;security@realbank-support.com&gt;<br>
-            To: you@example.com
-        </div>
+        <button
+          class="action-btn reply"
+          onclick="recordAction('Reply to Email')"
+          aria-label="Reply email"
+        >
+          ↩ Reply
+        </button>
+      </div>
     </div>
-    <div class="email-body">
-        <p>Dear Customer,</p>
-        <p>We detected unusual activity in your account. Please <span class="clickable" onclick="recordAction('Click Link')">click here</span> to verify your account immediately.</p>
-        <p>If you do not verify within 24 hours, your account will be suspended.</p>
-        <p>Thank you,<br>RealBank Security Team</p>
-    </div>
-</div>
 
-<script>
-    function recordAction(action) {
+    <div
+      style="
+        max-width: 800px;
+        margin: 20px auto;
+        background: #fff;
+        padding: 18px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      "
+    >
+      <h2>Urgent Account Verification Required!</h2>
+      <p>From: RealBank Security &lt;security@realbank-support.com&gt;</p>
+      <p>
+        Please
+        <a href="#" onclick="recordAction('Click Link'); return false;"
+          >click here</a
+        >
+        to verify your account
+      </p>
+    </div>
+
+    <script>
+      function recordAction(action) {
         window.parent.postMessage({ answer: action }, "*");
-    }
-</script>
-
-</body>
+      }
+    </script>
+  </body>
 </html>

@@ -1,58 +1,165 @@
 <!DOCTYPE html>
 <html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <title>Lab - Virus URL Detection</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #fff; padding: 20px; }
-    .search-box { max-width: 800px; margin: auto; }
-    .result { margin-bottom: 20px; padding: 12px; border-bottom: 1px solid #ddd; cursor: pointer; }
-    .result:hover { background: #f9f9f9; }
-    .title { font-size: 18px; color: #1a0dab; }
-    .url { font-size: 14px; color: #006621; margin-bottom: 4px; }
-    .desc { font-size: 13px; color: #545454; }
-    .rating { font-size: 13px; color: #777; margin-top: 5px; }
-    .stars { color: #ffa500; }
-    .response { margin: 20px auto; text-align: center; font-weight: bold; color: #0d47a1; }
-  </style>
-</head>
-<body>
-  <div class="search-box">
-    <h2>🔍 Google Search: "Free Antivirus Download"</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lab - Virus URL Detection (Hover Tooltip)</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #fff;
+        padding: 20px;
+      }
+      .search-box {
+        max-width: 800px;
+        margin: auto;
+      }
+      .hint {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
 
-    <div class="result" onclick="recordAction('https://www.avast.com')">
-      <div class="title">Avast Free Antivirus - Official Download</div>
-      <div class="url">https://www.avast.com</div>
-      <div class="desc">Download free antivirus protection. Official Avast website with 30+ years experience.</div>
-      <div class="rating"><span class="stars">★★★★★</span> 4.8 - 12,870 reviews</div>
+      .result {
+        margin-bottom: 14px;
+        padding: 14px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background: #fff;
+        cursor: pointer;
+        outline: none;
+        transition: box-shadow 0.15s, transform 0.06s;
+      }
+      .result:focus,
+      .result:hover {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .title {
+        position: relative;
+        font-size: 18px;
+        color: #1a0dab;
+        font-weight: 600;
+      }
+      .desc {
+        font-size: 13px;
+        color: #545454;
+        margin-top: 6px;
+      }
+      .rating {
+        font-size: 13px;
+        color: #777;
+        margin-top: 8px;
+      }
+      .stars {
+        color: #ffa500;
+      }
+
+      .result::after {
+        content: attr(data-url);
+        display: none;
+        position: absolute;
+        left: 10px;
+        bottom: 50px;
+        background: #333;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 100;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .result:hover::after,
+      .result:focus::after {
+        display: block;
+      }
+
+      .response {
+        margin: 30px auto;
+        text-align: center;
+        font-weight: bold;
+        color: #0d47a1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="search-box" role="main">
+      <h2>🔍 Google Search: "Free Antivirus Download"</h2>
+
+      <div
+        class="result"
+        tabindex="0"
+        data-url="https://www.avast.com"
+        onclick="selectUrl(this)"
+        onkeydown="handleKey(event,this)"
+      >
+        <div class="title">Avast Free Antivirus - Official Download</div>
+        <div class="desc">
+          Download free antivirus protection. Official Avast website with 30+
+          years experience.
+        </div>
+        <div class="rating">
+          <span class="stars">★★★★★</span> 4.8 - 12,870 reviews
+        </div>
+      </div>
+
+      <div
+        class="result"
+        tabindex="0"
+        data-url="http://antivirus-free-download.xyz"
+        onclick="selectUrl(this)"
+        onkeydown="handleKey(event,this)"
+      >
+        <div class="title">Free Antivirus Download - 100% Secure</div>
+        <div class="desc">
+          Get your free antivirus here. Fast download guaranteed.
+        </div>
+        <div class="rating">
+          <span class="stars">★★☆☆☆</span> 2.1 - 320 reviews
+        </div>
+      </div>
+
+      <div
+        class="result"
+        tabindex="0"
+        data-url="http://secure-antivirus-now.ru"
+        onclick="selectUrl(this)"
+        onkeydown="handleKey(event,this)"
+      >
+        <div class="title">Secure Antivirus Now</div>
+        <div class="desc">Protect your PC instantly with free antivirus.</div>
+        <div class="rating">
+          <span class="stars">★☆☆☆☆</span> 1.5 - 80 reviews
+        </div>
+      </div>
+
+      <div
+        class="result"
+        tabindex="0"
+        data-url="http://get-best-antivirus-download.info"
+        onclick="selectUrl(this)"
+        onkeydown="handleKey(event,this)"
+      >
+        <div class="title">Best Antivirus Free Download</div>
+        <div class="desc">Download the best antivirus software today.</div>
+        <div class="rating">
+          <span class="stars">★★★☆☆</span> 3.0 - 500 reviews
+        </div>
+      </div>
     </div>
 
-    <div class="result" onclick="recordAction('http://antivirus-free-download.xyz')">
-      <div class="title">Free Antivirus Download - 100% Secure</div>
-      <div class="url">http://antivirus-free-download.xyz</div>
-      <div class="desc">Get your free antivirus here. Fast download guaranteed.</div>
-      <div class="rating"><span class="stars">★★☆☆☆</span> 2.1 - 320 reviews</div>
-    </div>
-
-    <div class="result" onclick="recordAction('http://secure-antivirus-now.ru')">
-      <div class="title">Secure Antivirus Now</div>
-      <div class="url">http://secure-antivirus-now.ru</div>
-      <div class="desc">Protect your PC instantly with free antivirus.</div>
-      <div class="rating"><span class="stars">★☆☆☆☆</span> 1.5 - 80 reviews</div>
-    </div>
-
-    <div class="result" onclick="recordAction('http://get-best-antivirus-download.info')">
-      <div class="title">Best Antivirus Free Download</div>
-      <div class="url">http://get-best-antivirus-download.info</div>
-      <div class="desc">Download the best antivirus software today.</div>
-      <div class="rating"><span class="stars">★★★☆☆</span> 3.0 - 500 reviews</div>
-    </div>
-  </div>
-
-  <script>
-    function recordAction(action) {
-      window.parent.postMessage({ answer: action }, "*");
-    }
-  </script>
-</body>
+    <script>
+      function selectUrl(el) {
+        const url = el.getAttribute("data-url");
+        window.parent.postMessage({ answer: url }, "*");
+      }
+      function handleKey(e, el) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectUrl(el);
+        }
+      }
+    </script>
+  </body>
 </html>
