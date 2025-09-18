@@ -618,35 +618,33 @@ function EditSubject() {
             if(response.status === 200){
                 const subjectData = response.data;
 
-                if(subjectData.subjectname){
-
+                if (subjectData.subjectname) {
                     if (Array.isArray(subjectData.jsonData) && subjectData.jsonData.length > 0) {
                         setSubjectData({ name: subjectData.subjectname, content: subjectData.jsonData });
-
-                        setSubjectInput({ 
-                            name: subjectData.subjectname, 
-                            content: JSON.parse(JSON.stringify(subjectData.jsonData)) 
-                        });
+                        setSubjectInput({ name: subjectData.subjectname, content: JSON.parse(JSON.stringify(subjectData.jsonData)) });
                         localStorage.setItem("editMode", "manual");
                         setMode("manual");
                     }
+
                     if (typeof subjectData.pdfUrl === 'string' && subjectData.pdfUrl.trim() !== '') {
                         setSubjectPdfInput({ ...subjectPdfInput, name: subjectData.subjectname });
                         fetchSubjectPdf(
-                            subjectData.subjectname, 
-                            `http://${import.meta.env.VITE_DEV_URL}:${import.meta.env.VITE_BACKEND_PORT}/subjects${subjectData.pdfUrl}`
+                        subjectData.subjectname, 
+                        `http://${import.meta.env.VITE_DEV_URL}:${import.meta.env.VITE_BACKEND_PORT}/subjects${subjectData.pdfUrl}`
                         );
                         localStorage.setItem("editMode", "pdf");
                         setMode("pdf");
                     }
+
                     if (Array.isArray(subjectData.question) && subjectData.question.length > 0) {
                         setQuestionData(subjectData.question);
                         setQuestionInput(JSON.parse(JSON.stringify(subjectData.question)));
+                    } else {
+                        console.warn("No questions found in response");
                     }
-                    else {
-                        console.warn("Missing subjectName in response");
-                        return;
-                    }
+                }
+                else{
+                    console.log("No subject name found in response");
                 }
             }
         } catch (error) {
@@ -1107,9 +1105,22 @@ function EditSubject() {
                         }}
                         >
                         {questionInput[selectedImageIndex]?.img ? (
-                            <Typography variant="body1" sx={{ color: '#666', mt: 1 }}>
-                            Image selected ✔
-                            </Typography>
+                            <>
+                                <img
+                                    src={questionInput[selectedImageIndex].img}
+                                    alt="Selected Image"
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                                <Typography 
+                                    variant="body1" 
+                                    sx={{ 
+                                        color: '#666', 
+                                        mt: 1 
+                                    }}
+                                >
+                                Image selected ✔
+                                </Typography>
+                            </>
                         ) : (
                             <Stack justifyContent="center" alignItems="center">
                             <AddIcon sx={{ color: '#b3b3b3' }} />

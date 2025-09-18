@@ -289,176 +289,133 @@ const getSubject = (req, res) => {
   const { courseId, subjectId } = req.params;
   const jsonFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.json`);
   const pdfFilePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/content.pdf`);
-  let question = [];
 
-  try{
-    db.query(`SELECT name FROM subject WHERE id = ? AND courseId = ?`,
-      [subjectId, courseId], (err, result) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Database subject query error" });
+  try {
+    const sql = `
+      SELECT 
+        s.name AS subjectname,
+        q.id AS questionId, q.content AS questionContent, q.img AS questionImg, q.typeId,
+        t.id AS typeId, t.name_type AS typeName,
+        a.id AS answerId, a.content AS answerContent, a.type AS answerType
+      FROM subject s
+      LEFT JOIN question q ON s.id = q.subjectId
+      LEFT JOIN question_type t ON q.typeId = t.id
+      LEFT JOIN question_answer a ON q.id = a.questionId
+      WHERE s.id = ? AND s.courseId = ?
+    `;
+
+    db.query(sql, [subjectId, courseId], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      if (rows.length === 0) {
+        return res.status(404).json({ message: "Subject not found." });
+      }
+
+      const subjectname = rows[0].subjectname;
+      const questionsMap = {};
+
+      rows.forEach(r => {
+        if (!r.questionId) return;
+
+        if (!questionsMap[r.questionId]) {
+          questionsMap[r.questionId] = {
+            id: r.questionId,
+            content: r.questionContent,
+            img: r.questionImg,
+            type: r.typeId,
+            choice: []
+          };
         }
 
-        db.query('SELECT courseId FROM subject WHERE id = ?', [subjectId], (err, subjectResult) => {
-          if (err) {
-            console.log(err);
-            return res.status(500).json({ message: "Database subject query error" });
-          }
-          const subjectCourseId = String(subjectResult[0].courseId);
-          if(subjectCourseId === courseId){
-            db.query('SELECT * FROM question WHERE subjectId = ?', [subjectId], (err, questionResult) => {
-              if (err) {
-                console.log(err);
-                return res.status(500).json({ message: "Database question query error" });
-              }
-              const questionIds = questionResult.map(item => item.id);
-              const typeIds = questionResult.map(item => item.typeId);
-              if (questionIds.length === 0 || typeIds.length === 0) {
-                return res.status(404).json({ message: "No question found." });
-              }
-
-              db.query('SELECT * FROM question_type WHERE id IN (?)', [typeIds], (err, typeResult) => {
-                if (err) {
-                  console.log(err);
-                  return res.status(500).json({ message: "Database type query error" });
-                }
-
-                db.query('SELECT * FROM question_answer WHERE questionId IN (?)', [questionIds], (err, answerResult) => {
-                if (err) {
-                  console.log(err);
-                  return res.status(500).json({ message: "Database answer query error" });
-                }
-
-                  question = questionResult.map(item => {
-                    const answers = answerResult.filter(answer => answer.questionId === item.id);
-
-                    const questionFormat = {
-                      id: item.id,
-                      content: item.content,
-                      img: item.img,
-                      type: typeResult.find(type => type.id === item.typeId).id,
-                    };
-
-                    if(item.typeId === 1 || item.typeId === 2 || item.typeId === 3 || item.typeId === 6){
-                      return {
-                        ...questionFormat,
-                        choice: answers.map(answer => ({
-                          id: answer.id,
-                          content: answer.content,  
-                          isCorrect: answer.type
-                        }))
-                      };
-                    }
-                    if (item.typeId === 4) {
-                      const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
-                      let Cmdfile = null;
-
-                      if (fs.existsSync(labFolderPath)) {
-                        const allFiles = fs.readdirSync(labFolderPath);
-                        if (allFiles.includes("run.sh")) {
-                          const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/run.sh`;
-                          const absPath = path.join(__dirname, `..${relPath}`);
-                          let content = null;
-
-                          try {
-                            content = fs.readFileSync(absPath, "utf8");
-                          } catch (readErr) {
-                            console.error(`Error reading run.sh for lab${item.id}:`, readErr);
-                          }
-
-                          Cmdfile = {
-                            name: "run.sh",
-                            path: relPath,
-                            content,
-                          };
-                        }
-                      }
-
-                      return {
-                        ...questionFormat,
-                        answerId: answers[0].id,
-                        answer: answers[0].type === 1 ? answers[0].content : null,
-                        Cmdfile,
-                      };
-                    }
-                    if (item.typeId === 5) {
-                      const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
-                      let htmlFile = null;
-
-                      if (fs.existsSync(labFolderPath)) {
-                        const allFiles = fs.readdirSync(labFolderPath);
-                        if (allFiles.includes("index.html")) {
-                          const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/index.html`;
-                          const absPath = path.join(__dirname, `..${relPath}`);
-                          let content = null;
-
-                          try {
-                            content = fs.readFileSync(absPath, "utf8");
-                          } catch (readErr) {
-                            console.error(`Error reading index.html for lab${item.id}:`, readErr);
-                          }
-
-                          htmlFile = {
-                            name: "index.html",
-                            path: relPath,
-                            content,
-                          };
-                        }
-                      }
-
-                      return {
-                        ...questionFormat,
-                        answerId: answers[0]?.id ?? null,
-                        answer: answers[0]?.type === 1 ? answers[0].content : null,
-                        htmlFile,
-                      };
-                    }
-                    
-                  });
-                });
-              });         
+        if (r.typeId === 1 || r.typeId === 2 || r.typeId === 3 || r.typeId === 6) {
+          if (r.answerId) {
+            questionsMap[r.questionId].choice.push({
+              id: r.answerId,
+              content: r.answerContent,
+              isCorrect: r.answerType
             });
           }
-          else{
-            return res.status(404).json({ message: "Subject not found in course." });
+        } else if (r.typeId === 4) {
+          const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${r.questionId}`);
+          let Cmdfile = null;
+
+          if (fs.existsSync(labFolderPath)) {
+            const allFiles = fs.readdirSync(labFolderPath);
+            if (allFiles.includes("run.sh")) {
+              const relPath = `/courses/c${courseId}/s${subjectId}/lab${r.questionId}/run.sh`;
+              const absPath = path.join(__dirname, `..${relPath}`);
+              let content = null;
+              try {
+                content = fs.readFileSync(absPath, "utf8");
+              } catch (readErr) {
+                console.error(`Error reading run.sh for lab${r.questionId}:`, readErr);
+              }
+              Cmdfile = { name: "run.sh", path: relPath, content };
+            }
+          }
+
+          questionsMap[r.questionId].answerId = r.answerId;
+          questionsMap[r.questionId].answer = r.answerType === 1 ? r.answerContent : null;
+          questionsMap[r.questionId].Cmdfile = Cmdfile;
+        } else if (r.typeId === 5) {
+          const labFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${r.questionId}`);
+          let htmlFile = null;
+
+          if (fs.existsSync(labFolderPath)) {
+            const allFiles = fs.readdirSync(labFolderPath);
+            if (allFiles.includes("index.html")) {
+              const relPath = `/courses/c${courseId}/s${subjectId}/lab${r.questionId}/index.html`;
+              const absPath = path.join(__dirname, `..${relPath}`);
+              let content = null;
+              try {
+                content = fs.readFileSync(absPath, "utf8");
+              } catch (readErr) {
+                console.error(`Error reading index.html for lab${r.questionId}:`, readErr);
+              }
+              htmlFile = { name: "index.html", path: relPath, content };
+            }
+          }
+
+          questionsMap[r.questionId].answerId = r.answerId ?? null;
+          questionsMap[r.questionId].answer = r.answerType === 1 ? r.answerContent : null;
+          questionsMap[r.questionId].htmlFile = htmlFile;
+        }
+      });
+
+      const question = Object.values(questionsMap);
+
+      fs.access(jsonFilePath, fs.constants.F_OK, (jsonErr) => {
+        fs.access(pdfFilePath, fs.constants.F_OK, (pdfErr) => {
+          if (!jsonErr) {
+            fs.readFile(jsonFilePath, "utf8", (err, data) => {
+              if (err) {
+                console.error("Error reading content.json:", err);
+                return res.status(500).json({ message: "Error loading subject content" });
+              }
+              try {
+                const jsonData = JSON.parse(data);
+                return res.status(200).json({ jsonData, subjectname, question });
+              } catch (parseError) {
+                console.error("Error parsing content.json:", parseError);
+                return res.status(500).json({ message: "Invalid JSON format" });
+              }
+            });
+          } else if (!pdfErr) {
+            return res.status(200).json({ pdfUrl: `/courses/c${courseId}/s${subjectId}/content.pdf`, subjectname, question });
+          } else {
+            return res.status(404).json({ message: "No subject content available" });
           }
         });
-
-        fs.access(jsonFilePath, fs.constants.F_OK, (jsonErr) => {
-          fs.access(pdfFilePath, fs.constants.F_OK, (pdfErr) => {
-            const subjectname = result[0].name;
-            const pdfUrl = !pdfErr ? `/courses/c${courseId}/s${subjectId}/content.pdf` : null;
-                 
-            if (!jsonErr) {
-              fs.readFile(jsonFilePath, "utf8", (err, data) => {
-                if (err) {
-                  console.error("Error reading content.json:", err);
-                  return res.status(500).json({ message: "Error loading subject content" });
-                }
-                      
-                try {
-                  const jsonData = JSON.parse(data);
-                        
-                  return res.status(200).json({ jsonData, subjectname, question });
-                } catch (parseError) {
-                  console.error("Error parsing content.json:", parseError);
-                  return res.status(500).json({ message: "Invalid JSON format" });
-                }
-              });
-            } else if (!pdfErr) {
-              return res.status(200).json({ pdfUrl, subjectname, question });
-            } else {
-              return res.status(404).json({ message: "No subject content available" });
-            }
-          });
-        });
-      }
-    );
-  } catch(error){
-    console.log(error);
+      });
+    });
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "Server error.", error });
   }
-}
+};
 
 const getQuestionType = (req, res) => {
   try{

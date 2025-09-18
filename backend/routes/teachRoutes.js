@@ -29,7 +29,10 @@ router.get("/getQuestionType", authUserRole.checkCourseCreation, teacherControll
 
 const subjectUpload = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 16 * 1024 * 1024 },
+  limits: { 
+    fileSize: 16 * 1024 * 1024,
+    fieldSize: 32 * 1024 * 1024 
+  },
   fileFilter: (req, file, cb) => {
     const allowedExtensions = ['.pdf', '.sh', '.txt', '.png', '.jpg', '.jpeg', '.html', '.css', '.js'];
 
