@@ -12,7 +12,7 @@ function Labs({
     handleLabSubmit
  }) {
     const { courseId, enrollmentId } = useParams();
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [ currentQuestionIndex, setCurrentQuestionIndex ] = useState(0);
     const [ htmlFileContent, setHtmlFileContent ] = useState('');
 
     const handleChangePage = (event, value) => {

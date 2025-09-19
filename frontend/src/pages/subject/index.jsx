@@ -65,7 +65,7 @@ const useLabQuestions = () => {
             });
         });
     };
-
+    console.log(answers)
     const lasbValidations = () => {
         let valid = true;
         answers.forEach((answer, index) => {
@@ -209,7 +209,7 @@ function Subject() {
             console.log(error);
         }
     }
-
+    
     const handleLabSpawn = async (questionId) => {
         try {
             const response = await backend.post(`/labs/startLabSession/${courseId}`, {

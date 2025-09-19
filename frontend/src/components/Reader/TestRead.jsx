@@ -186,8 +186,8 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                 <RadioGroup
                   aria-labelledby="question-label"
                   name="radio-buttons-group"
-                  value={selectedAnswers[currentItem.qId] || ''}
-                  onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value)}
+                  value={selectedAnswers[currentItem.qId]?.answerId || ''}
+                  onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value, currentItem.choice.find(choice => choice.aId === Number(e.target.value)).content)}
                 >
                   {currentItem.choice.map((choice, index) => (
                     <FormControlLabel
@@ -196,7 +196,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                       disabled={!canSelected}
                       control={<Radio />}
                       label={choice.content}
-                      checked={selectedAnswers[currentItem.qId] === String(choice.aId)}
+                      checked={selectedAnswers[currentItem.qId]?.answerId === String(choice.aId)}
                     />
                   ))}
                 </RadioGroup>

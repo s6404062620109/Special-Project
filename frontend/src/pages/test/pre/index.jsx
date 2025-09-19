@@ -73,10 +73,13 @@ function Pretest() {
     fetchPretestData();
   }, [userData.id, enrollmentId, courseId, navigate]);
  
-  const handleAnswerChange = (questionId, answerId) => {
+  const handleAnswerChange = (questionId, answerId, content) => {
     setSelectedAnswers((prev) => ({
       ...prev,
-      [questionId]: answerId,
+      [questionId]: {
+        answerId,
+        content
+      },
     }));
   };
 
