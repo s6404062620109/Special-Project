@@ -38,12 +38,40 @@ function ProgressRow({ prog }) {
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={4}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
-              <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                คำตอบที่ถูก:
+              <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                รายละเอียดคำตอบ:
               </Typography>
-              <Typography variant="body1" color="success.main">
-                {prog.questions[0]?.answer ?? "N/A"}
-              </Typography>
+
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>คำตอบที่ถูก</TableCell>
+                    <TableCell>คำตอบของผู้ใช้</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {prog.questions.map((q) => {
+                    const corrects = Array.isArray(q.correctAnswers)
+                      ? Array.from(new Set(q.correctAnswers))
+                      : [q.correctAnswers ?? "-"];
+
+                    const users = Array.isArray(q.userAnswers)
+                      ? Array.from(new Set(q.userAnswers))
+                      : ["-"];
+
+                    const maxLength = Math.max(corrects.length, users.length);
+
+                    return Array.from({ length: maxLength }).map((_, idx) => (
+                      <TableRow key={`${q.id}-${idx}`}>
+                        <TableCell sx={{ color: "success.main" }}>
+                          {corrects[idx] ?? "-"}
+                        </TableCell>
+                        <TableCell>{users[idx] ?? "-"}</TableCell>
+                      </TableRow>
+                    ));
+                  })}
+                </TableBody>
+              </Table>
             </Box>
           </Collapse>
         </TableCell>
@@ -110,7 +138,11 @@ function EnrollSum() {
       const response = await backend.get(`/teacher/sumEnrollments/${courseId}`, {
         withCredentials: true,
       });
-      setEnrollments(response.data.finalFormat || []);
+
+      if(response.status === 200){
+        setEnrollments(response.data.finalFormat || []);
+      }
+
     } catch (error) {
       console.error(error);
     }

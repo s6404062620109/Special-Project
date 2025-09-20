@@ -185,102 +185,105 @@ const deleteCourse = (req, res) => {
 const enrollSummary = (req, res) => {
   const { courseId } = req.params;
 
-  try{
-    db.query("SELECT id, courseId, completed_labs, total_labs, userId FROM enrollment WHERE courseId = ?", [courseId], (error, result) => {
-      if(error){
-        console.log(error);
-        return res.status(500).send({ message: "Database enrollment query error." });
+  try {
+    const sql = `
+      SELECT 
+        e.id AS enrollmentId, e.courseId, e.completed_labs, e.total_labs,
+        u.id AS userId, u.name AS userName, u.email AS userEmail,
+        p.id AS progressId, p.is_completed, p.score, p.questionId,
+        pa.user_answer AS userAnswer,
+        q.id AS questionId, q.content AS questionContent, q.typeId, q.subjectId,
+        qa.content AS correctAnswer
+      FROM enrollment e
+      JOIN user u ON u.id = e.userId
+      LEFT JOIN progress p ON p.enrollmentId = e.id
+      LEFT JOIN progress_answer pa ON pa.progressId = p.id
+      LEFT JOIN question q ON q.id = p.questionId
+      LEFT JOIN question_answer qa ON qa.questionId = q.id AND qa.type = 1
+      WHERE e.courseId = ?;
+    `;
+
+    db.query(sql, [courseId], (error, rows) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Database query error." });
       }
 
-      let userIds = result.map(item => item.userId);
-      if(userIds.length === 0){
+      if (!rows.length) {
         return res.status(404).send({ message: "No enrollment found." });
       }
 
-      let userInfo;
-      db.query("SELECT * FROM user WHERE id IN (?)", [userIds], (error, userResult) => {
-        if(error){
-          console.log(error);
-          return res.status(500).send({ message: "Database user query error." });
-        }
-        userInfo = userResult;
-      });
+      const enrollmentMap = {};
 
-      let enrollmentIds = result.map(item => item.id);
-      if(enrollmentIds.length === 0){
-        return res.status(404).send({ message: "No enrollment found." });
-      }  
-
-      db.query("SELECT * FROM progress WHERE enrollmentId IN (?)", [enrollmentIds], (error, progressResult) => {
-        if(error){
-          console.log(error);
-          return res.status(500).send({ message: "Database progress query error." });
-        }
-
-        let questionIds = progressResult.map(item => item.questionId);
-        if(questionIds.length === 0){
-          return res.status(404).send({ message: "No question found." });
+      rows.forEach(row => {
+        // สร้าง enrollment object
+        if (!enrollmentMap[row.enrollmentId]) {
+          enrollmentMap[row.enrollmentId] = {
+            id: row.enrollmentId,
+            courseId: row.courseId,
+            completed_labs: row.completed_labs,
+            total_labs: row.total_labs,
+            userId: row.userId,
+            user: {
+              id: row.userId,
+              name: row.userName,
+              email: row.userEmail
+            },
+            progress: []
+          };
         }
 
-        db.query("SELECT id, content, typeId, subjectId FROM question WHERE id IN (?)", [questionIds], (error, questionResult) => {
-          if(error){
-            console.log(error);
-            return res.status(500).send({ message: "Database question query error." });
+        // สร้าง progress object
+        if (row.progressId) {
+          let progress = enrollmentMap[row.enrollmentId].progress.find(p => p.id === row.progressId);
+          if (!progress) {
+            progress = {
+              id: row.progressId,
+              is_completed: row.is_completed,
+              score: row.score,
+              enrollmentId: row.enrollmentId,
+              questions: []
+            };
+            enrollmentMap[row.enrollmentId].progress.push(progress);
           }
 
-          if(questionResult.length === 0){
-            return res.status(404).send({ message: "No question found." });
-          }
+          // เพิ่ม question object
+          if (row.questionId) {
+            let question = progress.questions.find(q => q.id === row.questionId);
+            if (!question) {
+              question = {
+                id: row.questionId,
+                content: row.questionContent,
+                typeId: row.typeId,
+                subjectId: row.subjectId,
+                correctAnswers: row.correctAnswer ? [row.correctAnswer] : [],
+                userAnswers: row.userAnswer ? [row.userAnswer] : []
+              };
+              progress.questions.push(question);
+            } else {
+              // push correctAnswer ถ้าไม่ซ้ำ
+              if (row.correctAnswer && !question.correctAnswers.includes(row.correctAnswer)) {
+                question.correctAnswers.push(row.correctAnswer);
+              }
 
-          db.query("SELECT id, content, questionId FROM question_answer WHERE questionId IN (?) AND type = 1", [questionIds], (error, answerResult) => {
-            if(error){
-              console.log(error);
-              return res.status(500).send({ message: "Database question_answer query error." });
+              // push userAnswer ถ้าไม่ซ้ำ
+              if (row.userAnswer && !question.userAnswers.includes(row.userAnswer)) {
+                question.userAnswers.push(row.userAnswer);
+              }
             }
-
-            let questionFormat = questionResult.map(item => {
-              return {
-                id: item.id,
-                content: item.content,
-                typeId: item.typeId,
-                subjectId: item.subjectId,
-                answerId: answerResult.find(answer => answer.questionId === item.id)?.id ?? null,
-                answer: answerResult.find(answer => answer.questionId === item.id)?.content ?? null
-              }
-            });
-
-            let progressFormat = progressResult.map(item => {
-              return {
-                id: item.id,
-                is_completed: item.is_completed,
-                score: item.score,
-                enrollmentId: item.enrollmentId,
-                questions: questionFormat.filter(question => question.id === item.questionId)
-              }
-            });
-            
-            let finalFormat = result.map(item => {
-              return {
-                id: item.id,
-                courseId: item.courseId,
-                completed_labs: item.completed_labs,
-                total_labs: item.total_labs,
-                userId: item.userId,
-                user: userInfo.find(user => user.id === item.userId),
-                progress: progressFormat.filter(progress => progress.enrollmentId === item.id)
-              }
-            });
-
-            return res.status(200).send({ finalFormat });
-          });
-        });
+          }
+        }
       });
+
+      const finalFormat = Object.values(enrollmentMap);
+      res.status(200).send({ finalFormat });
     });
-  } catch(error){
-    console.log(error);
+  } catch (error) {
+    console.error(error);
     res.status(500).send({ message: "Server error.", error });
   }
-}
+};
+
 /* teacher_course controller */
 
 /* teacher_subject controller */
