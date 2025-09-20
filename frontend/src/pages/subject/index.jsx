@@ -9,16 +9,23 @@ import NavSubject from './NavSubject';
 import Reader from '../../components/Reader';
 import Labs from './Labs';
 
-import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
+import { Backdrop, Box, Button, IconButton, Slide, Stack } from '@mui/material';
 import ListIcon from '@mui/icons-material/List';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { ArrowRight } from '@mui/icons-material';
 
 const useLabQuestions = () => {
+    const [ currentQuestionIndex, setCurrentQuestionIndex ] = useState(0);
     const [ questions, setQuestions ] = useState([]);
     const [ answers, setAnswers ] = useState([]);
     const [ errorMessage, setErrorMessage ] = useState("");
     const navigate = useNavigate();
+
+    const handleChangePage = (event, page) => {
+        setCurrentQuestionIndex(page-1);
+        setErrorMessage("");
+    };
 
     const fetchLabQuestions = async (courseId, subjectId) => {
         try{
@@ -36,7 +43,8 @@ const useLabQuestions = () => {
         }
     }
 
-    const handleLabAnswerChange = (questionId, questionType, value, checked = null) => {
+    const handleLabAnswerChange = (questionId, questionType, value, answerId = null, checked = null) => {
+        
         setAnswers(prevAnswers => {
             return prevAnswers.map((item) => {
                 if (item.questionId !== questionId) return item;
@@ -44,17 +52,27 @@ const useLabQuestions = () => {
                 let updatedAnswer = item.answer;
 
                 if (questionType === 3) {
-                    updatedAnswer = Number(value);
+                    updatedAnswer = {
+                        ...item.answer,
+                        answerId, 
+                        content: value
+                    };
                 }
                 else if (questionType === 4 || questionType === 5) {
                     updatedAnswer = String(value);
-                } else if (questionType === 6) {
+                } 
+                else if (questionType === 6) {
                     const prevArray = Array.isArray(item.answer) ? item.answer : [];
-
+                    console.log(item)
                     if (checked) {
-                        updatedAnswer = [...prevArray, value];
+                        if (!prevArray.some(v => v.answerId === answerId)) {
+                            updatedAnswer = [...prevArray, { answerId, content: value }];
+                        } 
+                        else {
+                            updatedAnswer = prevArray;
+                        }
                     } else {
-                        updatedAnswer = prevArray.filter(v => v !== value);
+                        updatedAnswer = prevArray.filter(v => v.answerId !== answerId);
                     }
                 }
 
@@ -65,47 +83,42 @@ const useLabQuestions = () => {
             });
         });
     };
-    console.log(answers)
-    const lasbValidations = () => {
+
+   const lasbValidations = (questionId) => {
+        const answer = answers.find(a => a.questionId === questionId);
+        const idx = questions.findIndex(q => q.id === questionId);
+
+        setErrorMessage("");
+        if (!answer) {
+            setErrorMessage(`ไม่พบคำตอบของคำถามที่ ${idx + 1}`);
+            return false;
+        }
+
         let valid = true;
-        answers.forEach((answer, index) => {
-            if((answer.lab_type === 3 && answer.answer === null) || 
-            (answer.lab_type === 4 && answer.answer === null) || 
-            (answer.lab_type === 5 && answer.answer === null)){
-                valid = false;
-                setErrorMessage(`Lab answer ${index + 1} is required.`);
-            }
 
-            if(answer.lab_type === 6 && answer.answer.length === 0){
-                valid = false;
-                setErrorMessage(`Lab answer ${index + 1} required minimum 1 answer.`);
-            }
-        });
+        if ((answer.lab_type === 3 || answer.lab_type === 4 || answer.lab_type === 5) 
+            && (answer.answer === null || answer.answer === "")) {
+            valid = false;
+            setErrorMessage(`ต้องเลือกคำตอบสำหรับคำถามที่ ${idx + 1}.`);
+        }
+
+        if (answer.lab_type === 6 && (!Array.isArray(answer.answer) || answer.answer.length === 0)) {
+            valid = false;
+            setErrorMessage(`คำถามที่ ${idx + 1} ต้องการคำตอบอย่างน้อย 1 คำตอบ`);
+        }
+
         return valid;
-    }
-
-    const fetchLatestProgress = async (courseId, enrollmentId) => {
-        try {
-        const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
-            withCredentials: true
-        });
-
-        if (response.status === 200) {
-            navigate(`/course/${courseId}/${response.data.inProgress}`);
-        }
-        } catch (error) {
-        console.log(error);
-        }
     };
 
-    const handleLabSubmit = async (courseId, enrollmentId) => {
-        if(!lasbValidations()){
+    const handleLabSubmit = async (courseId, enrollmentId, questionId) => {
+        if(!lasbValidations(questionId)){
            return; 
         }
 
+        let answer = answers.find(a => a.questionId === questionId);
         try{
             const response = await backend.put(`/labs/submitLabQuestions/${courseId}/${enrollmentId}`, {
-                answers
+                answer
             }, {
                 withCredentials: true
             });
@@ -113,7 +126,7 @@ const useLabQuestions = () => {
             if(response.status === 200){
                 setErrorMessage(response.data.message);
                 setTimeout(() => {
-                    fetchLatestProgress(courseId, enrollmentId);
+                    setErrorMessage("");
                 }, 3000);
             }
         } catch(error){
@@ -123,6 +136,8 @@ const useLabQuestions = () => {
     }
 
     return{
+        currentQuestionIndex,
+        handleChangePage,
         questions,
         setQuestions,
         answers,
@@ -138,13 +153,16 @@ function Subject() {
     const { courseId, subjectId, enrollmentId } = useParams();
     const { userData } = useContext(AuthContext);
     const [ subjectList, setSubjectList ] = useState([]);
+    const [ progressAnswers, setProgressAnswers ] = useState([]);
     const [ content, setContent ] = useState({
         name: "",
         content: null
     });
     const [ openNavSubject, setOpenNavSubject ] = useState(false);
     const [ labs, setLabs ] = useState(true);
-    const { 
+    const {
+        currentQuestionIndex,
+        handleChangePage, 
         questions, 
         answers,
         setAnswers,
@@ -203,12 +221,44 @@ function Subject() {
                     navigate(`/course/${courseId}/${response.data.inProgress}`);
                     return;
                 }
+                else if(response.data.inProgress === `posttest/${enrollmentId}`){
+                    navigate(`/course/${courseId}/${response.data.inProgress}`);
+                    return;
+                }
+                else{
+                    console.log(response.data.inProgress)
+                    navigate(`/course/${courseId}/${response.data.inProgress}`);
+                    return;
+                }
             }
         } 
         catch (error) {
             console.log(error);
         }
     }
+
+    const questionIds = questions.map(q => q.id);
+
+    const fetchAllProgressAnswers = async () => {
+        if(!questionIds || questionIds.length === 0){
+            return;
+        }
+        try {
+            const response = await backend.get(`/progress/getAllProgressAnswers/${enrollmentId}/${courseId}?questionIds=${questionIds.join(",")}`, {
+                withCredentials: true
+            })
+    
+            if (response.status === 200) {
+              setProgressAnswers(response.data.answers); 
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    
+    useEffect(() => {
+        fetchAllProgressAnswers();
+    }, [enrollmentId, courseId, questionIds]);
     
     const handleLabSpawn = async (questionId) => {
         try {
@@ -241,7 +291,6 @@ function Subject() {
     useEffect(() => {
         fetchSubjectData();
         fetcSubjectList();
-        fetchLastProgress();
         fetchLabQuestions(courseId, subjectId);
     }, [courseId, subjectId]);
 
@@ -394,15 +443,36 @@ function Subject() {
         {labs && (
             <div ref={labsRef}>
                 <Labs
+                    currentQuestionIndex={currentQuestionIndex}
+                    handleChangePage={handleChangePage}
                     questions={questions}
                     handleLabSpawn={handleLabSpawn}
                     answers={answers}
+                    progressAnswers={progressAnswers}
                     handleLabAnswerChange={handleLabAnswerChange}
                     errorMessage={errorMessage}
                     handleLabSubmit={handleLabSubmit}
+                    fetchLastProgress={fetchLastProgress}
                 />
             </div>
         )}
+        <Stack
+            direction="row"
+            justifyContent="flex-end"
+            alignItems="center"
+        >
+            <Button
+                variant='contained'
+                sx={{
+                    width: "15%"
+                }}
+                endIcon={<ArrowRight/>}
+                onClick={() => fetchLastProgress()}
+            >
+                ถัดไป
+            </Button>
+        </Stack>
+
         
     </div>
   )

@@ -3,21 +3,19 @@ import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Pagination,
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 
-function Labs({ 
+function Labs({
+    currentQuestionIndex,
+    handleChangePage,
     questions,
     handleLabSpawn = null,
     answers,
+    progressAnswers,
     handleLabAnswerChange,
     errorMessage,
-    handleLabSubmit
+    handleLabSubmit,
  }) {
     const { courseId, enrollmentId } = useParams();
-    const [ currentQuestionIndex, setCurrentQuestionIndex ] = useState(0);
     const [ htmlFileContent, setHtmlFileContent ] = useState('');
-
-    const handleChangePage = (event, value) => {
-        setCurrentQuestionIndex(value - 1);
-    };
 
     const currentQuestion = questions[currentQuestionIndex];
     const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
@@ -54,6 +52,10 @@ function Labs({
       window.addEventListener("message", handleMessage);
       return () => window.removeEventListener("message", handleMessage);
     }, [currentQuestion]);
+
+    const isAnswered = progressAnswers.some(
+      (p) => p.questionId === currentQuestion?.id && p.user_answer
+    );
 
   return (
     <Stack>
@@ -121,8 +123,16 @@ function Labs({
               <RadioGroup
                 sx={{ width: "80%", margin: "8px auto" }}
                 name={`radio-group-${currentQuestion.id}`}
-                value={String(currentAnswer?.answer ?? "")}
-                onChange={(e) => handleLabAnswerChange(currentQuestion.id, currentQuestion.type, e.target.value)}
+                value={String(currentAnswer?.answer?.answerId ?? "")}
+                onChange={(e) => {
+                  const selectedChoice = currentQuestion.choice.find(c => String(c.id) === e.target.value);
+                  handleLabAnswerChange(
+                    currentQuestion.id,
+                    currentQuestion.type,
+                    selectedChoice?.content,
+                    selectedChoice?.id,
+                  );
+                }}
               >
                 {currentQuestion.choice.map((choice, idx) => (
                   <FormControlLabel
@@ -142,8 +152,15 @@ function Labs({
                     key={idx}
                     control={
                       <Checkbox
-                        checked={currentAnswer?.answer?.includes(choice.id) || false}
-                        onChange={(e) => handleLabAnswerChange(currentQuestion.id, 6, choice.id, e.target.checked)}
+                        onChange={(e) => 
+                          handleLabAnswerChange(
+                            currentQuestion.id,
+                            6,
+                            choice.content, 
+                            choice.id,
+                            e.target.checked 
+                          )
+                        }
                       />
                     }
                     label={choice.content}
@@ -183,24 +200,27 @@ function Labs({
                 margin: "8px auto",
               }}
             >
-              <Typography>{errorMessage}</Typography>
+              <Typography variant="body2" color={errorMessage === "คุณผ่านการทดสอบแล้ว" ? "green" : "red"}>{errorMessage}</Typography>
 
-              <Button
-                variant='contained'
-                sx={{
-                  width: "25%"
-                }}
-                onClick={() => handleLabSubmit(courseId, enrollmentId)}
-              >
-                ส่งคำตอบ
-              </Button>
+                
+              {!isAnswered && 
+                <Button
+                  variant='contained'
+                  sx={{
+                    width: "15%"
+                  }}
+                  onClick={() => handleLabSubmit(courseId, enrollmentId, currentQuestion.id)}
+                >
+                  ส่งคำตอบ
+                </Button>
+              }
             </Stack>
           </FormControl>
             
           <Pagination
             count={questions.length}
             page={currentQuestionIndex + 1}
-            onChange={handleChangePage}
+            onChange={(event, page) => handleChangePage(event, page)} 
             color="primary"
             showFirstButton
             showLastButton

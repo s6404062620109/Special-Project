@@ -8,4 +8,6 @@ router.get("/checkCourseProgress/:enrollmentId/:courseId", authUserRole.verified
   
 router.get("/getLatestProgress/:enrollmentId/:courseId", authUserRole.verifiedStudentEnrollCourse, progressController.getLatest);
 
+router.get("/getAllProgressAnswers/:enrollmentId/:courseId", authUserRole.verifiedStudentEnrollCourse, progressController.getAllProgressAnswers);
+
 module.exports = router;

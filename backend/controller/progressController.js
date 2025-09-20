@@ -37,42 +37,81 @@ const checkProgress = (req, res) => {
 }
 
 const getLatest = (req, res) => {
-    const { enrollmentId } = req.params;
+  const { enrollmentId } = req.params;
 
-    try{
-        db.query("SELECT questionId FROM progress WHERE is_completed = ? AND enrollmentId = ?", [false, enrollmentId], (error, result) => {
-            if(error){
-              console.log(error);
-              return res.status(500).json({ message: "Database progress query error" });
-            }
-        
-            const inProgressId = result[0].questionId;
-            db.query("SELECT typeId, subjectId FROM question WHERE id = ?", [inProgressId], (error, questionResult) => {
-              if(error){
-                console.log(error);
-                return res.status(500).json({ message: "Database question query error" });
-              }
-        
-              if(questionResult[0].typeId === 1){
-                return res.status(200).json({ inProgress: `pretest/${enrollmentId}` });
-              }
-        
-              if(questionResult[0].typeId === 2){
-                return res.status(200).json({ inProgress: `posttest/${enrollmentId}` });
-              }
+  try {
+    const sql = `
+      SELECT q.typeId, q.subjectId
+      FROM progress p
+      JOIN question q ON p.questionId = q.id
+      WHERE p.is_completed = ? AND p.enrollmentId = ?
+      LIMIT 1
+    `;
 
-              if (questionResult[0].typeId === 3 || questionResult[0].typeId === 4 || questionResult[0].typeId === 5 || questionResult[0].typeId === 6) {
-                return res.status(200).json({ inProgress: `subject/${questionResult[0].subjectId}/${enrollmentId}` });
-              }
-            });
-        });
-    } catch(error){
-        console.log(error);
-        return res.status(500).json({ message: "Server error.", error });
-    }
-}
+    db.query(sql, [false, enrollmentId], (error, results) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Database query error" });
+      }
+
+      if (!results.length) {
+        return res.status(404).json({ message: "No in-progress question found." });
+      }
+
+      const { typeId, subjectId } = results[0];
+
+      if (typeId === 1) {
+        return res.status(200).json({ inProgress: `pretest/${enrollmentId}` });
+      }
+
+      if (typeId === 2) {
+        return res.status(200).json({ inProgress: `posttest/${enrollmentId}` });
+      }
+
+      if ([3, 4, 5, 6].includes(typeId)) {
+        return res.status(200).json({ inProgress: `subject/${subjectId}/${enrollmentId}` });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
+const getAllProgressAnswers = (req, res) => {
+  const { enrollmentId } = req.params;
+  const { questionIds } = req.query;
+
+  if (!questionIds) {
+    return res.status(400).json({ message: "Missing questionIds" });
+  }
+
+  const ids = questionIds.split(",").map(Number);
+
+  try {
+    db.query(
+      `SELECT p.id AS progressId, p.questionId, pa.user_answer
+       FROM progress p
+       LEFT JOIN progress_answer pa ON pa.progressId = p.id
+       WHERE p.enrollmentId = ? AND p.questionId IN (?) AND p.is_completed = 1`,
+      [enrollmentId, ids],
+      (err, results) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Database query error" });
+        }
+
+        return res.status(200).json({ answers: results });
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
 
 module.exports = {
     checkProgress,
-    getLatest
+    getLatest,
+    getAllProgressAnswers
 }
