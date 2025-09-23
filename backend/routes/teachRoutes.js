@@ -13,7 +13,7 @@ router.use(express.urlencoded({ extended: true }));
 
 router.get("/getMyCourses/:userId", authUserRole.checkCourseCreation, teacherController.getMyCourses);
 
-router.get("/courseTestProgress/:courseId", authUserRole.verifiedTeacherCourse, teacherController.courseTestProgress);
+router.get("/progressAnalysis/:courseId", authUserRole.verifiedTeacherCourse, teacherController.progressAnalysis);
 
 router.post("/addCourse", authUserRole.checkCourseCreation, teacherController.createCourse);
 

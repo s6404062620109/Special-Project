@@ -6,10 +6,10 @@ import { AuthContext } from "../../../context/AuthProvider";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, Dialog, DialogActions, DialogTitle, IconButton, Stack, Typography, useMediaQuery } from "@mui/material";
-import { PieChart } from '@mui/x-charts/PieChart';
 
 import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
+import { BarChart } from "@mui/x-charts";
 
 function EditCourse() {
   const { courseId } = useParams();
@@ -18,14 +18,7 @@ function EditCourse() {
     courseInfo: {},
     subject: [],
   });
-  const [ chartData, setChartData ] = useState({
-    Pretest_quantity: 0,
-    Posttest_quantity: 0,
-    Pretest_pass: [],
-    Posttest_pass: [],
-    Pretest_fail: [],
-    Posttest_fail: []
-  });
+  const [ chartData, setChartData ] = useState(null);
   const [ editPopupOpen, setEditPopupOpen ] = useState(false);
   const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
   const navigate = useNavigate();
@@ -45,78 +38,32 @@ function EditCourse() {
     }
   };
 
-  const fetchCourseTestInfo = async () => {
-    try {
-      const response = await backend.get(`/teacher/courseTestProgress/${courseId}`, {
+  const fetchProgressAnalysis = async () => {
+    try{
+      const response = await backend.get(`/teacher/progressAnalysis/${courseId}`,{
         withCredentials: true
       });
-      
-      if (response.status === 200) {
-        const rawCounts = {
-          Pretest_pass: {},
-          Pretest_fail: {},
-          Posttest_pass: {},
-          Posttest_fail: {}
-        };
-        
-        let pretestQuantity = 0;
-        let posttestQuantity = 0;
 
-        response.data.forEach(item => {
-          if (item.is_completed === 1) {
-
-            const subjectId = item.subjectId;
-            const score = item.score;
-
-            if (item.typeId === 1) {
-              pretestQuantity++;
-
-              if (score === 0) {
-                rawCounts.Pretest_fail[subjectId] = (rawCounts.Pretest_fail[subjectId] || 0) + 1;
-              } else {
-                rawCounts.Pretest_pass[subjectId] = (rawCounts.Pretest_pass[subjectId] || 0) + 1;
-              }
-            }
-
-            if (item.typeId === 2) {
-              posttestQuantity++;
-
-              if (score === 0) {
-                rawCounts.Posttest_fail[subjectId] = (rawCounts.Posttest_fail[subjectId] || 0) + 1;
-              } else {
-                rawCounts.Posttest_pass[subjectId] = (rawCounts.Posttest_pass[subjectId] || 0) + 1;
-              }
-            }
-          }
-        });
-
-        const subjectMap = {};
-        data.subject.forEach(sub => {
-          subjectMap[sub.id] = sub.name;
-        });
-
-        const buildList = (obj) =>
-          Object.entries(obj).map(([subjectId, counter]) => ({
-            subjectId: parseInt(subjectId),
-            subjectName: subjectMap[subjectId],
-            counter
-          }));
-
-        const formatted = {
-          Pretest_quantity: pretestQuantity,
-          Posttest_quantity: posttestQuantity,
-          Pretest_pass: buildList(rawCounts.Pretest_pass),
-          Pretest_fail: buildList(rawCounts.Pretest_fail),
-          Posttest_pass: buildList(rawCounts.Posttest_pass),
-          Posttest_fail: buildList(rawCounts.Posttest_fail),
-        };
-
-        setChartData(formatted);
-      }
-    } catch (error) {
+        if(response.status === 200){
+          const data = response.data;
+          setChartData({
+            dataset: [{
+              test: "Summary",
+              Prevalue: Number(data.averagePrePercent),
+              Postvalue: Number(data.averagePostPercent),
+              Growthvalue: Number(data.averageGrowth),
+            }],
+            maxPreScore: data.maxPreScore,
+            maxPostScore: data.maxPostScore,
+            minPreScore: data.minPreScore,
+            minPostScore: data.minPostScore,
+            userCount: data.userCount,
+          });
+        }
+    } catch(error) {
       console.log(error);
     }
-  };
+  }
   
   useEffect(() => {
     fetchSubjects();
@@ -125,7 +72,7 @@ function EditCourse() {
   useEffect(() => {
     if (data.subject.length === 0) return;
     
-    fetchCourseTestInfo();
+    fetchProgressAnalysis();
   }, [data.subject]);
 
   const handleEdit = (subjectId) => {
@@ -268,150 +215,51 @@ function EditCourse() {
           </div>
         </div>
 
-        {(chartData.Pretest_quantity > 0 || chartData.Posttest_quantity > 0) > 0 && (
-          <div className={style.footer}>
-            <Typography variant="h5" marginBottom={"16px"}>ผลการทำแบบทดสอบของนักเรียนทั้งหมด</Typography>
-            {chartData.Pretest_quantity > 0 && (
-              <Stack
-                gap={1}
-              >
-                <Typography variant="h6">ผลการทำแบบทดสอบก่อนเรียนจำนวน {chartData.Pretest_quantity > 0 ? chartData.Pretest_quantity : "-"} ข้อ</Typography> 
-                <Stack
-                  direction={ tabletQuery ? "column" : "row"}
-                  justifyContent="space-around"
-                  alignItems="center"
-                  gap={2}
-                  sx={{ flexWrap: 'wrap', width: '100%' }}
-                >
-                  {chartData.Pretest_pass.length > 0 ? (
-                    <Stack
-                      direction="column"
-                      spacing={2}
-                    >
-                      <Typography variant="h6">รายวิชาที่สอบผ่าน</Typography>
-                      
-                      <PieChart
-                        series={[
-                          {
-                            data: [
-                              ...chartData.Pretest_pass.map(item => ({
-                                id: `${item.subjectId}`,
-                                value: item.counter,
-                                label: `${item.subjectName} ${item.counter} ข้อ`
-                              })),
-                            ]
-                          }
-                        ]}
-                        width={200}
-                        height={200}
-                      /> 
-                    </Stack>
-                    ) : (
-                      <Typography variant="h6">ไม่มีข้อมูล</Typography>
-                    )
-                  }
-                  
-                  {chartData.Pretest_fail.length > 0 ? (
-                    <Stack
-                      direction="column"
-                      spacing={2}
-                    >
-                      <Typography variant="h6">รายวิชาที่สอบไม่ผ่าน</Typography>
+        {chartData && (
+          <div style={{ marginTop: "40px" }}>
+            <Typography variant="h6" gutterBottom>
+              สรุปผล Pretest / Posttest / Growth
+            </Typography>
 
-                      <PieChart
-                        series={[
-                          {
-                            data: [
-                              ...chartData.Pretest_fail.map(item => ({
-                                id: `fail-${item.subjectId}`,
-                                value: item.counter,
-                                label: `${item.subjectName} ${item.counter} ข้อ`
-                              }))
-                            ]
-                          }
-                        ]}
-                        width={200}
-                        height={200}
-                      /> 
-                    </Stack>
-                  ) : (
-                    <Typography variant="h6">ไม่มีข้อมูล</Typography>
-                  )}
-                  
-                </Stack>
-              </Stack>
-            )}
-            
-            {chartData.Posttest_quantity > 0 && (
-              <Stack
-                gap={1}
-              >
-                <Typography variant="h6">ผลการทำแบบทดสอบหลังเรียนจำนวน {chartData.Posttest_quantity > 0 ? chartData.Posttest_quantity : "-"} ข้อ</Typography> 
-                <Stack
-                  direction={ tabletQuery ? "column" : "row"}
-                  justifyContent="space-around"
-                  alignItems="center"
-                  gap={2}
-                  sx={{ flexWrap: 'wrap', width: '100%' }}
-                >
-                  {chartData.Posttest_pass.length > 0 ? (
-                    <Stack
-                      direction="column"
-                      spacing={2}
-                    >
-                      <Typography variant="h6">รายวิชาที่สอบผ่าน</Typography>
+            <BarChart
+              width={700}
+              height={400}
+              dataset={chartData.dataset}
+              xAxis={[{ 
+                dataKey: "test", 
+                label: "ประเภทการทดสอบ",
+                scaleType: 'band' 
+              }]}
+              yAxis={[{ 
+                dataKey: "value", 
+                label: "เปอร์เซ็นต์ (%)", 
+                min: 0, 
+                max: 100 
+              }]}
+              series={[
+                { dataKey: "Prevalue", label: "Pretest", color: '#1976d2' },
+                { dataKey: "Postvalue", label: "Posttest", color: '#2e7d32' },
+                { dataKey: "Growthvalue", label: "Growth", color: '#ff5722' },
+              ]}
+            />
 
-                      <PieChart
-                        series={[
-                          {
-                            data: [
-                              ...chartData.Posttest_pass.map(item => ({
-                                id: `${item.subjectId}`,
-                                value: item.counter,
-                                label: `${item.subjectName} ${item.counter} ข้อ`
-                              })),
-                            ]
-                          }
-                        ]}
-                        width={200}
-                        height={200}
-                      /> 
-                    </Stack>
-                  ) : (
-                    <Typography variant="h6">ไม่มีข้อมูล</Typography>
-                  )}
-                  
-                  {chartData.Posttest_fail.length > 0 ? (
-                    <Stack
-                      direction="column"
-                      spacing={2}
-                    >
-                      <Typography variant="h6">รายวิชาที่สอบไม่ผ่าน</Typography>
-
-                      <PieChart
-                        series={[
-                          {
-                            data: [
-                              ...chartData.Posttest_fail.map(item => ({
-                                id: `fail-${item.subjectId}`,
-                                value: item.counter,
-                                label: `${item.subjectName} ${item.counter} ข้อ`
-                              }))
-                            ]
-                          }
-                        ]}
-                        width={200}
-                        height={200}
-                      /> 
-                    </Stack>
-                  ) : (
-                    <Typography variant="h6">ไม่มีข้อมูล</Typography>
-                  )}
-                  
-                </Stack>
-              </Stack>
-            )}
-
+            <Stack 
+              direction={{ xs: "column", sm: "row" }} 
+              spacing={4} 
+              mt={3}
+              justifyContent="flex-start"
+              alignItems={{ xs: "flex-start", sm: "center" }}
+            >
+              <Typography>
+                <span style={{ color: "#1976d2", fontWeight: "bold" }}>แบบทดสอบก่อนเรียน:</span> ต่ำสุด {chartData.minPreScore}, สูงสุด {chartData.maxPreScore}
+              </Typography>
+              <Typography>
+                <span style={{ color: "#2e7d32", fontWeight: "bold" }}>แบบทดสอบหลังเรียน:</span> ต่ำสุด {chartData.minPostScore}, สูงสุด {chartData.maxPostScore}
+              </Typography>
+              <Typography>
+                <span style={{ color: "#ff5722", fontWeight: "bold" }}>นักเรียนทั้งหมด:</span> {chartData.userCount}
+              </Typography>
+            </Stack>
           </div>
         )}
 

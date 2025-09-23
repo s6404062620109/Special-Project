@@ -456,23 +456,6 @@ function Subject() {
                 />
             </div>
         )}
-        <Stack
-            direction="row"
-            justifyContent="flex-end"
-            alignItems="center"
-        >
-            <Button
-                variant='contained'
-                sx={{
-                    width: "15%"
-                }}
-                endIcon={<ArrowRight/>}
-                onClick={() => fetchLastProgress()}
-            >
-                ถัดไป
-            </Button>
-        </Stack>
-
         
     </div>
   )

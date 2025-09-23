@@ -25,73 +25,102 @@ const getMyCourses = (req, res) => {
     }
 }
 
-const courseTestProgress = (req, res) => {
+const progressAnalysis = (req, res) => {
   const { courseId } = req.params;
 
-  if(!courseId){
+  if (!courseId) {
     return res.status(400).send({ message: "Required course ID." });
   }
 
-  try{
-    db.query("SELECT id FROM enrollment WHERE courseId = ?", [courseId], (error, result) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).send({ message: "Database enrollment query error." });
-      }
+  const sql = `
+    SELECT 
+      e.userId,
+      p.enrollmentId,
+      p.score,
+      q.typeId
+    FROM enrollment e
+    LEFT JOIN progress p ON p.enrollmentId = e.id AND p.is_completed = 1
+    LEFT JOIN question q ON q.id = p.questionId
+    WHERE e.courseId = ?
+  `;
 
-      const enrollmentIds = result.map(item => item.id);
-      if (enrollmentIds.length === 0) {
-        return res.status(404).send({ message: "No enrollment found." });
-      }
+  db.query(sql, [courseId], (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).send({ message: "Database query error." });
+    }
 
-      db.query("SELECT * FROM progress WHERE enrollmentId IN (?)", [enrollmentIds], (error, progressResult) => {
-        if (error) {
-          console.log(error);
-          return res.status(500).send({ message: "Database progress query error" });
-        }
+    if (!results || results.length === 0) {
+      return res.status(404).send({ message: "No progress found." });
+    }
 
-        const questionIds = progressResult.map(item => item.questionId);
-        if (questionIds.length === 0) {
-          return res.status(404).send({ message: "No question found." });
-        }
+    const totalPretest = results.filter(r => r.typeId === 1).length;
+    const totalPosttest = results.filter(r => r.typeId === 2).length;
 
-        db.query("SELECT id, typeId, subjectId FROM question WHERE id IN (?)", [questionIds], (error, questionResult) => {
-          if (error) {
-            console.log(error);
-            return res.status(500).send({ message: "Database question query error" });
-          }
-
-          const questionInfoMap = {};
-          questionResult.forEach(item => {
-            questionInfoMap[item.id] = {
-              typeId: item.typeId,
-              subjectId: item.subjectId
-            };
-          });
-
-          const filteredProgress = progressResult
-            .filter(item => {
-              const typeId = questionInfoMap[item.questionId]?.typeId;
-              return typeId === 1 || typeId === 2;
-            })
-            .map(item => {
-              const questionInfo = questionInfoMap[item.questionId];
-              return {
-                ...item,
-                typeId: questionInfo?.typeId || null,
-                subjectId: questionInfo?.subjectId || null
-              };
-            });
-          return res.status(200).send(filteredProgress);
-        });
-      });
+    const userMap = {};
+    results.forEach((r) => {
+      if (!userMap[r.userId]) userMap[r.userId] = [];
+      userMap[r.userId].push(r);
     });
 
-  } catch(error){
-    console.log(error);
-    return res.status(500).send({ message: "Server error.", error });
-  }
-}
+    let prePercentSum = 0;
+    let postPercentSum = 0;
+    let userCount = 0;
+
+    const preScores = [];
+    const postScores = [];
+
+    Object.values(userMap).forEach((userProgress) => {
+      let preCorrect = 0;
+      let postCorrect = 0;
+
+      userProgress.forEach((p) => {
+        if (p.score === 1) {
+          if (p.typeId === 1) preCorrect++;
+          if (p.typeId === 2) postCorrect++;
+        }
+      });
+
+      if (preCorrect > 0 || postCorrect > 0) {
+        preScores.push(preCorrect);
+        postScores.push(postCorrect);
+
+        const prePercent = totalPretest > 0 ? (preCorrect / totalPretest) * 100 : 0;
+        const postPercent = totalPosttest > 0 ? (postCorrect / totalPosttest) * 100 : 0;
+
+        prePercentSum += prePercent;
+        postPercentSum += postPercent;
+        userCount++;
+      }
+    });
+
+    if (userCount === 0) {
+      return res.status(404).send({ message: "No valid user progress found." });
+    }
+
+    const avgPrePercent = prePercentSum / userCount;
+    const avgPostPercent = postPercentSum / userCount;
+    const avgGrowth = avgPostPercent - avgPrePercent;
+
+    const minPre = Math.min(...preScores);
+    const maxPre = Math.max(...preScores);
+    const minPost = Math.min(...postScores);
+    const maxPost = Math.max(...postScores);
+
+    return res.status(200).json({
+      courseId,
+      averagePrePercent: avgPrePercent.toFixed(2),
+      averagePostPercent: avgPostPercent.toFixed(2),
+      averageGrowth: avgGrowth.toFixed(2),
+      minPreScore: minPre,
+      maxPreScore: maxPre,
+      minPostScore: minPost,
+      maxPostScore: maxPost,
+      userCount,
+    });
+  });
+};
+
 
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
@@ -1083,7 +1112,7 @@ const deleteSubject = (req, res) => {
 
 module.exports = {
   getMyCourses,
-  courseTestProgress,
+  progressAnalysis,
   createCourse,
   updateCourse,
   deleteCourse,

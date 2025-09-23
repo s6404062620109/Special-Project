@@ -31,7 +31,7 @@ services:
       - .env
       
   db:
-    image: mysql:latest
+    image: mysql:9.4
     environment:
       MYSQL_ROOT_PASSWORD: root 
       MYSQL_DATABASE: SAT 
@@ -41,7 +41,7 @@ services:
       - ./mysql_database:/var/lib/mysql
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
+    image: phpmyadmin/phpmyadmin:5.2.2
     container_name: phpmyadmin
     environment:
       PMA_HOST: db # DB host
@@ -53,25 +53,25 @@ services:
     depends_on:
       - db
 
-  linux-terminal-user1:
-    build:
-      context: ./terminals
-      dockerfile: Dockerfile
-    container_name: linux-terminal-user1
-    ports:
-      - "4001:4001"
-    environment:
-      - TTYD_PORT=4001
-    tty: true
-    stdin_open: true
-    volumes:
-      - user1_data:/usr/src/app:rw
-    tmpfs:
-      - /tmp
-    working_dir: /usr/src/app
-    user: 1000:1000
-    mem_limit: 512m
-    cpus: 0.25
+  # linux-terminal-user1:
+  #   build:
+  #     context: ./terminals
+  #     dockerfile: Dockerfile
+  #   container_name: linux-terminal-user1
+  #   ports:
+  #     - "4001:4001"
+  #   environment:
+  #     - TTYD_PORT=4001
+  #   tty: true
+  #   stdin_open: true
+  #   volumes:
+  #     - user1_data:/usr/src/app:rw
+  #   tmpfs:
+  #     - /tmp
+  #   working_dir: /usr/src/app
+  #   user: 1000:1000
+  #   mem_limit: 512m
+  #   cpus: 0.25
 
   # linux-terminal-user2:
   #   build:
@@ -142,11 +142,11 @@ services:
 volumes:
   mysql_data_test: 
     driver: local
-  user1_data:
-    driver: local
-  user2_data:
-    driver: local
-  user3_data:
-    driver: local
-  user4_data:
-    driver: local
+  # user1_data:
+  #   driver: local
+  # user2_data:
+  #   driver: local
+  # user3_data:
+  #   driver: local
+  # user4_data:
+  #   driver: local

@@ -155,11 +155,8 @@ const submitPosttest = (req, res) => {
                     }
                     
                     const answerRecords = Object.entries(answer).map(([qId, ans]) => {
-                        const progress = progressResult.find(p => p.questionId === Number(qId));
-                            return {
-                                user_answer: ans.content,
-                                progressId: progress ? progress.id : null
-                            };
+                      const progress = progressResult.find(p => p.questionId === Number(qId));
+                      return [ans.content, progress ? progress.id : null];
                     });
 
                     db.query(`INSERT INTO progress_answer (user_answer, progressId) VALUES ?`,
