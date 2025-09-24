@@ -121,7 +121,6 @@ const progressAnalysis = (req, res) => {
   });
 };
 
-
 const createFolder = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -157,18 +156,18 @@ const createCourse = (req, res) => {
 
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
-    const { name, icon, enable } = req.body;
-    
-    if( typeof courseId !== 'string' || typeof name !== 'string' || typeof icon !== 'string' ){
-        return res.status(400).send({ message: "Invalid Course ID or Name or Icon." });
+    const { name, icon, enable, announce_state } = req.body;
+    console.log(typeof name, typeof icon, typeof enable, typeof announce_state)
+    if( typeof courseId !== 'string' || typeof name !== 'string' || typeof icon !== 'string' || typeof enable !== 'number' || typeof announce_state !== 'number' ){
+        return res.status(400).send({ message: "Invalid Course ID or Name or Icon or Enable or Announce_state." });
     }
-
-    if (!name || !icon || enable === undefined || typeof enable !== 'boolean') {
-        return res.status(400).json({ message: "Name ,icon and enable are required." });
+    
+    if (!name || !icon || !enable || !announce_state) {
+        return res.status(400).json({ message: "Name ,icon, enable and announce_state are required." });
     }
 
     try{
-        db.query("UPDATE course SET name = ?, icon = ?, enable = ?, updateat = NOW() WHERE id = ?", [name, icon, enable, courseId], (error) => {
+        db.query("UPDATE course SET name = ?, icon = ?, enable = ?, updateat = NOW() , announce_state = ? WHERE id = ?", [name, icon, enable, announce_state, courseId], (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });

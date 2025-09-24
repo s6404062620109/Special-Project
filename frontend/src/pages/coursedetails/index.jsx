@@ -3,12 +3,88 @@ import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
-import { Button, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from "@mui/material";
+import { Avatar, Button, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from "@mui/material";
 import CircleIcon from '@mui/icons-material/Circle';
 
 import style from "./css/coursedetails.module.css";
 import SubjectData from "./subjectData";
-import TeacherData from "./TeacherData";
+
+const renderSubjectScores = (subjects, progressList) => (
+  <List>
+    {subjects.map((subject) => {
+      const result = progressList.find((p) => p.subjectId === subject.id);
+      return (
+        <ListItem key={subject.id}>
+          <ListItemIcon>
+            <CircleIcon
+              fontSize="small"
+              sx={{ color: result?.score === 1 ? "green" : "red" }}
+            />
+          </ListItemIcon>
+          <ListItemText
+            primary={subject.name}
+            secondary={result?.score === 1 ? "Success" : "Failed"}
+          />
+        </ListItem>
+      );
+    })}
+  </List>
+);
+
+const renderTestSection = (announcement, {
+  pretestProgress,
+  posttestProgress,
+  preTestScore,
+  postTestScore,
+  subjectList
+}) => {
+  const isPreTestCompleted =
+    pretestProgress.length > 0 &&
+    pretestProgress.every((item) => item.is_completed === 1);
+
+  const isPostTestCompleted =
+    posttestProgress.length > 0 &&
+    posttestProgress.every((item) => item.is_completed === 1);
+
+  if (announcement === 0) {
+    return <Typography variant="h6">คะแนนกำลังอยู่ในขั้นตอนการประเมินผล</Typography>;
+  }
+
+  return (
+    <>
+      <Typography variant="h6">ผลการทำแบบทดสอบ</Typography>
+      <Stack
+        sx={{
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: { xs: "center", sm: "space-between" },
+          gap: 2,
+          width: "80%",
+        }}
+      >
+
+        {isPreTestCompleted && (announcement === 1 || announcement === 2 || announcement === 3) && (
+          <Stack direction="column" alignItems="center" gap={1}>
+            <Typography variant="h6">แบบทดสอบก่อนเรียน</Typography>
+            {announcement === 3 && renderSubjectScores(subjectList, pretestProgress)}
+            <Typography variant="h6">
+              คะแนน {preTestScore} / {pretestProgress.length}
+            </Typography>
+          </Stack>
+        )}
+
+        {isPostTestCompleted && (announcement === 2 || announcement === 3) && (
+          <Stack direction="column" alignItems="center" gap={1}>
+            <Typography variant="h6">แบบทดสอบหลังเรียน</Typography>
+            {announcement === 3 && renderSubjectScores(subjectList, posttestProgress)}
+            <Typography variant="h6">
+              คะแนน {postTestScore} / {posttestProgress.length}
+            </Typography>
+          </Stack>
+        )}
+      </Stack>
+    </>
+  );
+};
 
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
@@ -35,7 +111,7 @@ function CourseDetail() {
   const fetchCourseInfo = async () => {
     try {
       const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
-      console.log(response.data)
+
       if(response.status === 200){
         let responseCourse = response.data.courseInfo;
         let teacherInfo = response.data.teacherInfo;
@@ -46,6 +122,7 @@ function CourseDetail() {
           icon: responseCourse.icon,
           createat: responseCourse.createat,
           updateat: responseCourse.updateat,
+          announcement: responseCourse.announce_state
         });
         
         setTeacherInfo({
@@ -172,6 +249,18 @@ function CourseDetail() {
           </Button>
         )}
 
+        {userData.id && history.length > 0 && !AllQuestionComplete && (
+          <Button 
+            variant="contained"
+            onClick={fetchLatestProgress}
+            sx={{
+              width: { md: '25%', xs: '100%' }
+            }} 
+          >
+            บทเรียนต่อไป
+          </Button>
+        )}
+
       </div>
 
       <div className={style.content}>
@@ -202,159 +291,88 @@ function CourseDetail() {
 
       {userData.id && progress.length > 0 && (
         <div className={style.testSection}>
-          <Typography variant="h6">ผลการทำแบบทดสอบ</Typography>
-          <Stack
-            sx={{
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: { xs: "center", sm: "space-between" },
-              gap: 2,
-              width: "80%",
-            }}
-          >
-            {userData.id && isPreTestCompleted ? (
-              <Stack
-                direction="column"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Typography variant="h6">PreTest</Typography>
-
-                <List>
-                  {subjectList.map((subject) => (
-                    <ListItem>
-                      <ListItemIcon>
-                        <CircleIcon 
-                          fontSize="small"
-                          sx={{
-                            color:
-                              pretestProgress.find((p) => p.subjectId === subject.id)?.score === 1
-                                ? "green"
-                                : "red"
-                          }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={subject.name}
-                        secondary={
-                          pretestProgress.find((p) => p.subjectId === subject.id)?.score === 1
-                            ? "Success"
-                            : "Failed"
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-
-                <Typography
-                  variant="h6"
-                >
-                  คะแนน {preTestScore} / {pretestProgress.length}
-                </Typography>
-                
-              </Stack>
-            ) : (
-                <></>
-            )}
-
-            {userData.id && isPostTestCompleted ? (
-              <Stack
-                direction="column"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Typography variant="h6">PostTest</Typography>
-
-                <List>
-                  {subjectList.map((subject) => (
-                    <ListItem>
-                      <ListItemIcon>
-                        <CircleIcon 
-                          fontSize="small"
-                          sx={{
-                            color:
-                              posttestProgress.find((p) => p.subjectId === subject.id)?.score === 1
-                                ? "green"
-                                : "red"
-                          }}
-                        />
-                      </ListItemIcon>
-
-                      <ListItemText
-                        primary={subject.name}
-                        secondary={
-                          posttestProgress.find((p) => p.subjectId === subject.id)?.score === 1
-                            ? "Success"
-                            : "Failed"
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-
-                <Typography
-                  variant="h6"
-                >
-                  คะแนน {postTestScore} / {posttestProgress.length}
-                </Typography>
-                
-              </Stack>
-            ) : (
-                <></>
-            )}
-          </Stack>
-
-          {userData.id && history.length > 0 && !AllQuestionComplete && (
-            <Button 
-              variant="contained"
-              onClick={fetchLatestProgress} 
-            >
-              บทเรียนต่อไป
-            </Button>
-          )}
+           {renderTestSection(courseInfo.announcement, {
+              pretestProgress,
+              posttestProgress,
+              preTestScore,
+              postTestScore,
+              subjectList,
+            })}
         </div>
       )}
 
+      <Divider sx={{ my: 3 }} />
+
+      <Typography variant="h6">อาจารย์ผู้สอน</Typography>
       <Stack
-        justifyContent="space-evenly"
+        direction="row"
+        spacing={2}
         alignItems="center"
         sx={{
-          flexDirection: { xs: "column", sm: "row" },
-          margin: "16px 0px",
-          gap: 2
+          p: 2,
+          borderRadius: 2,
+          boxShadow: 1,
+          flexWrap: "wrap",
+          justifyContent: "space-evenly",
+          gap: 2,
         }}
       >
-        <Typography variant="body1">
-          สร้างเมื่อ : 
-          {" "}
-          {courseInfo.createat
-            ? new Date(courseInfo.createat).toLocaleString("th-TH", {
-              dateStyle: "medium",
-              timeStyle: "short",
-              timeZone: "Asia/Bangkok"
-            })
-            : "-"
-          }
-        </Typography>
 
-        <Typography variant="body1">
-          แก้ไขล่าสุด : 
-          {" "}
-          {courseInfo.updateat
-            ? new Date(courseInfo.updateat).toLocaleString("th-TH", {
-              dateStyle: "medium",
-              timeStyle: "short",
-              timeZone: "Asia/Bangkok"
-            })
-            : "-"
-          }
-        </Typography> 
+        <Stack 
+          direction="row"
+          alignItems="center"
+          gap={2}
+        >
+          <Avatar
+            src={teacherInfo.profile_img || undefined}
+            alt={teacherInfo.name}
+            sx={{ width: 72, height: 72 }}
+          />
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" fontWeight="600">
+              {teacherInfo.name || "ไม่ทราบชื่ออาจารย์"}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ wordBreak: "break-word" }}
+            >
+              {teacherInfo.email || "-"}
+            </Typography>
+          </Stack>
+        </Stack>
+
+        <Stack 
+          gap={2}
+          sx={{
+            alignItems: { xs: "center", sm: "flex-start" },
+            flexDirection: { xs: "column", sm: "row", md: "column" },
+            justifyContent: { xs: "center", sm: "space-between" },
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            สร้างเมื่อ{" "}
+            {courseInfo.createat
+              ? new Date(courseInfo.createat).toLocaleString("th-TH", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "Asia/Bangkok",
+                })
+              : "-"}
+          </Typography>
+
+          <Typography variant="caption" color="text.secondary">
+            แก้ไขล่าสุด{" "}
+            {courseInfo.updateat
+              ? new Date(courseInfo.updateat).toLocaleString("th-TH", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "Asia/Bangkok",
+                })
+              : "-"}
+          </Typography>
+        </Stack>
       </Stack>
-
-      <TeacherData
-        name={teacherInfo.name}
-        email={teacherInfo.email}
-        profile_img={teacherInfo.profile_img ? teacherInfo.profile_img : null}
-      />
       
     </div>
   );

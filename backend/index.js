@@ -7,9 +7,10 @@ require('dotenv').config();
 const app = express();
 app.use(cookieParser());
 
-// const allowedOrigins = [
-//   `http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`
-// ];
+const allowedOrigins = [
+  `http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`,
+  `http://localhost:8081`,
+];
 
 // const corsOptions = {
 //   // origin: (origin, callback) => {
@@ -28,7 +29,13 @@ app.use(cookieParser());
 // app.use(cors(corsOptions));
 
 app.use(cors({
-  origin: [`http://${process.env.DEPLOY_URL}:${process.env.DEPLOY_PORT}`],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

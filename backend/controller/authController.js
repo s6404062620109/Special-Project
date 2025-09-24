@@ -169,14 +169,14 @@ const login = (req, res) => {
         }
 
       if (result.length === 0) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: "Invalid email or password." });
       }
 
       const user = result[0];
       const isPasswordValid = await bcrypt.compare(password, user.password);
       
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid password." });
+        return res.status(401).json({ message: "Invalid email or password." });
       }
 
       const verifiedKey = crypto.randomBytes(32).toString("hex");

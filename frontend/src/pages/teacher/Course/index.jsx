@@ -107,6 +107,9 @@ function EditCourse() {
   };
 
   const tabletQuery = useMediaQuery('(max-width:720px)');
+  const isXs = useMediaQuery("(max-width:600px)");
+  const isSm = useMediaQuery("(max-width:900px)");
+
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -216,14 +219,14 @@ function EditCourse() {
         </div>
 
         {chartData && (
-          <div style={{ marginTop: "40px" }}>
+          <div style={{ width: "100%", marginTop: "40px" }}>
             <Typography variant="h6" gutterBottom>
               สรุปผล Pretest / Posttest / Growth
             </Typography>
 
             <BarChart
-              width={700}
-              height={400}
+              width={isXs ? 300 : isSm ? 600 : 800}
+              height={isXs ? 300 : isSm ? 400 : 600}
               dataset={chartData.dataset}
               xAxis={[{ 
                 dataKey: "test", 
