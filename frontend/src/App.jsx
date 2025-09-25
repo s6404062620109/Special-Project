@@ -90,6 +90,11 @@ function App() {
                 <Route path='/' element={<Home/>}/>
                 <Route path='/profile' element={<Profile/>}/>
                 <Route path='/manageUser' element={<ManageUser/>}/>
+                <Route path='/my-courses' element={<MyCourses/>}/>
+                <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
+                <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
+                <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
+                <Route path='/edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
               </Routes>
             )}
           </div>

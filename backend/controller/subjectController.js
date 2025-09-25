@@ -6,7 +6,7 @@ const getAll = (req, res) => {
     const courseId = req.params.courseId;
 
     try{
-        db.query(`SELECT * FROM course WHERE id = ? AND enable = 1`, [courseId], (err, courseResult) => {
+        db.query(`SELECT * FROM course WHERE id = ?`, [courseId], (err, courseResult) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "Database course query error" });

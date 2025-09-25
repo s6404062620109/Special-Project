@@ -242,6 +242,7 @@ const enrollSummary = (req, res) => {
       }
 
       const enrollmentMap = {};
+      const labQuestionSetMap = {};
 
       rows.forEach(row => {
         // สร้าง enrollment object
@@ -249,8 +250,10 @@ const enrollSummary = (req, res) => {
           enrollmentMap[row.enrollmentId] = {
             id: row.enrollmentId,
             courseId: row.courseId,
-            completed_labs: row.completed_labs,
-            total_labs: row.total_labs,
+            pretestScore: 0,
+            posttestScore: 0,
+            labtestScore: 0,
+            progressPercent: 0,
             userId: row.userId,
             user: {
               id: row.userId,
@@ -259,6 +262,25 @@ const enrollSummary = (req, res) => {
             },
             progress: []
           };
+          labQuestionSetMap[row.enrollmentId] = new Set();
+        }
+
+        if (row.progressId && row.score != null) {
+          if (row.typeId === 1) {
+            enrollmentMap[row.enrollmentId].pretestScore += row.score;
+          } else if (row.typeId === 2) {
+            enrollmentMap[row.enrollmentId].posttestScore += row.score;
+          } else if ([3,4,5,6].includes(row.typeId)) {
+            if (row.questionId && !labQuestionSetMap[row.enrollmentId].has(row.questionId)) {
+              enrollmentMap[row.enrollmentId].labtestScore += row.score;
+              labQuestionSetMap[row.enrollmentId].add(row.questionId);
+            }
+          }
+        }
+
+        if (row.total_labs && row.total_labs > 0) {
+          enrollmentMap[row.enrollmentId].progressPercent = 
+            Math.round((row.completed_labs / row.total_labs) * 100);
         }
 
         // สร้าง progress object

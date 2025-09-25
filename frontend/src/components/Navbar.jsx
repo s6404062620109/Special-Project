@@ -49,7 +49,7 @@ function Navbar() {
           {userData.role === "a" && (
             <>
               <Link to='/manageUser'>ผู้ใช้งาน</Link>
-              <Link to='/manageCourse'>คอร์สออนไลน์</Link>
+              <Link to='/my-courses'>คอร์สของฉัน</Link>
             </>
           )}
           {(userData.role === "s" || userData.role === null) && (
