@@ -7,7 +7,7 @@ import { AuthContext } from "../../context/AuthProvider";
 import style from "./css/coursedata.module.css";
 
 
-function CourseData({ id, name, icon, enrollmentId, courseId }) {
+function CourseData({ id, name, icon, enrollmentId, courseId, enrollmentCount }) {
   const { userData } = useContext(AuthContext);
   const [ buttonText, setButtonText ] = useState("");
   const [ history, setHistory ] = useState([]);
@@ -130,7 +130,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
                   );
                 })()
               ) : (
-                <>-</>
+                <></>
               )}
             </>
           )}          
@@ -138,29 +138,13 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
         </div>
       </td>
 
-      {userData.id && (
-        <td>
-          {filteredHistory.length > 0 ? (
-            (() => {
-              const latestEnroll = filteredHistory.at(-1);
-
-              return (
-                <p>
-                  {latestEnroll.posttest_complete === -1
-                    ? "FAILED"
-                    : latestEnroll.pretest_complete === 1 &&
-                      latestEnroll.posttest_complete === 1 &&
-                      latestEnroll.completed_labs === latestEnroll.total_labs
-                    ? "DONE"
-                    : "WORKING"}
-                </p>
-              );
-            })()
-          ) : (
-            <p>-</p>
-          )}
-        </td>
-      )}
+      <td>
+        {enrollmentCount ? (
+          <p>{enrollmentCount}</p>
+        ) : (
+          <p></p>
+        )}
+      </td>
 
       {userData.id &&(
         <td>

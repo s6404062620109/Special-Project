@@ -25,11 +25,12 @@ import MyCourses from './pages/teacher/MyCourses';
 import EditCourse from './pages/teacher/Course';
 import AddSubject from './pages/teacher/Subject/AddSubject';
 import EnrollSum from './pages/teacher/EnrollSum';
+import EditSubject from './pages/teacher/Subject/EditSubject';
 /* */
 
 /* */
 import ManageUser from './pages/admin/manageuser';
-import EditSubject from './pages/teacher/Subject/EditSubject';
+import ManageCourses from './pages/admin/managecourse';
 /* */
 
 function App() {
@@ -90,6 +91,7 @@ function App() {
                 <Route path='/' element={<Home/>}/>
                 <Route path='/profile' element={<Profile/>}/>
                 <Route path='/manageUser' element={<ManageUser/>}/>
+                <Route path='/manageCourse' element={<ManageCourses/>}/>
                 <Route path='/my-courses' element={<MyCourses/>}/>
                 <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
                 <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>

@@ -12,4 +12,6 @@ router.delete("/deleteUser/:userId", authUserRole.checkAdminRole, adminControlle
 
 router.put("/updateUser/:userId", authUserRole.checkAdminRole, adminController.updateUser);
 
+router.get("/getCourses", authUserRole.checkAdminRole, adminController.getCourses);
+
 module.exports = router;

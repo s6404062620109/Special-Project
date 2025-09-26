@@ -97,20 +97,22 @@
 }
 
 @media screen and (max-width: 768px) {
+    .container{
+        width: 90%;
+    }
+}
+
+@media screen and (max-width: 480px) {
     .filter-container{
         flex-direction: column;
         gap: 10px;
     }
 
     .filterSelect{
-        width: 80%;
+        width: 86%;
     }
 
     .searchInput{
         width: 80%;
-    }
-
-    .container{
-        width: 90%;
     }
 }

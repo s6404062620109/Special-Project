@@ -48,8 +48,9 @@ function Navbar() {
           )}
           {userData.role === "a" && (
             <>
-              <Link to='/manageUser'>ผู้ใช้งาน</Link>
               <Link to='/my-courses'>คอร์สของฉัน</Link>
+              <Link to='/manageUser'>จัดการบัญชีผู้ใช้</Link>
+              <Link to='/manageCourse'>จัดการคอร์ส</Link>
             </>
           )}
           {(userData.role === "s" || userData.role === null) && (
@@ -73,8 +74,9 @@ function Navbar() {
 
           {userData.role === "a" && (
             <>
-              <div onClick={() => navigate('/manageUser')}>ผู้ใช้งาน</div>
-              <div onClick={() => navigate('/manageCourse')}>คอร์สออนไลน์</div>
+              <div onClick={() => navigate('/my-courses')}>คอร์สของฉัน</div>
+              <div onClick={() => navigate('/manageUser')}>จัดการบัญชีผู้ใช้</div>
+              <div onClick={() => navigate('/manageCourse')}>จัดการคอร์ส</div>
             </>
           )}
 

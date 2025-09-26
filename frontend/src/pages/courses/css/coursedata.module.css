@@ -2,51 +2,45 @@
   width: 100%;
   margin: 0 auto;
   border-top: 1px solid #F5F5F5;
-  border-bottom: 1px solid #F5F5F5  ;
+  border-bottom: 1px solid #F5F5F5;
 }
 
-.card:hover{
+.card:hover {
   cursor: pointer;
   background: #F5F5F5;
 }
 
 .card > td:nth-child(2),
 .card > td:nth-child(3),
-.card > td:nth-child(4){
+.card > td:nth-child(4) {
   text-align: center;
+  vertical-align: middle;
 }
 
-.card > td:nth-child(1){
+.card > td:nth-child(1) {
   width: 50%;
+}
 
-  .tcell-wrap{
-    width: 90%;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    gap: 5%;
+.tcell-wrap {
+  width: 90%;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 5%;
 
-    img{
-      width: 45px;
-      height: 45px;
-      border-radius: 8px;
-    }
+  img {
+    width: 45px;
+    height: 45px;
+    border-radius: 100%;
   }
 }
 
-.card > td:nth-child(2){
-  width: 10%;
+.card > td:nth-child(3) p {
+  display: none;
+  font-weight: bold;
+  margin: 0;
 }
-.card > td:nth-child(3){
-  width: 30%;
 
-  p{
-    display: none;
-    font-weight: bold;
-    margin: 0;
-  }
-}
-  
 .card > td:nth-child(4) > button {
   position: relative;
   overflow: hidden;
@@ -58,72 +52,79 @@
   font-size: 16px;
   cursor: pointer;
   outline: none;
-}
-  
-.card td > button::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, #42FF00, #088500);
-  color: white;
-  transform: scaleX(0);
-  transform-origin: bottom right;
-  transition: transform 0.3s ease-in-out;
-}
-  
-button:hover::before {
-  transform: scaleX(2);
-  transform-origin: bottom left;
-}
-  
-button:hover {
-  border-color: white;
-}
-  
-.infoContent {
-  h1 {
-    margin: 0;
-  }
-  p {
-    margin: 0;
-  }
+  transition: all 0.3s ease;
 }
 
-.tcell-mobile-wrap{
+.card > td:nth-child(4) > button:hover {
+  border-color: white;
+}
+
+.tcell-mobile-wrap {
   display: none;
 }
 
+
 @media screen and (max-width: 640px) {
-  .card > td:nth-child(2), .card > td:nth-child(3){
+  .card > td:nth-child(2),
+  .card > td:nth-child(3),
+  .card > td:nth-child(4) 
+  {
     display: none;
   }
 
-  .card > td:nth-child(4){
-    width: 25%;
-  }
-
-  .card > td:nth-child(1) > .tcell-wrap{
+  .card > td:nth-child(1) > .tcell-wrap {
     display: none;
   }
 
-  .tcell-mobile-wrap{
+
+  .tcell-mobile-wrap {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 36px 0;
+  }
 
+  .tcell-mobile-wrap > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .tcell-mobile-wrap img {
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+  }
+
+  .tcell-mobile-wrap p {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  .tcell-mobile-wrap :global(.process-bar) {
+    width: 100% !important;
+    max-width: 250px;
+  }
+
+  .card > td:nth-child(4) > button {
+    padding: 6px 14px;
+    font-size: 14px;
+    border-radius: 5px;
+  }
+}
+
+@media screen and (max-width: 485px) {
+  .tcell-mobile-wrap {
+    flex-direction: column;
+    gap: 24px;
+    
     div{
       display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-
-      img{
-        width: 35px;
-        height: 35px;
-      }
     }
   }
 }

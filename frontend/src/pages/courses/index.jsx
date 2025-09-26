@@ -17,25 +17,30 @@ function Courses() {
       if(response.status === 200){
         setCourses(response.data.results);
       }
-
-      if (userData.id) {
-        const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {
-          withCredentials: true,
-        });
-        if(response.status === 200){
-          setProgress(response.data.results);
-        }
-      }
-
     } catch (err) {
       console.log(err);
     }
   };
 
+  const fetchProgress = async () => {
+    try {
+      const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {
+        withCredentials: true,
+      });
+
+      if(response.status === 200){
+        setProgress(response.data.results);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   useEffect(() => {
     fetchData();
+    fetchProgress();
   }, [userData]);
-
+  console.log(courses)
   return (
     <div className={style.pageWrapper}>
       <div className={style.content}>
@@ -48,14 +53,12 @@ function Courses() {
             <thead>
               <tr>
                 <th></th>
+                <th>
+                  <p>จำนวนการลงทะเบียน</p>
+                </th>
                 {userData.id && (
                   <th>
-                    <p>Status</p>
-                  </th>
-                )}
-                {userData.id && (
-                  <th>
-                    <p>Completion</p>
+                    <p>ความคืบหน้าการเรียน</p>
                   </th>
                 )}
                 <th></th>
@@ -83,6 +86,7 @@ function Courses() {
                     icon={item.icon}
                     enrollmentId={latestEnroll?.id || null} 
                     courseId={item.id}
+                    enrollmentCount={item.enrollmentCount}
                   />
                 );
               })}

@@ -17,6 +17,7 @@ import {
   Stack,
   TableSortLabel,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowLeft, KeyboardArrowUp } from "@mui/icons-material";
 
@@ -287,6 +288,8 @@ function EnrollSum() {
     setOrderBy(property);
   };
 
+  const tabletQuery = useMediaQuery('(max-width:720px)');
+
   return (
     <Stack
       gap={2}
@@ -296,13 +299,29 @@ function EnrollSum() {
       }}
     >
       <Stack direction="row" justifyContent="flex-start" alignItems="center">
-        <Button
-          variant="contained"
-          onClick={() => navigate(-1)}
-          startIcon={<KeyboardArrowLeft />}
-        >
-          ย้อนกลับ
-        </Button>
+        {!tabletQuery ? (
+          <Button
+            variant="contained"
+            onClick={() => navigate(-1)}
+            startIcon={<KeyboardArrowLeft />}
+          >
+            ย้อนกลับ
+          </Button>
+        ):(
+          <IconButton 
+            sx={{
+              backgroundColor: "rgb(25, 118, 210)",
+              color: "white",
+              "&:hover": {
+                backgroundColor: "rgb(25, 118, 210)",
+              },
+            }}
+            onClick={() => navigate(-1)}
+          >
+            <KeyboardArrowLeft />
+          </IconButton>
+        )}
+        
       </Stack>
 
       <Typography variant="h5" sx={{ textAlign: "center" }}>

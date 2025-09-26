@@ -8,6 +8,7 @@ import {
   MenuItem,
   Button,
   Stack,
+  Typography,
 } from "@mui/material";
 
 function EditUser({
@@ -23,7 +24,7 @@ function EditUser({
 }) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>Edit User</DialogTitle>
+      <DialogTitle>แก้ไขข้อมูลบัญชีผู้ใช้</DialogTitle>
       <DialogContent>
         <Stack 
           direction="column" 
@@ -61,13 +62,13 @@ function EditUser({
           />
           <label htmlFor="upload-button">
             <Button variant="outlined" component="span" style={{ marginTop: 8 }}>
-              Upload Image
+              อัปโหลดรูปภาพ
             </Button>
           </label>
         </Stack>
 
         <TextField
-          label="Name"
+          label="ชื่อ"
           fullWidth
           margin="dense"
           value={selectedUser.name}
@@ -76,7 +77,7 @@ function EditUser({
           }
         />
         <TextField
-          label="Email"
+          label="อีเมล"
           type="email"
           fullWidth
           margin="dense"
@@ -85,6 +86,7 @@ function EditUser({
             setSelectedUser({ ...selectedUser, email: e.target.value })
           }
         />
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>ตำแหน่ง</Typography>
         <Select
           fullWidth
           margin="dense"
@@ -93,9 +95,9 @@ function EditUser({
             setSelectedUser({ ...selectedUser, role: e.target.value })
           }
         >
-          <MenuItem value="s">Student</MenuItem>
-          <MenuItem value="t">Teacher</MenuItem>
-          <MenuItem value="a">Admin</MenuItem>
+          <MenuItem value="s">นักเรียน</MenuItem>
+          <MenuItem value="t">อายารย์</MenuItem>
+          <MenuItem value="a">ผู้ดูแลระบบ</MenuItem>
         </Select>
         {message.text && (
           <p style={{ color: message.status === "success" ? "green" : "red" }}>

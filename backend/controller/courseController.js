@@ -10,8 +10,25 @@ const getCourses = (req, res) => {
             if (results.length === 0) {
               return res.status(400).send({ message: "No courses found" });
             }
-            
-            return res.status(200).send({ results });
+
+            const courseIds = results.map(course => course.id);
+
+            db.query("SELECT id, courseId FROM enrollment WHERE courseId IN (?)", [courseIds], (err, enrollmentResults) => {
+              if (err) {
+                return res.status(500).send({ message: "Database enrollment query error" });
+              }
+
+              const dataFormat = results.map(course => {
+                const enrollmentCount = enrollmentResults.filter(enrollment => enrollment.courseId === course.id).length;
+                return {
+                  ...course,
+                  enrollmentCount
+                };
+              });
+
+
+              return res.status(200).send({ results: dataFormat});
+            });
           }
         );
 

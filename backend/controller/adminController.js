@@ -130,9 +130,47 @@ const updateUser = (req, res) => {
     }
 }
 
+const getCourses = (req, res) => {
+    try{
+        db.query("SELECT id, name, icon, teacherId FROM course", (error, result) => {
+            if(error){
+                console.log(error);
+                return res.status(500).send({ message: "Database course query error." });
+            }
+
+            const teacherIds = result.map(course => course.teacherId);
+
+            db.query("SELECT id, name FROM user WHERE id IN (?)", [teacherIds], (error, usersResult) => {
+                if(error){
+                    console.log(error);
+                }
+                const dataFormat = result.map(course => {
+                    const teacherName = usersResult.find(user => user.id === course.teacherId)?.name;
+                    return {
+                        ...course,
+                        teacherName
+                    };
+                });
+
+                return res.status(200).send({ result: dataFormat });
+            })
+        });
+
+    } catch(error){
+        console.log(error);
+        return res.status(500).json({ message: "Server error.", error });
+    }
+}
+
+const deleteCourse = (req, res) => {
+
+}
+
 module.exports = {
     getUsers,
     addUser,
     deleteUser,
-    updateUser
+    updateUser,
+    getCourses,
+    deleteCourse
 }

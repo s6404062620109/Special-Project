@@ -357,7 +357,10 @@ function ManageUser() {
 
       <AddUser
         open={showPopup}
-        onClose={() => setShowPopup(false)}
+        onClose={() => {
+          setNewUser({ name: "", email: "", role: "s" })
+          setShowPopup(false)
+        }}
         newUser={newUser}
         setNewUser={setNewUser}
         onSubmit={handleAddUser}

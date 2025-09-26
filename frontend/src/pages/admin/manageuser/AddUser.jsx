@@ -7,6 +7,7 @@ import {
   Select,
   MenuItem,
   Button,
+  Typography,
 } from "@mui/material";
 
 function AddUser({ 
@@ -19,32 +20,33 @@ function AddUser({
 }) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>Add New User</DialogTitle>
+      <DialogTitle>เพิ่มนักเรียนใหม่</DialogTitle>
       <DialogContent>
         <TextField
-          label="Name"
+          label="ซื่อ"
           fullWidth
           margin="dense"
           value={newUser.name}
           onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
         />
         <TextField
-          label="Email"
+          label="อีเมล"
           type="email"
           fullWidth
           margin="dense"
           value={newUser.email}
           onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
         />
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>ตำแหน่ง</Typography>
         <Select
           fullWidth
           margin="dense"
           value={newUser.role}
           onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
         >
-          <MenuItem value="s">Student</MenuItem>
-          <MenuItem value="t">Teacher</MenuItem>
-          <MenuItem value="a">Admin</MenuItem>
+          <MenuItem value="s">นักเรียน</MenuItem>
+          <MenuItem value="t">อาจารย์</MenuItem>
+          <MenuItem value="a">ผู้ดูแลระบบ</MenuItem>
         </Select>
         {message.text && (
           <p style={{ color: message.status === "success" ? "green" : "red" }}>
@@ -54,10 +56,10 @@ function AddUser({
       </DialogContent>
       <DialogActions>
         <Button onClick={onSubmit} variant="contained">
-          Add
+          ยืนยัน
         </Button>
         <Button onClick={onClose} color="error">
-          Cancel
+          ยกเลิก
         </Button>
       </DialogActions>
     </Dialog>
