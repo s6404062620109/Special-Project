@@ -55,8 +55,13 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
 
         <div className={style["subjectlist-wrap"]}>
           {subjectList.map((subject, ind) => {
-            const subjectProgress = progress.lab.find(prog => prog.subjectId === subject.id);
-            const isCompleted = subjectProgress?.is_completed === 1;
+            const subjectProgressList = progress.lab.filter(
+              (prog) => prog.subjectId === subject.id
+            );
+
+            const isCompleted =
+              subjectProgressList.length > 0 &&
+              subjectProgressList.every((prog) => prog.is_completed === 1);
 
             return (
               <p

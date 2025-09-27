@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Card, CardContent, CardActions, Stack, Typography,
-  Collapse, Button, IconButton, List, ListItem, ListItemText,
+  Card, 
+  CardContent, 
+  CardActions, 
+  Stack, 
+  Typography,
+  Collapse, 
+  Button, 
+  IconButton, 
+  List, 
+  ListItem, 
+  ListItemText,
   useMediaQuery
 } from '@mui/material';
 import { ExpandMore, Delete } from '@mui/icons-material';
 import backend from '../../api/backend';
-import Guide from '.';
 
 const cardStyle = {
   width: "100%",
@@ -23,33 +31,60 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
 
   const tabletMedia = useMediaQuery('(max-width: 768px)');
 
+  const filesToShow = () => {
+    if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
+      return [
+        guideData?.teacherGuide && { name: "คู่มือสำหรับอาจารย์.pdf", url: guideData.teacherGuide, type: "application/pdf" },
+        guideData?.labGuide && { name: "Lab Guide.html", url: guideData.labGuide, type: "text/html" },
+        ...files,   
+        ].filter(Boolean);
+    } 
+    else if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
+      return [
+        guideData?.studentGuide && { name: "คู่มือสำหรับนักเรียน.pdf", url: guideData.studentGuide, type: "application/pdf" },
+        ...files,
+      ].filter(Boolean);
+    }
+    return files;
+  };
+
+  const allFilesToShow = filesToShow();
+
   const fileValidation = (file) => {
-    if(title === "คู่มือการใช้งานสำหรับอาจารย์"){
-      if(files.length >= 2){
-        alert("สามารถรับไฟล์ได้ไม่เกิน 2 ไฟล์");
+    const currentFiles = [...allFilesToShow];
+
+    if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
+      if (currentFiles.length >= 2) {
+        alert("สามารถรับไฟล์ได้ไม่เกิน 2 ไฟล์ (PDF + HTML เท่านั้น)");
         return false;
       }
 
-      const typesInFiles = files.map(f => f.type);
+      const typesInFiles = currentFiles.map(f => f.type);
 
-      if(file.type === "application/pdf" && typesInFiles.includes("application/pdf")){
-        alert("ไฟล์ PDF ถูกอัพโหลดแล้ว ต้องมี HTML ด้วย");
+      if (file.type === "application/pdf" && typesInFiles.includes("application/pdf")) {
+        alert("มีไฟล์ PDF อยู่แล้ว ต้องอัพโหลดเป็น HTML เท่านั้น");
         return false;
       }
 
-      if(file.type === "text/html" && typesInFiles.includes("text/html")){
-        alert("ไฟล์ HTML ถูกอัพโหลดแล้ว ต้องมี PDF ด้วย");
+      if (file.type === "text/html" && typesInFiles.includes("text/html")) {
+        alert("มีไฟล์ HTML อยู่แล้ว ต้องอัพโหลดเป็น PDF เท่านั้น");
         return false;
       }
 
-      if(file.type !== "application/pdf" && file.type !== "text/html"){
+      if (file.type !== "application/pdf" && file.type !== "text/html") {
         alert("ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF หรือ HTML เท่านั้น");
         return false;
       }
     }
 
-    if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
-      if(file.type !== "application/pdf"){
+    if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
+      const hasPDF = currentFiles.some(f => f.type === "application/pdf");
+      if (hasPDF && file.type === "application/pdf") {
+        alert("มีไฟล์ PDF สำหรับนักเรียนอยู่แล้ว");
+        return false;
+      }
+
+      if (file.type !== "application/pdf") {
         alert("ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF เท่านั้น");
         return false;
       }
@@ -66,7 +101,6 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
     newFiles.forEach(file => {
       if(!fileValidation(file)) return;
 
-      // นักเรียนได้ไฟล์เดียว
       if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
         setFiles([file]);
       } else {
@@ -86,47 +120,60 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
     }
   };
 
-    const handleSubmit = async () => {
-        const formData = new FormData();
+  const handleSubmit = async () => {
+    const formData = new FormData();
 
-        if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
-            let teacherGuide = files.find(f => f.type === "application/pdf");
-            let labGuide = files.find(f => f.type === "text/html");
+    if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
+      let teacherGuide = files.find(f => f.type === "application/pdf");
+      let labGuide = files.find(f => f.type === "text/html");
 
-            if (teacherGuide) {
-                formData.append("teacherGuide", teacherGuide);
-            }
-            if (labGuide) {
-                formData.append("labGuide", labGuide);
-            }
-        } 
-        else if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
-            let studentGuide = files.find(f => f.type === "application/pdf");
-            if (studentGuide) {
-                formData.append("studentGuide", studentGuide);
-            }
-        }
+      if (teacherGuide) {
+        formData.append("teacherGuide", teacherGuide);
+      }
+      if (labGuide) {
+        formData.append("labGuide", labGuide);
+      }
+    } 
+    else if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
+      let studentGuide = files.find(f => f.type === "application/pdf");
+      if (studentGuide) {
+        formData.append("studentGuide", studentGuide);
+      }
+    }
 
-        if (deleteGuides && deleteGuides.length > 0) {
-            deleteGuides.forEach(d => formData.append("deleteGuides[]", d));
-        }
+    if (deleteGuides !== "") {
+      formData.append("deleteGuides", deleteGuides);
+      setDeleteGuides("");
+    }
 
-        try {
-            const response = await backend.post("/admin/updateGuide", formData, {
-                withCredentials: true,
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+    try {
+      const response = await backend.post("/admin/updateGuide", formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-            if (response.status === 200) {
-                alert(response.data.message);
-                setTimeout(() => window.location.reload(), 2000);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    };
+      if (response.status === 200) {
+        alert(response.data.message);
+        setTimeout(() => window.location.reload(), 2000);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const pdfFiles = files.filter(f => f.type === 'application/pdf');
+  const handleClearOldFiles = () => {
+    setDeleteGuides("");
+
+    if(title === "คู่มือการใช้งานสำหรับอาจารย์"){
+      setDeleteGuides("teacher");
+      setUploadState(false);
+    }
+
+    else if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
+      setDeleteGuides("student");
+      setUploadState(false);
+    }
+  }
 
   useEffect(() => {
     if(deleteGuides !== ""){
@@ -147,39 +194,21 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
     }
   }, [files, title]);
 
-    useEffect(() => {
-        if(guideData){
-            const filesList = [];
-            if(guideData.studentGuide){
-                filesList.push({ name: "คู่มือสำหรับนักเรียน.pdf", url: guideData.studentGuide, type: "application/pdf" });
-            }
-            if(guideData.teacherGuide){
-                filesList.push({ name: "คู่มือสำหรับอาจารย์.pdf", url: guideData.teacherGuide, type: "application/pdf" });
-            }
-            if(guideData.labGuide){
-                filesList.push({ name: "Lab Guide.html", url: guideData.labGuide, type: "text/html" });
-            }
-            setExistingFiles(filesList);
-        }
-    }, [guideData]);
-
-    const filesToShow = () => {
-        if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
-            return [
-            guideData?.teacherGuide && { name: "คู่มือสำหรับอาจารย์.pdf", url: guideData.teacherGuide, type: "application/pdf" },
-            guideData?.labGuide && { name: "Lab Guide.html", url: guideData.labGuide, type: "text/html" },
-            ...files, // ไฟล์ที่อัพโหลดใหม่จาก local
-            ].filter(Boolean);
-        } else if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
-            return [
-            guideData?.studentGuide && { name: "คู่มือสำหรับนักเรียน.pdf", url: guideData.studentGuide, type: "application/pdf" },
-            ...files, // ไฟล์ที่อัพโหลดใหม่จาก local
-            ].filter(Boolean);
-        }
-        return files;
-    };
-
-    const allFilesToShow = filesToShow();
+  useEffect(() => {
+    if(guideData){
+      const filesList = [];
+      if(guideData.studentGuide){
+        filesList.push({ name: "คู่มือสำหรับนักเรียน.pdf", url: guideData.studentGuide, type: "application/pdf" });
+      }
+      if(guideData.teacherGuide){
+        filesList.push({ name: "คู่มือสำหรับอาจารย์.pdf", url: guideData.teacherGuide, type: "application/pdf" });
+      }
+      if(guideData.labGuide){
+        filesList.push({ name: "Lab Guide.html", url: guideData.labGuide, type: "text/html" });
+      }
+      setExistingFiles(filesList);
+    }
+  }, [guideData]);
 
   return (
     <Card style={cardStyle}>
@@ -210,8 +239,8 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
             alignItems="center" 
             spacing={2}
           >
-            {(title === "คู่มือการใช้งานสำหรับนักเรียน" && files.length === 0) || 
-            (title === "คู่มือการใช้งานสำหรับอาจารย์" && files.length === 0) ? (
+            {(title === "คู่มือการใช้งานสำหรับนักเรียน" && allFilesToShow.length === 0) || 
+            (title === "คู่มือการใช้งานสำหรับอาจารย์" && allFilesToShow.length === 0) ? (
               <Button
                 variant="outlined"
                 component="label"
@@ -283,6 +312,19 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
               </Stack>
             )}
 
+            {((title === "คู่มือการใช้งานสำหรับนักเรียน" && guideData?.studentGuide) ||
+              (title === "คู่มือการใช้งานสำหรับอาจารย์" && (guideData?.teacherGuide || guideData?.labGuide))) && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  sx={{ width: "100%" }}
+                  onClick={handleClearOldFiles}
+                >
+                  เลือกลบไฟล์เก่าทั้งหมด
+                </Button>
+            )}
+            
+
             <Button
                 variant="contained"
                 color="primary"
@@ -312,7 +354,7 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
               sx={{ width: "100%" }}
               onClick={handleSubmit}
             >
-                ยืนยัน
+              ยืนยัน
             </Button>
 
           </Stack>

@@ -221,7 +221,7 @@ function EditCourse() {
         {chartData && (
           <div style={{ width: "100%", marginTop: "40px" }}>
             <Typography variant="h6" gutterBottom>
-              สรุปผล Pretest / Posttest / Growth
+              คะแนนเฉลี่ยแบบทดสอบก่อนเรียน / หลังเรียน / การเพิ่มขึ้นของคะแนน
             </Typography>
 
             <BarChart
@@ -240,9 +240,9 @@ function EditCourse() {
                 max: 100 
               }]}
               series={[
-                { dataKey: "Prevalue", label: "Pretest", color: '#1976d2' },
-                { dataKey: "Postvalue", label: "Posttest", color: '#2e7d32' },
-                { dataKey: "Growthvalue", label: "Growth", color: '#ff5722' },
+                { dataKey: "Prevalue", label: "แบบทดสอบก่อนเรียน", color: '#1976d2' },
+                { dataKey: "Postvalue", label: "แบบทดสอบหลังเรียน", color: '#2e7d32' },
+                { dataKey: "Growthvalue", label: "การเพิ่มขึ้นของคะแนน", color: '#ff5722' },
               ]}
             />
 

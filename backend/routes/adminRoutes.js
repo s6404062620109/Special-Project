@@ -41,7 +41,7 @@ const Upload = multer({
 router.use("/guide/student", express.static(path.join(__dirname, '../courses/guide/student')));
 router.use("/guide/teacher", express.static(path.join(__dirname, '../courses/guide/teacher')));
 
-router.get("/getGuide", authUserRole.checkAdminRole, adminController.getGuides);
+router.get("/getGuide", adminController.getGuides);
 
 router.post("/updateGuide", authUserRole.checkAdminRole, Upload.any(), adminController.updateGuide);
 

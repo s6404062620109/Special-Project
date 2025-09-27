@@ -21,9 +21,13 @@ function SubjectData({ id, name, courseId, progress, enrollmentId }) {
     }
   }
 
-  const matchedProgress = progress.find(
-    (p) => p.subjectId === id && (p.typeId === 3 || p.typeId === 4 || p.typeId === 5 || p.typeId === 6)
+  const matchedProgressList = progress.filter(
+  (p) =>
+    p.subjectId === id &&
+    (p.typeId === 3 || p.typeId === 4 || p.typeId === 5 || p.typeId === 6)
   );
+
+  const isAllCompleted = matchedProgressList.length > 0 && matchedProgressList.every((p) => p.is_completed === 1);
 
   return (
     <tr 
@@ -36,8 +40,8 @@ function SubjectData({ id, name, courseId, progress, enrollmentId }) {
 
       {userData.id && (
         <td>
-          {(matchedProgress && matchedProgress.is_completed === 1) && (
-            <Typography variant="h6">Lab Completed</Typography>
+          {isAllCompleted && (
+            <Typography variant="h6" color="green">Lab Completed</Typography>
           )}
         </td>
       )}
