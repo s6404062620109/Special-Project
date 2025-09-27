@@ -60,14 +60,15 @@ function ManageCourses() {
 
   const handleDeleteCourse = async (id) => {
     console.log(id)
-    // try {
-    //   const res = await backend.delete(`/admin/deleteCourse/${id}`, { withCredentials: true });
-    //   if (res.status === 200) {
-    //     setCourses(courses.filter((course) => course.id !== id));
-    //   }
-    // } catch (err) {
-    //   console.error("Delete failed:", err);
-    // }
+    try {
+      const response = await backend.delete(`/admin/deleteCourse/${id}`, { withCredentials: true });
+      if (response.status === 200) {
+        alert(response.data.message);
+        setCourses(courses.filter((course) => course.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {

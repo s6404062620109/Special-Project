@@ -53,7 +53,7 @@ function Reset() {
     return (
       <div className={style.container}>
         <div className={style.heading}>
-          <p>Reset Password</p>
+          <p>ตั้งค่านรหัสผ่านใหม่</p>
         </div>
   
         <form onSubmit={handleSubmit}>
@@ -123,12 +123,17 @@ function Reset() {
   
           <div className={style.footer}>
             <div className={style.status}>
-              <p>{statusMessage}</p>
-              <input type='submit' value='Send Recovery Code'/>
+              {statusMessage === "Password updated successfully." ? (
+                <p style={{color: 'green'}}>{statusMessage}</p>
+              ):(
+                <p style={{color: 'red'}}>{statusMessage}</p>
+              )}
+              
+              <input type='submit' value='ยืนยันรหัสผ่านใหม่'/>
             </div>
 
             <div className={style.functions}>
-              <Link to='/'>Do you already have an account ?</Link>
+              <Link to='/'>คุณมีบัญชีผู้ใช้อยู่แล้ว ?</Link>
             </div>
           </div>
         </form>

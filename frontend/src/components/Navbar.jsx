@@ -56,7 +56,6 @@ function Navbar() {
           {(userData.role === "s" || userData.role === null) && (
             <>
               <Link to='/courses'>คอร์สออนไลน์</Link>
-              <Link>ร่วมงานกับเรา</Link>
             </>
           )}
           <Link>คู่มือการใช้งาน</Link>
@@ -83,7 +82,6 @@ function Navbar() {
           {(userData.role === "s" || userData.role === null) && (
             <>
               <div onClick={() => navigate('/courses')}>คอร์สออนไลน์</div>
-              <div>ร่วมงานกับเรา</div>
             </>
           )}
           <div>คู่มือการใช้งาน</div>

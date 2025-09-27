@@ -58,13 +58,13 @@ function AddManual({
           justifyContent="space-between"
           alignItems="center"
         >
-          <Typography variant="h5" fontWeight='bold'>Subject</Typography>
+          <Typography variant="h5" fontWeight='bold'>บทเรียน</Typography>
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
             onClick={handlePreview}
           >
-            Preview
+            ตัวอย่าง
           </Button>
         </Stack>
         
@@ -86,7 +86,7 @@ function AddManual({
         <Stack
           gap={1}
         >
-          <Typography variant="h5">Content</Typography>
+          <Typography variant="h5">เนื้อหาบทเรียน</Typography>
           {subjectInput.content.map((item, index) => (
             <Stack key={index} 
               gap={1} 
@@ -97,7 +97,7 @@ function AddManual({
               }}
             >
               <Stack direction="row" justifyContent="space-between">
-                <Typography variant="h6">Topic {index + 1}</Typography>
+                <Typography variant="h6">หัวข้อที่ {index + 1}</Typography>
                 <IconButton onClick={() => removeContent(index)} color="error">
                   <DeleteIcon />
                 </IconButton>
@@ -116,7 +116,7 @@ function AddManual({
                 onChange={(e) => handleChange(index, "description", e.target.value)}
               />
               <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-                Upload Image
+                อัพโหลดรูปภาพ
                 <VisuallyHiddenInput type="file" onChange={(event) => handleImageUpload(index, event)} multiple />
               </Button>
               <Stack gap={1}>
@@ -158,7 +158,7 @@ function AddManual({
             startIcon={<AddIcon />} 
             onClick={addContent}
           >
-            Add Content
+            เพิ่มเนื้อหา
           </Button>
         </Stack>
         

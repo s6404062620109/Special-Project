@@ -52,6 +52,13 @@ form{
     width: 100%;
     height: 55px;
 }
+.inputContent > div:nth-child(3){
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
 .status > input[type="submit"]:hover{
     cursor: pointer;
 }
@@ -87,7 +94,7 @@ form{
     align-items: center;
 }
 .functions > a{
-    font-size: 12px;
+    font-size: 16px;
     color: black;
     opacity: 0.5;
     text-decoration: none;

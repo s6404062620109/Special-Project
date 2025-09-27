@@ -55,7 +55,7 @@ function SetPassword() {
   return (
     <div className={style.container}>
           <div className={style.heading}>
-            <p>SET PASSWORD</p>
+            <p>ตั้งค่านรหัสผ่าน</p>
           </div>
     
           <form onSubmit={(e) => handleSubmit(e)}>
@@ -121,12 +121,16 @@ function SetPassword() {
     
             <div className={style.footer}>
               <div className={style.status}>
-                <p>{statusMessage}</p>
-                <input type='submit' value='SIGN UP'/>
+                {statusMessage === "ตั้งค่ารหัสผ่านสำเร็จแล้ว" ? (
+                  <p style={{color: 'green'}}>{statusMessage}</p>
+                ):(
+                  <p style={{color: 'red'}}>{statusMessage}</p>
+                )}
+                <input type='submit' value='ยืนยันรหัสผ่าน'/>
               </div>
     
               <div className={style.functions}>
-                <Link to='/'>Do you already have an account ?</Link>
+                <Link to='/'>คุณมีบัญชีผู้ใช้อยู่แล้ว ?</Link>
               </div>
             </div>
           </form>

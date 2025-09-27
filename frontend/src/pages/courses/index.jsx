@@ -40,7 +40,7 @@ function Courses() {
     fetchData();
     fetchProgress();
   }, [userData]);
-  console.log(courses)
+
   return (
     <div className={style.pageWrapper}>
       <div className={style.content}>

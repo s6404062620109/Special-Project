@@ -32,7 +32,7 @@ function Forgot() {
   return (
     <div className={style.container}>
       <div className={style.heading}>
-        <p>Forgot Password</p>
+        <p>ลืมรหัสผ่าน</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -60,11 +60,11 @@ function Forgot() {
         <div className={style.footer}>
           <div className={style.status}>
             <p>{statusMessage}</p>
-            <input type="submit" value="Send Recovery Code" />
+            <input type="submit" value="ขอรหัสกู้คืนบัญชี" />
           </div>
 
           <div className={style.functions}>
-            <Link to="/">Do you already have an account ?</Link>
+            <Link to="/">คุณมีบัญชีผู้ใช้อยู่แล้ว ?</Link>
           </div>
         </div>
       </form>

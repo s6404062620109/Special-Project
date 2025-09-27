@@ -143,9 +143,9 @@ function EditCourse() {
             <table className={style.subjectTable}>
               <thead>
                 <tr>
-                  <th>Subject</th>
-                  <th>Edit</th>
-                  <th>Delete</th>
+                  <th>บทเรียน</th>
+                  <th>แก้ไข</th>
+                  <th>ลบ</th>
                 </tr>
               </thead>
               <tbody>
@@ -270,7 +270,7 @@ function EditCourse() {
 
       <div className={style["add-button"]} onClick={() => setSubjectPopupOpen(true)}>
         <img alt="Add button" src="/My_Coursesp/Add.svg" />
-        <p>Add Subject</p>
+        <p>เพิ่มบทเรียนใหม่</p>
       </div>
 
       <Dialog
@@ -290,7 +290,7 @@ function EditCourse() {
         }}
       >
         <DialogTitle id="alert-dialog-title">
-          {"How to add subject?"}
+          คุณต้องการเพิ่มบทเรียนด้วยวิธีใด?
         </DialogTitle>
 
         <DialogActions>
@@ -301,7 +301,7 @@ function EditCourse() {
               navigate(`/add-subject/${courseId}/pdf`);
             }}
           >
-            PDF
+            ไฟล์ PDF
           </Button>
           <Button 
             variant='contained' 
@@ -310,7 +310,7 @@ function EditCourse() {
               navigate(`/add-subject/${courseId}/manual`)
             }}
           >
-            Manual
+            กำหนดเอง
           </Button>
         </DialogActions>
       </Dialog>

@@ -14,4 +14,8 @@ router.put("/updateUser/:userId", authUserRole.checkAdminRole, adminController.u
 
 router.get("/getCourses", authUserRole.checkAdminRole, adminController.getCourses);
 
+router.delete("/deleteCourse/:courseId", authUserRole.checkAdminRole, adminController.deleteCourse);
+
+router.put("/approveTeacherReq/:userId", authUserRole.checkAdminRole, adminController.approveTeacherReq);
+
 module.exports = router;

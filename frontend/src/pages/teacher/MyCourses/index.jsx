@@ -95,7 +95,7 @@ function MyCourses() {
     <div className={style.pageWrapper}>
       <div className={style.container}>
         <div className={style.head}>
-          <h2>COURSES</h2>
+          <h2>คอร์สเรียน</h2>
         </div>
 
         <div className={style.body}>
@@ -205,7 +205,7 @@ function MyCourses() {
 
       <div className={style['add-button']} onClick={() => setIsPopupOpen(true)}>
         <img alt='Add button' src='/My_Coursesp/Add.svg' />
-        <p>Add Course</p>
+        <p>เพิ่มคอร์สใหม่</p>
       </div>
 
       {isPopupOpen && userData.id && (

@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthProvider";
-import { useNavigate } from "react-router-dom";
 import backend from "../../api/backend";
 import Login from "../authenticate/login";
 import UserBoard from "./UserBoard";
 import CourseBoard from "./CourseBoard";
 
 import style from "./css/home.module.css";
+import { Button } from "@mui/material";
+import { ArrowBack, ArrowBackIos } from "@mui/icons-material";
 
 
 function Home() {
@@ -66,9 +67,15 @@ function Home() {
               <div className={style["login-nav"]}>
                 <p onClick={() => setLoginEnable(!loginEnable)}>
                   {loginEnable === true ? (
-                    <>{"<"} Get Back</>
+                    <Button
+                      variant="text"
+                      onClick={() => setLoginEnable(!loginEnable)}
+                      startIcon={<ArrowBackIos/>}
+                    >
+                      ย้อนกลับ
+                    </Button>
                   ) : (
-                    <>Do you want join members?</>
+                    <>เข้าสู่ระบบ/สมัครสมาชิก</>
                   )}
                 </p>
               </div>

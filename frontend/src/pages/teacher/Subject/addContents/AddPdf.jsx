@@ -55,14 +55,14 @@ function AddPdf({
           alignItems="center"
         >
           <Typography variant="h5" fontWeight="bold">
-            Subject
+            บทเรียน
           </Typography>
           <Button
             variant="outlined"
             startIcon={<PreviewIcon />}
             onClick={handlePreview}
           >
-            Preview
+          ตัวอย่าง
           </Button>
         </Stack>
 
@@ -109,7 +109,7 @@ function AddPdf({
           >
             {subjectPdfInput.file ? (
               <Typography variant="body1" sx={{ color: '#666', mt: 1 }}>
-                Selected file: {subjectPdfInput.file.name}
+                ไฟล์ PDF: {subjectPdfInput.file.name}
               </Typography>
             ) : (
               <Stack
@@ -121,7 +121,7 @@ function AddPdf({
                     color: '#b3b3b3'
                   }}
                 />
-              <Typography variant="h6" sx={{ color: '#b3b3b3' }}>Upload PDf here.</Typography>
+              <Typography variant="h6" sx={{ color: '#b3b3b3' }}>อัพโหลดไฟล์ PDF</Typography>
               </Stack>
               
             )}

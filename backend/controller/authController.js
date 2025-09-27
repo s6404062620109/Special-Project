@@ -6,10 +6,10 @@ const db = require("../database");
 require("dotenv").config();
 
 const register = (req, res) => {
-  const { email, name } = req.body;
+  const { email, name, teacher_request } = req.body;
 
-  if (!req.body || !email || !name) {
-    return res.status(400).json({ message: "Email and name are required." });
+  if (!req.body || !email || !name || !teacher_request) {
+    return res.status(400).json({ message: "Email name and teacher_request are required." });
   }
 
   try {
@@ -29,8 +29,8 @@ const register = (req, res) => {
 
         const verifiedExpired = new Date(Date.now() + 60 * 60 * 1000);
 
-        db.query("INSERT INTO user (email, name, role, verified_key, verified_expired) VALUES(?, ?, ?, ?, ?)",
-          [email, name, "s", verifiedKey, verifiedExpired], (err) => {
+        db.query("INSERT INTO user (email, name, role, verified_key, verified_expired, isApprove) VALUES(?, ?, ?, ?, ?, ?)",
+          [email, name, "s", verifiedKey, verifiedExpired, teacher_request], (err) => {
             if (err) {
               console.log(err);
               return res.status(500).json({ message: "Register Failed!!!" });
@@ -63,7 +63,7 @@ const register = (req, res) => {
                   console.error("Email sending failed:", error);
                   return res.status(500).json({ message: "Failed to send email." });
                   } 
-                return res.status(201).json({ message: "Registered successfully. Please check your email to set your password." });
+                return res.status(201).json({ message: "สมัครสมาชิกสำเร็จแล้ว, กรุณาตั้งค่ารหัสผ่านที่อีเมลของคุณ." });
               });
             }
           }
@@ -142,7 +142,7 @@ const register_password = (req, res) => {
                 return res.status(500).json({ message: "Password update failed." });
               }
 
-              return res.status(200).json({ message: "Password updated successfully." });
+              return res.status(200).json({ message: "ตั้งค่ารหัสผ่านสำเร็จแล้ว" });
             }
           );
         });

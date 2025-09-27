@@ -21,6 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import style from "./css/manageuser.module.css";
 import AddUser from "./AddUser";
 import EditUser from "./EditUser";
+import { Check } from "@mui/icons-material";
 
 function ManageUser() {
   const { userData } = useContext(AuthContext);
@@ -209,6 +210,20 @@ function ManageUser() {
     }
   };
 
+  const handleApproveTeacher = async (userId) => {
+    try{
+      const response = await backend.put(`/admin/approveTeacherReq/${userId}`, {},{
+        withCredentials: true,
+      });
+      if(response.status === 200){
+        alert(response.data.message);
+        fetchUserData();
+      }
+    } catch(error){
+      console.log(error);
+    }
+  }
+
   const tabletQuery = useMediaQuery("(max-width:720px)");
 
   return (
@@ -271,6 +286,15 @@ function ManageUser() {
                       บทบาท
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell ortDirection={orderBy === "isApprove" ? order : false}>
+                    <TableSortLabel
+                      active={orderBy === "isApprove"}
+                      direction={orderBy === "isApprove" ? order : "asc"}
+                      onClick={() => handleRequestSort("isApprove")}
+                    >
+                      ยืนยันคำขอเป็นอาจารย์
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
@@ -283,8 +307,39 @@ function ManageUser() {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         {user.role === "s" && "นักเรียน"}
-                        {user.role === "t" && "อายารย์"}
+                        {user.role === "t" && "อาจารย์"}
                         {user.role === "a" && "ผู้ดูแลระบบ"}
+                      </TableCell>
+                      <TableCell>
+                        {user.isApprove === 1 && !tabletQuery ? (
+                          <Button 
+                            variant="contained" 
+                            color="success"
+                            size="small"
+                            onClick={() => handleApproveTeacher(user.id)}
+                            startIcon={<Check/>}
+                          >
+                            ยืนยัน
+                          </Button>
+                        ):(
+                          <></>
+                        )}
+                        {user.isApprove === 1 && tabletQuery ? (
+                          <IconButton
+                            sx={{
+                              backgroundColor: "rgba(68, 210, 25, 1)",
+                              color: "white",
+                              "&:hover": {
+                                backgroundColor: "rgba(68, 210, 25, 1)",
+                              },
+                            }}
+                            onClick={() => handleApproveTeacher(user.id)}
+                          >
+                            <Check/>
+                          </IconButton>
+                        ):(
+                          <></>
+                        )}
                       </TableCell>
                       <TableCell
                         sx={{ 

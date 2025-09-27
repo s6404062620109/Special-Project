@@ -55,7 +55,7 @@ function Login() {
   return (
     <div className={style.container}>
       <div className={style.heading}>
-        <p>LOG IN</p>
+        <p>เข้าสู่ระบบ</p>
       </div>
       
       <form onSubmit={handleSubmit}>
@@ -117,9 +117,9 @@ function Login() {
           </div>
 
           <div className={style.functions}>
-            <Link to='/register'>Don’t have an account ?</Link>
+            <Link to='/register'>คุณยังไม่มีบัญชี ?</Link>
             <div></div>
-            <Link to='/forgot-password'>Forgot password ?</Link>
+            <Link to='/forgot-password'>ลืมรหัสผ่าน ?</Link>
           </div>
         </div>
       </form>
