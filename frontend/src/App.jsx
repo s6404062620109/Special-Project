@@ -33,6 +33,8 @@ import ManageUser from './pages/admin/manageuser';
 import ManageCourses from './pages/admin/managecourse';
 /* */
 
+import Guide from './pages/guide';
+
 function App() {
   const { userData } = useContext(AuthContext);
 
@@ -56,6 +58,7 @@ function App() {
                 <Route path='/reset-password' element={<Reset/>}/>
                 <Route path='/course/:courseId' element={<CourseDetail/>}/>
                 <Route path='/courses' element={<Courses/>}/>
+                <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
 
@@ -71,6 +74,7 @@ function App() {
                 <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
                 <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
                 <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
+                <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
 
@@ -83,6 +87,7 @@ function App() {
                 <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
                 <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
                 <Route path='/edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
+                <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
 
@@ -97,6 +102,7 @@ function App() {
                 <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
                 <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
                 <Route path='/edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
+                <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
           </div>

@@ -1,8 +1,6 @@
 const express = require("express");
 const multer = require('multer');
 const path = require("path");
-const fs = require("fs");
-const db = require("../database");
 const teacherController = require("../controller/teacherController");
 const authUserRole = require("../middleware/authUserRole");
 

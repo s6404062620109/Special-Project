@@ -239,6 +239,80 @@ const approveTeacherReq = (req, res) => {
     }
 }
 
+const getGuides = (req, res) => {
+  try {
+    const studentGuidePath = path.join(__dirname, "../courses/guide/student/guide.pdf");
+    const teacherGuidePath = path.join(__dirname, "../courses/guide/teacher/guide.pdf");
+    const labGuidePath = path.join(__dirname, "../courses/guide/teacher/index.html");
+
+    const response = {};
+
+    if (fs.existsSync(studentGuidePath)) {
+      response.studentGuide = "/guide/student/guide.pdf";
+    }
+
+    if (fs.existsSync(teacherGuidePath) && fs.existsSync(labGuidePath)) {
+      response.teacherGuide = "/guide/teacher/guide.pdf";
+      response.labGuide = "/guide/teacher/index.html";
+    }
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
+const updateGuide = (req, res) => {
+  try {
+    const { deleteGuides } = req.body;
+
+    const studentGuide = req.files.find(f => f.fieldname === "studentGuide");
+    const teacherGuide = req.files.find(f => f.fieldname === "teacherGuide");
+    const labGuide = req.files.find(f => f.fieldname === "labGuide");
+
+    const studentGuidePath = path.join(__dirname, "../courses/guide/student");
+    const teacherGuidePath = path.join(__dirname, "../courses/guide/teacher");
+
+    if (!fs.existsSync(studentGuidePath)) {
+      fs.mkdirSync(studentGuidePath, { recursive: true });
+    }
+    if (!fs.existsSync(teacherGuidePath)) {
+      fs.mkdirSync(teacherGuidePath, { recursive: true });
+    }
+
+    if (studentGuide) {
+      fs.writeFileSync(path.join(studentGuidePath, "guide.pdf"), studentGuide.buffer);
+    }
+
+    if (teacherGuide) {
+      fs.writeFileSync(path.join(teacherGuidePath, "guide.pdf"), teacherGuide.buffer);
+    }
+
+    if (labGuide) {
+      fs.writeFileSync(path.join(teacherGuidePath, "index.html"), labGuide.buffer);
+    }
+
+    if (deleteGuides && deleteGuides.length > 0) {
+      if (deleteGuides.includes("student")) {
+        const file = path.join(studentGuidePath, "guide.pdf");
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      }
+      if (deleteGuides.includes("teacher")) {
+        const pdfFile = path.join(teacherGuidePath, "guide.pdf");
+        const htmlFile = path.join(teacherGuidePath, "index.html");
+        if (fs.existsSync(pdfFile)) fs.unlinkSync(pdfFile);
+        if (fs.existsSync(htmlFile)) fs.unlinkSync(htmlFile);
+      }
+    }
+
+    return res.status(200).json({ message: "Guide updated successfully." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
 module.exports = {
   getUsers,
   addUser,
@@ -246,5 +320,7 @@ module.exports = {
   updateUser,
   getCourses,
   deleteCourse,
-  approveTeacherReq
+  approveTeacherReq,
+  getGuides,
+  updateGuide,
 };

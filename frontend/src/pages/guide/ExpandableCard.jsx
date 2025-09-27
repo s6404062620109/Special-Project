@@ -1,0 +1,325 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Card, CardContent, CardActions, Stack, Typography,
+  Collapse, Button, IconButton, List, ListItem, ListItemText,
+  useMediaQuery
+} from '@mui/material';
+import { ExpandMore, Delete } from '@mui/icons-material';
+import backend from '../../api/backend';
+import Guide from '.';
+
+const cardStyle = {
+  width: "100%",
+  borderRadius: "12px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+};
+
+function ExpandableCard({ title, handlePreview, guideData = null }) {
+  const [ expanded, setExpanded ] = useState(false);
+  const [ uploadState, setUploadState ] = useState(false);
+  const [ files, setFiles ] = useState([]);
+  const [existingFiles, setExistingFiles] = useState([]);
+  const [ deleteGuides, setDeleteGuides ] = useState("");
+
+  const tabletMedia = useMediaQuery('(max-width: 768px)');
+
+  const fileValidation = (file) => {
+    if(title === "คู่มือการใช้งานสำหรับอาจารย์"){
+      if(files.length >= 2){
+        alert("สามารถรับไฟล์ได้ไม่เกิน 2 ไฟล์");
+        return false;
+      }
+
+      const typesInFiles = files.map(f => f.type);
+
+      if(file.type === "application/pdf" && typesInFiles.includes("application/pdf")){
+        alert("ไฟล์ PDF ถูกอัพโหลดแล้ว ต้องมี HTML ด้วย");
+        return false;
+      }
+
+      if(file.type === "text/html" && typesInFiles.includes("text/html")){
+        alert("ไฟล์ HTML ถูกอัพโหลดแล้ว ต้องมี PDF ด้วย");
+        return false;
+      }
+
+      if(file.type !== "application/pdf" && file.type !== "text/html"){
+        alert("ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF หรือ HTML เท่านั้น");
+        return false;
+      }
+    }
+
+    if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
+      if(file.type !== "application/pdf"){
+        alert("ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF เท่านั้น");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleExpandClick = () => setExpanded(!expanded);
+
+  const handleFileUpload = (event) => {
+    const newFiles = Array.from(event.target.files);
+
+    newFiles.forEach(file => {
+      if(!fileValidation(file)) return;
+
+      // นักเรียนได้ไฟล์เดียว
+      if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
+        setFiles([file]);
+      } else {
+        setFiles(prev => [...prev, file]);
+      }
+    });
+  };
+
+  const handleRemoveFile = (index) => setFiles(prev => prev.filter((_, i) => i !== index));
+  const handleClearAll = () => {
+    setFiles([]);
+    if(title === "คู่มือการใช้งานสำหรับอาจารย์"){
+        setDeleteGuides("teacher");
+    }
+    if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
+        setDeleteGuides("student");
+    }
+  };
+
+    const handleSubmit = async () => {
+        const formData = new FormData();
+
+        if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
+            let teacherGuide = files.find(f => f.type === "application/pdf");
+            let labGuide = files.find(f => f.type === "text/html");
+
+            if (teacherGuide) {
+                formData.append("teacherGuide", teacherGuide);
+            }
+            if (labGuide) {
+                formData.append("labGuide", labGuide);
+            }
+        } 
+        else if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
+            let studentGuide = files.find(f => f.type === "application/pdf");
+            if (studentGuide) {
+                formData.append("studentGuide", studentGuide);
+            }
+        }
+
+        if (deleteGuides && deleteGuides.length > 0) {
+            deleteGuides.forEach(d => formData.append("deleteGuides[]", d));
+        }
+
+        try {
+            const response = await backend.post("/admin/updateGuide", formData, {
+                withCredentials: true,
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            if (response.status === 200) {
+                alert(response.data.message);
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+  const pdfFiles = files.filter(f => f.type === 'application/pdf');
+
+  useEffect(() => {
+    if(deleteGuides !== ""){
+        setUploadState(false);
+        return;
+    }
+    if(title === "คู่มือการใช้งานสำหรับอาจารย์"){
+        const hasPDF = files.some(f => f.type === "application/pdf");
+        const hasHTML = files.some(f => f.type === "text/html");
+        setUploadState(!(hasPDF && hasHTML));
+        return;
+    }
+
+    if(title === "คู่มือการใช้งานสำหรับนักเรียน"){
+        const hasPDF = files.some(f => f.type === "application/pdf");
+        setUploadState(!hasPDF);
+        return;
+    }
+  }, [files, title]);
+
+    useEffect(() => {
+        if(guideData){
+            const filesList = [];
+            if(guideData.studentGuide){
+                filesList.push({ name: "คู่มือสำหรับนักเรียน.pdf", url: guideData.studentGuide, type: "application/pdf" });
+            }
+            if(guideData.teacherGuide){
+                filesList.push({ name: "คู่มือสำหรับอาจารย์.pdf", url: guideData.teacherGuide, type: "application/pdf" });
+            }
+            if(guideData.labGuide){
+                filesList.push({ name: "Lab Guide.html", url: guideData.labGuide, type: "text/html" });
+            }
+            setExistingFiles(filesList);
+        }
+    }, [guideData]);
+
+    const filesToShow = () => {
+        if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
+            return [
+            guideData?.teacherGuide && { name: "คู่มือสำหรับอาจารย์.pdf", url: guideData.teacherGuide, type: "application/pdf" },
+            guideData?.labGuide && { name: "Lab Guide.html", url: guideData.labGuide, type: "text/html" },
+            ...files, // ไฟล์ที่อัพโหลดใหม่จาก local
+            ].filter(Boolean);
+        } else if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
+            return [
+            guideData?.studentGuide && { name: "คู่มือสำหรับนักเรียน.pdf", url: guideData.studentGuide, type: "application/pdf" },
+            ...files, // ไฟล์ที่อัพโหลดใหม่จาก local
+            ].filter(Boolean);
+        }
+        return files;
+    };
+
+    const allFilesToShow = filesToShow();
+
+  return (
+    <Card style={cardStyle}>
+      <CardActions
+        onClick={handleExpandClick}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          cursor: "pointer",
+        }}
+      >
+        <Typography variant="h6">{title}</Typography>
+        <IconButton
+          sx={{
+            transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.3s",
+          }}
+        >
+          <ExpandMore />
+        </IconButton>
+      </CardActions>
+
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <CardContent>
+          <Stack
+            direction="column"
+            justifyContent="center"
+            alignItems="center" 
+            spacing={2}
+          >
+            {(title === "คู่มือการใช้งานสำหรับนักเรียน" && files.length === 0) || 
+            (title === "คู่มือการใช้งานสำหรับอาจารย์" && files.length === 0) ? (
+              <Button
+                variant="outlined"
+                component="label"
+                sx={{ width: "100%" }}
+              >
+                {title === "คู่มือการใช้งานสำหรับอาจารย์" ? "อัพโหลด PDF / HTML" : "อัพโหลด PDF"}
+                <input
+                  type="file"
+                  hidden
+                  accept={title === "คู่มือการใช้งานสำหรับอาจารย์" ? "application/pdf,text/html" : "application/pdf"}
+                  multiple={title === "คู่มือการใช้งานสำหรับอาจารย์"}
+                  onChange={handleFileUpload}
+                />
+              </Button>
+            ) : null}
+
+            {allFilesToShow.length > 0 && (
+                <List dense>
+                    {allFilesToShow.map((file, index) => (
+                    <ListItem
+                        key={index}
+                        secondaryAction={
+                        files.includes(file) ? (
+                            <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveFile(files.indexOf(file))}>
+                            <Delete />
+                            </IconButton>
+                        ) : null
+                        }
+                    >
+                        <ListItemText primary={file.name} />
+                    </ListItem>
+                    ))}
+                </List>
+            )}
+
+            {title === "คู่มือการใช้งานสำหรับอาจารย์" && files.length > 0 && (
+              <Stack
+                direction={tabletMedia ? "column" : "row"}
+                justifyContent={tabletMedia ? "center" : "space-between"}
+                alignItems="center"
+                sx={{ 
+                    width: tabletMedia ? "90%" : "100%",
+                    margin: "16pxauto",
+                    gap: 2 
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{ width: "100%" }}
+                >
+                  เพิ่มไฟล์
+                  <input
+                    type="file"
+                    hidden
+                    accept="application/pdf,text/html"
+                    multiple
+                    onChange={handleFileUpload}
+                  />
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleClearAll}
+                  sx={{ width: "100%" }}
+                >
+                  ล้างไฟล์ทั้งหมด
+                </Button>
+              </Stack>
+            )}
+
+            <Button
+                variant="contained"
+                color="primary"
+                disabled={allFilesToShow.length === 0}
+                sx={{ width: "100%" }}
+                onClick={() => {
+                    const previewFile = allFilesToShow.find(f => f.type === "application/pdf" || f.type === "text/html");
+
+                    if(!previewFile) return;
+
+                    if(previewFile.url){
+                        handlePreview(`http://${import.meta.env.VITE_DEV_URL}:${import.meta.env.VITE_BACKEND_PORT}/admin${previewFile.url}`);
+                    } else {
+                        const objectUrl = URL.createObjectURL(previewFile);
+                        handlePreview(objectUrl);
+                    }
+                }}
+            >
+                ดูตัวอย่าง
+            </Button>
+
+
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={uploadState}
+              sx={{ width: "100%" }}
+              onClick={handleSubmit}
+            >
+                ยืนยัน
+            </Button>
+
+          </Stack>
+        </CardContent>
+      </Collapse>
+    </Card>
+  );
+}
+
+export default ExpandableCard;

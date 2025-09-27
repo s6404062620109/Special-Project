@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab guide</title>
+  <style>
+  </style>
+</head>
+<body>
+  <div>
+    index
+  </div>
+
+  <script>
+    function recordAction(action) {
+      window.parent.postMessage({ answer: action }, "*");
+    }
+  </script>
+</body>
+</html>

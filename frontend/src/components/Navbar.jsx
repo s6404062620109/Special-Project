@@ -58,7 +58,7 @@ function Navbar() {
               <Link to='/courses'>คอร์สออนไลน์</Link>
             </>
           )}
-          <Link>คู่มือการใช้งาน</Link>
+          <Link to='/guide'>คู่มือการใช้งาน</Link>
         </div>
 
         <div 
@@ -84,7 +84,7 @@ function Navbar() {
               <div onClick={() => navigate('/courses')}>คอร์สออนไลน์</div>
             </>
           )}
-          <div>คู่มือการใช้งาน</div>
+          <div onClick={() => navigate('/guide')}>คู่มือการใช้งาน</div>
         </div>
 
         {userData.name !== null &&(
