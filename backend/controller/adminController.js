@@ -313,6 +313,17 @@ const updateGuide = (req, res) => {
   }
 };
 
+const downloadLabGuide = (req, res) => {
+  try{
+    const filePath = path.join(__dirname, "../courses/guide/teacher/index.html");
+    res.download(filePath, "sample-lab.html"); 
+
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+}
+
 module.exports = {
   getUsers,
   addUser,
@@ -323,4 +334,5 @@ module.exports = {
   approveTeacherReq,
   getGuides,
   updateGuide,
+  downloadLabGuide
 };

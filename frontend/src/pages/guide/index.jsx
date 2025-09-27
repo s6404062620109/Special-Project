@@ -141,6 +141,17 @@ function Guide() {
             gap={2}
             sx={{ width: "100%", margin: "16px auto" }}
           >
+            {userData.role === "t" && (
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                <a  
+                  href={`http://${import.meta.env.VITE_DEV_URL}:${import.meta.env.VITE_BACKEND_PORT}/admin/downloadLabGuide`}
+                  download
+                  style={{ color: "#1976d2", textDecoration: "none", fontWeight: "bold" }}
+                >
+                  📥 ดาวน์โหลดตัวอย่างไฟล์ Lab (HTML)
+                </a>
+              </Typography>
+            )}
             <PdfReader pdfUrl={pdfUrl} />
           </Stack>
         )}

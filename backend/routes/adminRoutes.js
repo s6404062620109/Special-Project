@@ -43,6 +43,8 @@ router.use("/guide/teacher", express.static(path.join(__dirname, '../courses/gui
 
 router.get("/getGuide", adminController.getGuides);
 
+router.get("/downloadLabGuide", adminController.downloadLabGuide);
+
 router.post("/updateGuide", authUserRole.checkAdminRole, Upload.any(), adminController.updateGuide);
 
 module.exports = router;

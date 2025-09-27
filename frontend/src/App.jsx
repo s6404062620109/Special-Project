@@ -74,7 +74,6 @@ function App() {
                 <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
                 <Route path='/course/:courseId/pretest/:enrollmentId' element={<Pretest/>}/>
                 <Route path='/course/:courseId/posttest/:enrollmentId' element={<PostTest/>}/>
-                <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
 

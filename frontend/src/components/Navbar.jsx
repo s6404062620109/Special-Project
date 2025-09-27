@@ -58,7 +58,6 @@ function Navbar() {
               <Link to='/courses'>คอร์สออนไลน์</Link>
             </>
           )}
-          <Link to='/guide'>คู่มือการใช้งาน</Link>
         </div>
 
         <div 
@@ -68,7 +67,10 @@ function Navbar() {
           <div onClick={() => navigate('/')}>หน้าหลัก</div>
 
           {userData.role === "t" && (
-            <div onClick={() => navigate('/my-courses')}>คอร์สของฉัน</div>
+            <>
+              <div onClick={() => navigate('/my-courses')}>คอร์สของฉัน</div>
+              <div onClick={() => navigate('/guide')}>คู่มือการใช้งาน</div>
+            </>
           )}
 
           {userData.role === "a" && (
@@ -76,15 +78,22 @@ function Navbar() {
               <div onClick={() => navigate('/my-courses')}>คอร์สของฉัน</div>
               <div onClick={() => navigate('/manageUser')}>จัดการบัญชีผู้ใช้</div>
               <div onClick={() => navigate('/manageCourse')}>จัดการคอร์ส</div>
+              <div onClick={() => navigate('/guide')}>คู่มือการใช้งาน</div>
             </>
           )}
 
-          {(userData.role === "s" || userData.role === null) && (
+          {userData.role === "s" && (
+            <>
+              <div onClick={() => navigate('/courses')}>คอร์สออนไลน์</div>
+              <div onClick={() => navigate('/guide')}>คู่มือการใช้งาน</div>
+            </>
+          )}
+
+          {userData.role === null && (
             <>
               <div onClick={() => navigate('/courses')}>คอร์สออนไลน์</div>
             </>
           )}
-          <div onClick={() => navigate('/guide')}>คู่มือการใช้งาน</div>
         </div>
 
         {userData.name !== null &&(
