@@ -44,16 +44,26 @@ function Navbar() {
 
         <div className={style.functionsContainer}>
           {userData.role === "t" && (
-            <Link to='/my-courses'>คอร์สของฉัน</Link>
+            <>
+              <Link to='/my-courses'>คอร์สของฉัน</Link>
+              <Link to='/guide'>คู่มือการใช้งาน</Link>
+            </>
           )}
           {userData.role === "a" && (
             <>
               <Link to='/my-courses'>คอร์สของฉัน</Link>
               <Link to='/manageUser'>จัดการบัญชีผู้ใช้</Link>
               <Link to='/manageCourse'>จัดการคอร์ส</Link>
+              <Link to='/guide'>คู่มือการใช้งาน</Link>
             </>
           )}
-          {(userData.role === "s" || userData.role === null) && (
+          {userData.role === "s" && (
+            <>
+              <Link to='/courses'>คอร์สออนไลน์</Link>
+              <Link to='/guide'>คู่มือการใช้งาน</Link>
+            </>
+          )}
+          {userData.name === null && (
             <>
               <Link to='/courses'>คอร์สออนไลน์</Link>
             </>
