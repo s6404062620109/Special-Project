@@ -1,16 +1,18 @@
 # start : docker-compose up -d --build
 # stop : docker-compose down
+# tar build : tar -cvf SAT_services.tar controller courses frontend middleware routes .env database.js docker-compose.yml Dockerfile index.js package-lock.json package.json wait-for-it.sh
+# tar extained: tar -xvf SAT_services.tar   
 version: '4' 
 services:
 
-  # react-frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3003:80"
-  #   depends_on:
-  #     - node-server
+  react-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3003:80"
+    depends_on:
+      - node-server
 
   node-server: 
     build: . 
