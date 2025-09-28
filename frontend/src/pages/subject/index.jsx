@@ -257,8 +257,10 @@ function Subject() {
     }
     
     useEffect(() => {
-        fetchAllProgressAnswers();
-    }, [enrollmentId, courseId, questionIds]);
+        if (questionIds.length > 0) {
+            fetchAllProgressAnswers();
+        }
+    }, [enrollmentId, courseId, JSON.stringify(questionIds)]);
     
     const handleLabSpawn = async (questionId) => {
         try {

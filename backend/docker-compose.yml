@@ -37,6 +37,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root 
       MYSQL_DATABASE: SAT 
+      MYSQL_USER: blt_sat
+      MYSQL_PASSWORD: password1234
     ports:
       - "3306:3306"
     volumes:
@@ -48,8 +50,6 @@ services:
     environment:
       PMA_HOST: db # DB host
       PMA_PORT: 3306 # DB port
-      PMA_USER: root # DB user
-      PMA_PASSWORD: root # DB password
     ports:
       - "8081:80"
     depends_on:

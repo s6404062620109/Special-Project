@@ -8,8 +8,12 @@ require("dotenv").config();
 const register = (req, res) => {
   const { email, name, teacher_request } = req.body;
 
-  if (!req.body || !email || !name || !teacher_request) {
+  if (!req.body || !email || !name ) {
     return res.status(400).json({ message: "Email name and teacher_request are required." });
+  }
+
+  if (teacher_request === undefined || teacher_request === null) {
+    teacher_request = false;
   }
 
   try {
