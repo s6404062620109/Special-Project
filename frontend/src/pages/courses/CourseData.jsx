@@ -83,6 +83,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId, enrollmentCount })
 
   }, [id, userData, enrollmentId]);
 
+  console.log(filteredHistory)
   return (
     <tr className={style.card}>
       <td className={style.content}>

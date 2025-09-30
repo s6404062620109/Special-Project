@@ -88,7 +88,7 @@ function Pretest() {
     const checkNullSelectedAnswer = Object.values(selectedAnswers).some(answer => answer === null);
 
     if(checkNullSelectedAnswer){
-      setErrorMessage("Please answer all question before submit.");
+      setErrorMessage("กรุณาตอบคำถามทั้งหมด");
       return;
     }
     

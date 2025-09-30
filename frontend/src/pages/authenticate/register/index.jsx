@@ -6,24 +6,36 @@ import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
 import { autofillTextFieldSx } from '../login';
 import Checkbox from '@mui/material/Checkbox';
-import { Typography } from '@mui/material';
+import { IconButton, InputAdornment, Typography } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 function Register() {
   const navigate = useNavigate();
   const [data, setData] = useState({
     email: '',
     name: '',
+    password: '',
+    confirm_password: '',
     teacher_request: false,
   })
   const [statusMessage, setStatusMessage] = useState('');
+  const [ showPassword, setShowPassword ] = useState(false);
+  const [ showConfirmPassword, setShowConfirmPassword ] = useState(false);
 
   const handleSubmit = async (e) =>{
     e.preventDefault();
+
+    if(data.password !== data.confirm_password){
+      setStatusMessage('รหัสผ่านไม่ตรงกัน');
+      return;
+    }
 
     try { 
       const response = await backend.post('/auth/register', {
           email: data.email,
           name: data.name,
+          password: data.password,
           teacher_request: data.teacher_request,
       });
 
@@ -80,6 +92,70 @@ function Register() {
               type='text'
               value={data.name}
               onChange={(e) => setData({ ...data, name:e.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="PASSWORD"
+              sx={autofillTextFieldSx}
+              slotProps={{
+                input: {
+                  sx: { color: 'black' },
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? 
+                          <VisibilityIcon sx={{color: 'black'}}/> : 
+                          <VisibilityOffIcon sx={{color: 'black'}}/>
+                        }
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
+              }}
+              type={showPassword ? 'text' : 'password'}
+              value={data.password}
+              onChange={(e) => setData({ ...data, password:e.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="CONFIRM PASSWORD"
+              sx={autofillTextFieldSx}
+              slotProps={{
+                input: {
+                  sx: { color: 'black' },
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? 
+                          <VisibilityIcon sx={{color: 'black'}}/> : 
+                          <VisibilityOffIcon sx={{color: 'black'}}/>
+                        }
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
+              }}
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={data.confirm_password}
+              onChange={(e) => setData({ ...data, confirm_password:e.target.value })}
               required
             />
           </div>

@@ -9,7 +9,7 @@ import { Button, Dialog, DialogActions, DialogTitle, IconButton, Stack, Typograp
 
 import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
-import { BarChart } from "@mui/x-charts";
+import { LineChart } from "@mui/x-charts";
 
 function EditCourse() {
   const { courseId } = useParams();
@@ -44,22 +44,9 @@ function EditCourse() {
         withCredentials: true
       });
 
-        if(response.status === 200){
-          const data = response.data;
-          setChartData({
-            dataset: [{
-              test: "Summary",
-              Prevalue: Number(data.averagePrePercent),
-              Postvalue: Number(data.averagePostPercent),
-              Growthvalue: Number(data.averageGrowth),
-            }],
-            maxPreScore: data.maxPreScore,
-            maxPostScore: data.maxPostScore,
-            minPreScore: data.minPreScore,
-            minPostScore: data.minPostScore,
-            userCount: data.userCount,
-          });
-        }
+      if(response.status === 200){
+        setChartData(response.data);
+      }
     } catch(error) {
       console.log(error);
     }
@@ -109,6 +96,20 @@ function EditCourse() {
   const tabletQuery = useMediaQuery('(max-width:720px)');
   const isXs = useMediaQuery("(max-width:600px)");
   const isSm = useMediaQuery("(max-width:900px)");
+
+  const lineChartData = chartData?.users?.map(u => {
+    const duplicateCount = chartData.users.filter(user => user.name === u.name).length;
+    const nameWithId = duplicateCount > 1 ? `${u.name}-${u.userId}` : u.name;
+
+    return {
+      userId: u.id,
+      x: nameWithId,
+      email: u.email,
+      pretest: u.pretestScore,
+      posttest: u.posttestScore
+    };
+  }) || [];
+  const maxY = Math.max(chartData?.pretestMax || 0, chartData?.posttestMax || 0, 10);
 
   return (
     <div className={style.pageWrapper}>
@@ -218,50 +219,89 @@ function EditCourse() {
           </div>
         </div>
 
-        {chartData && (
-          <div style={{ width: "100%", marginTop: "40px" }}>
-            <Typography variant="h6" gutterBottom>
-              คะแนนเฉลี่ยแบบทดสอบก่อนเรียน / หลังเรียน / การเพิ่มขึ้นของคะแนน
-            </Typography>
-
-            <BarChart
+        {lineChartData.length > 0 && (
+          <div style={{ width: "100%", marginTop: 40 }}>
+            <Typography variant="h6">คะแนนแบบทดสอบก่อนเรียน / หลังเรียน</Typography>
+            <LineChart
               width={isXs ? 300 : isSm ? 600 : 800}
               height={isXs ? 300 : isSm ? 400 : 600}
-              dataset={chartData.dataset}
-              xAxis={[{ 
-                dataKey: "test", 
-                label: "ประเภทการทดสอบ",
-                scaleType: 'band' 
-              }]}
-              yAxis={[{ 
-                dataKey: "value", 
-                label: "เปอร์เซ็นต์ (%)", 
-                min: 0, 
-                max: 100 
-              }]}
+              xAxis={[{ data: lineChartData.map(d => d.x), scaleType: 'band' }]}
+              yAxis={[{ id: 'linear', scaleType: 'linear', position: 'left', min: 0, max: maxY }]}
               series={[
-                { dataKey: "Prevalue", label: "แบบทดสอบก่อนเรียน", color: '#1976d2' },
-                { dataKey: "Postvalue", label: "แบบทดสอบหลังเรียน", color: '#2e7d32' },
-                { dataKey: "Growthvalue", label: "การเพิ่มขึ้นของคะแนน", color: '#ff5722' },
+                {
+                  yAxisId: 'linear',
+                  data: lineChartData.map(d => d.pretest),
+                  label: 'แบบทดสอบก่อนเรียน',
+                },
+                {
+                  yAxisId: 'linear',
+                  data: lineChartData.map(d => d.posttest),
+                  label: 'แบบทดสอบหลังเรียน',
+                },
               ]}
             />
-
-            <Stack 
-              direction={{ xs: "column", sm: "row" }} 
-              spacing={4} 
-              mt={3}
+            
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={4}
+              mt={2}
               justifyContent="flex-start"
               alignItems={{ xs: "flex-start", sm: "center" }}
             >
-              <Typography>
-                <span style={{ color: "#1976d2", fontWeight: "bold" }}>แบบทดสอบก่อนเรียน:</span> ต่ำสุด {chartData.minPreScore}, สูงสุด {chartData.maxPreScore}
-              </Typography>
-              <Typography>
-                <span style={{ color: "#2e7d32", fontWeight: "bold" }}>แบบทดสอบหลังเรียน:</span> ต่ำสุด {chartData.minPostScore}, สูงสุด {chartData.maxPostScore}
-              </Typography>
-              <Typography>
-                <span style={{ color: "#ff5722", fontWeight: "bold" }}>นักเรียนทั้งหมด:</span> {chartData.userCount}
-              </Typography>
+              {(() => {
+                const maxPre = Math.max(...lineChartData.map(d => d.pretest));
+                const maxPreUser = lineChartData.find(d => d.pretest === maxPre)?.x;
+                const maxPost = Math.max(...lineChartData.map(d => d.posttest));
+                const maxPostUser = lineChartData.find(d => d.posttest === maxPost)?.x;
+
+                return (
+                  <>
+                    <Typography>
+                      <span style={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        คะแนนสูงสุดแบบทดสอบก่อนเรียน:
+                      </span>{" "}
+                      {maxPreUser} {maxPre} คะแนน 
+                    </Typography>
+                    <Typography>
+                      <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                        คะแนนสูงสุดแบบทดสอบหลังเรียน:
+                      </span>{" "}
+                      {maxPostUser} {maxPost} คะแนน
+                    </Typography>
+                  </>
+                );
+              })()}
+            </Stack>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={4}
+              mt={2}
+              justifyContent="flex-start"
+              alignItems={{ xs: "flex-start", sm: "center" }}
+            >
+              {(() => {
+                const minPre = Math.min(...lineChartData.map(d => d.pretest));
+                const minPreUser = lineChartData.find(d => d.pretest === minPre)?.x;
+                const minPost = Math.min(...lineChartData.map(d => d.posttest));
+                const minPostUser = lineChartData.find(d => d.posttest === minPost)?.x;
+                return(
+                  <>
+                    <Typography>
+                      <span style={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        คะแนนต่ำสุดแบบทดสอบก่อนเรียน:
+                      </span>{" "}
+                      {minPreUser} {minPre} คะแนน 
+                    </Typography>
+                    <Typography>
+                      <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                        คะแนนต่ำสุดแบบทดสอบหลังเรียน:
+                      </span>{" "}
+                      {minPostUser} {minPost} คะแนน
+                    </Typography>
+                  </>
+                );
+              })()}
             </Stack>
           </div>
         )}

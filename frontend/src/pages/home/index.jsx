@@ -29,7 +29,9 @@ function Home() {
   };
 
   useEffect(() => {
-    fetchEnrollment();
+    if (userData.id && userData.role === "s") {
+      fetchEnrollment();
+    }
   }, [userData.id]);
 
   return (

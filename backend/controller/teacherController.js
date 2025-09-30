@@ -35,12 +35,19 @@ const progressAnalysis = (req, res) => {
   const sql = `
     SELECT 
       e.userId,
-      p.enrollmentId,
-      p.score,
-      q.typeId
+      u.name,
+      u.email,
+      q.id AS questionId,
+      q.typeId,
+      p.score
     FROM enrollment e
-    LEFT JOIN progress p ON p.enrollmentId = e.id AND p.is_completed = 1
-    LEFT JOIN question q ON q.id = p.questionId
+    JOIN user u ON u.id = e.userId
+    JOIN subject s ON s.courseId = e.courseId
+    JOIN question q ON q.subjectId = s.id
+    LEFT JOIN progress p 
+      ON p.enrollmentId = e.id 
+      AND p.questionId = q.id 
+      AND p.is_completed = 1
     WHERE e.courseId = ?
   `;
 
@@ -54,70 +61,41 @@ const progressAnalysis = (req, res) => {
       return res.status(404).send({ message: "No progress found." });
     }
 
-    const totalPretest = results.filter(r => r.typeId === 1).length;
-    const totalPosttest = results.filter(r => r.typeId === 2).length;
+    const users = [];
+    let pretestMax = 0;
+    let posttestMax = 0;
 
-    const userMap = {};
-    results.forEach((r) => {
-      if (!userMap[r.userId]) userMap[r.userId] = [];
-      userMap[r.userId].push(r);
-    });
-
-    let prePercentSum = 0;
-    let postPercentSum = 0;
-    let userCount = 0;
-
-    const preScores = [];
-    const postScores = [];
-
-    Object.values(userMap).forEach((userProgress) => {
-      let preCorrect = 0;
-      let postCorrect = 0;
-
-      userProgress.forEach((p) => {
-        if (p.score === 1) {
-          if (p.typeId === 1) preCorrect++;
-          if (p.typeId === 2) postCorrect++;
-        }
-      });
-
-      if (preCorrect > 0 || postCorrect > 0) {
-        preScores.push(preCorrect);
-        postScores.push(postCorrect);
-
-        const prePercent = totalPretest > 0 ? (preCorrect / totalPretest) * 100 : 0;
-        const postPercent = totalPosttest > 0 ? (postCorrect / totalPosttest) * 100 : 0;
-
-        prePercentSum += prePercent;
-        postPercentSum += postPercent;
-        userCount++;
+    const questionSet = new Set();
+    results.forEach(r => {
+      if (!questionSet.has(r.questionId)) {
+        if (r.typeId === 1) pretestMax++;
+        if (r.typeId === 2) posttestMax++;
+        questionSet.add(r.questionId);
       }
     });
 
-    if (userCount === 0) {
-      return res.status(404).send({ message: "No valid user progress found." });
-    }
+    results.forEach((r) => {
+      let user = users.find(u => u.userId === r.userId);
 
-    const avgPrePercent = prePercentSum / userCount;
-    const avgPostPercent = postPercentSum / userCount;
-    const avgGrowth = avgPostPercent - avgPrePercent;
+      if (!user) {
+        user = {
+          userId: r.userId,
+          name: r.name,
+          email: r.email,
+          pretestScore: 0,
+          posttestScore: 0,
+        };
+        users.push(user);
+      }
 
-    const minPre = Math.min(...preScores);
-    const maxPre = Math.max(...preScores);
-    const minPost = Math.min(...postScores);
-    const maxPost = Math.max(...postScores);
-
-    return res.status(200).json({
-      courseId,
-      averagePrePercent: avgPrePercent.toFixed(2),
-      averagePostPercent: avgPostPercent.toFixed(2),
-      averageGrowth: avgGrowth.toFixed(2),
-      minPreScore: minPre,
-      maxPreScore: maxPre,
-      minPostScore: minPost,
-      maxPostScore: maxPost,
-      userCount,
+      if (r.typeId === 1) {
+        user.pretestScore += r.score || 0;
+      } else if (r.typeId === 2) {
+        user.posttestScore += r.score || 0;
+      }
     });
+
+    return res.status(200).send({ users, pretestMax, posttestMax });
   });
 };
 
@@ -157,12 +135,12 @@ const createCourse = (req, res) => {
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
     const { name, icon, enable, announce_state } = req.body;
-    console.log(typeof name, typeof icon, typeof enable, typeof announce_state)
+    console.log(req.body)
     if( typeof courseId !== 'string' || typeof name !== 'string' || typeof icon !== 'string' || typeof enable !== 'number' || typeof announce_state !== 'number' ){
         return res.status(400).send({ message: "Invalid Course ID or Name or Icon or Enable or Announce_state." });
     }
     
-    if (!name || !icon || !enable || !announce_state) {
+    if (!name?.trim() || !icon?.trim() || enable === undefined || announce_state === undefined) {
         return res.status(400).json({ message: "Name ,icon, enable and announce_state are required." });
     }
 

@@ -84,6 +84,13 @@ function PostTest() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const checkNullSelectedAnswer = Object.values(selectedAnswers).some(answer => answer === null);
+
+    if(checkNullSelectedAnswer){
+      setErrorMessage("กรุณาตอบคำถามทั้งหมด");
+      return;
+    }
+    
     try {
       const response = await backend.put(`/posttest/submitPosttest/${courseId}`, { answer: selectedAnswers, enrollmentId }, {
         withCredentials: true

@@ -124,13 +124,6 @@ function MyCourses() {
                         {course?.name || "Unnamed Course"}
                       </td>
 
-                      {/* <td>
-                        <button onClick={() => handleDeleteCourse(course.id)}>
-                          <DeleteIcon/>
-                          <p>Delete</p>
-                        </button>
-                      </td> */}
-
                       <td>
                         <IconButton onClick={(e) => {
                           e.stopPropagation();
@@ -167,6 +160,7 @@ function MyCourses() {
                                 name: menuCourse.name,
                                 icon: menuCourse.icon,
                                 enable: menuCourse.enable,
+                                announce_state: menuCourse.announce_state,
                                 id: menuCourse.id,
                               });
                               setEditPopupOpen(true);

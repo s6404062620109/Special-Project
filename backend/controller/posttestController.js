@@ -71,8 +71,8 @@ function finalizePosttest(enrollmentId, res) {
       return res.status(500).json({ message: "Score comparison error" });
     }
 
-    const preScore = scores[0]?.pre_score || 0;
-    const postScore = scores[0]?.post_score || 0;
+    const preScore = Number(scores[0]?.pre_score || 0);
+    const postScore = Number(scores[0]?.post_score || 0);
     const postTestStatus = postScore >= preScore ? 1 : -1;
 
     db.query(`UPDATE enrollment SET posttest_complete = ? WHERE id = ?`,

@@ -177,6 +177,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               >
                 {currentItem.content.split("\\n").map((line, index) => (
                   <React.Fragment key={index}>
+                    {currentIndex+1}.
                     {line}
                     <br />
                   </React.Fragment>

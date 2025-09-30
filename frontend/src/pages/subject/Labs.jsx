@@ -1,65 +1,211 @@
-import React, { useState } from 'react';
-import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Pagination, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material';
-import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Button,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Pagination,
+  Radio,
+  RadioGroup,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
-function Labs({
-    currentQuestionIndex,
-    handleChangePage,
-    questions,
-    handleLabSpawn = null,
-    answers,
-    progressAnswers,
-    handleLabAnswerChange,
-    errorMessage,
-    handleLabSubmit,
- }) {
-    const { courseId, enrollmentId } = useParams();
-    const [ htmlFileContent, setHtmlFileContent ] = useState('');
-
-    const currentQuestion = questions[currentQuestionIndex];
-    const currentAnswer = answers.find(a => a.questionId === currentQuestion?.id);
-
-    useEffect(() => {
-      if (currentQuestion?.type === 5) {
-        if(currentQuestion.htmlFile instanceof File){
-          const reader = new FileReader();
-          reader.onload = (e) => setHtmlFileContent(e.target.result);
-          reader.onerror = () => setHtmlFileContent('ไม่สามารถอ่านไฟล์ HTML ได้');
-          reader.readAsText(currentQuestion.htmlFile);
-        }
-        if(typeof currentQuestion.htmlFile.content === 'string'){
-          setHtmlFileContent(currentQuestion.htmlFile.content);
-        }
-      } 
-      else if (typeof currentQuestion?.htmlFile === 'string') {
-        setHtmlFileContent(currentQuestion.htmlFile);
-      } 
-    }, [currentQuestion]);
-  
-    useEffect(() => {
-      const handleMessage = (event) => {
-        if (event.data?.source === "react-devtools-bridge") return;
-        if (typeof event.data !== "object") return;
-        const { answer } = event.data;
-
-        if (typeof answer !== "string") return;
-        if (currentQuestion?.type === 5) {
-          handleLabAnswerChange(currentQuestion.id, currentQuestion.type, answer);
-        }
-      };
-
-      window.addEventListener("message", handleMessage);
-      return () => window.removeEventListener("message", handleMessage);
-    }, [currentQuestion]);
-
-    const isAnswered = progressAnswers.some(
+/** Hook สำหรับจัดการคำตอบของ currentQuestion */
+function useCurrentAnswer(questions, answers, progressAnswers, currentIndex) {
+  const currentQuestion = questions[currentIndex] || null;
+  const currentAnswer = answers.find((a) => a.questionId === currentQuestion?.id);
+  const isAnswered = useMemo(() => {
+    return progressAnswers.some(
       (p) => p.questionId === currentQuestion?.id && p.user_answer
     );
+  }, [progressAnswers, currentQuestion]);
+
+  return { currentQuestion, currentAnswer, isAnswered };
+}
+
+function Labs({
+  currentQuestionIndex,
+  setCurrentQuestionIndex,
+  handleChangePage,
+  questions,
+  handleLabSpawn,
+  answers,
+  progressAnswers,
+  handleLabAnswerChange,
+  errorMessage,
+  handleLabSubmit,
+}) {
+  const [htmlFileContent, setHtmlFileContent] = useState("");
+
+  const { currentQuestion, currentAnswer, isAnswered } = useCurrentAnswer(
+    questions,
+    answers,
+    progressAnswers,
+    currentQuestionIndex
+  );
+
+
+  const lastProgressLengthRef = useRef(progressAnswers.length);
+  useEffect(() => {
+    if (progressAnswers.length > lastProgressLengthRef.current) {
+      const answeredIndex = questions.findIndex(q =>
+        progressAnswers.some(p => p.questionId === q.id)
+      );
+      if (answeredIndex > currentQuestionIndex) {
+        setCurrentQuestionIndex(answeredIndex);
+      }
+    }
+    lastProgressLengthRef.current = progressAnswers.length;
+  }, [progressAnswers, questions, currentQuestionIndex, setCurrentQuestionIndex]);
+
+  useEffect(() => {
+    if (!currentQuestion) return;
+
+    if (currentQuestion?.type === 5) {
+      if (currentQuestion.htmlFile instanceof File) {
+        const reader = new FileReader();
+        reader.onload = (e) => setHtmlFileContent(e.target.result);
+        reader.onerror = () => setHtmlFileContent("ไม่สามารถอ่านไฟล์ HTML ได้");
+        reader.readAsText(currentQuestion.htmlFile);
+      } else if (typeof currentQuestion.htmlFile?.content === "string") {
+        setHtmlFileContent(currentQuestion.htmlFile.content);
+      }
+    } else if (typeof currentQuestion?.htmlFile === "string") {
+      setHtmlFileContent(currentQuestion.htmlFile);
+    }
+  }, [currentQuestion]);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.source === "react-devtools-bridge") return;
+      if (typeof event.data !== "object") return;
+
+      const { answer } = event.data;
+      if (typeof answer === "string" && currentQuestion?.type === 5) {
+        handleLabAnswerChange(currentQuestion.id, 5, answer);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [currentQuestion]);
+
+  const renderQuestionInput = () => {
+    if (!currentQuestion) return null;
+
+    switch (currentQuestion.type) {
+      case 3: // Single choice
+        return (
+          <RadioGroup
+            sx={{ width: "80%", margin: "8px auto" }}
+            name={`radio-${currentQuestion.id}`}
+            value={String(currentAnswer?.answer?.answerId ?? "")}
+            onChange={(e) => {
+              const selectedChoice = currentQuestion.choice.find(
+                (c) => String(c.id) === e.target.value
+              );
+              handleLabAnswerChange(
+                currentQuestion.id,
+                3,
+                selectedChoice?.content,
+                selectedChoice?.id
+              );
+            }}
+          >
+            {currentQuestion.choice.map((choice) => (
+              <FormControlLabel
+                key={choice.id}
+                value={String(choice.id)}
+                control={<Radio />}
+                label={choice.content}
+              />
+            ))}
+          </RadioGroup>
+        );
+
+      case 6: // Multi choice
+        return (
+          <Stack sx={{ width: "80%", margin: "8px auto" }}>
+            {currentQuestion.choice.map((choice) => (
+              <FormControlLabel
+                key={choice.id}
+                control={
+                  <Checkbox
+                    checked={Array.isArray(currentAnswer?.answer) &&
+                      currentAnswer.answer.some((a) => a.answerId === choice.id)}
+                    onChange={(e) =>
+                      handleLabAnswerChange(
+                        currentQuestion.id,
+                        6,
+                        choice.content,
+                        choice.id,
+                        e.target.checked
+                      )
+                    }
+                  />
+                }
+                label={choice.content}
+              />
+            ))}
+          </Stack>
+        );
+
+      case 4: // Short text + spawn
+        return (
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            gap={2}
+            sx={{ width: "80%", margin: "8px auto" }}
+          >
+            <TextField
+              fullWidth
+              label="Answer"
+              value={currentAnswer?.answer || ""}
+              onChange={(e) =>
+                handleLabAnswerChange(currentQuestion.id, 4, e.target.value)
+              }
+            />
+            <Button
+              variant="contained"
+              onClick={() => handleLabSpawn?.(currentQuestion.id)}
+            >
+              สร้างห้องจำลอง
+            </Button>
+          </Stack>
+        );
+
+      case 5: // HTML file + iframe
+        return (
+          <Stack sx={{ width: "100%", margin: "8px auto" }} gap={2}>
+            <iframe
+              srcDoc={htmlFileContent}
+              sandbox="allow-scripts allow-same-origin"
+              style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
+            />
+            <TextField
+              disabled
+              fullWidth
+              label="Answer"
+              value={currentAnswer?.answer || ""}
+            />
+          </Stack>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <Stack>
-      <Typography variant="h6" align="center">Lab Questions</Typography>
+      <Typography variant="h6" align="center">
+        Lab Questions
+      </Typography>
 
       {currentQuestion && (
         <Stack
@@ -78,161 +224,62 @@ function Labs({
             }}
           >
             <FormLabel>
-              {currentQuestionIndex + 1}.
-
-              {currentQuestion.content.split("\\n").map((line, index) => (
-                <React.Fragment key={index}>
+              {currentQuestionIndex + 1}.{" "}
+              {currentQuestion.content.split("\\n").map((line, idx) => (
+                <React.Fragment key={idx}>
                   {line}
                   <br />
                 </React.Fragment>
               ))}
             </FormLabel>
-            
+
             {currentQuestion.img && (
               <img
                 src={currentQuestion.img}
                 alt={`Question ${currentQuestionIndex + 1}`}
-                style={{ maxWidth: '100%', marginTop: 12 }}
+                style={{ maxWidth: "100%", marginTop: 12 }}
               />
             )}
-            {currentQuestion.htmlFile && (
-              <Stack
-                direction="column"
-                alignItems="center"
-                justifyContent="center"
-                gap={2}
-                sx={{ width: "100%", margin: "8px auto" }}
-              >
-                <iframe
-                  srcDoc={htmlFileContent}
-                  sandbox="allow-scripts allow-same-origin"
-                  style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
-                />
-                
-                <TextField
-                  disabled
-                  fullWidth
-                  label="Answer"
-                  value={currentAnswer?.answer || ""}
-                  onChange={(e) => handleLabAnswerChange(currentQuestion.id, 5, e.target.value)}
-                />
-              </Stack>
-            )}
 
-            {currentQuestion.type === 3 && (
-              <RadioGroup
-                sx={{ width: "80%", margin: "8px auto" }}
-                name={`radio-group-${currentQuestion.id}`}
-                value={String(currentAnswer?.answer?.answerId ?? "")}
-                onChange={(e) => {
-                  const selectedChoice = currentQuestion.choice.find(c => String(c.id) === e.target.value);
-                  handleLabAnswerChange(
-                    currentQuestion.id,
-                    currentQuestion.type,
-                    selectedChoice?.content,
-                    selectedChoice?.id,
-                  );
-                }}
-              >
-                {currentQuestion.choice.map((choice, idx) => (
-                  <FormControlLabel
-                    key={idx}
-                    value={String(choice.id)}
-                    control={<Radio />}
-                    label={choice.content}
-                  />
-                ))}
-              </RadioGroup>
-            )}
-
-            {currentQuestion.type === 6 && (
-              <Stack sx={{ width: "80%", margin: "8px auto" }}>
-                {currentQuestion.choice.map((choice, idx) => (
-                  <FormControlLabel
-                    key={idx}
-                    control={
-                      <Checkbox
-                        onChange={(e) => 
-                          handleLabAnswerChange(
-                            currentQuestion.id,
-                            6,
-                            choice.content, 
-                            choice.id,
-                            e.target.checked 
-                          )
-                        }
-                      />
-                    }
-                    label={choice.content}
-                  />
-                ))}
-              </Stack>
-            )}
-
-            {currentQuestion.type === 4 && handleLabSpawn && (
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="center"
-                gap={2}
-                sx={{ width: "80%", margin: "8px auto" }}
-              >
-                <TextField
-                  fullWidth
-                  label="Answer"
-                    value={currentAnswer?.answer || ""}
-                    onChange={(e) => handleLabAnswerChange(currentQuestion.id, 4, e.target.value)}
-                />
-                <Button
-                  variant="contained"
-                  onClick={() => handleLabSpawn(currentQuestion.id)}
-                >
-                  สร้างห้องจำลอง
-                </Button>
-              </Stack>
-            )}
+            {renderQuestionInput()}
 
             <Stack
               direction="row"
               justifyContent="space-between"
-              sx={{
-                width: "100%",
-                margin: "8px auto",
-              }}
+              sx={{ width: "100%", margin: "8px auto" }}
             >
-              <Typography variant="body2" color={errorMessage === "คุณผ่านการทดสอบแล้ว" ? "green" : "red"}>{errorMessage}</Typography>
+              <Typography
+                variant="body2"
+                color={errorMessage === "คุณผ่านการทดสอบแล้ว" ? "green" : "red"}
+              >
+                {errorMessage}
+              </Typography>
 
-                
-              {!isAnswered && 
+              {!isAnswered && (
                 <Button
-                  variant='contained'
-                  sx={{
-                    width: "15%"
-                  }}
-                  onClick={() => handleLabSubmit(courseId, enrollmentId, currentQuestion.id)}
+                  variant="contained"
+                  sx={{ width: "15%" }}
+                  onClick={() => handleLabSubmit(currentQuestion.id)}
                 >
                   ส่งคำตอบ
                 </Button>
-              }
+              )}
             </Stack>
           </FormControl>
-            
+
           <Pagination
             count={questions.length}
             page={currentQuestionIndex + 1}
-            onChange={(event, page) => handleChangePage(event, page)} 
+            onChange={handleChangePage}
             color="primary"
             showFirstButton
             showLastButton
-            sx={{
-                display: "flex",
-                justifyContent: "center",
-            }}
+            sx={{ display: "flex", justifyContent: "center" }}
           />
         </Stack>
       )}
     </Stack>
-  )
+  );
 }
 
-export default Labs
+export default Labs;
