@@ -23,6 +23,8 @@ router.get("/sumEnrollments/:courseId", authUserRole.verifiedTeacherCourse, teac
 
 router.get("/questions/:courseId", authUserRole.verifiedTeacherCourse, teacherController.getQuestions);
 
+router.post("/addQuestions/:courseId", authUserRole.verifiedTeacherCourse, teacherController.addQuestion);
+
 router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
 router.get("/getQuestionType", authUserRole.checkCourseCreation, teacherController.getQuestionType);

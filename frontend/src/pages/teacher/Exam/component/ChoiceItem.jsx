@@ -6,22 +6,22 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
   const { mode } = useParams();
-  const [content, setContent] = useState(choice.content);
+  const [ content, setContent ] = useState(choice.content);
 
   useEffect(() => {
     setContent(choice.content);
   }, [choice.content]);
 
   const handleBlur = () => {
-    if (mode === "delete") return; // ไม่แก้ไขอะไร
+    if (mode === "delete") return;
     if (content !== choice.content) {
       onChange("content", content);
     }
   };
 
   const handleCheckboxChange = (e) => {
-    if (mode === "delete") return; // ไม่แก้ไขอะไร
-    onChange("isCorrect", e.target.checked);
+    if (mode === "delete") return; 
+    onChange("type", e.target.checked);
   };
 
   return (
@@ -65,9 +65,11 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
         />
       </Stack>
 
-      <IconButton onClick={onDelete} color={mode === "delete" ? "error" : "default"}>
-        <DeleteIcon />
-      </IconButton>
+      {mode !== "delete" && (
+        <IconButton onClick={onDelete} color="error">
+          <DeleteIcon />
+        </IconButton>
+      )}
     </Stack>
   );
 };

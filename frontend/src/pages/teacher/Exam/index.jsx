@@ -6,7 +6,7 @@ import { AddExam } from "./contents/AddExam";
 import { EditExam } from "./contents/EditExam";
 import { DeleteExam } from "./contents/DeleteExam";
 
-import { Button, IconButton, useMediaQuery } from "@mui/material";
+import { Button, IconButton, Slide, Snackbar, useMediaQuery } from "@mui/material";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import backend from "../../../api/backend";
 
@@ -27,42 +27,40 @@ const useQuestions = (courseId) => {
     }
   };
 
-  const handleQuestionChange = (index, event, att) => {
+  const handleQuestionChange = (index, value, field ) => {
     const newQuestions = [...questions];
     newQuestions[index] = {
       ...newQuestions[index],
-      [att]: event.target.value,
+      [field]: value,
     };
     setQuestions(newQuestions);
   };
 
   const handleChoiceChange = (questionIndex, choiceIndex, field, value) => {
     const newQuestions = [...questions];
-    newQuestions[questionIndex] = {
-      ...newQuestions[questionIndex],
-      choice: newQuestions[questionIndex].choice.map((choice, index) => {
-        if (index === choiceIndex) {
-          return {
-            ...choice,
-            [field]: value,
-          };
-        }
-        return choice;
-      }),
-    };
+    const targetQuestion = newQuestions[questionIndex];
+
+    if (!targetQuestion.choices) {
+      targetQuestion.choices = [];
+    }
+
+    targetQuestion.choices = targetQuestion.choices.map((choice, index) =>
+      index === choiceIndex ? { ...choice, [field]: value } : choice
+    );
+
     setQuestions(newQuestions);
   };
-
+  
   const handleAddQuestion = async () => {
     setQuestions([
       ...questions,
       {
         content: "",
-        img: "",
+        img: null,
         choices: [
           {
             content: "",
-            type: null,
+            type: false,
           },
         ],
       },
@@ -73,7 +71,7 @@ const useQuestions = (courseId) => {
     const newQuestions = [...questions];
     newQuestions[index].choices.push({
       content: "",
-      type: null,
+      type: false,
     });
     setQuestions(newQuestions);
   };
@@ -90,6 +88,81 @@ const useQuestions = (courseId) => {
     setQuestions(newQuestions);
   };
 
+  const handleAddImg = (index, file) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const newQuestions = [...questions];
+      newQuestions[index].img = reader.result;
+      setQuestions(newQuestions);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDeleteImg = (index) => {
+    const newQuestions = [...questions];
+    newQuestions[index].img = "";
+    setQuestions(newQuestions);
+  }
+
+  const validation = () => {
+    let isValid = true;
+    let validMessage = "";
+
+    if (questions.length === 0) {
+      return {
+        isValid: false,
+        validMessage: "กรุณากรอกอย่างน้อย 1 คำถาม",
+      };
+    }
+
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+
+      if (!question.content) {
+        return {
+          isValid: false,
+          validMessage: `กรุณากรอกคำถามที่ ${i + 1}`,
+        };
+      }
+
+      if (!question.choices || question.choices.length < 2) {
+        return {
+          isValid: false,
+          validMessage: `กรุณากรอกตัวเลือกคำถามที่ ${i + 1} อย่างน้อย 2 ตัวเลือก`,
+        };
+      }
+
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      question.choices.forEach((choice) => {
+        if (choice.type === true) correctCount++;
+        if (choice.type === false) incorrectCount++;
+      });
+
+      if (correctCount === 0) {
+        return {
+          isValid: false,
+          validMessage: `กรุณากรอกตัวเลือกที่ถูกต้องสำหรับคำถามที่ ${i + 1} อย่างน้อย 1 ตัวเลือก`,
+        };
+      }
+
+      if (incorrectCount === 0) {
+        return {
+          isValid: false,
+          validMessage: `กรุณากรอกตัวเลือกที่ไม่ถูกต้องสำหรับคำถามที่ ${i + 1} อย่างน้อย 1 ตัวเลือก`,
+        };
+      }
+    }
+
+    return {
+      isValid: true,
+      validMessage: "ผ่านการตรวจสอบ",
+    };
+  };
+
   return {
     questions,
     fetchQuestions,
@@ -99,14 +172,21 @@ const useQuestions = (courseId) => {
     handleAddChoice,
     handleDeleteQuestion,
     handleDeleteChoice,
+    handleAddImg,
+    handleDeleteImg,
+    validation,
   };
 };
 
 function Exam() {
   const { mode, courseId } = useParams();
   const navigate = useNavigate();
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [ message, setMessage ] = useState("");
+  const [ loading, setLoading ] = useState(false);
+  const [ snackBarState, setSnackBarState ] = React.useState({
+    open: false,
+    Transition: null,
+  });
 
   const {
     questions,
@@ -117,35 +197,70 @@ function Exam() {
     handleAddChoice,
     handleDeleteQuestion,
     handleDeleteChoice,
+    handleAddImg,
+    handleDeleteImg,
+    validation,
   } = useQuestions(courseId);
 
-  const handleSubmit = async () => {
+  const { isValid, validMessage } = validation();
+
+  const handleSubmitAdd = async () => {
     try {
-      const response = await backend.post(
-        `/teacher/questions/${courseId}`,
-        {
-          questions,
-        },
-        {
-          withCredentials: true,
-        }
+      const response = await backend.post(`/teacher/addQuestions/${courseId}`, { questions },
+        { withCredentials: true }
       );
       if (response.status === 200) {
         setMessage(response.data.message);
+        setTimeout(() => {
+          navigate(-1);
+        }, 4000);
       }
     } catch (error) {
       console.log(error);
     }
+  }
+
+  const handleSubmit = async () => {
+    
+    if (!isValid) {
+      setMessage(validMessage);
+      setSnackBarState({ open: true, Transition: SlideTransition });
+      setTimeout(() => {
+        setSnackBarState({ open: false, Transition: SlideTransition });
+        setMessage("");
+      }, 3000);
+      return;
+    }
+
+    if (mode === "add") {
+      handleSubmitAdd();
+    } 
+    else if (mode === "edit") {
+
+    }
+    else if (mode === "delete") {
+      
+    }
   };
+
   const tabletQuery = useMediaQuery("(max-width:720px)");
 
   useEffect(() => {
+    setLoading(true);
     if (mode === "add" && questions.length === 0) {
       handleAddQuestion();
+      setLoading(false);
     } else if (mode === "edit" || mode === "delete") {
       fetchQuestions();
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
   }, [mode, courseId]);
+
+  function SlideTransition(props) {
+    return <Slide {...props} direction="up" />;
+  }
 
   return (
     <div className={style.pageWrapper}>
@@ -197,6 +312,8 @@ function Exam() {
                 handleAddChoice={handleAddChoice}
                 handleDeleteQuestion={handleDeleteQuestion}
                 handleDeleteChoice={handleDeleteChoice}
+                handleAddImg={handleAddImg}
+                handleDeleteImg={handleDeleteImg}
                 handleSubmit={handleSubmit}
               />
             )}
@@ -227,6 +344,24 @@ function Exam() {
           </>
         )}
       </div>
+
+      {message && (
+        <Snackbar
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          open={snackBarState.open}
+          slots={{ transition: snackBarState.Transition }}
+          onClose={() => setMessage("")}
+          message={message}
+          key={"bottom" + "right"}
+          autoHideDuration={3000}
+          sx={{
+            "& .MuiSnackbarContent-root": {
+              background: message === "เพิ่มคำถามใหม่สำเร็จ" ? "green" : "red",
+              color: "white",
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

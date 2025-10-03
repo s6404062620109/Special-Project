@@ -20,7 +20,8 @@ const QuestionItem = ({
   onAddChoice,
   onDeleteChoice,
   onDeleteQuestion,
-  onOpenImg,
+  onAddImg,
+  onDeleteImg,
 }) => {
   const { mode } = useParams();
   const [content, setContent] = useState(question.content);
@@ -30,9 +31,9 @@ const QuestionItem = ({
   }, [question.content]);
 
   const handleBlurContent = () => {
-    if (mode === "delete") return; // ไม่แก้ไขใน delete mode
+    if (mode === "delete") return;
     if (content !== question.content) {
-      onQuestionChange(index, 'content', content);
+      onQuestionChange(index, content, 'content');
     }
   };
 
@@ -61,37 +62,63 @@ const QuestionItem = ({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onBlur={handleBlurContent}
-        disabled={mode === "delete"} // disable input เมื่อ delete mode
+        disabled={mode === "delete"}
       />
 
-      <Box sx={{ width: '100%', borderRadius: '8px' }}>
+      <Box sx={{ width: '100%', borderRadius: '8px', position: 'relative' }}>
         {question.img ? (
-          <Box
-            component="img"
-            src={question.img}
-            alt="Question Image"
-            sx={{
-              width: '100%',
-              height: '200px',
-              borderRadius: '8px',
-              objectFit: 'cover',
-              cursor: mode === "delete" ? "default" : "pointer",
-              transition: 'transform 0.3s',
-              '&:hover': {
-                transform: mode === "delete" ? "none" : 'scale(0.9)',
-                border: mode === "delete" ? "none" : '1px solid #000',
-              },
-            }}
-            onClick={() => mode !== "delete" && onOpenImg(index)}
-          />
+          <>
+            <Box
+              component="img"
+              src={question.img}
+              alt="Question Image"
+              sx={{
+                width: '100%',
+                height: '200px',
+                borderRadius: '8px',
+                objectFit: 'cover',
+              }}
+            />
+            {mode !== "delete" && (
+              <IconButton
+                size="small"
+                color="error"
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  background: 'rgba(255,255,255,0.7)',
+                  '&:hover': { background: 'rgba(255,255,255,0.9)' },
+                }}
+                onClick={() => onDeleteImg(index)}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            )}
+          </>
         ) : (
           mode !== "delete" && (
-            <Button startIcon={<AddIcon />} onClick={() => onOpenImg(index)}>
-              เพิ่มรูปภาพ
-            </Button>
+            <>
+              <input
+                accept="image/*"
+                type="file"
+                id={`upload-img-${index}`}
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) onAddImg(index, file);
+                }}
+              />
+              <label htmlFor={`upload-img-${index}`}>
+                <Button startIcon={<AddIcon />} component="span">
+                  เพิ่มรูปภาพ
+                </Button>
+              </label>
+            </>
           )
         )}
       </Box>
+
 
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h6">ตัวเลือก</Typography>

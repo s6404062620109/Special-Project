@@ -336,7 +336,7 @@ const getQuestions = (req, res) => {
         return res.status(404).send({ message: "No questions found." });
       }
 
-      db.query("SELECT * FROM question_choices WHERE questionId IN (?)", [questionIds], (error, choicesResult) => {
+      db.query("SELECT * FROM question_answers WHERE questionId IN (?)", [questionIds], (error, choicesResult) => {
         if(error){
           console.log(error);
           return res.status(500).send({ message: "Database question_choices query error." });
@@ -368,6 +368,63 @@ const getQuestions = (req, res) => {
   }
 }
 
+const addQuestion = (req, res) => {
+  const { courseId } = req.params;
+  const { questions } = req.body;
+
+  if (!courseId || typeof courseId !== "string") {
+    return res.status(400).send({ message: "Invalid Course ID." });
+  }
+  if (!questions || !Array.isArray(questions)) {
+    return res.status(400).send({ message: "Questions are required." });
+  }
+
+  try {
+    const insertQuestions = new Promise((resolve, reject) => {
+      db.query(`INSERT INTO questions (content, img, courseId) VALUES ?`,
+        [questions.map(q => [q.content, q.img, courseId])], (error, result) => {
+          if (error) return reject(error);
+
+          // result.insertId = id แรกที่ insert
+          // result.affectedRows = จำนวนแถวที่ insert
+          const insertedIds = Array.from({ length: result.affectedRows }, (_, i) => result.insertId + i);
+
+          resolve(insertedIds);
+        }
+      );
+    });
+
+    insertQuestions.then(insertedIds => {
+      // match แต่ละ question กับ questionId ที่เพิ่ง insert
+      const allChoices = [];
+      questions.forEach((q, index) => {
+        const questionId = insertedIds[index];
+        q.choices.forEach(c => {
+          allChoices.push([c.content, c.type, questionId]);
+        });
+      });
+
+      db.query(`INSERT INTO question_answers (content, type, questionId) VALUES ?`,
+        [allChoices], (error2) => {
+          if (error2) {
+            console.log(error2);
+            return res.status(500).send({ message: "Error inserting choices." });
+          }
+
+          return res.status(200).send({ message: "เพิ่มคำถามใหม่สำเร็จ" });
+        }
+      );
+    }).catch(err => {
+      console.log(err);
+      return res.status(500).send({ message: "Error inserting questions.", err });
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+};
+
 /* teacher_questions controller */
 
 /* teacher_subject controller */
@@ -381,13 +438,13 @@ const getSubject = (req, res) => {
     const sql = `
       SELECT 
         s.name AS subjectname,
-        q.id AS questionId, q.content AS questionContent, q.img AS questionImg, q.typeId,
+        l.id AS questionId, l.content AS questionContent, l.img AS questionImg, l.typeId,
         t.id AS typeId, t.name_type AS typeName,
-        a.id AS answerId, a.content AS answerContent, a.type AS answerType
+        la.id AS answerId, la.content AS answerContent, la.type AS answerType
       FROM subject s
-      LEFT JOIN question q ON s.id = q.subjectId
-      LEFT JOIN question_type t ON q.typeId = t.id
-      LEFT JOIN question_answer a ON q.id = a.questionId
+      LEFT JOIN labs l ON s.id = l.subjectId
+      LEFT JOIN question_type t ON l.typeId = t.id
+      LEFT JOIN lab_answers la ON l.id = la.questionId
       WHERE s.id = ? AND s.courseId = ?
     `;
 
@@ -1173,6 +1230,7 @@ module.exports = {
   deleteCourse,
   enrollSummary,
   getQuestions,
+  addQuestion,
   getSubject,
   getQuestionType,
   addManualSubject,

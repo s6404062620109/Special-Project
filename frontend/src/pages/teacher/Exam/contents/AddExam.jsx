@@ -10,17 +10,18 @@ import QuestionItem from '../component/QuestionItem';
 
 export const AddExam = ({
   questions,
-  handleImgChange,
   handleQuestionChange,
   handleChoiceChange,
   handleAddquestion,
   handleAddChoice,
   handleDeleteQuestion,
   handleDeleteChoice,
+  handleAddImg,
+  handleDeleteImg,
   handleSubmit
 }) => {
   const navigate = useNavigate();
-
+  
   return (
     <Stack
       alignItems='center'
@@ -64,7 +65,8 @@ export const AddExam = ({
               onAddChoice={handleAddChoice}
               onDeleteChoice={handleDeleteChoice}
               onDeleteQuestion={handleDeleteQuestion}
-              onOpenImg={handleImgChange}
+              onAddImg={handleAddImg}
+              onDeleteImg={handleDeleteImg}
             />
           ))}
         </Stack>
@@ -104,6 +106,7 @@ export const AddExam = ({
             background: "green",
             width: { xs: '100%', sm: '50%' }
           }}
+          onClick={() => handleSubmit()}
         >
           ยืนยัน
         </Button>
