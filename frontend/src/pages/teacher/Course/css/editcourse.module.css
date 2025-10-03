@@ -23,7 +23,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    width: 100%;
 }
 .info-wrapper{
     display: flex;
@@ -137,6 +137,7 @@
     width: 100%;
     margin: 0 auto;
 }
+
 
 @media screen and (max-width: 768px) {
     .container{

@@ -59,7 +59,7 @@ function AddPopup({ onClose, onAddCourse }) {
         <form onSubmit={handleSubmit}>
           <div className={style["form-wrapper"]}>
             <div className={style.fileInput}>
-              <label>Course Icon</label>
+              <label>ไอคอนคอร์ส</label>
               <div
                 className={style.previewImageContainer}
                 onClick={() => document.getElementById("fileInput").click()}
@@ -87,31 +87,22 @@ function AddPopup({ onClose, onAddCourse }) {
               <TextField
                 id="outlined-basic"
                 variant="outlined"
-                label="Course Name"
+                label="ชื่อคอร์ส"
                 type="text"
                 value={courseData.name}
                 onChange={(e) =>
                   setCourseData({ ...courseData, name: e.target.value })
                 }
               />
-
-              <FormControlLabel 
-                control={
-                  <Switch 
-                    onChange={(e) => setCourseData({ ...courseData, enable: e.target.checked })} 
-                    checked={courseData.enable} 
-                  />
-                } 
-                label="Can study?" 
-              />
+              
             </div>
           </div>
 
           <div className={style.buttonGroup}>
             <button type="button" onClick={onClose}>
-              Cancel
+              ยกเลิก
             </button>
-            <button type="submit">Add Course</button>
+            <button type="submit">ยืนยัน</button>
           </div>
         </form>
       </div>

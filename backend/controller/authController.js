@@ -6,10 +6,10 @@ const db = require("../database");
 require("dotenv").config();
 
 const register = (req, res) => {
-  const { email, name, password, teacher_request } = req.body;
+  const { email, name, surname, password, teacher_request } = req.body;
 
-  if (!req.body || !email || !password || !name) {
-    return res.status(400).json({ message: "Email, password, name and teacher_request are required." });
+  if (!req.body || !email || !password || !name || !surname) {
+    return res.status(400).json({ message: "Email, password, name, surname and teacher_request are required." });
   }
 
   const isTeacherRequest = teacher_request || false;
@@ -22,10 +22,9 @@ const register = (req, res) => {
       }
 
       if (results.length > 0) {
-        return res.status(400).json({ message: "Email already registered." });
+        return res.status(400).json({ message: "มีอีเมลนี้ในระบบแล้ว กรุณาใช้อีเมลอื่น." });
       }
 
-      // Hash password ก่อนเก็บ
       const saltRounds = 10;
       bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
         if (err) {
@@ -33,10 +32,8 @@ const register = (req, res) => {
           return res.status(500).json({ message: "Password hashing failed." });
         }
 
-        db.query(
-          "INSERT INTO user (email, password, name, role, isApprove) VALUES(?, ?, ?, ?, ?)",
-          [email, hashedPassword, name, "s", isTeacherRequest],
-          (err) => {
+        db.query("INSERT INTO user (email, password, name, surname, role, isApprove) VALUES(?, ?, ?, ?, ?)",
+          [email, hashedPassword, name, surname, "s", isTeacherRequest], (err) => {
             if (err) {
               console.log(err);
               return res.status(500).json({ message: "Register Failed!!!" });
@@ -162,7 +159,7 @@ const login = (req, res) => {
 
           const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "4h" });
 
-          const isProduction = `http://${process.env.DEPLOY_URL}:${process.env.FRONTEND_PORT}`?.startsWith("https");
+          const isProduction = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}`?.startsWith("https");
 
           res.cookie("authToken", token, {
             maxAge: 4 * 60 * 60 * 1000,
@@ -220,7 +217,7 @@ const authorization = (req, res) => {
   }
 
   try{
-    db.query("SELECT id, email, name, role, profile_img, verified_key FROM user WHERE email = ?", 
+    db.query("SELECT id, email, name, surname, role, profile_img, verified_key FROM user WHERE email = ?", 
       [email], (err, users) => {
         if (err) {
           return res.status(500).json({ message: "Database error while fetching user data." });
@@ -239,6 +236,7 @@ const authorization = (req, res) => {
               id: user.id,
               email: user.email,
               name: user.name,
+              surname: user.surname,
               role: user.role,
               profile_img: user.profile_img,
             });
@@ -288,7 +286,7 @@ const forgot_password = (req, res) => {
             return res.status(500).send({ message: "Error storing reset token." });
           }
 
-          const resetLink = `http://${process.env.DEPLOY_URL}:${process.env.FRONTEND_PORT}/reset-password?token=${resetToken}`;
+          const resetLink = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}/reset-password?token=${resetToken}`;
 
           const transporter = nodemailer.createTransport({
             service: "gmail",

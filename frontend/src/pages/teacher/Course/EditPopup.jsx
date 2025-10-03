@@ -50,7 +50,7 @@ function EditPopup({ courseInfo, onClose, onSave }) {
       <div className={style.popupContent}>
         <form onSubmit={handleSave} className={style.formWrapper}>
           <div className={style.fileInput}>
-            <label>Course Icon</label>
+            <label>ไอคอนคอร์ส</label>
             <div
               className={style.previewImageContainer}
               onClick={() => document.getElementById("fileInput").click()}
@@ -73,7 +73,7 @@ function EditPopup({ courseInfo, onClose, onSave }) {
           <div className={style.formGroup}>
             <TextField
               variant="outlined"
-              label="Course Name"
+              label="ชื่อคอร์ส"
               type="text"
               value={courseData.name}
               onChange={(e) => setCourseData({ ...courseData, name: e.target.value })}
@@ -109,7 +109,7 @@ function EditPopup({ courseInfo, onClose, onSave }) {
                   onChange={(e) => setCourseData({ ...courseData, enable: e.target.checked })}
                 />
               }
-              label="Can study?"
+              label="เผยแพร่"
               sx={{ mt: 2 }}
             />
           </div>

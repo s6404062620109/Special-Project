@@ -15,6 +15,7 @@ function Register() {
   const [data, setData] = useState({
     email: '',
     name: '',
+    surname: '',
     password: '',
     confirm_password: '',
     teacher_request: false,
@@ -35,6 +36,7 @@ function Register() {
       const response = await backend.post('/auth/register', {
           email: data.email,
           name: data.name,
+          surname: data.surname,
           password: data.password,
           teacher_request: data.teacher_request,
       });
@@ -92,6 +94,24 @@ function Register() {
               type='text'
               value={data.name}
               onChange={(e) => setData({ ...data, name:e.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <TextField
+              id="standard-basic"
+              variant="standard"
+              label="SURNAME"
+              sx={autofillTextFieldSx}
+              slotProps={{
+                input: {
+                  sx: { color: 'white' }
+                }
+              }}
+              type='text'
+              value={data.surname}
+              onChange={(e) => setData({ ...data, surname:e.target.value })}
               required
             />
           </div>
@@ -171,7 +191,7 @@ function Register() {
 
         <div className={style.footer}>
           <div className={style.status}>
-            {statusMessage === "สมัครสมาชิกสำเร็จแล้ว, กรุณาตั้งค่ารหัสผ่านที่อีเมลของคุณ." ? (
+            {statusMessage === "สมัครสมาชิกสำเร็จแล้ว" ? (
                <p style={{color: 'green'}}>{statusMessage}</p>
             ):(
               <p style={{color: 'red'}}>{statusMessage}</p>

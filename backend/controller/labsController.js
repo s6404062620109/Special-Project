@@ -235,7 +235,7 @@ const startLabSession = async (req, res) => {
         console.log(labSessions)
         return res.status(200).json({
           message: "Lab started",
-          terminalUrl: `http://${process.env.DEPLOY_URL}:${port}`,
+          terminalUrl: `http://${process.env.DEV_URL}:${port}`,
         });
       });
     });

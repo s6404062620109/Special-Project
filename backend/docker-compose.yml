@@ -35,10 +35,8 @@ services:
   db:
     image: mysql:9.4
     environment:
-      MYSQL_ROOT_PASSWORD: root 
+      MYSQL_ROOT_PASSWORD: password_1234
       MYSQL_DATABASE: SAT 
-      MYSQL_USER: blt_sat
-      MYSQL_PASSWORD: password1234
     ports:
       - "3306:3306"
     volumes:

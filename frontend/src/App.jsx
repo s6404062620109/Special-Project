@@ -24,8 +24,9 @@ import Profile from './pages/Profile';
 import MyCourses from './pages/teacher/MyCourses';
 import EditCourse from './pages/teacher/Course';
 import AddSubject from './pages/teacher/Subject/AddSubject';
-import EnrollSum from './pages/teacher/EnrollSum';
 import EditSubject from './pages/teacher/Subject/EditSubject';
+import EnrollSum from './pages/teacher/EnrollSum';
+import Exam from './pages/teacher/Exam';
 /* */
 
 /* */
@@ -85,8 +86,9 @@ function App() {
                 <Route path='/my-courses' element={<MyCourses/>}/>
                 <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
                 <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
-                <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
                 <Route path='/edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
+                <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
+                <Route path='/exam/:mode/:courseId' element={<Exam/>}/>
                 <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}

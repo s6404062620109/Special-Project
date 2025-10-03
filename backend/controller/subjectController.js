@@ -11,6 +11,10 @@ const getAll = (req, res) => {
                 console.error(err);
                 return res.status(500).json({ message: "Database course query error" });
             }
+            if (courseResult.length === 0) {
+                return res.status(404).json({ message: "Course not found" });
+            }
+
             db.query(`SELECT * FROM subject WHERE courseId = ? `, [courseId], (err, subjectResults) => {
                 if (err) {
                     console.error(err);

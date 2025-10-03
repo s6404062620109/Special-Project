@@ -110,8 +110,8 @@ function Navbar() {
           <div className={style.userAuth}>  
             <div className={style.userInfo}>
               <div>
-                <p>Welcome, </p>
                 <label>{userData.name}</label>
+                <label>{userData.surname}</label>
               </div>
 
               <img 

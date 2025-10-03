@@ -2,9 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import PreviewIcon from '@mui/icons-material/Preview';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import QuestionItem from '../components/QuestionItem';
 
 function AddQuestion({

@@ -84,32 +84,6 @@
     object-fit: cover;
 }
 
-.body table tbody td > button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s ease;
-
-    p{
-        margin: 0;
-    }
-}
-.body table tbody td > button:hover{
-    opacity: 0.75;
-} 
-
-.body table tbody td button img {
-    width: 16px;
-    height: 16px;
-}
-
 .add-button {
     position: fixed;
     right: 5%;

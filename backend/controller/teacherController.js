@@ -135,7 +135,7 @@ const createCourse = (req, res) => {
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
     const { name, icon, enable, announce_state } = req.body;
-    console.log(req.body)
+
     if( typeof courseId !== 'string' || typeof name !== 'string' || typeof icon !== 'string' || typeof enable !== 'number' || typeof announce_state !== 'number' ){
         return res.status(400).send({ message: "Invalid Course ID or Name or Icon or Enable or Announce_state." });
     }
@@ -313,6 +313,62 @@ const enrollSummary = (req, res) => {
 };
 
 /* teacher_course controller */
+
+/* teacher_questions controller */
+
+const getQuestions = (req, res) => {
+  const { courseId } = req.params;
+
+  if(!courseId || typeof courseId !== 'string'){
+    return res.status(400).send({ message: "Invalid Course ID." });
+  }
+
+  try{
+    db.query("SELECT * FROM questions WHERE courseId = ?", [courseId], (error, result) => {
+      if(error){
+        console.log(error);
+        return res.status(500).send({ message: "Database questions query error." });
+      }
+
+      const questionIds = result.map(r => r.id);
+      
+      if(questionIds.length === 0){
+        return res.status(404).send({ message: "No questions found." });
+      }
+
+      db.query("SELECT * FROM question_choices WHERE questionId IN (?)", [questionIds], (error, choicesResult) => {
+        if(error){
+          console.log(error);
+          return res.status(500).send({ message: "Database question_choices query error." });
+        }
+
+        const choicesMap = {};
+        choicesResult.forEach(r => {
+          if(!choicesMap[r.questionId]){
+            choicesMap[r.questionId] = [];
+          }
+          choicesMap[r.questionId].push(r);
+        });
+
+        const questions = result.map(r => {
+          return {
+            id: r.id,
+            content: r.content,
+            img:  r.img,
+            choices: choicesMap[r.id] || []
+          }
+        });
+
+        return res.status(200).send({ questions });
+      });
+    })
+  } catch(error){
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+}
+
+/* teacher_questions controller */
 
 /* teacher_subject controller */
 
@@ -1116,6 +1172,7 @@ module.exports = {
   updateCourse,
   deleteCourse,
   enrollSummary,
+  getQuestions,
   getSubject,
   getQuestionType,
   addManualSubject,
