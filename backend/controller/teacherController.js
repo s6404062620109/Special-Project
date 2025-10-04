@@ -11,7 +11,7 @@ const getMyCourses = (req, res) => {
     }
 
     try{
-        db.query("SELECT * FROM course WHERE teacherId = ?", [userId], (error, result) => {
+        db.query("SELECT * FROM course WHERE teacherId = ? AND enable IN (0, 1)", [userId], (error, result) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database user query error." });
@@ -168,18 +168,13 @@ const deleteCourse = (req, res) => {
     }
 
     try{
-        db.query("DELETE FROM course WHERE id = ?", [courseId], (error) => {
+        db.query("UPDATE course SET enable = -1, updateat = NOW() WHERE id = ?", [courseId], (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });
             }
             
-            const coursePath = path.join(__dirname, `../courses/c${courseId}`);
-            if (fs.existsSync(coursePath)) {
-                fs.rmSync(coursePath, { recursive: true, force: true });
-            }
-            
-            return res.status(200).send({ message: "Course deleted successfully."});
+            return res.status(200).send({ message: "ลบคอร์สเรัยนเสร็จสิ้น."});
         });
 
     } catch(error){
@@ -722,7 +717,7 @@ const addManualSubject = (req, res) => {
             }
 
             await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
+              db.query("INSERT INTO labs (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
                 [q.content, img, q.type, subjectId], (err, questionResult) => {
                   if (err) return reject(err);
 
@@ -761,7 +756,7 @@ const addManualSubject = (req, res) => {
 
             if (Array.isArray(q.choice)) {
               for (const c of q.choice) {
-                db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
+                db.query("INSERT INTO lab_answers (content, type, questionId) VALUES (?, ?, ?)",
                   [c.content, c.isCorrect, questionId], (err) => {
                     if (err) console.log("Choice Insert Error:", err);
                   }
@@ -769,7 +764,7 @@ const addManualSubject = (req, res) => {
               }
             }
             if(q.answer){
-              db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
+              db.query("INSERT INTO lab_answers (content, type, questionId) VALUES (?, ?, ?)",
                 [q.answer, 1, questionId], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 }
@@ -778,7 +773,7 @@ const addManualSubject = (req, res) => {
 
           }
 
-          return res.status(200).json({ message: "PDF subject created successfully." });
+          return res.status(200).json({ message: "สร้างบทเรียนสำเร็จ" });
         } catch (err) {
           console.error(err);
           return res.status(500).send({ message: "Error inserting questions or choices." });
@@ -841,7 +836,7 @@ const addPdfSubject = (req, res) => {
           }
 
           await new Promise((resolve, reject) => {
-            db.query("INSERT INTO question (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
+            db.query("INSERT INTO labs (content, img, typeId, subjectId) VALUES (?, ?, ?, ?)",
               [q.content, img, q.type, subjectId], (err, questionResult) => {
                 if (err) return reject(err);
 
@@ -880,7 +875,7 @@ const addPdfSubject = (req, res) => {
 
           if (Array.isArray(q.choice)) {
             for (const c of q.choice) {
-              db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
+              db.query("INSERT INTO lab_answers (content, type, questionId) VALUES (?, ?, ?)",
                 [c.content, c.isCorrect, questionId], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 }
@@ -888,7 +883,7 @@ const addPdfSubject = (req, res) => {
             }
           }
           if(q.answer){
-            db.query("INSERT INTO question_answer (content, type, questionId) VALUES (?, ?, ?)",
+            db.query("INSERT INTO lab_answers (content, type, questionId) VALUES (?, ?, ?)",
               [q.answer, 1, questionId], (err) => {
                 if (err) console.log("Choice Insert Error:", err);
               }
@@ -897,7 +892,7 @@ const addPdfSubject = (req, res) => {
 
         }
 
-        return res.status(200).json({ message: "PDF subject created successfully." });
+        return res.status(200).json({ message: "สร้างบทเรียนสำเร็จ" });
       } catch (err) {
         console.error(err);
         return res.status(500).send({ message: "Error inserting questions or choices." });

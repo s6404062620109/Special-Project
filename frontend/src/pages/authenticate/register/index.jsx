@@ -1,19 +1,28 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
+import {
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Typography,
+  IconButton,
+  InputAdornment,
+  Checkbox
+} from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import style from '../css/auth.module.css';
 import backend from '../../../api/backend';
 import { autofillTextFieldSx } from '../login';
-import Checkbox from '@mui/material/Checkbox';
-import { IconButton, InputAdornment, Typography } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 function Register() {
   const navigate = useNavigate();
   const [data, setData] = useState({
     email: '',
+    sex: '',
     name: '',
     surname: '',
     password: '',
@@ -35,6 +44,7 @@ function Register() {
     try { 
       const response = await backend.post('/auth/register', {
           email: data.email,
+          sex: data.sex,
           name: data.name,
           surname: data.surname,
           password: data.password,
@@ -178,6 +188,30 @@ function Register() {
               onChange={(e) => setData({ ...data, confirm_password:e.target.value })}
               required
             />
+          </div>
+
+          <div>
+            <FormControl variant="standard" fullWidth>
+              <InputLabel 
+                id="sex-select-label"
+                sx={{ color: 'white' }}
+              >
+                เพศ
+              </InputLabel>
+              <Select
+                labelId="sex-select-label"
+                id="sex-select"
+                value={data.sex}
+                onChange={(e) => setData({ ...data, sex: e.target.value })}
+                label="เพศ"
+                sx={autofillTextFieldSx}
+                required
+              >
+                <MenuItem value="m">ชาย</MenuItem>
+                <MenuItem value="f">หญิง</MenuItem>
+                <MenuItem value="n">ไม่ระบุ</MenuItem>
+              </Select>
+            </FormControl>
           </div>
 
           <div>

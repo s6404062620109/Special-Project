@@ -9,7 +9,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Slide, Snackbar, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Slide, Snackbar, Stack, Typography, useMediaQuery } from '@mui/material';
 
 import EditQuestion from './editContents/EditQuestion';
 import Preview from './Preview';
@@ -77,32 +77,13 @@ const useSubjectForm = () => {
 
     const subjectValidation = () => {
 
-        const isNameChanged = subjectInput.name !== subjectData.name;
-
-        const isContentChanged =
-            subjectInput.content.length !== subjectData.content.length ||
-            subjectInput.content.some((item, i) => {
-                const original = subjectData.content[i];
-                if (!original) return true;
-                const isImgsChanged = JSON.stringify(item.imgs) !== JSON.stringify(original.imgs);
-                return (
-                    item.topic !== original.topic ||
-                    item.description !== original.description ||
-                    isImgsChanged
-                );
-            });
-
-        if (!isNameChanged && !isContentChanged) {
-            return "Subject input is not changed!";
-        }
-
-        if (subjectInput.name === "") return "Subject Name is required";
-        if (subjectInput.content.length === 0) return "At least one content is required";
+        if (subjectInput.name === "") return "กรอกกรอกชื่อบทเรียน";
+        if (subjectInput.content.length === 0) return "ต้องการหัวข้อในบทเรียนอย่างน้อย 1 หัวข้อ";
 
         for (let i = 0; i < subjectInput.content.length; i++) {
             const item = subjectInput.content[i];
-            if (item.topic === "") return `Topic ${i + 1} is required`;
-            if (item.description === "") return `Description for Topic ${i + 1} is required`;
+            if (item.topic === "") return `กรุณากรอกชื่อหัวข้อที่ ${i + 1}`;
+            if (item.description === "") return `กรุณากรอกรายละเอียดสำหรับหัวข้อที่ ${i + 1}`;
         }
 
         return null;
@@ -481,20 +462,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 }
             }
         }
-
-        let pretestMin = 1;
-        let posttestMin = 1;
-
-        const pretestCount = questionInput.filter(q => q.type === 1).length;
-        const posttestCount = questionInput.filter(q => q.type === 2).length;
-
-        if (pretestCount < pretestMin) {
-            return `Required question pretest at least ${pretestMin} question.`;
-        }
-
-        if (posttestCount < posttestMin) {
-            return `Required question posttest at least ${posttestMin} question.`;
-        }
         
         return;
     }
@@ -538,6 +505,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 function EditSubject() {
     const { courseId, subjectId } = useParams();
     const navigate = useNavigate();
+    const tabletQuery = useMediaQuery("(min-width: 768px)");
     const [ mode, setMode ] = useState("");
     const [ alertMessage, setAlertMessage ] = useState("");
     const [ alertOpen, setAlertOpen ] = useState(false);
@@ -823,13 +791,28 @@ function EditSubject() {
   return (
     <div className={style.pageWrapper}>
         <div className={style.container}>
-            <Button 
-                variant="contained" 
-                startIcon={<ArrowLeftIcon />}
-                onClick={handleBack}
-            >
-                Back
-            </Button>
+            {!tabletQuery ? (
+                <IconButton
+                    sx={{
+                    backgroundColor: "rgb(25, 118, 210)",
+                    color: "white",
+                    "&:hover": {
+                        backgroundColor: "rgb(25, 118, 210)",
+                    },
+                    }}
+                    onClick={() => navigate(-1)}
+                >
+                    <ArrowLeftIcon />
+                </IconButton>
+                ) : (
+                <Button
+                    variant="contained"
+                    startIcon={<ArrowLeftIcon />}
+                    onClick={() => navigate(-1)}
+                >
+                    ย้อนกลับ
+                </Button>
+            )}
 
             <Snackbar
                 open={alertOpen}

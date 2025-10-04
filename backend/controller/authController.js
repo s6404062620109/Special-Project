@@ -6,10 +6,10 @@ const db = require("../database");
 require("dotenv").config();
 
 const register = (req, res) => {
-  const { email, name, surname, password, teacher_request } = req.body;
+  const { email, sex, name, surname, password, teacher_request } = req.body;
 
-  if (!req.body || !email || !password || !name || !surname) {
-    return res.status(400).json({ message: "Email, password, name, surname and teacher_request are required." });
+  if (!req.body || !sex || !email || !password || !name || !surname) {
+    return res.status(400).json({ message: "Email, password, sex, name, surname and teacher_request are required." });
   }
 
   const isTeacherRequest = teacher_request || false;
@@ -32,8 +32,8 @@ const register = (req, res) => {
           return res.status(500).json({ message: "Password hashing failed." });
         }
 
-        db.query("INSERT INTO user (email, password, name, surname, role, isApprove) VALUES(?, ?, ?, ?, ?)",
-          [email, hashedPassword, name, surname, "s", isTeacherRequest], (err) => {
+        db.query("INSERT INTO user (email, password, sex, name, surname, role, isApprove) VALUES(?, ?, ?, ?, ?, ?, ?)",
+          [email, hashedPassword, sex, name, surname, "s", isTeacherRequest], (err) => {
             if (err) {
               console.log(err);
               return res.status(500).json({ message: "Register Failed!!!" });
@@ -149,7 +149,7 @@ const login = (req, res) => {
       }
 
       const verifiedKey = crypto.randomBytes(32).toString("hex");
-      const verifiedExpired = new Date(Date.now() + 4 * 60 * 60 * 1000);
+      const verifiedExpired = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 );
 
       db.query("UPDATE user SET verified_key = ?, verified_expired = ? WHERE email = ?",
         [verifiedKey, verifiedExpired, email], (error) => {
@@ -162,7 +162,7 @@ const login = (req, res) => {
           const isProduction = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}`?.startsWith("https");
 
           res.cookie("authToken", token, {
-            maxAge: 4 * 60 * 60 * 1000,
+            maxAge: 30 * 24 * 60 * 60 * 1000,
             secure: isProduction, 
             httpOnly: true,
             sameSite: isProduction ? "none" : "lax",
@@ -217,7 +217,7 @@ const authorization = (req, res) => {
   }
 
   try{
-    db.query("SELECT id, email, name, surname, role, profile_img, verified_key FROM user WHERE email = ?", 
+    db.query("SELECT id, email, sex, name, surname, role, profile_img, verified_key FROM user WHERE email = ?", 
       [email], (err, users) => {
         if (err) {
           return res.status(500).json({ message: "Database error while fetching user data." });
@@ -235,6 +235,7 @@ const authorization = (req, res) => {
             return res.status(200).json({
               id: user.id,
               email: user.email,
+              sex: user.sex,
               name: user.name,
               surname: user.surname,
               role: user.role,
@@ -416,15 +417,19 @@ const getVerifiedExpired = (req, res) => {
 
 const updateProfile = (req, res) => {
   const { id } = req.params;
-  const { name, email, profile_img } = req.body;
+  const { name, surname, email, profile_img } = req.body;
 
-  if (!name || !email) {
-    return res.status(400).json({ message: "Name and email are required." });
+  if (!name || !surname || !email) {
+    return res.status(400).json({ message: "Name surname and email are required." });
+  }
+
+  if( typeof name !== 'string' || typeof surname !== 'string' || typeof email !== 'string' ){
+    return res.status(400).json({ message: "Name surname and email must be string." });
   }
 
   try{
-    db.query("UPDATE user SET name = ?, email = ?, profile_img = ? WHERE id = ?",  
-      [ name, email, profile_img, id ], (error, results) => {
+    db.query("UPDATE user SET name = ?, surname = ?, email = ?, profile_img = ? WHERE id = ?",  
+      [ name, surname, email, profile_img, id ], (error, results) => {
       if (error) {
         console.error("Database error:", error);
         return res.status(500).json({ message: "Database error." });

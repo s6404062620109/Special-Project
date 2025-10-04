@@ -1,12 +1,19 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
-import PreviewIcon from '@mui/icons-material/Preview';
+import PreviewIcon from "@mui/icons-material/Preview";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import QuestionItem from '../component/QuestionItem';
+import QuestionItem from "../component/QuestionItem";
 
 export const DeleteExam = ({
   questions,
@@ -21,32 +28,31 @@ export const DeleteExam = ({
   const navigate = useNavigate();
   return (
     <Stack
-      alignItems='center'
+      alignItems="center"
       sx={{
         width: "100%",
-        marginTop: '20px',
+        marginTop: "20px",
         gap: 2,
       }}
     >
       <Box
         sx={{
-          background: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          width: "90%"
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          width: "90%",
         }}
       >
         <Stack
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
         >
-          <Typography variant='h5' fontWeight='bold'>แก้ไขคำถาม</Typography>
+          <Typography variant="h5" fontWeight="bold">
+            แก้ไขคำถาม
+          </Typography>
 
-          <Button 
-            variant="outlined" 
-            startIcon={<PreviewIcon />}
-          >
+          <Button variant="outlined" startIcon={<PreviewIcon />}>
             ดูตัวอย่าง
           </Button>
         </Stack>
@@ -65,6 +71,24 @@ export const DeleteExam = ({
               onOpenImg={handleImgChange}
             />
           ))}
+
+          {questions.length === 0 && (
+            <Stack
+              justifyContent="center"
+              alignItems="center"
+              sx={{
+                width: "100%",
+                height: "200px",
+                backgroundColor: "#f8f7f7ff",
+                borderRadius: "8px",
+                margin: "16px auto",
+              }}
+            >
+              <Typography variant="h4" color="error">
+                ไม่พบคำถามที่คลังข้อมูล
+              </Typography>
+            </Stack>
+          )}
         </Stack>
       </Box>
 
@@ -72,33 +96,32 @@ export const DeleteExam = ({
         sx={{
           width: { xs: "60%", sm: "40%" },
           gap: 2,
-          flexDirection: { xs: "column", sm: "row" }
+          flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <Button 
-          variant='outlined' 
+        <Button
+          variant="outlined"
           sx={{
             background: "red",
             color: "white",
-            width: { xs: '100%', sm: '50%' }
+            width: { xs: "100%", sm: "50%" },
           }}
           onClick={() => navigate(-1)}
         >
           ยกเลิก
         </Button>
 
-        <Button 
-          variant='contained'
+        <Button
+          variant="contained"
           sx={{
             background: "green",
-            width: { xs: '100%', sm: '50%' }
+            width: { xs: "100%", sm: "50%" },
           }}
           onClick={handleSubmit}
         >
           ยืนยัน
         </Button>
-              
       </Stack>
     </Stack>
-  )
-}
+  );
+};

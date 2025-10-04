@@ -1,97 +1,14 @@
-import React, { useEffect, useState } from "react";
-import backend from "../../api/backend";
+import React, { useContext, useEffect, useState } from "react";
+import { Typography } from "@mui/material";
 
+import backend from "../../api/backend";
+import { AuthContext } from "../../context/AuthProvider";
 import style from "./css/profile.module.css";
 
 function Profile() {
-  const [userData, setUserData] = useState({
-    id: null,
-    email: null,
-    name: null,
-    role: null,
-    profile_img: null,
-    verified_expired: null,
-  });
-  const [timeLeft, setTimeLeft] = useState("Loading...");
-  const [editMode, setEditMode] = useState(false);
-  const [tempUserData, setTempUserData] = useState({ ...userData });
-  const emailrefStorage = localStorage.getItem("email");
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const authResponse = await backend.get(
-          `/auth/authorization/${emailrefStorage}`,
-          {
-            withCredentials: true,
-          }
-        );
-
-        if (authResponse.status === 200) {
-          setUserData((prevData) => ({
-            ...prevData,
-            id: authResponse.data.id,
-            email: authResponse.data.email,
-            name: authResponse.data.name,
-            role: authResponse.data.role,
-            profile_img: authResponse.data.profile_img,
-          }));
-          setTempUserData(authResponse.data);
-        }
-
-        const passwordResponse = await backend.get(
-          `/auth/getVerifiedExpired/${emailrefStorage}`,
-          {
-            withCredentials: true,
-          }
-        );
-
-        if (passwordResponse.status === 200) {
-          const { verified_expired } = passwordResponse.data;
-
-          setUserData((prevData) => ({
-            ...prevData,
-            verified_expired,
-          }));
-        }
-      } catch (error) {
-        console.log(error);
-        if (error.response?.status === 403) {
-          localStorage.removeItem("email");
-          alert(error.response.data.message);
-          window.location.href = "/";
-        }
-      }
-    };
-
-    fetchUserData();
-  }, [emailrefStorage]);
-
-  useEffect(() => {
-    if (!userData.verified_expired) return;
-
-    const updateTimer = () => {
-      const now = new Date();
-      const expiredTime = new Date(userData.verified_expired);
-      const diff = expiredTime - now;
-
-      if (diff <= 0) {
-        setTimeLeft("EXPIRED");
-        return;
-      }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeLeft(`${hours}:${minutes}:${seconds}`);
-    };
-
-    const timer = setInterval(updateTimer, 1000);
-    updateTimer();
-
-    return () => clearInterval(timer);
-  }, [userData.verified_expired]);
+  const { userData, setUserData } = useContext(AuthContext);
+  const [ editMode, setEditMode ] = useState(false);
+  const [ tempUserData, setTempUserData ] = useState({ ...userData });
 
   const toggleEditMode = () => {
     setEditMode(!editMode);
@@ -160,7 +77,11 @@ function Profile() {
 
   const handleLogout = async () => {
     try {
-      const response = await backend.post('/auth/logout', { email: userData.email }, { withCredentials: true });
+      const response = await backend.post('/auth/logout', 
+        { email: userData.email }, 
+        { withCredentials: true }
+      );
+
       if(response.status === 200){
         localStorage.removeItem('email');
         alert(response.data.message);
@@ -195,12 +116,11 @@ function Profile() {
             onChange={handleImageUpload}
             disabled={!editMode}
           />
-          <p>{userData.name}</p>
         </div>
 
         <div className={style.body}>
           <div>
-            <label>NAME</label>
+            <Typography variant="h6">ชื่อผู้ใช้</Typography>
             <input
               type="text"
               name="name"
@@ -211,7 +131,18 @@ function Profile() {
           </div>
 
           <div>
-            <label>EMAIL</label>
+            <Typography variant="h6">นามสกุล</Typography>
+            <input
+              type="text"
+              name="surname"
+              value={editMode ? tempUserData.surname : userData.surname}
+              disabled={!editMode}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Typography variant="h6">อีเมล</Typography>
             <input
               type="text"
               name="email"
@@ -221,10 +152,6 @@ function Profile() {
             />
           </div>
 
-          <div>
-            <label>⏳ Expired Time</label>
-            <p className={style["expired-time"]}>{timeLeft}</p>
-          </div>
         </div>
 
         <div className={style.footer}>

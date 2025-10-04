@@ -15,24 +15,6 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const [ htmlFileContent, setHtmlFileContent ] = useState('');
   const [ questionType, setQuestionType ] = useState([]);
 
-  // const fetchQuestionType = async () => {
-  //   try{
-  //     const response = await backend.get(`/teacher/getQuestionType`, {withCredentials: true});
-      
-  //     if(response.status === 200){
-  //       const types_question = question.map(question => question.type);
-  //       const uniqueTypes = [...new Set(types_question)];
-        
-  //       const filtered = response.data.result.filter(type => uniqueTypes.includes(type.id));
-
-  //       setQuestionType(filtered);
-  //     }
-
-  //   } catch(error){
-  //     console.log(error);
-  //   }
-  // }
-
   const handleNext = () => {
     if (currentIndex < question.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -64,17 +46,16 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
 
   const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
 
-  // question type ref from db
   useEffect(() => {
-    fetchQuestionType();
-  }, []);
+    if(question.length > 0){
+      setQuestionType([ 3, 5, 6 ]);
+    }
+  }, [question]);
 
-  // initial currentIndex select question type 
   useEffect(() => {
     setCurrentIndex(0);
   }, [selectedType]);
-  
-  // read preview cmd file & html file
+
   useEffect(() => {
     if (!currentItem) return;
 
@@ -143,10 +124,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               width: 200,
             }}
           >
-            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="all">ทั้งหมด</MenuItem>
             {questionType.map((type) => (
-              <MenuItem key={type.id} value={type.id}>
-                {type.name_type}
+              <MenuItem key={type} value={type}>
+                {type === 3 && "เลือกคำตอบเพียง 1 คำตอบ"}
+                {type === 5 && "เลือกคำตอบจากการกระทำ"}
+                {type === 6 && "เลือกคำตอบหลายคำตอบ"}
               </MenuItem>
             ))}
           </Select>
@@ -191,6 +174,16 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                   value={selectedAnswers[currentItem.qId]?.answerId || ''}
                   onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value, currentItem.choice.find(choice => choice.aId === Number(e.target.value)).content)}
                 >
+                  {currentItem.choices?.map((choice, index) => (
+                    <FormControlLabel
+                      key={index}
+                      value={choice.aId}
+                      disabled={!canSelected}
+                      control={<Radio />}
+                      label={choice.content}
+                      checked={selectedAnswers[currentItem.qId]?.answerId === String(choice.aId)}
+                    />
+                  ))}
                   {currentItem.choice.map((choice, index) => (
                     <FormControlLabel
                       key={index}
@@ -207,7 +200,16 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                   aria-labelledby="question-label"
                   name="radio-buttons-group"
                 >
-                  {currentItem.choices.map((choice, index) => (
+                  {currentItem.choices?.map((choice, index) => (
+                    <FormControlLabel
+                      key={index}
+                      value={choice.aId}
+                      disabled={!canSelected}
+                      control={<Radio />}
+                      label={choice.content}
+                    />
+                  ))}
+                  {currentItem.choice?.map((choice, index) => (
                     <FormControlLabel
                       key={index}
                       value={choice.aId}

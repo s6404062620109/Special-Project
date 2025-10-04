@@ -56,8 +56,10 @@ export const EditExam = ({
           </Button>
         </Stack>
 
-        <Stack>
-          {questions.map((question, index) => (
+        <Stack
+          justifyContent="center"
+        >
+          {questions?.map((question, index) => (
             <QuestionItem
               key={index}
               index={index}
@@ -71,6 +73,22 @@ export const EditExam = ({
               onDeleteImg={handleDeleteImg}
             />
           ))}
+          
+          {questions.length === 0 &&(
+            <Stack
+              justifyContent='center'
+              alignItems='center'
+              sx={{
+                width: '100%',
+                height: '200px',
+                backgroundColor: '#f8f7f7ff',
+                borderRadius: '8px',
+                margin: '16px auto'
+              }}
+            >
+              <Typography variant='h4' color='error'>ไม่พบคำถามที่คลังข้อมูล</Typography>
+            </Stack>
+          )}
         </Stack>
       </Box>
 

@@ -125,16 +125,15 @@ const QuestionItem = ({
           />
         ) : (
           <Button startIcon={<AddIcon />} onClick={() => onOpenImg(index)}>
-            Add Picture
+            เพิ่มรูปภาพ
           </Button>
         )}
       </Box>
 
-      {/* เงื่อนไข Choice */}
-      {(question.type === 1 || question.type === 2 || question.type === 3 || question.type === 6) && (
+      {(question.type === 3 || question.type === 6) && (
         <>
           <Stack direction='row' justifyContent='space-between'>
-            <Typography variant='h6'>Choice</Typography>
+            <Typography variant='h6'>ตัวเลือก</Typography>
             <IconButton onClick={() => onAddChoice(index)}>
               <AddIcon />
             </IconButton>
@@ -163,7 +162,7 @@ const QuestionItem = ({
                 onClick={() => onUpload(index, "web")}
                 fullWidth
               >
-                HTML File
+                อัพโหลดไฟล์ HTML
               </Button>
             )}
 
@@ -175,7 +174,7 @@ const QuestionItem = ({
                 onClick={() => onUpload(index, "cmd")}
                 fullWidth
               >
-                Cmd File
+                อัพโหลดไฟล์ Shell Script
               </Button>
             )}
           </Stack>

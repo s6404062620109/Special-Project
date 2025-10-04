@@ -44,14 +44,14 @@ function AddQuestion({
           justifyContent='space-between'
           alignItems='center'
         >
-          <Typography variant='h5' fontWeight='bold'>Question</Typography>
+          <Typography variant='h5' fontWeight='bold'>ปฏิบัติการทดสอบ</Typography>
 
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
             onClick={handlePreview}
           >
-            Preview
+            ดูตัวอย่าง
           </Button>
         </Stack>
 
@@ -80,7 +80,7 @@ function AddQuestion({
           onClick={addQuestion}
           sx={{ marginTop: "20px" }}
         >
-          Add Question
+          เพิ่มปฏิบัติการทดสอบ
         </Button>
       </Box>
 
@@ -106,7 +106,7 @@ function AddQuestion({
             navigate(`/edit-course/${courseId}`);
           }}
         >
-          Cancel
+          ยกเลิก
         </Button>
 
         <Button 
@@ -117,7 +117,7 @@ function AddQuestion({
           }}
           onClick={handleSubmit}
         >
-          Confirm
+          ยืนยัน
         </Button>
               
       </Stack>

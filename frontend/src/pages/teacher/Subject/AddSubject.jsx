@@ -21,6 +21,7 @@ import {
   Snackbar,
   Stack,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 
 import style from "./css/subject.module.css";
@@ -91,15 +92,15 @@ const useSubjectForm = () => {
   };
 
   const inputValidation = () => {
-    if (subjectInput.name === "") return "Subject Name is required";
+    if (subjectInput.name === "") return "กรุณากรอกชื่อบทเรียน";
     if (subjectInput.content.length === 0)
-      return "At least one content is required";
+      return "กรุณากรอกเนื้อหาอย่างน้อย 1 หัวข้อสำหรับบทเรียน";
 
     for (let i = 0; i < subjectInput.content.length; i++) {
       const item = subjectInput.content[i];
-      if (item.topic === "") return `Topic ${i + 1} is required`;
+      if (item.topic === "") return `กรุณากรอกชื่อหัวข้อที่ ${i + 1}`;
       if (item.description === "")
-        return `Description for Topic ${i + 1} is required`;
+        return `กรุณากรอกคำอธิบายสำหรับหัวข้อที่ ${i + 1}`;
     }
 
     return null;
@@ -143,19 +144,19 @@ const usePdfForm = () => {
 
   const pdfValidation = () => {
     if (subjectPdfInput.name === "") {
-      return "Subject Name is required";
+      return "กรุณากรอกชื่อบทเรียน";
     }
 
     if (!subjectPdfInput.file) {
-      return "Please select a PDF file";
+      return "กรุณาอัพโหลดไฟล์ PDF สำหรับบทเรียน";
     }
 
     if (subjectPdfInput.file.type !== "application/pdf") {
-      return "Please select a PDF file";
+      return "กรุณาอัพโหลดไฟล์ PDF เท่านั้น";
     }
 
     if (subjectPdfInput.file.size > 16 * 1024 * 1024) {
-      return "File size must be less than 16MB";
+      return "ขนาดไฟล์ PDF ต้องไม่เกิน 16MB";
     }
 
     return null;
@@ -348,7 +349,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         },
       ],
       img: "",
-      type: questionType[0],
+      type: null,
     };
 
     setQuestionInput([...questionInput, newQuestion]);
@@ -376,97 +377,75 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
 
   const questionValidation = () => {
     if (questionInput.length === 0) {
-      return "At least one question is required";
+      return "กรุณากรอกคำถามอย่างน้อย 1 ข้อ";
     }
 
     for (let i = 0; i < questionInput.length; i++) {
       const item = questionInput[i];
       if (item.content === "") {
-        return `Question ${i + 1} content is required`;
+        return `คำถามที่ ${i + 1} ต้องการเนื้อหาสำหรับคำถาม`;
       }
 
-      if (
-        item.type === 1 ||
-        item.type === 2 ||
-        item.type === 3 ||
-        item.type === 6
-      ) {
+      if (item.type === 3 || item.type === 6) {
         if (item.choice.length === 0) {
-          return `At least one choice is required for Question ${i + 1}`;
+          return `ต้องการตัวเลือกอย่างน้อย 1 ตัวสำหรับคำถามที่ ${i + 1}`;
         }
         for (let j = 0; j < item.choice.length; j++) {
           const choice = item.choice[j];
           if (choice.content === "") {
-            return `Choice ${j + 1} content for Question ${i + 1} is required`;
+            return `ตัวเลือกที่ ${j + 1} ของคำถามที่ ${i + 1} ต้องการมีเนื้อหาสำหรับตัวเลือก`;
           }
         }
 
         const correctChoices = item.choice.filter((choice) => choice.isCorrect);
-        if (item.type === 6 && correctChoices.length === 1) {
-          return `Question ${
-            i + 1
-          } of type Lab multiple choice must have than one more correct choice.`;
+        if (item.type === 6 && correctChoices.length <= 1) {
+          return `คำถามที่ ${i + 1} ประเภทคคำตอบหลายคำตอบ ต้องการตัวเลือกที่ถูกต้องมากกว่า 1 ตัวเลือก`;
         }
-        if (correctChoices.length === 0) {
-          return `Question ${i + 1} of type "${
-            item.type
-          }" must have least one correct choice`;
+        if (item.type === 3 && correctChoices.length < 1 ){
+          return `คำถามที่ ${i + 1} ประเภทคคำตอบเดียว ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 1 ตัวเลือก`;
         }
 
         const incorrectChoices = item.choice.filter(
           (choice) => !choice.isCorrect
         );
-        if (incorrectChoices.length === 0) {
-          return `Question ${i + 1} of type "${
-            item.type
-          }" must have at least one incorrect choice`;
+        if (item.type === 6 && incorrectChoices.length < 1) {
+          return `คำถามที่ ${i + 1} ประเภทคคำตอบหลายคำตอบ ต้องการตัวเลือกที่ผิดอย่างน้อย 1 ตัวเลือก`;
+        }
+        if (item.type === 3 && incorrectChoices.length < 1 ){
+          return `คำถามที่ ${i + 1} ประเภทคคำตอบเดียว ต้องการตัวเลือกที่ผิดอย่างน้อย 1 ตัวเลือก`;
         }
       }
 
       if (item.type === 5) {
         if (item.htmlFile === null) {
-          return `Question ${i + 1}: htmlFile is required.`;
+          return `กรุณาอัพโหลดไฟล์ HTML ณ คำถามที่ ${i + 1}`;
         }
         if (item.htmlFile) {
           if (!item.htmlFile.name.endsWith(".html")) {
-            return `Question ${i + 1}: htmlFile must be a .html file.`;
+            return `คำถามที่ ${i + 1} ต้องการไฟล์ HTML เท่านั้น`;
           }
         }
 
         if (item.answer === "") {
-          return `Question ${i + 1}: Answer is required`;
+          return `คำถามที่ ${i + 1} ต้องการคำตอบสำหรับคำถามนี้`;
         }
       }
 
       if (item.type === 4) {
         if (item.Cmdfile === null) {
-          return `Question ${i + 1}: Cmdfile is required.`;
+          return `กรุณาอัพโหลดไฟล์ Shell ณ คำถามที่ ${i + 1}`;
         }
 
         if (item.Cmdfile) {
           if (!item.Cmdfile.name.endsWith(".sh")) {
-            return `Question ${i + 1}: Cmdfile must be a .sh file.`;
+            return `คำถามที่ ${i + 1} ต้องการไฟล์ Shell เท่านั้น`;
           }
         }
 
         if (item.answer === "") {
-          return `Question ${i + 1}: Answer is required`;
+          return `คำถามที่ ${i + 1} ต้องการคำตอบสำหรับคำถามนี้`;
         }
       }
-    }
-
-    let pretestMin = 1;
-    let posttestMin = 1;
-
-    const pretestCount = questionInput.filter((q) => q.type === 1).length;
-    const posttestCount = questionInput.filter((q) => q.type === 2).length;
-
-    if (pretestCount < pretestMin) {
-      return `Required question pretest at least ${pretestMin} question.`;
-    }
-
-    if (posttestCount < posttestMin) {
-      return `Required question posttest at least ${posttestMin} question.`;
     }
 
     return;
@@ -517,6 +496,7 @@ function AddSubject() {
   const { courseId, mode } = useParams();
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate();
+  const tabletQuery = useMediaQuery("(min-width: 768px)");
   const [previewContent, setPreviewContent] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -569,48 +549,20 @@ function AddSubject() {
     questionValidation,
   } = useQuestionForm(setAlertMessage, setOpenSnackbar);
 
-  // const fetchQuestionType = async () => {
-  //   try {
-  //     const response = await backend.get("/teacher/getQuestionType", {
-  //       withCredentials: true,
-  //     });
-  //     if (response.status === 200) {
-  //       setQuestionType(response.data.result);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   useEffect(() => {
-    if (questionType.length === 0) {
-      fetchQuestionType();
-    }
-  }, [courseId, questionType]);
+    setQuestionType([ 3, 5, 6 ]);
+  }, []);
 
   useEffect(() => {
     if (questionType.length > 0 && questionInput.length === 0) {
-      setQuestionInput([
-        {
-          content: "",
-          choice: [{ content: "", isCorrect: false }],
-          img: "",
-          type: questionType[0].id,
-        },
-        {
-          content: "",
-          choice: [{ content: "", isCorrect: false }],
-          img: "",
-          type: questionType[1].id,
-        },
-      ]);
+      addQuestion();
     }
   }, [questionType]);
 
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
     if (prevMode !== "manual" && prevMode !== "pdf") {
-      alert("Please selected add subject mode.");
+      alert(".Please selected add subject mode");
       navigate(`/edit-course/${courseId}`);
       return;
     }
@@ -618,7 +570,7 @@ function AddSubject() {
       if (mode === "question") {
         if (prevMode === "manual") {
           if (subjectInput.name === "" || subjectInput.content.length === 0) {
-            setAlertMessage("Subject Name and Content is required");
+            setAlertMessage("กรุณากรอกชื่อบทเรียนและเพิ่มเนื้อหาอย่างน้อย 1 หัวข้อ");
             setOpenSnackbar(true);
             setTimeout(() => {
               navigate(`/add-subject/${courseId}/manual`);
@@ -629,7 +581,7 @@ function AddSubject() {
 
         if (prevMode === "pdf") {
           if (!subjectPdfInput.file) {
-            setAlertMessage("Please select a PDF file");
+            setAlertMessage("กรุณาอัพโหลดไฟล์ PDF สำหรับบทเรียน");
             setOpenSnackbar(true);
             setTimeout(() => {
               navigate(`/add-subject/${courseId}/pdf`);
@@ -646,7 +598,7 @@ function AddSubject() {
             subjectInput.content.length === 0 ||
             questionInput.length === 0
           ) {
-            setAlertMessage("Subject Name, Content and Question is required");
+            setAlertMessage("กรุณากรอกชื่อบทเรียน, เพิ่มเนื้อหาอย่างน้อย 1 หัวข้อ และเพิ่มปฏิบัติการทดสอบอย่างน้อย 1 ข้อ");
             setOpenSnackbar(true);
             setTimeout(() => {
               navigate(`/add-subject/${courseId}/manual`);
@@ -657,7 +609,7 @@ function AddSubject() {
 
         if (prevMode === "pdf") {
           if (subjectPdfInput.name === "" || !subjectPdfInput.file) {
-            setAlertMessage("Subject Name and PDF file is required");
+            setAlertMessage("กรุณากรอกชื่อบทเรียน, อัพโหลดไฟล์ PDF และเพิ่มปฏิบัติการทดสอบอย่างน้อย 1 ข้อ");
             setOpenSnackbar(true);
             setTimeout(() => {
               navigate(`/add-subject/${courseId}/pdf`);
@@ -860,13 +812,28 @@ function AddSubject() {
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
-        <Button
-          variant="contained"
-          startIcon={<ArrowLeftIcon />}
-          onClick={() => navigate(-1)}
-        >
-          Back
-        </Button>
+        {!tabletQuery ? (
+          <IconButton
+            sx={{
+              backgroundColor: "rgb(25, 118, 210)",
+              color: "white",
+              "&:hover": {
+                backgroundColor: "rgb(25, 118, 210)",
+              },
+            }}
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeftIcon />
+          </IconButton>
+        ) : (
+          <Button
+            variant="contained"
+            startIcon={<ArrowLeftIcon />}
+            onClick={() => navigate(-1)}
+          >
+            ย้อนกลับ
+          </Button>
+        )}
 
         <Snackbar
           open={openSnackbar}
@@ -877,12 +844,7 @@ function AddSubject() {
         >
           <Alert
             onClose={() => setOpenSnackbar(false)}
-            severity={
-              alertMessage === "Subject created successfully." ||
-              alertMessage === "PDF subject created successfully."
-                ? "success"
-                : "error"
-            }
+            severity={alertMessage === "สร้างบทเรียนสำเร็จ" ? "success" : "error" }
             variant="filled"
             sx={{ width: "100%" }}
           >
@@ -1012,7 +974,7 @@ function AddSubject() {
                     navigate(`/edit-course/${courseId}`);
                   }}
                 >
-                  Cancel
+                  ยกเลิก
                 </Button>
 
                 <Button
@@ -1023,7 +985,7 @@ function AddSubject() {
                   }}
                   onClick={handleSubmit}
                 >
-                  Confirm
+                  ยืนยัน
                 </Button>
               </Stack>
             </Stack>
@@ -1034,7 +996,7 @@ function AddSubject() {
             open={openLabsUpload === "cmd"}
             onClose={() => handleCloseLabUpload()}
           >
-            <DialogTitle>Lab {selectedLabIndex + 1} Shell File</DialogTitle>
+            <DialogTitle>คำถามที่ {selectedLabIndex + 1} Shell Script File</DialogTitle>
             <DialogContent>
               <Box>
                 <Stack justifyContent="center" alignItems="center">
@@ -1071,7 +1033,7 @@ function AddSubject() {
 
                   <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
                     <Button variant="contained" component="span">
-                      File Upload
+                      อัพโหลดไฟล์ Shell Script
                     </Button>
                   </label>
                 </Stack>
@@ -1085,7 +1047,7 @@ function AddSubject() {
             open={openLabsUpload === "web"}
             onClose={() => handleCloseLabUpload()}
           >
-            <DialogTitle>Lab {selectedLabIndex + 1} HTML File</DialogTitle>
+            <DialogTitle>คำถามที่ {selectedLabIndex + 1} HTML File</DialogTitle>
             <DialogContent>
               <Box>
                 <Stack justifyContent="center" alignItems="center">
@@ -1122,7 +1084,7 @@ function AddSubject() {
 
                   <label htmlFor={`cmd-upload-${selectedLabIndex}`}>
                     <Button variant="contained" component="span">
-                      File Upload
+                      อัพโหลดไฟล์ HTML
                     </Button>
                   </label>
                 </Stack>
@@ -1132,7 +1094,7 @@ function AddSubject() {
         )}
 
         <Dialog open={openImgUpload} onClose={handleCloseImgUpload}>
-          <DialogTitle>Question Image Upload</DialogTitle>
+          <DialogTitle>อัพโหลดรูปภาพสำหรับคำถามที่ {selectedImageIndex + 1}</DialogTitle>
           <DialogContent>
             <Box
               onClick={() => questionImgInputRef.current?.click()}
@@ -1162,13 +1124,13 @@ function AddSubject() {
               >
                 {questionInput[selectedImageIndex]?.img ? (
                   <Typography variant="body1" sx={{ color: "#666", mt: 1 }}>
-                    Image selected ✔
+                    เลือกรูปภาพที่ต้องการอัพโหลดแล้ว ✔
                   </Typography>
                 ) : (
                   <Stack justifyContent="center" alignItems="center">
                     <AddIcon sx={{ color: "#b3b3b3" }} />
                     <Typography variant="h6" sx={{ color: "#b3b3b3" }}>
-                      Upload Image here.
+                      อัพโหลดรูปภาพที่นี้
                     </Typography>
                   </Stack>
                 )}
@@ -1202,7 +1164,7 @@ function AddSubject() {
                   })
                 }
               >
-                Clear
+                ยกเลิก
               </Button>
             </Stack>
           </DialogContent>

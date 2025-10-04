@@ -185,7 +185,7 @@ function AddManual({
             navigate(`/edit-course/${courseId}`);
           }}
         >
-          Cancel
+          ยกเลิก
         </Button>
         <Button 
           variant='contained'
@@ -194,7 +194,7 @@ function AddManual({
           }}
           onClick={handleSubmit}
         >
-          Next
+          ถัดไป
         </Button>
         
       </Stack>

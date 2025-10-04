@@ -32,12 +32,11 @@ function Reader({
   const isTest = Array.isArray(question) && question.length > 0;
 
   const availableModes = [
-    { condition: isManual, label: "Manual" },
-    { condition: isPDF, label: "PDF" },
-    { condition: isTest, label: "Test" },
-  ].filter(item => item.condition)
-  .map(item => item.label);
-  const [ confirmMode, setConfirmMode ] = useState(availableModes[0]);
+    { condition: isManual, label: "เนื้อหาที่กำหนดเอง", value: "Manual" },
+    { condition: isPDF, label: "เนื้อหาจากไฟล์ PDF", value: "PDF" },
+    { condition: isTest, label: "ปฏิบัติการทดสอบ", value: "Test" },
+  ].filter(item => item.condition);
+  const [confirmMode, setConfirmMode] = useState(availableModes[0]?.value || "");
 
   const pathShow = [
     `/add-subject/${courseId}/manual`, 
@@ -53,6 +52,37 @@ function Reader({
 
   return (
     <Box>
+      
+      {mode === "submit" && (
+        <Stack
+          alignItems="center"
+          justifyContent="space-around"
+          gap={2}
+          sx={{
+            flexDirection: { xs: "column", sm: "row" },
+            width: "100%",
+            margin: "20px auto",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
+          <Typography variant='h5' fontWeight='600'>เนื้อหาที่ต้องการดู</Typography>
+          <Select
+            value={confirmMode}
+            onChange={(e) => setConfirmMode(e.target.value)}
+            sx={{ 
+              width: { xs: "60%", sm: "30%"} 
+            }}
+          >
+            {availableModes.map((mode, index) => (
+              <MenuItem key={index} value={mode.value}>
+                {mode.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </Stack>
+      )}
+
       {(isManual && showContent && mode !== "submit") && <ManualRead subjectInput={content} />}
 
       {(isPDF && showContent && mode !== "submit") && 
@@ -78,35 +108,6 @@ function Reader({
           {confirmMode === "PDF" && <PdfRead subjectName={ isPDF ? content.name : "" } fileUrl={ isPDF ? content.file : content } />}
           {confirmMode === "Test" && <TestRead question={question} />}
         </Box>
-      )}
-
-      {mode === "submit" && (
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-around"
-          sx={{
-            width: { xs: "70%", sm: "25%" },
-            margin: "20px auto",
-            padding: "20px",
-            background: "#f5f5f5",
-            borderRadius: "8px",
-          }}
-        >
-          <Typography variant='h5' fontWeight='600'>Content</Typography>
-          <Select
-            defaultValue='All'
-            value={confirmMode}
-            onChange={(e) => setConfirmMode(e.target.value)}
-            sx={{ width: "50%" }}
-          >
-            {availableModes.map((mode, index) => (
-              <MenuItem key={index} value={mode}>
-                {mode}
-              </MenuItem>
-            ))}
-          </Select>
-        </Stack>
       )}
     </Box>
   );

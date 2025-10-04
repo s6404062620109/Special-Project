@@ -160,7 +160,7 @@ function AddPdf({
             navigate(`/edit-course/${courseId}`);
           }}
         >
-          Cancel
+          ยกเลิก
         </Button>
         <Button 
           variant='contained'
@@ -169,7 +169,7 @@ function AddPdf({
           }}
           onClick={handleSubmit}
         >
-          Next
+          ถัดไป
         </Button>
         
       </Stack>     

@@ -4,10 +4,11 @@ import backend from "../api/backend";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [userData, setUserData] = useState({
+  const [ userData, setUserData ] = useState({
     id: null,
     email: null,
     name: null,
+    surname: null,
     role: null,
     profile_img: null,
   });

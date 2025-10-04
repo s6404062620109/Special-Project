@@ -81,7 +81,7 @@ function EditQuestion({
           onClick={addQuestion}
           sx={{ marginTop: "20px" }}
         >
-          Add Question
+          เพิ่มปฏิบัติการทดสอบ
         </Button>
       </Box>
 
@@ -107,7 +107,7 @@ function EditQuestion({
             navigate(`/edit-course/${courseId}`);
           }}
         >
-          Cancel
+          ยกเลิก
         </Button>
 
         <Button 
@@ -118,7 +118,7 @@ function EditQuestion({
           }}
           onClick={handleSubmit}
         >
-          Confirm
+          ยืนยัน
         </Button>
               
       </Stack>
