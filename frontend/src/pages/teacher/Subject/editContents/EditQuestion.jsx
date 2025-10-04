@@ -23,7 +23,7 @@ function EditQuestion({
 }) {
   const { courseId } = useParams();
   const navigate = useNavigate();
-
+ 
   return (
     <Stack
       alignItems='center'
@@ -45,14 +45,14 @@ function EditQuestion({
           justifyContent='space-between'
           alignItems='center'
         >
-          <Typography variant='h5' fontWeight='bold'>Question</Typography>
+          <Typography variant='h5' fontWeight='bold'>ปฏิบัติการทดสอบ</Typography>
 
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
             onClick={handlePreview}
           >
-            Preview
+            ดูตัวอย่าง
           </Button>
         </Stack>
 

@@ -410,11 +410,14 @@ function Exam() {
             {mode === "edit" && (
               <EditExam 
                 questions={questions}
+                setPreviewOpen={handlePreview}
                 handleQuestionChange={handleQuestionChange}
                 handleChoiceChange={handleChoiceChange}
                 handleAddChoice={handleAddChoice}
                 handleDeleteQuestion={handleDeleteQuestion}
                 handleDeleteChoice={handleDeleteChoice}
+                handleAddImg={handleAddImg}
+                handleDeleteImg={handleDeleteImg}
                 handleSubmit={handleSubmit}
               />
             )}

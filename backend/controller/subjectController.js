@@ -3,37 +3,73 @@ const fs = require("fs");
 const db = require("../database");
 
 const getAll = (req, res) => {
-    const courseId = req.params.courseId;
+  const courseId = req.params.courseId;
 
-    try{
-        db.query(`SELECT * FROM course WHERE id = ?`, [courseId], (err, courseResult) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ message: "Database course query error" });
-            }
-            if (courseResult.length === 0) {
-                return res.status(404).json({ message: "Course not found" });
-            }
+  const sql = `
+    SELECT 
+      c.id AS courseId,
+      c.name AS courseName,
+      c.icon AS courseIcon,
+      c.enable,
+      c.teacherId,
+      c.announce_state,
+      c.pretest_rate,
+      c.posttest_rate,
+      u.name AS teacherName,
+      u.email AS teacherEmail,
+      u.profile_img AS teacherImg,
+      COUNT(DISTINCT q.id) AS countQuestions,
+      COUNT(DISTINCT l.id) AS countLabs
+    FROM course c
+    LEFT JOIN user u ON u.id = c.teacherId
+    LEFT JOIN subject s ON s.courseId = c.id
+    LEFT JOIN questions q ON q.courseId = c.id
+    LEFT JOIN labs l ON l.subjectId = s.id
+    WHERE c.id = ?
+    GROUP BY c.id
+  `;
 
-            db.query(`SELECT * FROM subject WHERE courseId = ? `, [courseId], (err, subjectResults) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).json({ message: "Database subject query error" });
-                }
-                db.query(`SELECT name, email, profile_img FROM user WHERE id = ?`, [courseResult[0].teacherId], (err, teacherResult) => {
-                    if (err) {
-                      console.log(err);
-                      return res.status(500).json({ message: "Database user query error" });
-                    }
-                    return res.status(200).json({ courseInfo: courseResult[0], subject: subjectResults, teacherInfo: teacherResult[0] });
-                });
-            });
-        });
-    } catch(error){
-        console.log(error);
-        return res.status(500).json({ message: "Server error.", error });
+  db.query(sql, [courseId], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database query error" });
     }
-}
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    db.query(`SELECT * FROM subject WHERE courseId = ?`, [courseId], (err, subjectResults) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database subject query error" });
+      }
+
+      const course = result[0];
+      const response = {
+        courseInfo: {
+          id: course.courseId,
+          name: course.courseName,
+          icon: course.courseIcon,
+          enable: course.enable,
+          teacherId: course.teacherId,
+          announce_state: course.announce_state,
+          pretest_rate: course.pretest_rate,
+          posttest_rate: course.posttest_rate,
+        },
+        subject: subjectResults,
+        teacherInfo: {
+          name: course.teacherName,
+          email: course.teacherEmail,
+          profile_img: course.teacherImg,
+        },
+        countQuestions: course.countQuestions,
+        countLabs: course.countLabs,
+      };
+
+      return res.status(200).json(response);
+    });
+  });
+};
 
 const getSubject = (req, res) => {
     const { courseId, subjectId } = req.params;

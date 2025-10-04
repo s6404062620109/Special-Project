@@ -15,23 +15,23 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const [ htmlFileContent, setHtmlFileContent ] = useState('');
   const [ questionType, setQuestionType ] = useState([]);
 
-  const fetchQuestionType = async () => {
-    try{
-      const response = await backend.get(`/teacher/getQuestionType`, {withCredentials: true});
+  // const fetchQuestionType = async () => {
+  //   try{
+  //     const response = await backend.get(`/teacher/getQuestionType`, {withCredentials: true});
       
-      if(response.status === 200){
-        const types_question = question.map(question => question.type);
-        const uniqueTypes = [...new Set(types_question)];
+  //     if(response.status === 200){
+  //       const types_question = question.map(question => question.type);
+  //       const uniqueTypes = [...new Set(types_question)];
         
-        const filtered = response.data.result.filter(type => uniqueTypes.includes(type.id));
+  //       const filtered = response.data.result.filter(type => uniqueTypes.includes(type.id));
 
-        setQuestionType(filtered);
-      }
+  //       setQuestionType(filtered);
+  //     }
 
-    } catch(error){
-      console.log(error);
-    }
-  }
+  //   } catch(error){
+  //     console.log(error);
+  //   }
+  // }
 
   const handleNext = () => {
     if (currentIndex < question.length - 1) {

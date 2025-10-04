@@ -24,9 +24,11 @@ import TestPopup from "./TestPopup";
 function EditCourse() {
   const { courseId } = useParams();
   const { userData } = useContext(AuthContext);
-  const [data, setData] = useState({
+  const [ data, setData ] = useState({
     courseInfo: {},
     subject: [],
+    countQuestions: 0,
+    countLabs: 0,
   });
   const [ chartData, setChartData ] = useState(null);
   const [ editPopupOpen, setEditPopupOpen ] = useState(false);
@@ -42,13 +44,15 @@ function EditCourse() {
         setData({
           courseInfo: response.data.courseInfo,
           subject: response.data.subject,
+          countQuestions: response.data.countQuestions,
+          countLabs: response.data.countLabs,
         });
       }
     } catch (error) {
       console.log(error);
     }
   };
-
+  
   const fetchProgressAnalysis = async () => {
     try {
       const response = await backend.get(
@@ -116,8 +120,7 @@ function EditCourse() {
   const isXs = useMediaQuery("(max-width:600px)");
   const isSm = useMediaQuery("(max-width:900px)");
 
-  const lineChartData =
-    chartData?.users?.map((u) => {
+  const lineChartData = chartData?.users?.map((u) => {
       const duplicateCount = chartData.users.filter(
         (user) => user.name === u.name
       ).length;
@@ -130,13 +133,15 @@ function EditCourse() {
         pretest: u.pretestScore,
         posttest: u.posttestScore,
       };
-    }) || [];
+    }
+  ) || [];
+
   const maxY = Math.max(
     chartData?.pretestMax || 0,
     chartData?.posttestMax || 0,
     10
   );
-
+  
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -430,6 +435,9 @@ function EditCourse() {
       {editPopupOpen && (
         <EditPopup
           courseInfo={data.courseInfo}
+          subject={data.subject}
+          count_questions={data.countQuestions}
+          count_labs={data.countLabs}
           onClose={() => setEditPopupOpen(false)}
           onSave={handleSaveCourse}
         />

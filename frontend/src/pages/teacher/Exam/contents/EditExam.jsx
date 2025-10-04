@@ -10,12 +10,15 @@ import QuestionItem from '../component/QuestionItem';
 
 export const EditExam = ({
   questions,
+  setPreviewOpen,
   handleImgChange,
   handleQuestionChange,
   handleChoiceChange,
   handleAddChoice,
   handleDeleteQuestion,
   handleDeleteChoice,
+  handleAddImg,
+  handleDeleteImg,
   handleSubmit,
 }) => {
   const navigate = useNavigate();
@@ -47,6 +50,7 @@ export const EditExam = ({
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
+            onClick={setPreviewOpen}
           >
             ดูตัวอย่าง
           </Button>
@@ -63,7 +67,8 @@ export const EditExam = ({
               onAddChoice={handleAddChoice}
               onDeleteChoice={handleDeleteChoice}
               onDeleteQuestion={handleDeleteQuestion}
-              onOpenImg={handleImgChange}
+              onAddImg={handleAddImg}
+              onDeleteImg={handleDeleteImg}
             />
           ))}
         </Stack>

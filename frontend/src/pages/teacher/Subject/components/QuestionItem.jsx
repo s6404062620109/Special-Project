@@ -65,7 +65,7 @@ const QuestionItem = ({
       }}
     >
       <Stack direction='row' justifyContent='space-between' alignItems='center'>
-        <Typography variant='h6'>Question {index + 1}</Typography>
+        <Typography variant='h6'>คำถามที่ {index + 1}</Typography>
         <IconButton onClick={() => onDeleteQuestion(index)}>
           <DeleteIcon />
         </IconButton>
@@ -88,8 +88,10 @@ const QuestionItem = ({
             onChange={(e) => onTypeChange(index, e.target.value)}
           >
             {questionType.map((item) => (
-              <MenuItem key={item.id} value={item.id}>
-                {item.name_type}
+              <MenuItem key={item} value={item}>
+                {item === 3 && "เลือกคำตอบเพียง 1 คำตอบ"}
+                {item === 5 && "เลือกคำตอบจากการกระทำ"}
+                {item === 6 && "เลือกคำตอบหลายคำตอบ"}
               </MenuItem>
             ))}
           </Select>

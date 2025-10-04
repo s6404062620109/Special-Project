@@ -569,18 +569,18 @@ function AddSubject() {
     questionValidation,
   } = useQuestionForm(setAlertMessage, setOpenSnackbar);
 
-  const fetchQuestionType = async () => {
-    try {
-      const response = await backend.get("/teacher/getQuestionType", {
-        withCredentials: true,
-      });
-      if (response.status === 200) {
-        setQuestionType(response.data.result);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const fetchQuestionType = async () => {
+  //   try {
+  //     const response = await backend.get("/teacher/getQuestionType", {
+  //       withCredentials: true,
+  //     });
+  //     if (response.status === 200) {
+  //       setQuestionType(response.data.result);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   useEffect(() => {
     if (questionType.length === 0) {

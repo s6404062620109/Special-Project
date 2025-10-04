@@ -652,21 +652,15 @@ function EditSubject() {
         }
     }
 
-    const fetchQuestionType = async () => {
-        try {
-            const response = await backend.get("/teacher/getQuestionType", { withCredentials: true });
-            if(response.status === 200){
-                setQuestionType(response.data.result);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
     useEffect(() => {
         fetchSubjectData();
-        fetchQuestionType();
     }, [courseId, subjectId]);
+
+    useEffect(() => {
+        if(questionInput.length > 0){
+            setQuestionType([ 3, 5, 6 ]);
+        }
+    }, [questionInput]);
 
     const onUploadImage = (index, event) => {
         const error = handleImageUpload(index, event);

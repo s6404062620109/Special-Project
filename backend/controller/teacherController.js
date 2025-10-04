@@ -25,7 +25,7 @@ const getMyCourses = (req, res) => {
     }
 }
 
-const progressAnalysis = (req, res) => {
+const testAnalysis = (req, res) => {
   const { courseId } = req.params;
 
   if (!courseId) {
@@ -43,7 +43,7 @@ const progressAnalysis = (req, res) => {
     FROM enrollment e
     JOIN user u ON u.id = e.userId
     JOIN subject s ON s.courseId = e.courseId
-    JOIN question q ON q.subjectId = s.id
+    JOIN questions q ON q.subjectId = s.id
     LEFT JOIN progress p 
       ON p.enrollmentId = e.id 
       AND p.questionId = q.id 
@@ -500,7 +500,6 @@ const editQuestion = async (req, res) => {
 const deleeteQuestion = (req, res) => {
   const { courseId } = req.params;
   const { delteteQuestionIds } = req.body;
-  console.log(req.body)
 
   if(!courseId || typeof courseId !== 'string'){
     return res.status(400).send({ message: "Invalid Course ID." });
@@ -538,11 +537,9 @@ const getSubject = (req, res) => {
       SELECT 
         s.name AS subjectname,
         l.id AS questionId, l.content AS questionContent, l.img AS questionImg, l.typeId,
-        t.id AS typeId, t.name_type AS typeName,
         la.id AS answerId, la.content AS answerContent, la.type AS answerType
       FROM subject s
       LEFT JOIN labs l ON s.id = l.subjectId
-      LEFT JOIN question_type t ON l.typeId = t.id
       LEFT JOIN lab_answers la ON l.id = la.questionId
       WHERE s.id = ? AND s.courseId = ?
     `;
@@ -1323,7 +1320,7 @@ const deleteSubject = (req, res) => {
 
 module.exports = {
   getMyCourses,
-  progressAnalysis,
+  testAnalysis,
   createCourse,
   updateCourse,
   deleteCourse,

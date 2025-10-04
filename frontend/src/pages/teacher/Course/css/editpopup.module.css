@@ -13,11 +13,11 @@
 
 .popupContent {
   background: white;
-  padding: 20px;
+  padding: 24px;
   border-radius: 12px;
-  width: 400px;
+  width: 420px;
   max-width: 95%;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
 .formWrapper {
@@ -26,32 +26,29 @@
   gap: 20px;
 }
 
-.fileInput {
-  margin-bottom: 15px;
-}
-
 .fileInput label {
   display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
+  margin-bottom: 6px;
+  font-weight: 500;
   color: #2c3e50;
 }
 
 .previewImageContainer {
   width: 100px;
   height: 100px;
-  background: #f0f0f0;
-  border: 2px dashed #b3b3b3;
+  background: #f9f9f9;
+  border: 2px dashed #ccc;
   border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   overflow: hidden;
+  transition: border-color 0.3s;
 }
 
 .previewImageContainer:hover {
-  border-color: #3498db;
+  border-color: #1976d2;
 }
 
 .previewImage {
@@ -63,62 +60,65 @@
 .uploadText {
   font-size: 12px;
   color: #666;
-  text-align: center;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .buttonGroup {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .buttonGroup button {
-  padding: 8px 16px;
+  padding: 8px 18px;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: 0.3s;
 }
 
 .buttonGroup button[type="button"] {
   background: #e0e0e0;
-  color: #2c3e50;
+  color: #333;
 }
 
 .buttonGroup button[type="button"]:hover {
-  background: #bdc3c7;
+  background: #bdbdbd;
 }
 
 .buttonGroup button[type="submit"] {
-  background: #3498db;
-  color: white;
+  background: #1976d2;
+  color: #fff;
 }
 
 .buttonGroup button[type="submit"]:hover {
-  background: #2980b9;
+  background: #1565c0;
 }
 
 @media (max-width: 480px) {
   .popupContent {
     width: 95%;
-    padding: 15px;
+    padding: 18px;
   }
-  
-  .previewImageContainer {
-    width: 80px;
-    height: 80px;
+
+  .formGroup {
+    gap: 12px;
   }
 
   .buttonGroup {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .previewImageContainer {
+    width: 80px;
+    height: 80px;
   }
 }

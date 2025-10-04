@@ -69,7 +69,6 @@ function App() {
                 <Route path='/forgot-password' element={<Forgot/>}/>
                 <Route path='/reset-password' element={<Reset/>}/>
                 <Route path='/profile' element={<Profile/>}/>
-
                 <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
                 <Route path='/courses' element={<Courses/>}/>
                 <Route path='/course/:courseId/subject/:subjectId/:enrollmentId' element={<Subject/>}/>
