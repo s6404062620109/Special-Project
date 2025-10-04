@@ -5,6 +5,7 @@ import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
 import style from "./css/coursedata.module.css";
+import { Button } from "@mui/material";
 
 
 function CourseData({ id, name, icon, enrollmentId, courseId }) {
@@ -195,7 +196,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
             ) {
               return <p>Complete!</p>;
             } else {
-              return <button onClick={() => handleClick(buttonText)}>{buttonText}</button>;
+              return <Button variant="contained" onClick={() => handleClick(buttonText)}>{buttonText}</Button>;
             }
           })()
         ) : (

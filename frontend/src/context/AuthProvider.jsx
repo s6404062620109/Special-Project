@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [ userData, setUserData ] = useState({
     id: null,
     email: null,
+    sex: null,
     name: null,
     surname: null,
     role: null,
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
         setUserData({
           id: response.data.id,
           email: response.data.email,
+          sex: response.data.sex,
           name: response.data.name,
           surname: response.data.surname,
           role: response.data.role,

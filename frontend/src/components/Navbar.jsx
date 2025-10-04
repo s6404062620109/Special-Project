@@ -110,7 +110,11 @@ function Navbar() {
           <div className={style.userAuth}>  
             <div className={style.userInfo}>
               <div>
-                <label>{userData.name}</label>
+                <label>
+                  {userData.sex === 'm' && 'นาย'+userData.name}
+                  {userData.sex === 'f' && 'นาง'+userData.name}
+                  {userData.sex === 'n' && 'คุณ'+userData.name}
+                </label>
                 <label>{userData.surname}</label>
               </div>
 
