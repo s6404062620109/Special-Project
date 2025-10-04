@@ -119,7 +119,6 @@ const QuestionItem = ({
         )}
       </Box>
 
-
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h6">ตัวเลือก</Typography>
         {mode !== "delete" && (

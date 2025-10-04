@@ -21,7 +21,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
 
   const handleCheckboxChange = (e) => {
     if (mode === "delete") return; 
-    onChange("type", e.target.checked);
+    onChange("type", e.target.checked ? 1 : 0);
   };
 
   return (
@@ -55,7 +55,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
         <FormControlLabel
           control={
             <Checkbox
-              checked={Boolean(choice.type)}
+              checked={!!choice.type}
               onChange={handleCheckboxChange}
               disabled={mode === "delete"} 
             />

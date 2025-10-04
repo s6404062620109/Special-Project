@@ -9,7 +9,8 @@ function Preview({
   subjectInput,
   questionInput,
   PreviewPopupOpen,
-  setPreviewPopupOpen
+  setPreviewPopupOpen,
+  mode = null
 }) {
   const [ isEditContents, setIsEditContents ] = useState(false);
   const { subjectId } = useParams();
@@ -61,11 +62,13 @@ function Preview({
             content={subjectInput}
             question={questionInput}
             subjectId={subjectId}
+            mode={mode}
           />
         ) : (
           <Reader 
             content={subjectInput}
             question={questionInput}
+            mode={mode}
           />
         )}
         

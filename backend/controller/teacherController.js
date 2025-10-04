@@ -425,6 +425,105 @@ const addQuestion = (req, res) => {
   }
 };
 
+const editQuestion = async (req, res) => {
+  const { courseId } = req.params;
+  const{ questions, delteteQuestionIds, deleteChoiceIds } = req.body;
+
+  if(!courseId || typeof courseId !== 'string'){
+    return res.status(400).send({ message: "Invalid Course ID." });
+  }
+  if(!questions || !Array.isArray(questions)){
+    return res.status(400).send({ message: "Questions are required." });
+  }
+
+  try {
+    // 1. ลบ question_answers ของ questions ที่ต้องลบ
+    if (delteteQuestionIds.length > 0) {
+      db.query(`DELETE FROM questions WHERE id IN (?)`,
+        [delteteQuestionIds], (err) => {
+          if (err) {
+            console.log(err)
+          };
+        }
+      );
+    }
+
+    if (deleteChoiceIds.length > 0) {
+      db.query(`DELETE FROM question_answers WHERE id IN (?)`,
+        [deleteChoiceIds], (err) => {
+          if (err) {
+            console.log(err)
+          };
+        }
+      );
+    }
+
+    questions.forEach((q) => {
+      if (q.id) {
+        db.query(`UPDATE questions SET content = ?, img = ? WHERE id = ?`,
+          [q.content, q.img, q.id], (err) => {
+            if (err) {
+              console.log(err)
+            };
+          }
+        );
+      }
+      q.choices.forEach((c) => {
+        if (c.id) {
+          db.query(`UPDATE question_answers SET content = ?, type = ? WHERE id = ?`,
+            [c.content, c.type, c.id], (err) => {
+              if (err) {
+                console.log(err)
+              };
+            }
+          );
+        } else {
+          db.query(`INSERT INTO question_answers (questionId, content, type) VALUES (?, ?, ?)`,
+            [q.id, c.content, c.type],
+            (err) => {
+              if (err) {
+                console.log(err)
+              };
+            }
+          );
+        }
+      });
+    });
+
+    return res.status(200).send({ message: "แก้ไขคำถามสำเร็จ" });
+  } catch(error){
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+}
+
+const deleeteQuestion = (req, res) => {
+  const { courseId } = req.params;
+  const { delteteQuestionIds } = req.body;
+  console.log(req.body)
+
+  if(!courseId || typeof courseId !== 'string'){
+    return res.status(400).send({ message: "Invalid Course ID." });
+  }
+
+  if(!delteteQuestionIds || !Array.isArray(delteteQuestionIds)){
+    return res.status(400).send({ message: "Questions are required." });
+  }
+
+  try{
+    db.query("DELETE FROM questions WHERE id IN (?)", [delteteQuestionIds], (error) => {
+      if(error){
+        console.log(error)
+      }
+
+      return res.status(200).send({ message: "ลบคำถามสำเร็จ" });
+    })
+  } catch(error){
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
+  }
+}
+
 /* teacher_questions controller */
 
 /* teacher_subject controller */
@@ -1231,6 +1330,8 @@ module.exports = {
   enrollSummary,
   getQuestions,
   addQuestion,
+  editQuestion,
+  deleeteQuestion,
   getSubject,
   getQuestionType,
   addManualSubject,

@@ -25,6 +25,10 @@ router.get("/questions/:courseId", authUserRole.verifiedTeacherCourse, teacherCo
 
 router.post("/addQuestions/:courseId", authUserRole.verifiedTeacherCourse, teacherController.addQuestion);
 
+router.put("/editQuestions/:courseId", authUserRole.verifiedTeacherCourse, teacherController.editQuestion);
+
+router.delete("/deleteQuestions/:courseId", authUserRole.verifiedTeacherCourse, teacherController.deleeteQuestion);
+
 router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedTeacherCourse, teacherController.getSubject);
 
 router.get("/getQuestionType", authUserRole.checkCourseCreation, teacherController.getQuestionType);

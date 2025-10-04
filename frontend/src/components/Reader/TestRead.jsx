@@ -114,6 +114,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       setHtmlFileContent('');
     }
   }, [currentItem]);
+  const TestBankPath = location.pathname.includes('/exam');
 
   return (
     <Stack
@@ -128,7 +129,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
         alignItems="center"
         justifyContent="space-between"
       >
-        <Typography variant='h5' fontWeight='bold'>Question</Typography>
+        <Typography variant='h5' fontWeight='bold'>คำถาม</Typography>
 
         {showSelector && (
           <Select
@@ -170,7 +171,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             />
           )}
         
-          {(currentItem.type === 1 || currentItem.type === 2 || currentItem.type === 3 || currentItem.type === 6) && (
+          {(TestBankPath ||(currentItem.type === 3 || currentItem.type === 6)) && (
             <FormControl>
               <FormLabel 
                 id="demo-radio-buttons-group-label"
@@ -206,7 +207,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                   aria-labelledby="question-label"
                   name="radio-buttons-group"
                 >
-                  {currentItem.choice.map((choice, index) => (
+                  {currentItem.choices.map((choice, index) => (
                     <FormControlLabel
                       key={index}
                       value={choice.aId}

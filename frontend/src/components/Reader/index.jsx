@@ -47,6 +47,7 @@ function Reader({
     `/course/${courseId}/subject/${subjectId}/${enrollmentId}`,
     `/course/${courseId}/pretest/${enrollmentId}`,
     `/course/${courseId}/posttest/${enrollmentId}`,
+    `/exam/${mode}/${courseId}`
   ]
   const showContent = pathShow.includes(location.pathname);
 

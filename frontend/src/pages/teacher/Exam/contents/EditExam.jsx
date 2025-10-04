@@ -19,6 +19,7 @@ export const EditExam = ({
   handleSubmit,
 }) => {
   const navigate = useNavigate();
+
   return (
     <Stack
       alignItems='center'
@@ -93,6 +94,7 @@ export const EditExam = ({
             background: "green",
             width: { xs: '100%', sm: '50%' }
           }}
+          onClick={handleSubmit}
         >
           ยืนยัน
         </Button>

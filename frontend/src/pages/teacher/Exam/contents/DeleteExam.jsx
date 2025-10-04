@@ -93,6 +93,7 @@ export const DeleteExam = ({
             background: "green",
             width: { xs: '100%', sm: '50%' }
           }}
+          onClick={handleSubmit}
         >
           ยืนยัน
         </Button>

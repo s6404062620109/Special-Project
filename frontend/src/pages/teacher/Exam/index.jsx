@@ -9,9 +9,12 @@ import { DeleteExam } from "./contents/DeleteExam";
 import { Button, IconButton, Slide, Snackbar, useMediaQuery } from "@mui/material";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import backend from "../../../api/backend";
+import Preview from "../Subject/Preview";
 
 const useQuestions = (courseId) => {
-  const [questions, setQuestions] = useState([]);
+  const [ questions, setQuestions ] = useState([]);
+  const [ delteteQuestionIds, setDeleteQuestionIds ] = useState([]);
+  const [ deleteChoiceIds, setDeleteChoiceIds ] = useState([]);
 
   const fetchQuestions = async () => {
     try {
@@ -60,7 +63,7 @@ const useQuestions = (courseId) => {
         choices: [
           {
             content: "",
-            type: false,
+            type: 0,
           },
         ],
       },
@@ -71,18 +74,37 @@ const useQuestions = (courseId) => {
     const newQuestions = [...questions];
     newQuestions[index].choices.push({
       content: "",
-      type: false,
+      type: 0,
     });
     setQuestions(newQuestions);
   };
 
   const handleDeleteQuestion = (index) => {
+
+    questions.forEach((question, i) => {
+      if (i === index) {
+        if (question.id) {
+          setDeleteQuestionIds((prev) => [...prev, question.id]);
+        }
+      }
+    });    
+
     const newQuestions = [...questions];
     newQuestions.splice(index, 1);
     setQuestions(newQuestions);
+    
   };
 
   const handleDeleteChoice = (questionIndex, choiceIndex) => {
+
+    questions[questionIndex].choices.forEach((choice, i) => {
+      if (i === choiceIndex) {
+        if (choice.id) {
+          setDeleteChoiceIds((prev) => [...prev, choice.id]);
+        }
+      }
+    });
+
     const newQuestions = [...questions];
     newQuestions[questionIndex].choices.splice(choiceIndex, 1);
     setQuestions(newQuestions);
@@ -138,8 +160,8 @@ const useQuestions = (courseId) => {
       let incorrectCount = 0;
 
       question.choices.forEach((choice) => {
-        if (choice.type === true) correctCount++;
-        if (choice.type === false) incorrectCount++;
+        if (choice.type === 1) correctCount++;
+        if (choice.type === 0) incorrectCount++;
       });
 
       if (correctCount === 0) {
@@ -165,6 +187,8 @@ const useQuestions = (courseId) => {
 
   return {
     questions,
+    delteteQuestionIds,
+    deleteChoiceIds,
     fetchQuestions,
     handleQuestionChange,
     handleChoiceChange,
@@ -183,6 +207,7 @@ function Exam() {
   const navigate = useNavigate();
   const [ message, setMessage ] = useState("");
   const [ loading, setLoading ] = useState(false);
+  const [ previewOpen, setPreviewOpen ] = useState(false);
   const [ snackBarState, setSnackBarState ] = React.useState({
     open: false,
     Transition: null,
@@ -190,6 +215,8 @@ function Exam() {
 
   const {
     questions,
+    delteteQuestionIds,
+    deleteChoiceIds,
     fetchQuestions,
     handleQuestionChange,
     handleChoiceChange,
@@ -199,29 +226,16 @@ function Exam() {
     handleDeleteChoice,
     handleAddImg,
     handleDeleteImg,
-    validation,
+    validation, 
   } = useQuestions(courseId);
 
-  const { isValid, validMessage } = validation();
-
-  const handleSubmitAdd = async () => {
-    try {
-      const response = await backend.post(`/teacher/addQuestions/${courseId}`, { questions },
-        { withCredentials: true }
-      );
-      if (response.status === 200) {
-        setMessage(response.data.message);
-        setTimeout(() => {
-          navigate(-1);
-        }, 4000);
-      }
-    } catch (error) {
-      console.log(error);
+  const handlePreview = () => {
+    if (previewOpen) {
+      setPreviewOpen(false);
+      return;
     }
-  }
 
-  const handleSubmit = async () => {
-    
+    const { isValid, validMessage } = validation();
     if (!isValid) {
       setMessage(validMessage);
       setSnackBarState({ open: true, Transition: SlideTransition });
@@ -232,14 +246,88 @@ function Exam() {
       return;
     }
 
+    setPreviewOpen(true);
+  };
+
+  const handleSubmitAdd = async () => {
+    try {
+      const response = await backend.post(`/teacher/addQuestions/${courseId}`, { questions },
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        setMessage(response.data.message);
+        setSnackBarState({ open: true, Transition: SlideTransition });
+        setTimeout(() => {
+          setSnackBarState({ open: false, Transition: SlideTransition });
+          setMessage("");
+          navigate(-1);
+        }, 4500);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
+  const handleSubmitEdit = async () => {
+    try {
+      const response = await backend.put(`/teacher/editQuestions/${courseId}`, { questions, delteteQuestionIds, deleteChoiceIds },
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        setMessage(response.data.message);
+        setSnackBarState({ open: true, Transition: SlideTransition });
+        setTimeout(() => {
+          setSnackBarState({ open: false, Transition: SlideTransition });
+          setMessage("");
+          navigate(-1);
+        }, 4500);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleSubmitDelete = async () => {
+    try {
+      const response = await backend.delete(`/teacher/deleteQuestions/${courseId}`, {
+        data: { delteteQuestionIds },
+        withCredentials: true
+      }
+      );
+      if (response.status === 200) {
+        setMessage(response.data.message);
+        setSnackBarState({ open: true, Transition: SlideTransition });
+        setTimeout(() => {
+          setSnackBarState({ open: false, Transition: SlideTransition });
+          setMessage("");
+          navigate(-1);
+        }, 4500);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleSubmit = async () => {
+    const { isValid, validMessage } = validation();
+    if (!isValid) {
+      setMessage(validMessage);
+      setSnackBarState({ open: true, Transition: SlideTransition });
+      setTimeout(() => {
+        setSnackBarState({ open: false, Transition: SlideTransition });
+        setMessage("");
+      }, 3000);
+      return;
+    }
+    
     if (mode === "add") {
       handleSubmitAdd();
     } 
     else if (mode === "edit") {
-
+      handleSubmitEdit();
     }
     else if (mode === "delete") {
-      
+      handleSubmitDelete();
     }
   };
 
@@ -306,6 +394,7 @@ function Exam() {
             {mode === "add" && (
               <AddExam
                 questions={questions}
+                setPreviewOpen={handlePreview}
                 handleQuestionChange={handleQuestionChange}
                 handleChoiceChange={handleChoiceChange}
                 handleAddquestion={handleAddQuestion}
@@ -356,10 +445,20 @@ function Exam() {
           autoHideDuration={3000}
           sx={{
             "& .MuiSnackbarContent-root": {
-              background: message === "เพิ่มคำถามใหม่สำเร็จ" ? "green" : "red",
+              background: message === "เพิ่มคำถามใหม่สำเร็จ" || message === "แก้ไขคำถามสำเร็จ" || message === "ลบคำถามสำเร็จ" ? "green" : "red",
               color: "white",
             }
           }}
+        />
+      )}
+
+      {previewOpen &&(
+        <Preview
+          subjectInput={null}
+          questionInput={questions}
+          PreviewPopupOpen={previewOpen}
+          setPreviewPopupOpen={handlePreview}
+          mode={mode}
         />
       )}
     </div>

@@ -10,6 +10,7 @@ import QuestionItem from '../component/QuestionItem';
 
 export const AddExam = ({
   questions,
+  setPreviewOpen,
   handleQuestionChange,
   handleChoiceChange,
   handleAddquestion,
@@ -49,6 +50,7 @@ export const AddExam = ({
           <Button 
             variant="outlined" 
             startIcon={<PreviewIcon />}
+            onClick={setPreviewOpen}
           >
             ดูตัวอย่าง
           </Button>
