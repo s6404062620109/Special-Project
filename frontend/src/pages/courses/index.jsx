@@ -53,9 +53,6 @@ function Courses() {
             <thead>
               <tr>
                 <th></th>
-                <th>
-                  <p>จำนวนการลงทะเบียน</p>
-                </th>
                 {userData.id && (
                   <th>
                     <p>ความคืบหน้าการเรียน</p>
@@ -86,7 +83,6 @@ function Courses() {
                     icon={item.icon}
                     enrollmentId={latestEnroll?.id || null} 
                     courseId={item.id}
-                    enrollmentCount={item.enrollmentCount}
                   />
                 );
               })}

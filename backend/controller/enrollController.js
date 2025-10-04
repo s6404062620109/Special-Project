@@ -3,71 +3,92 @@ const db = require("../database");
 const enrollCourse = (req, res) => {
   const { courseId, userId } = req.body;
 
+  if (!courseId || !userId) {
+    return res.status(400).json({ message: "Course ID and User ID are required." });
+  }
+
+  if (isNaN(courseId) || isNaN(userId)) {
+    return res.status(400).json({ message: "Invalid Course ID or User ID." });
+  }
+
   try {
     const sql = `
-      SELECT q.id AS questionId, q.typeId
-      FROM question q
-      JOIN subject s ON s.id = q.subjectId
-      WHERE s.courseId = ?
+      SELECT 
+        c.pretest_rate, c.posttest_rate,
+        q.id AS questionId,
+        l.id AS labId,
+        l.typeId AS labType
+      FROM course c
+      LEFT JOIN questions q ON q.courseId = c.id
+      LEFT JOIN subject s ON s.courseId = c.id
+      LEFT JOIN labs l ON l.subjectId = s.id AND l.typeId IN (3, 5, 6)
+      WHERE c.id = ?
     `;
 
-    db.query(sql, [courseId], (error, questionResult) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Question database query error." });
+    db.query(sql, [courseId], async (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Database query error" });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ message: "Course not found or has no questions/labs." });
       }
 
-      if (!questionResult.length) {
-        return res.status(404).json({ message: "No questions found for this course." });
-      }
+      const pretestRate = results[0].pretest_rate;
+      const posttestRate = results[0].posttest_rate;
 
-      const preQuestions = questionResult
-        .filter(q => q.typeId === 1)
-        .map(q => q.questionId);
+      const questionIds = [...new Set(results.map(r => r.questionId).filter(Boolean))];
+      const labIds = [...new Set(results.map(r => r.labId).filter(Boolean))];
 
-      const postQuestions = questionResult
-        .filter(q => q.typeId === 2)
-        .map(q => q.questionId);
+      const getRandomItems = (array, count) => {
+        if (count >= array.length) return [...array];
+        const shuffled = [...array].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+      };
 
-      const labQuestions = questionResult
-        .filter(q => [3, 4, 5, 6].includes(q.typeId))
-        .map(q => q.questionId);
+      const pretestQids = getRandomItems(questionIds, pretestRate);
+      const posttestQids = getRandomItems(questionIds, posttestRate);
 
-      const total_labs = labQuestions.length;
-      const sortedQuestions = [...preQuestions, ...labQuestions, ...postQuestions];
-
-      db.query(
-        "INSERT INTO enrollment (courseId, pretest_complete, posttest_complete, completed_labs, total_labs, userId) VALUES(?, ?, ?, ?, ?, ?)",
-        [courseId, false, false, 0, total_labs, userId],
-        (error, result) => {
-          if (error) {
-            console.log(error);
-            return res.status(500).json({ message: "Enrollment insertion error." });
+      db.query("INSERT INTO enrollment (courseId, completed_labs, total_labs, userId, startat) VALUES (?, ?, ?, ?, ?)",
+        [courseId, 0, labIds.length, userId, new Date()], (err, enrollResult) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Failed to insert enrollment." });
           }
 
-          const enrollmentId = result.insertId;
+          const enrollmentId = enrollResult.insertId;
 
-          if (!sortedQuestions.length) {
-            return res.status(200).json({ message: "Enrollment successful, but no questions available." });
-          }
+          const insertMultiple = (sql, values) =>
+            Promise.all(values.map(v => new Promise((resolve, reject) => {
+              db.query(sql, v, (err) => (err ? reject(err) : resolve()));
+            })));
 
-          const values = sortedQuestions.map(qId => [qId, enrollmentId]);
-          db.query("INSERT INTO progress (questionId, enrollmentId) VALUES ?", [values], (error) => {
-            if (error) {
-              console.log(error);
-              return res.status(500).json({ message: "Progress insertion error." });
+          (async () => {
+            try {
+              // 🔹 insert pretest questions
+              const pretestValues = pretestQids.map(qid => [qid, 'pre', enrollmentId]);
+              await insertMultiple("INSERT INTO question_progress (questionId, type, enrollmentId) VALUES (?, ?, ?)", pretestValues);
+
+              // 🔹 insert posttest questions
+              const posttestValues = posttestQids.map(qid => [qid, 'post', enrollmentId]);
+              await insertMultiple("INSERT INTO question_progress (questionId, type, enrollmentId) VALUES (?, ?, ?)", posttestValues);
+
+              // 🔹 insert lab progress
+              const labValues = labIds.map(lid => [lid, enrollmentId]);
+              await insertMultiple("INSERT INTO lab_progress (questionId, enrollmentId) VALUES (?, ?)", labValues);
+
+              return res.status(200).json({ message: "Course enrolled successfully." });
+
+            } catch (err) {
+              console.error(err);
+              return res.status(500).json({ message: "Failed to insert progress records.", error: err });
             }
-
-            return res.status(200).json({
-              message: "Enrollment and progress recorded successfully.",
-              enrollmentId,
-            });
-          });
+          })();
         }
       );
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: "Server error.", error });
   }
 };

@@ -59,7 +59,6 @@ function App() {
                 <Route path='/reset-password' element={<Reset/>}/>
                 <Route path='/course/:courseId' element={<CourseDetail/>}/>
                 <Route path='/courses' element={<Courses/>}/>
-                <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
 
@@ -101,8 +100,9 @@ function App() {
                 <Route path='/my-courses' element={<MyCourses/>}/>
                 <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
                 <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>
-                <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
                 <Route path='/edit-subject/:courseId/:subjectId' element={<EditSubject/>}/>
+                <Route path='/enrollment-summary/:courseId' element={<EnrollSum/>}/>
+                <Route path='/exam/:mode/:courseId' element={<Exam/>}/>
                 <Route path='/guide' element={<Guide/>}/>
               </Routes>
             )}
