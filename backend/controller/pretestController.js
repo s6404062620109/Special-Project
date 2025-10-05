@@ -59,39 +59,18 @@ function updateEnrollmentAndGetNext(enrollmentId, answerRecords, res) {
       console.log(enrollErr);
       return res.status(500).json({ message: "Enroll update error" });
     }
+    const insertValues = answerRecords.map(r => [r.user_answer, r.progressId]);
 
-    const sqlGetNextSubject = `
-      SELECT q.subjectId, p.id AS progressId 
-      FROM progress p
-      JOIN question q ON p.questionId = q.id
-      WHERE p.is_completed = 0 AND p.enrollmentId = ?
-      LIMIT 1
-    `;
-    db.query(sqlGetNextSubject, [enrollmentId], (nextErr, nextResult) => {
-      if (nextErr) {
-        console.log(nextErr);
-        return res.status(500).json({ message: "Next subject query error" });
-      }
-
-      const firstSubject = nextResult.length > 0 ? nextResult[0].subjectId : null;
-      if (!firstSubject) {
-        return res.status(404).json({ message: "No next subject found" });
-      }
-
-      const insertValues = answerRecords
-        .map(r => [r.user_answer, r.progressId]);
-
-      db.query(`INSERT INTO progress_answer (user_answer, progressId) VALUES ?`,
-        [insertValues], (answerErr) => {
-          if (answerErr) {
-            console.log(answerErr);
-            return res.status(500).json({ message: "Progress answer insert error" });
-          }
-
-          return res.status(200).json({ message: "Progress pretest update completed.", firstSubject});
+    db.query(`INSERT INTO question_logs (user_answer, progressId) VALUES ?`,
+      [insertValues], (answerErr) => {
+        if (answerErr) {
+          console.log(answerErr);
+          return res.status(500).json({ message: "Progress answer insert error" });
         }
-      );
-    });
+
+        return res.status(200).json({ message: "Progress pretest update completed."});
+      }
+    );
   });
 }
 
@@ -103,7 +82,7 @@ const submitPretest = (req, res) => {
 
   try {
     // 1. ตรวจสอบคำตอบที่เลือก พร้อมเช็คว่า correct หรือไม่
-    db.query(`SELECT questionId, type FROM question_answer WHERE id IN (?) AND questionId IN (?)`, 
+    db.query(`SELECT questionId, type FROM question_answers WHERE id IN (?) AND questionId IN (?)`, 
       [userAnswerIds, userQuestionIds], (error, result) => {
       if (error) {
         console.log(error);
@@ -120,7 +99,7 @@ const submitPretest = (req, res) => {
         .map((r) => r.questionId);
 
       // 2. update progress: set is_completed = true, reset score = 0
-      db.query(`UPDATE progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ?`, 
+      db.query(`UPDATE question_progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ?`, 
         [questionIdsToUpdate, enrollmentId], (progressErr) => {
         if (progressErr) {
           console.log(progressErr);
@@ -129,13 +108,13 @@ const submitPretest = (req, res) => {
 
         // 3. update score = 1 สำหรับคำตอบที่ถูก
         if (correctQuestionIds.length > 0) {
-          db.query(`UPDATE progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ?`, [correctQuestionIds, enrollmentId], (scoreErr) => {
+          db.query(`UPDATE question_progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ?`, [correctQuestionIds, enrollmentId], (scoreErr) => {
             if (scoreErr) {
               console.log(scoreErr);
               return res.status(500).json({ message: "Score update error" });
             }
 
-            db.query(`SELECT id, questionId FROM progress WHERE enrollmentId = ? AND questionId IN (?)`, 
+            db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?)`, 
               [enrollmentId, userQuestionIds], (error, progressResult) => {
                 if (error) {
                   console.log(error);

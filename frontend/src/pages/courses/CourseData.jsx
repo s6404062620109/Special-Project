@@ -56,11 +56,11 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
   };
 
   const handleClick = (status) => {
-    if (status === "Continue") {
+    if (status === "เข้าเรียนต่อ") {
       fetchLatestProgress();
     } 
     
-    else if (status === "Start") {
+    else if (status === "ลงทะเบียนเรียน") {
       enrollCourse();
     } 
     
@@ -74,12 +74,10 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
   useEffect(() => {   
     fetchHistory();
 
-    if (!userData.id) {
-      setButtonText("View");
-    } else if (enrollmentId !== null) {
-      setButtonText("Continue");
+    if (enrollmentId !== null) {
+      setButtonText("เข้าเรียนต่อ");
     } else {
-      setButtonText("Start");
+      setButtonText("ลงทะเบียนเรียน");
     }
 
   }, [id, userData, enrollmentId]);

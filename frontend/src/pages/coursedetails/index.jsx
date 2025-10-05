@@ -211,10 +211,17 @@ function CourseDetail() {
   }, [courseId, userData.id]);
 
   useEffect(() => {
-    if (history.length > 0) {
+    if (history.length > 0 && enrollmentId === "null") {
+      navigate(`/course/${courseId}/${history[0].id}`, { replace: true });
+    }
+  }, [history, enrollmentId, courseId, navigate]);
+
+
+  useEffect(() => {
+    if (enrollmentId && enrollmentId !== "null" && history.length > 0) {
       fethProgress();
     }
-  }, [history]);
+  }, [history, enrollmentId]);
 
   const isPreTestCompleted = pretestProgress.length > 0 && pretestProgress.every((item) => item.is_completed === 1);
   const preTestScore = isPreTestCompleted ? pretestProgress.reduce((acc, item) => acc + item.score, 0) : null;
@@ -266,7 +273,14 @@ function CourseDetail() {
 
       </div>
 
-      <Typography variant="h6">อาจารย์ผู้สอน</Typography>
+      <Typography 
+        variant="h6"
+        sx={{
+          marginTop: 2
+        }}
+      >
+        อาจารย์ผู้สอน
+      </Typography>
       <Stack
         direction="row"
         spacing={2}
@@ -348,7 +362,7 @@ function CourseDetail() {
               transition: "color 0.3s",
               "&:hover": {
                 color: !isPreTestCompleted ? "#115293" : "#979797",
-                borderBottom: "1px solid #000",
+                borderBottom: !isPreTestCompleted ? "1px solid #000" : "none",
               },
             }}
             onClick={() => {
@@ -357,7 +371,7 @@ function CourseDetail() {
               }
             }}
           >
-            <Typography variant="h6">แบบทดสอบก่อนเรียน</Typography>
+            {isPreTestCompleted ?<Typography variant="h6" color="success">แบบทดสอบก่อนเรียน</Typography> : <Typography variant="h6">แบบทดสอบก่อนเรียน</Typography>}
             {isPreTestCompleted ? <CheckIcon color="success" /> : <ClearIcon color="error" />}
           </Stack>
 
@@ -381,7 +395,7 @@ function CourseDetail() {
               }
             }}
           >
-            <Typography variant="h6">แบบทดสอบหลังเรียน</Typography>
+            {isPostTestCompleted ?<Typography variant="h6" color="success">แบบทดสอบหลังเรียน</Typography> : <Typography variant="h6">แบบทดสอบหลังเรียน</Typography>}
             {isPostTestCompleted ? (
               <CheckIcon color="success" /> 
               ):(
@@ -431,23 +445,7 @@ function CourseDetail() {
           margin: "auto",
           alignItems: { xs: "flex-start", sm: "center" },
         }}
-      >
-        <Stack
-          justifyContent="space-evenly"
-          gap={2}
-          sx={{
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "flex-start", sm: "space-evenly" },
-          }}
-        >
-            <Typography variant="h6">
-              จำนวนผู้สมัครเรียน { count.countEnrollments } คน
-            </Typography>
-            <Typography variant="h6">
-              จำนวนผู้สำเร็จการศึกษา { count.countPosttestComplete } คน
-            </Typography>
-        </Stack>
-        
+      >        
         {(userData.id && history.length === 0) && (
           <Button
             variant="contained"
@@ -475,6 +473,23 @@ function CourseDetail() {
 
       {userData.id && pretestProgress.length > 0 && posttestProgress.length > 0&& (
         <div className={style.testSection}>
+          <Stack
+            justifyContent="space-evenly"
+            gap={3}
+            sx={{
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "flex-start", sm: "space-evenly" },
+            }}
+          >
+              <Typography variant="h6">
+                ผู้ลงทะเบียนเรียน { count.countEnrollments } คน
+              </Typography>
+              <Typography variant="h6">
+                ผู้สำเร็จการศึกษา { count.countPosttestComplete } คน
+              </Typography>
+          </Stack>
+
+          <Divider />
            {renderTestSection(courseInfo.announcement, {
               pretestProgress,
               posttestProgress,

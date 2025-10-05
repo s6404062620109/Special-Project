@@ -77,7 +77,7 @@ const enrollCourse = (req, res) => {
               const labValues = labIds.map(lid => [lid, enrollmentId]);
               await insertMultiple("INSERT INTO lab_progress (questionId, enrollmentId) VALUES (?, ?)", labValues);
 
-              return res.status(200).json({ message: "Course enrolled successfully." });
+              return res.status(200).json({ message: "Course enrolled successfully.", enrollmentId });
 
             } catch (err) {
               console.error(err);

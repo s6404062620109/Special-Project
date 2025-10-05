@@ -204,7 +204,7 @@ function Labs({
   return (
     <Stack>
       <Typography variant="h6" align="center">
-        Lab Questions
+        ปฎิบัติการทดสอบ
       </Typography>
 
       {currentQuestion && (
@@ -244,9 +244,14 @@ function Labs({
             {renderQuestionInput()}
 
             <Stack
-              direction="row"
-              justifyContent="space-between"
-              sx={{ width: "100%", margin: "8px auto" }}
+              alignItems="center"
+              gap={2}
+              sx={{ 
+                width: "100%", 
+                margin: "8px auto",
+                flexDirection: { xs: "column", md: "row" },
+                justifyContent: { xs: "center", md: "space-between" },
+              }}
             >
               <Typography
                 variant="body2"
@@ -258,7 +263,9 @@ function Labs({
               {!isAnswered && (
                 <Button
                   variant="contained"
-                  sx={{ width: "15%" }}
+                  sx={{ 
+                    width: { xs: "50%", md: "15%"} 
+                  }}
                   onClick={() => handleLabSubmit(currentQuestion.id)}
                 >
                   ส่งคำตอบ

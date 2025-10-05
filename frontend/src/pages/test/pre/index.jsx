@@ -56,11 +56,25 @@ function Pretest() {
     } catch(error){
       console.log(error);
       if(error.response.status === 404){
-        alert("Please enroll this course before pretest.");
-        navigate('/');
+        alert("กรุณาลงทะเบียนเรียนใหม่ก่อนเข้าทำแบบทดสอบก่อนเรียน");
+        navigate(`/course/${courseId}/null`);
       }
     }
   }
+
+  const fetchLatestProgress = async () => {
+    try {
+      const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        navigate(`/course/${courseId}/${response.data.inProgress}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     if(userData.id===null){
@@ -99,9 +113,9 @@ function Pretest() {
       });
 
       if(response.status === 200 && response.data.message === "Progress pretest update completed."){
-        setErrorMessage("Pretest submitted successfully.");
+        setErrorMessage("ส่งคำตอบเสร็จสิ้น");
         setTimeout(() => {
-          navigate(`/course/${courseId}/${enrollmentId}`);
+          fetchLatestProgress();
         }, 3000);
       }
     } 
@@ -113,7 +127,7 @@ function Pretest() {
     }
     
   };
-  
+
   return (
     <div className={style.container}>
       <Typography variant='h4' >แบบทดสอบก่อนเรียน</Typography>
@@ -129,7 +143,7 @@ function Pretest() {
         <Typography 
           variant='body2' 
           fontWeight="semi-bold" 
-          color={errorMessage === "Pretest submitted successfully." ? "green" : "red"}
+          color={errorMessage === "ส่งคำตอบเสร็จสิ้น" ? "green" : "red"}
         >
         {errorMessage}
         </Typography>

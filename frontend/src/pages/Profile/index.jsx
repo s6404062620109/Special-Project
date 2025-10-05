@@ -157,16 +157,16 @@ function Profile() {
         <div className={style.footer}>
           {editMode ? (
             <>
-              <button onClick={handleResetPassword}>Reset Password</button>
+              <button onClick={handleResetPassword}>รีเซ็ตรหัสผ่านใหม่</button>
               <div>
-                <button onClick={handleSave}>Save</button>
-                <button onClick={toggleEditMode}>Cancel</button>
+                <button onClick={handleSave}>บันทึก</button>
+                <button onClick={toggleEditMode}>ยกเลิก</button>
               </div>
             </>
           ) : (
             <>
-              <button onClick={toggleEditMode}>Edit Profile</button>
-              <button onClick={handleLogout}>Log Out</button>
+              <button onClick={toggleEditMode}>แก้ไขข้อมูลส่วนตัว</button>
+              <button onClick={handleLogout}>ออกจากระบบ</button>
             </>
           )}
         </div>

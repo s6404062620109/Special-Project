@@ -4,6 +4,7 @@ import backend from '../../api/backend';
 import Processbar from '../courses/Processbar';
 
 import style from './css/courseboard.module.css';
+import { Typography } from '@mui/material';
 
 function CourseBoard({ enrollment }) {
     const [courses, setCourses] = useState([]);
@@ -41,7 +42,7 @@ function CourseBoard({ enrollment }) {
     return (
         <div className={style.CourseBoard}>
             <div className={style.head}>
-                <p>My Courses</p>
+                <Typography variant='h6'>คอร์สที่เรียนอยู่</Typography>
             </div>
 
             {courses.length > 0 ? (
@@ -77,7 +78,9 @@ function CourseBoard({ enrollment }) {
                     </table>
                 </div>
             ) : (
-                <div className={style.body}>Not found course enrollment.</div>
+                <div className={style.body}>
+                    <Typography variant='body1'>ไม่มีคอร์สที่เรียนอยู่</Typography>
+                </div>
             )}
         </div>
     );

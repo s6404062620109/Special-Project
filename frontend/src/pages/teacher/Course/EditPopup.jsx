@@ -64,8 +64,8 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
           icon: courseData.icon,
           enable: courseData.enable,
           announce_state: courseData.announcement,
-          pretest_rate: courseData.pretest_rate,
-          posttest_rate: courseData.posttest_rate,
+          pretest_rate: Number(courseData.pretest_rate),
+          posttest_rate: Number(courseData.posttest_rate),
         },
         { withCredentials: true }
       );

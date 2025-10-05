@@ -16,105 +16,82 @@ const getLabQuestions = (req, res) => {
     }
 
     try{
-        db.query("SELECT id, name_type FROM question_type WHERE status = 1", (error, result) => {
-          if(error){
+      db.query("SELECT * FROM labs WHERE subjectId = ? AND typeId in (3, 5, 6)", [subjectId], (error, result) => {
+        if(error){
+          console.log(error);
+          return res.status(500).send({ message: "Database question query error." });
+        }
+
+        const questionIds = result.map(item => item.id);
+        if (questionIds.length === 0) {
+          return res.status(404).send({ message: "No question found." });
+        }
+
+        db.query("SELECT * FROM lab_answers WHERE questionId IN (?)", [questionIds], (error, answerResult) => {
+          if (error) {
             console.log(error);
-            return res.status(500).send({ message: "Database question_type query error." });
+            return res.status(500).send({ message: "Database answer query error" });
           }
-          
-          let labsId = result
-            .filter(item => item.name_type?.toLowerCase().includes("lab"))
-            .map(item => item.id);
-          if (labsId.length === 0){
+
+          let questionFormat = [];
+              
+          for (const item of result) {
+            const answers = answerResult.filter(answer => answer.questionId === item.id);
+            if(item.typeId === 3 || item.typeId === 6){
+              questionFormat.push({
+                id: item.id,
+                content: item.content,
+                img: item.img,
+                type: item.typeId,
+                choice: answers.map(answer => ({
+                  id: answer.id,
+                  content: answer.content,
+                }))
+              });
+            }
+
+            else if(item.typeId === 5){
+              const htmlFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
+                let htmlFile = null;
+
+                if (fs.existsSync(htmlFolderPath)) {
+                  const allFiles = fs.readdirSync(htmlFolderPath);
+                  if (allFiles.includes("index.html")) {
+                    const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/index.html`;
+                    const absPath = path.join(__dirname, `..${relPath}`);
+                    let content = null;
+
+                    try {
+                      content = fs.readFileSync(absPath, "utf8");
+                    } catch (readErr) {
+                      console.error(`Error reading index.html for lab${item.id}:`, readErr);
+                    }
+
+                    htmlFile = {
+                      name: "index.html",
+                      path: relPath,
+                      content,
+                    };
+                  }
+                }
+
+                questionFormat.push({
+                  id: item.id,
+                  content: item.content,
+                  img: item.img,
+                  type: item.typeId,
+                  htmlFile
+                })
+            }
+          }
+
+          if(questionFormat.length === 0){
             return res.status(404).send({ message: "No question found." });
           }
 
-          db.query("SELECT * FROM question WHERE subjectId = ? AND typeId in (?)", [subjectId, labsId], (error, result) => {
-            if(error){
-                console.log(error);
-                return res.status(500).send({ message: "Database question query error." });
-            }
-
-            const questionIds = result.map(item => item.id);
-            if (questionIds.length === 0) {
-                return res.status(404).send({ message: "No question found." });
-            }
-
-            db.query("SELECT * FROM question_answer WHERE questionId IN (?)", [questionIds], (error, answerResult) => {
-                if (error) {
-                    console.log(error);
-                    return res.status(500).send({ message: "Database answer query error" });
-                }
-
-                let questionFormat = [];
-                
-                for (const item of result) {
-                    const answers = answerResult.filter(answer => answer.questionId === item.id);
-                    if(item.typeId === 3 || item.typeId === 6){
-                        questionFormat.push({
-                            id: item.id,
-                            content: item.content,
-                            img: item.img,
-                            type: item.typeId,
-                            choice: answers.map(answer => ({
-                                id: answer.id,
-                                content: answer.content,
-                            }))
-                        });
-                    }
-
-                    else if(item.typeId === 4){
-                        questionFormat.push({
-                            id: item.id,
-                            content: item.content,
-                            img: item.img,
-                            type: item.typeId,
-                        });
-                    }
-
-                    else if(item.typeId === 5){
-                      const htmlFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${item.id}`);
-                      let htmlFile = null;
-
-                      if (fs.existsSync(htmlFolderPath)) {
-                        const allFiles = fs.readdirSync(htmlFolderPath);
-                        if (allFiles.includes("index.html")) {
-                          const relPath = `/courses/c${courseId}/s${subjectId}/lab${item.id}/index.html`;
-                          const absPath = path.join(__dirname, `..${relPath}`);
-                          let content = null;
-
-                          try {
-                            content = fs.readFileSync(absPath, "utf8");
-                          } catch (readErr) {
-                            console.error(`Error reading index.html for lab${item.id}:`, readErr);
-                          }
-
-                          htmlFile = {
-                            name: "index.html",
-                            path: relPath,
-                            content,
-                          };
-                        }
-                      }
-
-                      questionFormat.push({
-                        id: item.id,
-                        content: item.content,
-                        img: item.img,
-                        type: item.typeId,
-                        htmlFile
-                      })
-                    }
-                }
-
-                if(questionFormat.length === 0){
-                    return res.status(404).send({ message: "No question found." });
-                }
-
-                return res.status(200).send({ questionFormat });
-            });
-          });
-        }); 
+          return res.status(200).send({ questionFormat });
+        });
+      });
     } catch(error){
         console.log(error);
         return res.status(500).send({ message: "Server error.", error });
@@ -267,7 +244,7 @@ const submitLabQuestions = async (req, res) => {
       return res.status(400).send({ message: "Required enrollment ID." });
     }
 
-    db.query(`SELECT id FROM progress WHERE enrollmentId = ? AND questionId = ? AND is_completed = 0`, [enrollmentId, answer.questionId], (error, result) => {
+    db.query(`SELECT id FROM lab_progress WHERE enrollmentId = ? AND questionId = ? AND is_completed = 0`, [enrollmentId, answer.questionId], (error, result) => {
       if (error) {
         console.log(error);
         return res.status(500).send({ message: "Database progress query error" });
@@ -277,7 +254,7 @@ const submitLabQuestions = async (req, res) => {
       }
 
       const progressId = result[0].id;
-      db.query(`SELECT id, content FROM question_answer WHERE questionId = ? AND type = 1`, [answer.questionId], (error, answerResult) => {
+      db.query(`SELECT id, content FROM lab_answers WHERE questionId = ? AND type = 1`, [answer.questionId], (error, answerResult) => {
         if (error) {
           console.log(error);
           return res.status(500).send({ message: "Database question_answer query error" });

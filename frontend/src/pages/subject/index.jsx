@@ -13,7 +13,6 @@ import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
 import ListIcon from '@mui/icons-material/List';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ArrowRight } from '@mui/icons-material';
 
 function useLabProgress(courseId, subjectId, enrollmentId) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -21,8 +20,6 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
   const [answers, setAnswers] = useState([]);
   const [progressAnswers, setProgressAnswers] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const navigate = useNavigate();
-
   const controllerRef = useRef(null);
   const lastQuestionIdsRef = useRef(null);
 
@@ -35,8 +32,7 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
   /** Fetch lab questions */
   const fetchLabQuestions = async () => {
     try {
-      const response = await backend.get(
-        `/labs/getLabQuestions/${courseId}/${subjectId}`,
+      const response = await backend.get(`/labs/getLabQuestions/${courseId}/${subjectId}`,
         { withCredentials: true }
       );
 
@@ -283,7 +279,7 @@ function Subject() {
         err?.response?.data?.message === "No courses found."
       ) {
         alert("โปรดลงทะเบียนเรียนใหม่ก่อนเข้าเรียน");
-        window.location.href = "/";
+        navigate(`/course/${courseId}/${enrollmentId}`);
       }
     }
   };
@@ -348,14 +344,13 @@ function Subject() {
       });
 
       if (response.status === 200) {
-        console.log(response.data)
         const pretestProgress = response.data.pretest_progress;
 
         const pretestCompleted = pretestProgress.every((item) => item.is_completed === 1);
 
         if(!pretestCompleted){
           alert("กรุณาทำแบบทดสอบก่อนเรียนให้เสร็จก่อนเข้าเรียน");
-          navigate(-1);
+          navigate(`/course/${courseId}/${enrollmentId}`);
           return;
         }
       }
@@ -363,14 +358,14 @@ function Subject() {
       console.log(error);
     }
   };
-
+  
   useEffect(() => {
     fetchSubjectData();
     fetchSubjectList();
     fetchLabQuestions();
     checkPretestCompletion();
   }, [courseId, subjectId]);
-
+  console.log(questions);
   return (
     <div className={style.container}>
       <Stack

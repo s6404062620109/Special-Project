@@ -134,24 +134,33 @@ const createCourse = (req, res) => {
 
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
-    const { name, icon, enable, announce_state } = req.body;
+    const { name, icon, enable, pretest_rate, posttest_rate, announce_state } = req.body;
 
-    if( typeof courseId !== 'string' || typeof name !== 'string' || typeof icon !== 'string' || typeof enable !== 'number' || typeof announce_state !== 'number' ){
-        return res.status(400).send({ message: "Invalid Course ID or Name or Icon or Enable or Announce_state." });
+    if( typeof courseId !== 'string' || 
+      typeof name !== 'string' || 
+      typeof icon !== 'string' || 
+      typeof enable !== 'number' || 
+      typeof pretest_rate !== 'number' || 
+      typeof posttest_rate !== 'number' || 
+      typeof announce_state !== 'number' ){
+        return res.status(400).send({ message: "Invalid Course ID, Name, Icon, Enable, Pretest_rate, Posttest_rate, Announce_state." });
     }
     
-    if (!name?.trim() || !icon?.trim() || enable === undefined || announce_state === undefined) {
-        return res.status(400).json({ message: "Name ,icon, enable and announce_state are required." });
+
+    
+    if (!name?.trim() || !icon?.trim() || enable === undefined || pretest_rate === undefined || posttest_rate === undefined || announce_state === undefined) {
+        return res.status(400).json({ message: "Name ,icon, enable, pretest_rate, posttest_rate and announce_state are required." });
     }
 
     try{
-        db.query("UPDATE course SET name = ?, icon = ?, enable = ?, updateat = NOW() , announce_state = ? WHERE id = ?", [name, icon, enable, announce_state, courseId], (error) => {
+        db.query("UPDATE course SET name = ?, icon = ?, pretest_rate = ?, posttest_rate = ?, enable = ?, updateat = NOW() , announce_state = ? WHERE id = ?", 
+          [name, icon, pretest_rate, posttest_rate, enable, announce_state, courseId], (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });
             }
 
-            return res.status(200).send({ message: "Course updated successfully."});
+            return res.status(200).send({ message: "อัพเดทคอร์สเรัยนเสร็จสิ้น."});
         });
 
     } catch(error){
