@@ -1,14 +1,20 @@
 .container{
     width: 60%;
-    margin: auto;
+    margin: 3rem auto;
 }
 
 
 .container > form{
     width: 80%;
-    margin: auto;
+    margin: 1rem auto;
     background-color: white;
     border: .063rem solid;
     border-radius: 1rem;
     padding: .625rem;
+}
+
+@media screen and (max-width: 768px){
+    .container {
+        width: 90%;
+    }
 }

@@ -5,7 +5,7 @@ import { AuthContext } from "../../context/AuthProvider";
 import style from "./css/subjectdata.module.css";
 import { Typography } from "@mui/material";
 
-function SubjectData({ id, name, courseId, progress, enrollmentId }) {
+function SubjectData({ id, name, courseId, labProgress, enrollmentId }) {
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate("");
 
@@ -21,7 +21,7 @@ function SubjectData({ id, name, courseId, progress, enrollmentId }) {
     }
   }
 
-  const matchedProgressList = progress.filter(
+  const matchedProgressList = labProgress.filter(
   (p) =>
     p.subjectId === id &&
     (p.typeId === 3 || p.typeId === 4 || p.typeId === 5 || p.typeId === 6)

@@ -94,19 +94,39 @@ const enrollCourse = (req, res) => {
 };
 
 const checkCoursesEnroll = (req, res) => {
-    const userId = req.params.userId;
+    const { userId } = req.params;
 
     try{
-        db.query(`SELECT * FROM enrollment WHERE userId = ?`, [userId], (err, results) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ message: "Database enrollment query error" });
-            }
+      db.query(`SELECT * FROM enrollment WHERE userId = ?`, [userId], (err, results) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Database enrollment query error" });
+        }
           
-            else{
-              return res.status(200).json({ results });
-            }
-        });
+        else{
+          return res.status(200).json({ results });
+        }
+      });
+    } catch(error){
+        console.log(error);
+        return res.status(500).json({ message: "Server error.", error });
+    }
+}
+
+const checkCourseEnroll = (req, res) => {
+    const { userId, courseId } = req.params;
+
+    try{
+      db.query(`SELECT * FROM enrollment WHERE userId = ? AND courseId = ?`, [userId, courseId], (err, results) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Database enrollment query error" });
+        }
+          
+        else{
+          return res.status(200).json({ results });
+        }
+      });
     } catch(error){
         console.log(error);
         return res.status(500).json({ message: "Server error.", error });
@@ -115,5 +135,6 @@ const checkCoursesEnroll = (req, res) => {
 
 module.exports = {
     enrollCourse,
-    checkCoursesEnroll
+    checkCoursesEnroll,
+    checkCourseEnroll
 }

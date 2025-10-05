@@ -5,7 +5,7 @@ import backend from '../../../api/backend';
 import style from "./css/posttest.module.css";
 import { AuthContext } from '../../../context/AuthProvider';
 import TestRead from '../../../components/Reader/TestRead';
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 
 function PostTest() {
   const { courseId, enrollmentId } = useParams();
@@ -21,13 +21,16 @@ function PostTest() {
       });
 
       if (response.status === 200) {
-        const labProgress = response.data.results.filter(item => item.type.includes("Lab"));
+        const pretestProgress = response.data.pretest_progress;
+        const labProgress = response.data.lab_progress;
 
-        const areAllLabsCompleted = labProgress.every(item => item.is_completed === 1);
+        const pretestCompleted = pretestProgress.every((item) => item.is_completed === 1);
+        const labCompleted = labProgress.every((item) => item.is_completed === 1);
 
-        if (!areAllLabsCompleted) {
-          alert("You must complete all Labs before taking the PostTest.");
-          navigate(`/courses`);
+        if(!pretestCompleted && !labCompleted){
+          alert("กรุณาทำแบบทดสอบก่อนเรียน และปฎิบัติการทดสอบทั้งหมดก่อน");
+          navigate(-1);
+          return;
         }
       }
     } catch (error) {
@@ -106,8 +109,7 @@ function PostTest() {
 
   return (
     <div className={style.container}>
-      <h1>Posttest</h1>
-
+      <Typography variant='h4' >แบบทดสอบก่อนเรียน</Typography>
       <form onSubmit={handleSubmit}>
         <TestRead 
           question={question}
@@ -115,7 +117,13 @@ function PostTest() {
           selectedAnswers={selectedAnswers}
         />
 
-        <Button variant="contained" color="primary" type="submit">Submit Answers</Button>
+        <Button 
+          variant="contained" 
+          color="success" 
+          type="submit"
+        >
+          ยืนยันคำตอบ
+        </Button>
       </form>
     </div>
   );

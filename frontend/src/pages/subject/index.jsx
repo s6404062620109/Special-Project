@@ -341,10 +341,34 @@ function Subject() {
     }
   };
 
+  const checkPretestCompletion = async () => {
+    try {
+      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        console.log(response.data)
+        const pretestProgress = response.data.pretest_progress;
+
+        const pretestCompleted = pretestProgress.every((item) => item.is_completed === 1);
+
+        if(!pretestCompleted){
+          alert("กรุณาทำแบบทดสอบก่อนเรียนให้เสร็จก่อนเข้าเรียน");
+          navigate(-1);
+          return;
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     fetchSubjectData();
     fetchSubjectList();
     fetchLabQuestions();
+    checkPretestCompletion();
   }, [courseId, subjectId]);
 
   return (

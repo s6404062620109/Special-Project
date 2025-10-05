@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 04, 2025 at 08:15 AM
+-- Generation Time: Oct 05, 2025 at 12:17 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -31,6 +31,8 @@ CREATE TABLE `course` (
   `id` int NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `icon` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
+  `pretest_rate` int NOT NULL DEFAULT '1',
+  `posttest_rate` int NOT NULL DEFAULT '1',
   `teacherId` int NOT NULL,
   `enable` tinyint(1) NOT NULL DEFAULT '0',
   `createat` datetime NOT NULL,
@@ -86,27 +88,27 @@ CREATE TABLE `lab_answers` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `progress`
+-- Table structure for table `lab_logs`
 --
 
-CREATE TABLE `progress` (
+CREATE TABLE `lab_logs` (
   `id` int NOT NULL,
-  `is_completed` tinyint(1) NOT NULL DEFAULT '0',
-  `score` int NOT NULL DEFAULT '0',
-  `questionId` int NOT NULL,
-  `enrollmentId` int NOT NULL
+  `user_answer` longtext NOT NULL,
+  `progressId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `progress_answer`
+-- Table structure for table `lab_progress`
 --
 
-CREATE TABLE `progress_answer` (
+CREATE TABLE `lab_progress` (
   `id` int NOT NULL,
-  `user_answer` longtext NOT NULL,
-  `progressId` int NOT NULL
+  `is_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `score` int NOT NULL DEFAULT '0',
+  `questionId` int NOT NULL,
+  `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -138,13 +140,28 @@ CREATE TABLE `question_answers` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `question_type`
+-- Table structure for table `question_logs`
 --
 
-CREATE TABLE `question_type` (
+CREATE TABLE `question_logs` (
   `id` int NOT NULL,
-  `name_type` varchar(255) NOT NULL,
-  `status` tinyint(1) NOT NULL DEFAULT '0'
+  `user_answer` longtext NOT NULL,
+  `progressId` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `question_progress`
+--
+
+CREATE TABLE `question_progress` (
+  `id` int NOT NULL,
+  `is_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `score` int NOT NULL DEFAULT '0',
+  `questionId` int NOT NULL,
+  `type` varchar(10) NOT NULL,
+  `enrollmentId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -158,8 +175,7 @@ CREATE TABLE `subject` (
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `courseId` int NOT NULL,
   `createat` datetime NOT NULL,
-  `updateat` datetime DEFAULT NULL,
-  `test_rate` int NOT NULL
+  `updateat` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -206,8 +222,7 @@ ALTER TABLE `enrollment`
 --
 ALTER TABLE `labs`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `in_subject` (`subjectId`),
-  ADD KEY `question_typeId` (`typeId`);
+  ADD KEY `in_subject` (`subjectId`);
 
 --
 -- Indexes for table `lab_answers`
@@ -217,19 +232,19 @@ ALTER TABLE `lab_answers`
   ADD KEY `answer_question` (`questionId`);
 
 --
--- Indexes for table `progress`
+-- Indexes for table `lab_logs`
 --
-ALTER TABLE `progress`
+ALTER TABLE `lab_logs`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `enrol_progress` (`enrollmentId`),
-  ADD KEY `question_progress` (`questionId`);
+  ADD KEY `lab_record` (`progressId`);
 
 --
--- Indexes for table `progress_answer`
+-- Indexes for table `lab_progress`
 --
-ALTER TABLE `progress_answer`
+ALTER TABLE `lab_progress`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `progress_record` (`progressId`);
+  ADD KEY `lab_enroll` (`enrollmentId`) USING BTREE,
+  ADD KEY `lab_id` (`questionId`) USING BTREE;
 
 --
 -- Indexes for table `questions`
@@ -246,10 +261,19 @@ ALTER TABLE `question_answers`
   ADD KEY `question_choice` (`questionId`);
 
 --
--- Indexes for table `question_type`
+-- Indexes for table `question_logs`
 --
-ALTER TABLE `question_type`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `question_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `question_record` (`progressId`);
+
+--
+-- Indexes for table `question_progress`
+--
+ALTER TABLE `question_progress`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `question_enroll` (`enrollmentId`),
+  ADD KEY `questionp_id` (`questionId`);
 
 --
 -- Indexes for table `subject`
@@ -293,15 +317,15 @@ ALTER TABLE `lab_answers`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `progress`
+-- AUTO_INCREMENT for table `lab_logs`
 --
-ALTER TABLE `progress`
+ALTER TABLE `lab_logs`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `progress_answer`
+-- AUTO_INCREMENT for table `lab_progress`
 --
-ALTER TABLE `progress_answer`
+ALTER TABLE `lab_progress`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -317,9 +341,15 @@ ALTER TABLE `question_answers`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `question_type`
+-- AUTO_INCREMENT for table `question_logs`
 --
-ALTER TABLE `question_type`
+ALTER TABLE `question_logs`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `question_progress`
+--
+ALTER TABLE `question_progress`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -355,8 +385,7 @@ ALTER TABLE `enrollment`
 -- Constraints for table `labs`
 --
 ALTER TABLE `labs`
-  ADD CONSTRAINT `in_subject` FOREIGN KEY (`subjectId`) REFERENCES `subject` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `question_typeId` FOREIGN KEY (`typeId`) REFERENCES `question_type` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `in_subject` FOREIGN KEY (`subjectId`) REFERENCES `subject` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `lab_answers`
@@ -365,17 +394,17 @@ ALTER TABLE `lab_answers`
   ADD CONSTRAINT `answer_question` FOREIGN KEY (`questionId`) REFERENCES `labs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `progress`
+-- Constraints for table `lab_logs`
 --
-ALTER TABLE `progress`
-  ADD CONSTRAINT `enrol_progress` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `question_progress` FOREIGN KEY (`questionId`) REFERENCES `labs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `lab_logs`
+  ADD CONSTRAINT `lab_record` FOREIGN KEY (`progressId`) REFERENCES `lab_progress` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `progress_answer`
+-- Constraints for table `lab_progress`
 --
-ALTER TABLE `progress_answer`
-  ADD CONSTRAINT `progress_record` FOREIGN KEY (`progressId`) REFERENCES `progress` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `lab_progress`
+  ADD CONSTRAINT `lab_enroll` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `lab_id` FOREIGN KEY (`questionId`) REFERENCES `labs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `questions`
@@ -388,6 +417,19 @@ ALTER TABLE `questions`
 --
 ALTER TABLE `question_answers`
   ADD CONSTRAINT `question_choice` FOREIGN KEY (`questionId`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `question_logs`
+--
+ALTER TABLE `question_logs`
+  ADD CONSTRAINT `question_record` FOREIGN KEY (`progressId`) REFERENCES `question_progress` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Constraints for table `question_progress`
+--
+ALTER TABLE `question_progress`
+  ADD CONSTRAINT `question_enroll` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `questionp_id` FOREIGN KEY (`questionId`) REFERENCES `questions` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `subject`

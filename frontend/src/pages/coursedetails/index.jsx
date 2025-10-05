@@ -5,9 +5,11 @@ import { AuthContext } from "../../context/AuthProvider";
 
 import { Avatar, Button, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from "@mui/material";
 import CircleIcon from '@mui/icons-material/Circle';
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
 
 import style from "./css/coursedetails.module.css";
-import SubjectData from "./subjectData";
+import SubjectData from "./SubjectData";
 
 const renderSubjectScores = (subjects, progressList) => (
   <List>
@@ -38,14 +40,6 @@ const renderTestSection = (announcement, {
   postTestScore,
   subjectList
 }) => {
-  const isPreTestCompleted =
-    pretestProgress.length > 0 &&
-    pretestProgress.every((item) => item.is_completed === 1);
-
-  const isPostTestCompleted =
-    posttestProgress.length > 0 &&
-    posttestProgress.every((item) => item.is_completed === 1);
-
   if (announcement === 0) {
     return <Typography variant="h6">คะแนนกำลังอยู่ในขั้นตอนการประเมินผล</Typography>;
   }
@@ -62,7 +56,7 @@ const renderTestSection = (announcement, {
         }}
       >
 
-        {isPreTestCompleted && (announcement === 1 || announcement === 2 || announcement === 3) && (
+        {(announcement === 1 || announcement === 2 || announcement === 3) && (
           <Stack direction="column" alignItems="center" gap={1}>
             <Typography variant="h6">แบบทดสอบก่อนเรียน</Typography>
             {announcement === 3 && renderSubjectScores(subjectList, pretestProgress)}
@@ -72,7 +66,7 @@ const renderTestSection = (announcement, {
           </Stack>
         )}
 
-        {isPostTestCompleted && (announcement === 2 || announcement === 3) && (
+        {(announcement === 2 || announcement === 3) && (
           <Stack direction="column" alignItems="center" gap={1}>
             <Typography variant="h6">แบบทดสอบหลังเรียน</Typography>
             {announcement === 3 && renderSubjectScores(subjectList, posttestProgress)}
@@ -95,15 +89,22 @@ function CourseDetail() {
     name: "",
     icon: "",
     createat: null,
-    updateat: null
+    updateat: null,
+    announcement: 0,
   });
+  const [ count, setCount ] = useState({
+    countEnrollments: 0,
+    countPosttestComplete: 0
+  })
   const [ teacherInfo, setTeacherInfo ] = useState({
+    sex: "",
     name: "",
+    surname: "",
     email: "",
     profile_img: null
   });
   const [ history, setHistory ] = useState([]);
-  const [ progress, setProgress ] = useState([]);
+  const [ labProgress, setLabProgress ] = useState([]);
   const [ pretestProgress, setPretestProgress ] = useState([]);
   const [ posttestProgress, setPosttestProgress ] = useState([]);
   const navigate = useNavigate();
@@ -122,13 +123,20 @@ function CourseDetail() {
           icon: responseCourse.icon,
           createat: responseCourse.createat,
           updateat: responseCourse.updateat,
-          announcement: responseCourse.announce_state
+          announcement: responseCourse.announce_state,
         });
         
         setTeacherInfo({
+          sex: teacherInfo.sex,
           name: teacherInfo.name,
+          surname: teacherInfo.surname,
           email: teacherInfo.email,
           profile_img: teacherInfo.profile_img
+        });
+
+        setCount({
+          countEnrollments: response.data.countEnrollments,
+          countPosttestComplete: response.data.countPosttestComplete
         });
 
         setSubjectList(response.data.subject);
@@ -141,17 +149,11 @@ function CourseDetail() {
 
   const fetchHistory = async () => {
     try {
-      const response = await backend.get(`/enroll/checkCoursesEnroll/${userData.id}`, {
+      const response = await backend.get(`/enroll/checkCourseEnroll/${userData.id}/${courseId}`, {
         withCredentials: true,
       });
       if (response.status === 200) {
-        const courseIdNum = Number(courseId);
-        const enrollmentIdNum = Number(enrollmentId);
-
-        const filteredHistory = response.data.results.filter(
-          (record) => record.courseId === courseIdNum && record.id === enrollmentIdNum
-        );
-        setHistory(filteredHistory);
+        setHistory(response.data.results);
       }
     } catch (err) {
       console.log(err);
@@ -165,16 +167,9 @@ function CourseDetail() {
       });
 
       if (response.status === 200) {
-
-        const pretest = response.data.results.filter(
-          (item) => item.typeId === 1
-        );
-        const posttest = response.data.results.filter(
-          (item) => item.typeId === 2
-        );
-        setPretestProgress(pretest);
-        setPosttestProgress(posttest);
-        setProgress(response.data.results);
+        setPretestProgress(response.data.pretest_progress);
+        setPosttestProgress(response.data.posttest_progress);
+        setLabProgress(response.data.lab_progress);
       }
     } catch (error) {
       console.log(error);
@@ -227,7 +222,7 @@ function CourseDetail() {
   const isPostTestCompleted = posttestProgress.length > 0 && posttestProgress.every((item) => item.is_completed === 1);
   const postTestScore = isPostTestCompleted ? posttestProgress.reduce((acc, item) => acc + item.score, 0) : null;
 
-  const AllQuestionComplete = progress.length > 0 && progress.every(p => p.is_completed === 1);
+  const isLabCompleted = labProgress.length > 0 && labProgress.every((item) => item.is_completed === 1);
 
   return (
     <div className={style.container}>
@@ -236,117 +231,12 @@ function CourseDetail() {
           <img alt="Course Icon Image" src={courseInfo.icon} />
           <p>{courseInfo.name}</p>
         </div>
-        
-        {(userData.id && history.length === 0) && (
-          <Button
-            variant="contained"
-            sx={{
-              width: { md: '25%', xs: '100%' }
-            }}
-            onClick={() => enrollCourse()}
-          >
-            สมัครเรียน
-          </Button>
-        )}
-
-        {userData.id && history.length > 0 && !AllQuestionComplete && (
-          <Button 
-            variant="contained"
-            onClick={fetchLatestProgress}
-            sx={{
-              width: { md: '25%', xs: '100%' }
-            }} 
-          >
-            บทเรียนต่อไป
-          </Button>
-        )}
-
-      </div>
-
-      <div className={style.content}>
-        <table>
-          <thead>
-            <tr>
-              <th>
-                <p>บทเรียน</p>
-              </th>
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {subjectList.map((subject, index) => (
-              <SubjectData
-                key={index}
-                id={subject.id}
-                name={subject.name}
-                courseId={subject.courseId}
-                progress={progress}
-                enrollmentId={enrollmentId}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {userData.id && progress.length > 0 && (
-        <div className={style.testSection}>
-           {renderTestSection(courseInfo.announcement, {
-              pretestProgress,
-              posttestProgress,
-              preTestScore,
-              postTestScore,
-              subjectList,
-            })}
-        </div>
-      )}
-
-      <Divider sx={{ my: 3 }} />
-
-      <Typography variant="h6">อาจารย์ผู้สอน</Typography>
-      <Stack
-        direction="row"
-        spacing={2}
-        alignItems="center"
-        sx={{
-          p: 2,
-          borderRadius: 2,
-          boxShadow: 1,
-          flexWrap: "wrap",
-          justifyContent: "space-evenly",
-          gap: 2,
-        }}
-      >
-
-        <Stack 
-          direction="row"
-          alignItems="center"
-          gap={2}
-        >
-          <Avatar
-            src={teacherInfo.profile_img || undefined}
-            alt={teacherInfo.name}
-            sx={{ width: 72, height: 72 }}
-          />
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle1" fontWeight="600">
-              {teacherInfo.name || "ไม่ทราบชื่ออาจารย์"}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ wordBreak: "break-word" }}
-            >
-              {teacherInfo.email || "-"}
-            </Typography>
-          </Stack>
-        </Stack>
 
         <Stack 
           gap={2}
           sx={{
             alignItems: { xs: "center", sm: "flex-start" },
-            flexDirection: { xs: "column", sm: "row", md: "column" },
+            flexDirection: 'column',
             justifyContent: { xs: "center", sm: "space-between" },
           }}
         >
@@ -362,7 +252,7 @@ function CourseDetail() {
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
-            แก้ไขล่าสุด{" "}
+            แก้ไขเมื่อ{" "}
             {courseInfo.updateat
               ? new Date(courseInfo.updateat).toLocaleString("th-TH", {
                   dateStyle: "medium",
@@ -371,8 +261,230 @@ function CourseDetail() {
                 })
               : "-"}
           </Typography>
+          
         </Stack>
+
+      </div>
+
+      <Typography variant="h6">อาจารย์ผู้สอน</Typography>
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          boxShadow: 1,
+          flexWrap: "wrap",
+          justifyContent: "space-evenly",
+          gap: 2,
+          marginBottom: 2,
+        }}
+      >
+
+        <Stack 
+          direction="row"
+          alignItems="center"
+          gap={2}
+        >
+          <Avatar
+            src={teacherInfo.profile_img || undefined}
+            alt={teacherInfo.name}
+            sx={{ width: 72, height: 72 }}
+          />
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" fontWeight="600">
+              {(() => {
+                const isEnglish = /^[A-Za-z\s]+$/.test(teacherInfo.name + " " + teacherInfo.surname);
+
+                // ถ้าเป็นภาษาอังกฤษ
+                if (isEnglish) {
+                  if (teacherInfo.sex === "m") return `Mr. ${teacherInfo.name} ${teacherInfo.surname}`;
+                  if (teacherInfo.sex === "f") return `Mrs. ${teacherInfo.name} ${teacherInfo.surname}`;
+                  if (teacherInfo.sex === "n") return `Sir. ${teacherInfo.name} ${teacherInfo.surname}`;
+                }
+
+                // ถ้าเป็นภาษาไทย
+                if (teacherInfo.sex === "m") return `นาย${teacherInfo.name} ${teacherInfo.surname}`;
+                if (teacherInfo.sex === "f") return `นาง${teacherInfo.name} ${teacherInfo.surname}`;
+                if (teacherInfo.sex === "n") return `คุณ${teacherInfo.name} ${teacherInfo.surname}`;
+
+                // ถ้าไม่ทราบเพศ
+                return teacherInfo.name && teacherInfo.surname
+                  ? `${teacherInfo.name} ${teacherInfo.surname}`
+                  : "ไม่ทราบชื่ออาจารย์";
+              })()}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ wordBreak: "break-word" }}
+            >
+              {teacherInfo.email || "-"}
+            </Typography>
+          </Stack>
+        </Stack>
+
       </Stack>
+
+      {userData.id && history.length > 0 && (
+        <Stack
+          sx={{
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: { xs: "center", sm: "space-between" },
+            alignItems: { xs: "center", sm: "flex-start" },
+            gap: 2,
+            width: "80%",
+            margin: "auto",
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            sx={{
+              cursor: !isPreTestCompleted ? "pointer" : "default",
+              color: !isPreTestCompleted ? "#1976d2" : "#979797",
+              transition: "color 0.3s",
+              "&:hover": {
+                color: !isPreTestCompleted ? "#115293" : "#979797",
+                borderBottom: "1px solid #000",
+              },
+            }}
+            onClick={() => {
+              if (!isPreTestCompleted) {
+                navigate(`/course/${courseId}/pretest/${enrollmentId}`);
+              }
+            }}
+          >
+            <Typography variant="h6">แบบทดสอบก่อนเรียน</Typography>
+            {isPreTestCompleted ? <CheckIcon color="success" /> : <ClearIcon color="error" />}
+          </Stack>
+
+          {/* Posttest Section */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            sx={{
+              cursor: !isPostTestCompleted && isPreTestCompleted && isLabCompleted ? "pointer" : "default",
+              color: !isPostTestCompleted && isPreTestCompleted && isLabCompleted ? "#1976d2" : "#979797",
+              transition: "color 0.3s",
+              "&:hover": {
+                color: !isPostTestCompleted && isPreTestCompleted && isLabCompleted ? "#115293" : "#979797",
+                borderBottom: !isPostTestCompleted && isPreTestCompleted && isLabCompleted ? "1px solid #000" : "none",
+              },
+            }}
+            onClick={() => {
+              if (!isPostTestCompleted && isPreTestCompleted && isLabCompleted) {
+                navigate(`/course/${courseId}/posttest/${enrollmentId}`);
+              }
+            }}
+          >
+            <Typography variant="h6">แบบทดสอบหลังเรียน</Typography>
+            {isPostTestCompleted ? (
+              <CheckIcon color="success" /> 
+              ):(
+                <ClearIcon 
+                  color={!isPostTestCompleted && isPreTestCompleted && isLabCompleted ? "error" : "inherit"} 
+                />
+              )
+            }
+          </Stack>
+        </Stack>
+      )}
+
+      <div className={style.content}>
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <p>บทเรียน</p>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+
+          {subjectList.length > 0 && labProgress && (
+            <tbody>
+              {subjectList.map((subject, index) => (
+                <SubjectData
+                  key={index}
+                  id={subject.id}
+                  name={subject.name}
+                  courseId={subject.courseId}
+                  labProgress={labProgress}
+                  enrollmentId={enrollmentId}
+                />
+              ))}
+            </tbody>
+          )}
+        </table>
+      </div>
+
+      <Stack
+        justifyContent="center"
+        alignItems="center"
+        gap={2}
+        sx={{
+          width: { sm: "100%", md: "80%"},
+          margin: "auto",
+          alignItems: { xs: "flex-start", sm: "center" },
+        }}
+      >
+        <Stack
+          justifyContent="space-evenly"
+          gap={2}
+          sx={{
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "space-evenly" },
+          }}
+        >
+            <Typography variant="h6">
+              จำนวนผู้สมัครเรียน { count.countEnrollments } คน
+            </Typography>
+            <Typography variant="h6">
+              จำนวนผู้สำเร็จการศึกษา { count.countPosttestComplete } คน
+            </Typography>
+        </Stack>
+        
+        {(userData.id && history.length === 0) && (
+          <Button
+            variant="contained"
+            sx={{
+              width: { md: '50%', xs: '100%' }
+            }}
+            onClick={() => enrollCourse()}
+          >
+            สมัครเรียน
+          </Button>
+        )}
+
+        {(userData.id && history.length > 0) && (
+          <Button 
+            variant="contained"
+            onClick={fetchLatestProgress}
+            sx={{
+              width: { md: '50%', xs: '100%' }
+            }} 
+          >
+            บทเรียนต่อไป
+          </Button>
+        )}
+      </Stack>
+
+      {userData.id && pretestProgress.length > 0 && posttestProgress.length > 0&& (
+        <div className={style.testSection}>
+           {renderTestSection(courseInfo.announcement, {
+              pretestProgress,
+              posttestProgress,
+              preTestScore,
+              postTestScore,
+              subjectList,
+            })}
+        </div>
+      )}
+
       
     </div>
   );

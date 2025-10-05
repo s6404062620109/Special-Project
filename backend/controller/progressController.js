@@ -4,32 +4,41 @@ const checkProgress = (req, res) => {
     const { enrollmentId } = req.params;
 
     try{
-        db.query(`SELECT * FROM progress WHERE enrollmentId = ?`, [enrollmentId], (err, results) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ message: "Database progress query error" });
+      db.query("SELECT * FROM question_progress WHERE enrollmentId = ?", [enrollmentId], (err, results) => {
+        if (err) {
+          return res.status(500).send({ message: "Database question_progress query error" });
+        }
+
+        const pretest_progress = results.filter(progress => progress.type === 'pre');
+        const posttest_progress = results.filter(progress => progress.type === 'post');
+
+        db.query("SELECT * FROM lab_progress WHERE enrollmentId = ?", [enrollmentId], (labProgressErr, labProgressResults) => {
+          if (labProgressErr) {
+            return res.status(500).send({ message: "Database lab_progress query error" });
+          }
+          
+          db.query("SELECT id, subjectId FROM labs WHERE id IN (?)", [labProgressResults.map(lab => lab.questionId)], (labErr, labResults) => {
+            if (labErr) {
+              return res.status(500).send({ message: "Database subject query error" });
             }
-            
-            const filteredResults = results.map(item => item.questionId);
-            db.query(`SELECT id, typeId, subjectId FROM question WHERE id IN (?)`, [filteredResults], (error, questionResults) => {
-              if (error) {
-                console.error(error);
-                return res.status(500).json({ message: "Database question query error" });
+
+            const labProgress = labProgressResults.map(labp => {
+              const matchedSubject = labResults.find(lab => lab.id === labp.questionId);
+              return {
+                ...labp,
+                subjectId: matchedSubject ? matchedSubject.subjectId : null
               }
-        
-              const combinedResults = results.map(progress => {
-                const matchedQuestion = questionResults.find(q => q.id === progress.questionId);
-                return {
-                  ...progress,
-                  subjectId: matchedQuestion ? matchedQuestion.subjectId : null,
-                  typeId: matchedQuestion ? matchedQuestion.typeId : null
-                };
-              });
-        
-              return res.status(200).json({ results: combinedResults });
             });
-        
-        });
+
+            return res.status(200).send({
+              pretest_progress: pretest_progress,
+              posttest_progress: posttest_progress,
+              lab_progress: labProgress
+            });
+          });
+          
+        })
+      });
     } catch(error){
         console.log(error);
         return res.status(500).json({ message: "Server error.", error });
@@ -40,37 +49,68 @@ const getLatest = (req, res) => {
   const { enrollmentId } = req.params;
 
   try {
-    const sql = `
-      SELECT q.typeId, q.subjectId
-      FROM progress p
-      JOIN question q ON p.questionId = q.id
-      WHERE p.is_completed = ? AND p.enrollmentId = ?
-      LIMIT 1
-    `;
-
-    db.query(sql, [false, enrollmentId], (error, results) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Database query error" });
+    db.query(`SELECT courseId, pretest_complete, posttest_complete, completed_labs, total_labs FROM enrollment WHERE id = ?`, [enrollmentId], (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database enrollment query error" });
       }
 
-      if (!results.length) {
-        return res.status(404).json({ message: "No in-progress question found." });
+      if (results.length === 0){
+        return res.status(404).json({ message: "Enrollment not found" });
       }
 
-      const { typeId, subjectId } = results[0];
+      const pretestComplete = results[0].pretest_complete;
+      const posttestComplete = results[0].posttest_complete;
+      const completeLabs = (results[0].completed_labs === results[0].total_labs) ? 1 : 0;
 
-      if (typeId === 1) {
-        return res.status(200).json({ inProgress: `pretest/${enrollmentId}` });
-      }
+      db.query(`SELECT id FROM subject WHERE courseId = ?`, [results[0].courseId], (error, subjectResults) => {
+        if (error) {
+          console.log(error);
+          return res.status(500).json({ message: "Database subject query error" });
+        }
 
-      if (typeId === 2) {
-        return res.status(200).json({ inProgress: `posttest/${enrollmentId}` });
-      }
+        const subjectIds = subjectResults.map(subject => subject.id);
 
-      if ([3, 4, 5, 6].includes(typeId)) {
-        return res.status(200).json({ inProgress: `subject/${subjectId}/${enrollmentId}` });
-      }
+        db.query(`SELECT id, subjectId FROM labs WHERE subjectId IN (?) AND typeId IN (3, 5, 6)`, [subjectIds], (labErr, labResults) => {
+          if (labErr) {
+            console.log(labErr);
+            return res.status(500).json({ message: "Database lab query error" });
+          }
+          db.query(`SELECT is_completed, questionId FROM lab_progress WHERE enrollmentId = ?`, [enrollmentId], (labProgressErr, labProgressResults) => {
+            if (labProgressErr) {
+              console.log(labProgressErr);
+              return res.status(500).json({ message: "Database lab progress query error" });
+            }
+
+            if (pretestComplete !== 1){
+              return res.status(200).json({ inProgress: `pretest/${enrollmentId}` })
+            }
+
+            if(completeLabs === 0){
+              const incompleteLabSubjects = labProgressResults
+                .filter(lp => lp.is_completed !== 1)
+                .map(lp => {
+                  const matchedLab = labResults.find(lab => lab.id === lp.questionId);
+                  return matchedLab ? matchedLab.subjectId : null;
+                })
+                .filter(Boolean);
+              
+              if (incompleteLabSubjects.length > 0) {
+                return res.status(200).json({ inProgress: `subject/${incompleteLabSubjects[0]}/${enrollmentId}` });
+              } else{
+                return res.status(404).json({ message: "Not found lab in progress" })
+              }
+
+            }
+
+            if(posttestComplete !== 1 && completeLabs === 1 && pretestComplete === 1){
+              return res.status(200).json({ inProgress: `posttest/${enrollmentId}` })
+            }
+          });
+
+        });
+      });
+
     });
   } catch (error) {
     console.error(error);

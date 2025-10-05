@@ -8,13 +8,12 @@ const getPosttest = (req, res) => {
       SELECT 
         q.id AS qId,
         q.content,
-        q.typeId AS type,
         qa.id AS aId,
         qa.content AS answerContent
-      FROM progress p
-      JOIN question q ON p.questionId = q.id
-      LEFT JOIN question_answer qa ON q.id = qa.questionId
-      WHERE p.enrollmentId = ? AND q.typeId = 2
+      FROM question_progress p
+      JOIN questions q ON p.questionId = q.id
+      LEFT JOIN question_answers qa ON q.id = qa.questionId
+      WHERE p.enrollmentId = ? AND p.type = 'post'
     `;
 
     db.query(sql, [enrollmentId], (error, result) => {
@@ -27,7 +26,6 @@ const getPosttest = (req, res) => {
         return res.status(404).json({ message: "No posttest questions found in this course." });
       }
 
-      // Group คำถาม + ตัวเลือก
       const questionsMap = {};
       result.forEach(row => {
         if (!questionsMap[row.qId]) {

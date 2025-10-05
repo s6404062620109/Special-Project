@@ -26,7 +26,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       setCurrentIndex(currentIndex - 1);
     }
   };
-  
+
   const filteredQuestions = selectedType === 'all'
     ? question
     : question.filter(q => q.type === Number(selectedType));
@@ -95,7 +95,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       setHtmlFileContent('');
     }
   }, [currentItem]);
-  const TestBankPath = location.pathname.includes('/exam');
+  const pathRender = [
+    `/exam`,
+    `/course/${courseId}/pretest/${enrollmentId}`,
+    `/course/${courseId}/posttest/${enrollmentId}`
+  ];
+  const pathToRender = pathRender.includes(location.pathname);
 
   return (
     <Stack
@@ -154,7 +159,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             />
           )}
         
-          {(TestBankPath ||(currentItem.type === 3 || currentItem.type === 6)) && (
+          {(pathToRender ||(currentItem.type === 3 || currentItem.type === 6)) && (
             <FormControl>
               <FormLabel 
                 id="demo-radio-buttons-group-label"

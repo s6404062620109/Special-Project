@@ -45,7 +45,7 @@ function Courses() {
     <div className={style.pageWrapper}>
       <div className={style.content}>
         <div className={style.head}>
-          <p>COURSES</p>
+          <p>คอร์ส</p>
         </div>
 
         <div className={style.courseTable}>

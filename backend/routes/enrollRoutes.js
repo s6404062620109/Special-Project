@@ -8,4 +8,6 @@ router.post('/enrollCourse', authUserRole.checkStudentRole, enrollController.enr
 
 router.get("/checkCoursesEnroll/:userId", authUserRole.checkStudentRole, enrollController.checkCoursesEnroll);
 
+router.get("/checkCourseEnroll/:userId/:courseId", authUserRole.verifiedStudentEnrollCourse, enrollController.checkCourseEnroll)
+
 module.exports = router;

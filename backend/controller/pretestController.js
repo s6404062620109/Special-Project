@@ -8,19 +8,18 @@ const getPretest = (req, res) => {
       SELECT 
         q.id       AS qId,
         q.content  AS qContent,
-        q.typeId   AS qType,
         a.id       AS aId,
         a.content  AS aContent
-      FROM progress p
-      JOIN question q ON p.questionId = q.id LEFT JOIN question_answer a ON q.id = a.questionId
-      WHERE p.enrollmentId = ? AND q.typeId = 1
+      FROM question_progress p
+      JOIN questions q ON p.questionId = q.id LEFT JOIN question_answers a ON q.id = a.questionId
+      WHERE p.enrollmentId = ? AND p.type = 'pre'
     `;
 
     db.query(sql, [enrollmentId], (error, rows) => {
       if (error) {
         console.log(error);
         return res.status(500).json({ message: "Database query error" });
-      }
+      } 
 
       if (!rows.length) {
         return res.status(404).json({ message: "Not have any pretest question in this course." });

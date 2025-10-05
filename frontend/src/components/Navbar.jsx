@@ -111,11 +111,27 @@ function Navbar() {
             <div className={style.userInfo}>
               <div>
                 <label>
-                  {userData.sex === 'm' && 'นาย'+userData.name}
-                  {userData.sex === 'f' && 'นาง'+userData.name}
-                  {userData.sex === 'n' && 'คุณ'+userData.name}
+                  {(() => {
+                      const isEnglish = /^[A-Za-z\s]+$/.test(userData.name + " " + userData.surname);
+
+                      // ถ้าเป็นภาษาอังกฤษ
+                      if (isEnglish) {
+                        if (userData.sex === "m") return `Mr. ${userData.name} ${userData.surname}`;
+                        if (userData.sex === "f") return `Mrs. ${userData.name} ${userData.surname}`;
+                        if (userData.sex === "n") return `Sir. ${userData.name} ${userData.surname}`;
+                      }
+
+                      // ถ้าเป็นภาษาไทย
+                      if (userData.sex === "m") return `นาย${userData.name} ${userData.surname}`;
+                      if (userData.sex === "f") return `นาง${userData.name} ${userData.surname}`;
+                      if (userData.sex === "n") return `คุณ${userData.name} ${userData.surname}`;
+
+                      // ถ้าไม่ทราบเพศ
+                      return userData.name && userData.surname
+                        ? `${userData.name} ${userData.surname}`
+                        : "ไม่ทราบชื่ออาจารย์";
+                    })()}
                 </label>
-                <label>{userData.surname}</label>
               </div>
 
               <img 
@@ -133,7 +149,7 @@ function Navbar() {
                       alt='Profile Button'
                       src='/Navbar_Assets/User.svg'
                     />
-                    <p>Profile</p>
+                    <p>แก้ไขโปรไฟล์</p>
                     
                   </li>
                     
@@ -142,7 +158,7 @@ function Navbar() {
                       alt='LogOut Button'
                       src='/Navbar_Assets/Sign_out.svg'
                     />
-                    <p>Log Out</p>
+                    <p>ออกจากระบบ</p>
                   </li>
                 </ul>
               </div>

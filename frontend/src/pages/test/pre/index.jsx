@@ -15,20 +15,21 @@ function Pretest() {
   const [ errorMessage, setErrorMessage ] = useState('');
   const navigate = useNavigate();
 
-  const checkPretestCompletion = async () => {
+   const checkPretestCompletion = async () => {
     try {
       const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
         withCredentials: true
       });
 
       if (response.status === 200) {
-        const pretestProgress = response.data.results.filter((item) => item.typeId === 1);
+        const pretestProgress = response.data.pretest_progress;
 
-        const areAllPretestsCompleted = pretestProgress.every((item) => item.is_completed === 1);
+        const pretestCompleted = pretestProgress.every((item) => item.is_completed === 1);
 
-        if (areAllPretestsCompleted) {
-          alert('You already complete all Pretest questions.');
-          navigate(`/courses`);
+        if(pretestCompleted){
+          alert("คุณได้ทำแบบทดสอบก่อนเรียนแล้ว ไม่อนุญาตให้ทำอีกครั้ง");
+          navigate(-1);
+          return;
         }
       }
     } catch (error) {
@@ -63,7 +64,7 @@ function Pretest() {
 
   useEffect(() => {
     if(userData.id===null){
-      alert("Please login first.");
+      alert("กรุณาเข้าสู่ระบบก่อน");
       navigate('/');
     }
     if (userData.id !== null) {
@@ -112,10 +113,10 @@ function Pretest() {
     }
     
   };
-
+  
   return (
     <div className={style.container}>
-      <h1>Pretest</h1>
+      <Typography variant='h4' >แบบทดสอบก่อนเรียน</Typography>
 
       <form onSubmit={handleSubmit}>
 
@@ -125,8 +126,21 @@ function Pretest() {
           selectedAnswers={selectedAnswers}
         />
         
-        <Typography variant='body2' color={errorMessage === "Pretest submitted successfully." ? "green" : "red"}>{errorMessage}</Typography>
-        <Button variant="contained" color="primary" type="submit">Submit Answers</Button>
+        <Typography 
+          variant='body2' 
+          fontWeight="semi-bold" 
+          color={errorMessage === "Pretest submitted successfully." ? "green" : "red"}
+        >
+        {errorMessage}
+        </Typography>
+        
+        <Button 
+          variant="contained" 
+          color="success" 
+          type="submit"
+        >
+          ยืนยันคำตอบ
+        </Button>
 
       </form>
 

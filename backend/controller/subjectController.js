@@ -10,18 +10,25 @@ const getAll = (req, res) => {
       c.id AS courseId,
       c.name AS courseName,
       c.icon AS courseIcon,
-      c.enable,
       c.teacherId,
+      c.enable,
+      c.createat,
+      c.updateat,
       c.announce_state,
       c.pretest_rate,
       c.posttest_rate,
+      u.sex AS teacherSex,
       u.name AS teacherName,
+      u.surname AS teacherSurname,
       u.email AS teacherEmail,
       u.profile_img AS teacherImg,
+      COUNT(DISTINCT e.id) AS countEnrollments,
+      SUM(CASE WHEN e.posttest_complete = 1 THEN 1 ELSE 0 END) AS countPosttestComplete,
       COUNT(DISTINCT q.id) AS countQuestions,
       COUNT(DISTINCT l.id) AS countLabs
     FROM course c
     LEFT JOIN user u ON u.id = c.teacherId
+    LEFT JOIN enrollment e ON e.courseId = c.id
     LEFT JOIN subject s ON s.courseId = c.id
     LEFT JOIN questions q ON q.courseId = c.id
     LEFT JOIN labs l ON l.subjectId = s.id
@@ -50,20 +57,26 @@ const getAll = (req, res) => {
           id: course.courseId,
           name: course.courseName,
           icon: course.courseIcon,
-          enable: course.enable,
           teacherId: course.teacherId,
+          enable: course.enable,
+          createat: course.createat,
+          updateat: course.updateat,
           announce_state: course.announce_state,
           pretest_rate: course.pretest_rate,
           posttest_rate: course.posttest_rate,
         },
         subject: subjectResults,
         teacherInfo: {
+          sex: course.teacherSex,
           name: course.teacherName,
+          surname: course.teacherSurname,
           email: course.teacherEmail,
           profile_img: course.teacherImg,
         },
         countQuestions: course.countQuestions,
         countLabs: course.countLabs,
+        countEnrollments: course.countEnrollments,
+        countPosttestComplete: course.countPosttestComplete,
       };
 
       return res.status(200).json(response);
