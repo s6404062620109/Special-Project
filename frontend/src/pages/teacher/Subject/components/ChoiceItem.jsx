@@ -49,7 +49,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
               onChange={(e) => onChange("isCorrect", e.target.checked)}
             />
           }
-          label="Correct"
+          label="ถูกต้อง"
           sx={{ width: { xs: '100%', sm: '30%' } }}
         />
       </Stack>

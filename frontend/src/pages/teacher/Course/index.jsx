@@ -55,14 +55,14 @@ function EditCourse() {
   
   const fetchProgressAnalysis = async () => {
     try {
-      const response = await backend.get(
-        `/teacher/progressAnalysis/${courseId}`,
+      const response = await backend.get(`/teacher/testAnalysis/${courseId}`,
         {
           withCredentials: true,
         }
       );
 
       if (response.status === 200) {
+        console.log(response.data);
         setChartData(response.data);
       }
     } catch (error) {
@@ -188,7 +188,7 @@ function EditCourse() {
                 }}
                 onClick={() => setExamOpenDialog(true)}
               >
-                ตลังข้อสอบ
+                คลังข้อสอบ
               </Button>
           </Stack>
           

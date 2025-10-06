@@ -255,7 +255,7 @@ function Labs({
             >
               <Typography
                 variant="body2"
-                color={errorMessage === "คุณผ่านการทดสอบแล้ว" ? "green" : "red"}
+                color={errorMessage === "บันทึกคำตอบเรียบร้อยแล้ว" ? "green" : "red"}
               >
                 {errorMessage}
               </Typography>

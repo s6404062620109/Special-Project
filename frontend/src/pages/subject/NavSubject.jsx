@@ -20,9 +20,9 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
       });
 
       if(response.status === 200){
-        const pretest = response.data.results.filter(item => item.typeId === 1);
-        const posttest = response.data.results.filter(item => item.typeId === 2);
-        const lab = response.data.results.filter(item => item.typeId === 3 || item.typeId === 4 || item.typeId === 5 || item.typeId === 6);
+        const pretest = response.data.pretest_progress;
+        const posttest = response.data.posttest_progress;
+        const lab = response.data.lab_progress;
 
         setProgress({ pretest, posttest, lab });
       }
@@ -88,7 +88,7 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
               }
             }}
           >
-            {isPreTestCompleted ? `PreTest Score: ${preTestScore} / ${progress.pretest.length}` : "PreTest"}
+            {isPreTestCompleted ? `แบบทดสอบก่อนเรียน: ${preTestScore} / ${progress.pretest.length}` : "PreTest"}
           </p>
 
           <p
@@ -100,7 +100,7 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
             }}
           >
             {isPostTestCompleted ? `PostTest Score: ${postTestScore} / ${progress.posttest.length}` : areAllLabsCompleted 
-                ? "PostTest" : "Complete all Labs to unlock PostTest"
+                ? "PostTest" : "ต้องทำปฎิบัติการทดสอบทั้งหมดก่อน"
             }
           </p>
         </div>

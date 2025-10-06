@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get("/getLabQuestions/:courseId/:subjectId", authUserRole.verifiedStudentEnrollCourse, labsController.getLabQuestions);
 
+router.get("/getAllLabQuestion/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.getAllLabQuestion);
+
 router.post("/startLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.startLabSession);
 
 router.post("/clearLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.clearLabSession);

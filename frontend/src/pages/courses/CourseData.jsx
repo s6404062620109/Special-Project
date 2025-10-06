@@ -165,7 +165,8 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
 
             if (latestEnroll.posttest_complete === -1) {
               return (
-                <button
+                <Button
+                  variant="contained"
                   onClick={() => {
                     const reEnroll = async () => {
                       try {
@@ -184,8 +185,8 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
                     reEnroll();
                   }}
                 >
-                  Retry
-                </button>
+                  ลงทะเบียนใหม่
+                </Button>
               );
             } else if (
               latestEnroll.pretest_complete === 1 &&

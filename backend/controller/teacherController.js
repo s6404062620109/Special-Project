@@ -32,70 +32,98 @@ const testAnalysis = (req, res) => {
     return res.status(400).send({ message: "Required course ID." });
   }
 
-  const sql = `
-    SELECT 
-      e.userId,
-      u.name,
-      u.email,
-      q.id AS questionId,
-      q.typeId,
-      p.score
-    FROM enrollment e
-    JOIN user u ON u.id = e.userId
-    JOIN subject s ON s.courseId = e.courseId
-    JOIN questions q ON q.subjectId = s.id
-    LEFT JOIN progress p 
-      ON p.enrollmentId = e.id 
-      AND p.questionId = q.id 
-      AND p.is_completed = 1
-    WHERE e.courseId = ?
-  `;
-
-  db.query(sql, [courseId], (error, results) => {
+  // ดึงข้อมูล enrollment ทั้งหมดใน course นี้
+  db.query("SELECT * FROM enrollment WHERE courseId = ?", [courseId], (error, enrollments) => {
     if (error) {
-      console.log(error);
-      return res.status(500).send({ message: "Database query error." });
+      console.error(error);
+      return res.status(500).send({ message: "Database enrollment query error." });
     }
 
-    if (!results || results.length === 0) {
-      return res.status(404).send({ message: "No progress found." });
+    if (!enrollments || enrollments.length === 0) {
+      return res.status(404).send({ message: "No enrollment found." });
     }
 
-    const users = [];
-    let pretestMax = 0;
-    let posttestMax = 0;
+    const userIds = enrollments.map(e => e.userId);
+    const enrollmentIds = enrollments.map(e => e.id);
 
-    const questionSet = new Set();
-    results.forEach(r => {
-      if (!questionSet.has(r.questionId)) {
-        if (r.typeId === 1) pretestMax++;
-        if (r.typeId === 2) posttestMax++;
-        questionSet.add(r.questionId);
+    // ดึงข้อมูล user ที่เกี่ยวข้อง
+    db.query("SELECT id, name, email FROM user WHERE id IN (?)", [userIds], (error, users) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Database user query error." });
       }
+
+      if (!users || users.length === 0) {
+        return res.status(404).send({ message: "No user found." });
+      }
+
+      // ดึงข้อมูล progress ทั้งหมดของ enrollment เหล่านี้
+      const sqlProgress = `
+        SELECT qp.enrollmentId, qp.questionId, qp.type, qp.score, qp.is_completed
+        FROM question_progress qp
+        WHERE qp.enrollmentId IN (?)
+      `;
+      db.query(sqlProgress, [enrollmentIds], (error, progressResults) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).send({ message: "Database progress query error." });
+        }
+
+        if (!progressResults || progressResults.length === 0) {
+          return res.status(404).send({ message: "No progress found." });
+        }
+
+        // สร้างชุดข้อมูล
+        const usersSummary = [];
+        let pretestMax = 0;
+        let posttestMax = 0;
+
+        // หาจำนวนข้อสูงสุดของ pre/post จาก questionId ที่ไม่ซ้ำ
+        const seenPre = new Set();
+        const seenPost = new Set();
+        for (const r of progressResults) {
+          if (r.type === "pre" && !seenPre.has(r.questionId)) {
+            pretestMax++;
+            seenPre.add(r.questionId);
+          }
+          if (r.type === "post" && !seenPost.has(r.questionId)) {
+            posttestMax++;
+            seenPost.add(r.questionId);
+          }
+        }
+
+        // รวมคะแนนราย user
+        for (const user of users) {
+          const enrollment = enrollments.find(e => e.userId === user.id);
+          if (!enrollment) continue;
+
+          const userProgress = progressResults.filter(p => p.enrollmentId === enrollment.id);
+
+          const pretestScore = userProgress
+            .filter(p => p.type === "pre" && p.is_completed === 1)
+            .reduce((sum, p) => sum + (p.score || 0), 0);
+
+          const posttestScore = userProgress
+            .filter(p => p.type === "post" && p.is_completed === 1)
+            .reduce((sum, p) => sum + (p.score || 0), 0);
+
+          usersSummary.push({
+            userId: user.id,
+            name: user.name,
+            email: user.email,
+            pretestScore,
+            posttestScore
+          });
+        }
+
+        // ✅ ส่งข้อมูลกลับ
+        return res.status(200).send({
+          users: usersSummary,
+          pretestMax,
+          posttestMax
+        });
+      });
     });
-
-    results.forEach((r) => {
-      let user = users.find(u => u.userId === r.userId);
-
-      if (!user) {
-        user = {
-          userId: r.userId,
-          name: r.name,
-          email: r.email,
-          pretestScore: 0,
-          posttestScore: 0,
-        };
-        users.push(user);
-      }
-
-      if (r.typeId === 1) {
-        user.pretestScore += r.score || 0;
-      } else if (r.typeId === 2) {
-        user.posttestScore += r.score || 0;
-      }
-    });
-
-    return res.status(200).send({ users, pretestMax, posttestMax });
   });
 };
 
@@ -194,125 +222,154 @@ const deleteCourse = (req, res) => {
 
 const enrollSummary = (req, res) => {
   const { courseId } = req.params;
+  if(typeof courseId !== 'string' || !courseId){
+    return res.status(400).send({ message: "Invalid Course ID." });
+  }
+  try{
+    db.query("SELECT * FROM enrollment WHERE courseId = ?", [courseId], (err, enrollments) => {
+      if(err) return res.status(500).send({ message: "Database enrollment query error." });
+      if(!enrollments || enrollments.length === 0) return res.status(404).send({ message: "No enrollment found." });
+      const enrollmentIds = enrollments.map(e => e.id);
+      const userIds = enrollments.map(e => e.userId);
+      db.query("SELECT id, sex, name, surname FROM user WHERE id IN (?)", [userIds], (err, users) => {
+        if(err) return res.status(500).send({ message: "Database user query error." });
+        if(!users || users.length === 0) return res.status(404).send({ message: "No user found." });
+        db.query("SELECT * FROM labs WHERE subjectId IN (SELECT id FROM subject WHERE courseId = ?)", [courseId], (err, labs) => {
+          if(err) return res.status(500).send({ message: "Database labs query error." });
+          const labIds = labs.map(l => l.id);
+          db.query("SELECT * FROM lab_answers WHERE questionId IN (?)", [labIds.length ? labIds : [0]], (err, labAnswers) => {
+            if(err) return res.status(500).send({ message: "Database lab_answers query error." });
+            db.query("SELECT * FROM lab_progress WHERE enrollmentId IN (?)", [enrollmentIds.length ? enrollmentIds : [0]], (err, labProgress) => {
+              if(err) return res.status(500).send({ message: "Database lab_progress query error." });
+              const labProgressIds = labProgress.map(lp => lp.id);
+              db.query("SELECT * FROM lab_logs WHERE progressId IN (?)", [labProgressIds.length ? labProgressIds : [0]], (err, labLogs) => {
+                if(err) return res.status(500).send({ message: "Database lab_logs query error." });
+                db.query("SELECT * FROM questions WHERE courseId = ?", [courseId], (err, questions) => {
+                  if(err) return res.status(500).send({ message: "Database questions query error." });
+                  const questionIds = questions.map(q => q.id);
+                  db.query("SELECT * FROM question_answers WHERE questionId IN (?)", [questionIds.length ? questionIds : [0]], (err, questionAnswers) => {
+                    if(err) return res.status(500).send({ message: "Database question_answers query error." });
+                    db.query("SELECT * FROM question_progress WHERE enrollmentId IN (?)", [enrollmentIds.length ? enrollmentIds : [0]], (err, questionProgress) => {
+                      if(err) return res.status(500).send({ message: "Database question_progress query error." });
+                      const questionProgressIds = questionProgress.map(qp => qp.id);
+                      db.query("SELECT * FROM question_logs WHERE progressId IN (?)", [questionProgressIds.length ? questionProgressIds : [0]], (err, questionLogs) => {
+                        if(err) return res.status(500).send({ message: "Database question_logs query error." });
+                        // --- Build lookup maps ---
+                        const usersMap = Object.fromEntries(users.map(u => [u.id, u]));
+                        // --- LABS ---
+                        const labsMap = Object.fromEntries(labs.map(l => [l.id, l]));
+                        const labAnswersMap = labAnswers.reduce((acc, ans) => {
+                          if (!acc[ans.questionId]) acc[ans.questionId] = [];
+                          acc[ans.questionId].push(ans);
+                          return acc;
+                        }, {});
+                        const labLogsMap = labLogs.reduce((acc, log) => {
+                          if (!acc[log.progressId]) acc[log.progressId] = [];
+                          acc[log.progressId].push(log);
+                          return acc;
+                        }, {});
+                        // --- QUESTIONS ---
+                        const questionsMap = Object.fromEntries(questions.map(q => [q.id, q]));
+                        const questionAnswersMap = questionAnswers.reduce((acc, ans) => {
+                          if (!acc[ans.questionId]) acc[ans.questionId] = [];
+                          acc[ans.questionId].push(ans);
+                          return acc;
+                        }, {});
+                        const questionLogsMap = questionLogs.reduce((acc, log) => {
+                          if (!acc[log.progressId]) acc[log.progressId] = [];
+                          acc[log.progressId].push(log);
+                          return acc;
+                        }, {});
 
-  try {
-    const sql = `
-      SELECT 
-        e.id AS enrollmentId, e.courseId, e.completed_labs, e.total_labs,
-        u.id AS userId, u.name AS userName, u.email AS userEmail,
-        p.id AS progressId, p.is_completed, p.score, p.questionId,
-        pa.user_answer AS userAnswer,
-        q.id AS questionId, q.content AS questionContent, q.typeId, q.subjectId,
-        qa.content AS correctAnswer
-      FROM enrollment e
-      JOIN user u ON u.id = e.userId
-      LEFT JOIN progress p ON p.enrollmentId = e.id
-      LEFT JOIN progress_answer pa ON pa.progressId = p.id
-      LEFT JOIN question q ON q.id = p.questionId
-      LEFT JOIN question_answer qa ON qa.questionId = q.id AND qa.type = 1
-      WHERE e.courseId = ?;
-    `;
+                        // --- Group labs by typeId (3,5,6) ---
+                        const labsByType = { 3: [], 5: [], 6: [] };
+                        labs.forEach(lab => {
+                          if ([3, 5, 6].includes(lab.typeId)) {
+                            labsByType[lab.typeId].push(lab);
+                          }
+                        });
 
-    db.query(sql, [courseId], (error, rows) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).send({ message: "Database query error." });
-      }
+                        // --- Group question_progress by type (pre/post) ---
+                        const questionProgressByType = { pre: [], post: [] };
+                        questionProgress.forEach(qp => {
+                          if (qp.type === 'pre') questionProgressByType.pre.push(qp);
+                          else if (qp.type === 'post') questionProgressByType.post.push(qp);
+                        });
 
-      if (!rows.length) {
-        return res.status(404).send({ message: "No enrollment found." });
-      }
-
-      const enrollmentMap = {};
-      const labQuestionSetMap = {};
-
-      rows.forEach(row => {
-        // สร้าง enrollment object
-        if (!enrollmentMap[row.enrollmentId]) {
-          enrollmentMap[row.enrollmentId] = {
-            id: row.enrollmentId,
-            courseId: row.courseId,
-            pretestScore: 0,
-            posttestScore: 0,
-            labtestScore: 0,
-            progressPercent: 0,
-            userId: row.userId,
-            user: {
-              id: row.userId,
-              name: row.userName,
-              email: row.userEmail
-            },
-            progress: []
-          };
-          labQuestionSetMap[row.enrollmentId] = new Set();
-        }
-
-        if (row.progressId && row.score != null) {
-          if (row.typeId === 1) {
-            enrollmentMap[row.enrollmentId].pretestScore += row.score;
-          } else if (row.typeId === 2) {
-            enrollmentMap[row.enrollmentId].posttestScore += row.score;
-          } else if ([3,4,5,6].includes(row.typeId)) {
-            if (row.questionId && !labQuestionSetMap[row.enrollmentId].has(row.questionId)) {
-              enrollmentMap[row.enrollmentId].labtestScore += row.score;
-              labQuestionSetMap[row.enrollmentId].add(row.questionId);
-            }
-          }
-        }
-
-        if (row.total_labs && row.total_labs > 0) {
-          enrollmentMap[row.enrollmentId].progressPercent = 
-            Math.round((row.completed_labs / row.total_labs) * 100);
-        }
-
-        // สร้าง progress object
-        if (row.progressId) {
-          let progress = enrollmentMap[row.enrollmentId].progress.find(p => p.id === row.progressId);
-          if (!progress) {
-            progress = {
-              id: row.progressId,
-              is_completed: row.is_completed,
-              score: row.score,
-              enrollmentId: row.enrollmentId,
-              questions: []
-            };
-            enrollmentMap[row.enrollmentId].progress.push(progress);
-          }
-
-          // เพิ่ม question object
-          if (row.questionId) {
-            let question = progress.questions.find(q => q.id === row.questionId);
-            if (!question) {
-              question = {
-                id: row.questionId,
-                content: row.questionContent,
-                typeId: row.typeId,
-                subjectId: row.subjectId,
-                correctAnswers: row.correctAnswer ? [row.correctAnswer] : [],
-                userAnswers: row.userAnswer ? [row.userAnswer] : []
-              };
-              progress.questions.push(question);
-            } else {
-              // push correctAnswer ถ้าไม่ซ้ำ
-              if (row.correctAnswer && !question.correctAnswers.includes(row.correctAnswer)) {
-                question.correctAnswers.push(row.correctAnswer);
-              }
-
-              // push userAnswer ถ้าไม่ซ้ำ
-              if (row.userAnswer && !question.userAnswers.includes(row.userAnswer)) {
-                question.userAnswers.push(row.userAnswer);
-              }
-            }
-          }
-        }
+                        // --- Build final format for EnrollSum.jsx ---
+                        const finalFormat = enrollments.map(enroll => {
+                          const user = usersMap[enroll.userId] || {};
+                          // --- Collect all progress for this enrollment ---
+                          const progress = [];
+                          // Add lab progress (for labs type 3,5,6)
+                          labProgress.filter(lp => lp.enrollmentId === enroll.id).forEach(lp => {
+                            const lab = labsMap[lp.questionId];
+                            if (!lab || ![3,5,6].includes(lab.typeId)) return;
+                            progress.push({
+                              id: lp.id,
+                              type: 'lab',
+                              questionId: lp.questionId,
+                              content: lab.content,
+                              typeId: lab.typeId,
+                              correctAnswers: (labAnswersMap[lp.questionId]||[]).map(a=>a.content),
+                              userAnswers: labLogsMap[lp.id] ? labLogsMap[lp.id].map(l => l.user_answer) : [],
+                              score: lp.score,
+                              is_completed: lp.is_completed
+                            });
+                          });
+                          // Add question progress (pre/post)
+                          questionProgress.filter(qp => qp.enrollmentId === enroll.id).forEach(qp => {
+                            const question = questionsMap[qp.questionId];
+                            progress.push({
+                              id: qp.id,
+                              type: 'question',
+                              questionId: qp.questionId,
+                              content: question ? question.content : null,
+                              typeId: qp.type === 'pre' ? 1 : (qp.type === 'post' ? 2 : 0),
+                              correctAnswers: (questionAnswersMap[qp.questionId]||[]).map(a=>a.content),
+                              userAnswers: questionLogsMap[qp.id] ? questionLogsMap[qp.id].map(l => l.user_answer) : [],
+                              score: qp.score,
+                              is_completed: qp.is_completed,
+                              qtype: qp.type // pre/post
+                            });
+                          });
+                          // --- Calculate scores ---
+                          let pretestScore = 0, posttestScore = 0, labtestScore = 0;
+                          let pretestCount = 0, posttestCount = 0, labCount = 0;
+                          progress.forEach(q => {
+                            if (q.typeId === 1) { pretestScore += q.score || 0; pretestCount++; }
+                            else if (q.typeId === 2) { posttestScore += q.score || 0; posttestCount++; }
+                            else { labtestScore += q.score || 0; labCount++; }
+                          });
+                          const total = progress.length;
+                          const completed = progress.filter(q => q.is_completed === 1).length;
+                          const progressPercent = total > 0 ? (completed / total) * 100 : 0;
+                          const grouped = [{ questions: progress }];
+                          return {
+                            id: enroll.id,
+                            userId: enroll.userId,
+                            user: { name: user.name + (user.surname ? ' ' + user.surname : '') },
+                            progressPercent,
+                            pretestScore,
+                            posttestScore,
+                            labtestScore,
+                            progress: grouped
+                          };
+                        });
+                        return res.status(200).send({ finalFormat });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
       });
-
-      const finalFormat = Object.values(enrollmentMap);
-      res.status(200).send({ finalFormat });
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Server error.", error });
+  }catch(error){
+    console.log(error);
+    return res.status(500).send({ message: "Server error.", error });
   }
 };
 
@@ -959,14 +1016,14 @@ const editManualSubject = (req, res) => {
           let questionId = qid;
           if (qid) {
             await new Promise((resolve, reject) => {
-              db.query("UPDATE question SET content = ?, img = ?, typeId = ? WHERE id = ?", [qContent, qImg, qType, qid], (err) => {
+              db.query("UPDATE labs SET content = ?, img = ?, typeId = ? WHERE id = ?", [qContent, qImg, qType, qid], (err) => {
                 if (err) return reject(err);
                 resolve();
               });
             });
           } else {
             questionId = await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (subjectId, content, img, typeId) VALUES (?, ?, ?, ?)", [subjectId, qContent, qImg, qType], (err, result) => {
+              db.query("INSERT INTO labs (subjectId, content, img, typeId) VALUES (?, ?, ?, ?)", [subjectId, qContent, qImg, qType], (err, result) => {
                 if (err) return reject(err);
                 resolve(result.insertId);
               });
@@ -977,23 +1034,23 @@ const editManualSubject = (req, res) => {
             for (const c of choice) {
               const { id: cid, content: cContent, isCorrect } = c;
               if (cid) {
-                db.query("UPDATE question_answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                db.query("UPDATE lab_answers SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
                   if (err) console.log("Choice Update Error:", err);
                 });
               } else {
-                db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                db.query("INSERT INTO lab_answers (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 });
               }
             }
           }
           if(answer && answerId){
-            db.query("UPDATE question_answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
+            db.query("UPDATE lab_answers SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
               if (err) console.log("Choice Update Error:", err);
             });
           }
           if(answer && !answerId){
-            db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
+            db.query("INSERT INTO lab_answers (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
               if (err) console.log("Choice Insert Error:", err);
             });
           }
@@ -1034,7 +1091,7 @@ const editManualSubject = (req, res) => {
         }
 
         if (parsedQuestionDelete) {
-          db.query("SELECT id, typeId FROM question WHERE id IN (?)", [parsedQuestionDelete], (err, result) => {
+          db.query("SELECT id, typeId FROM labs WHERE id IN (?)", [parsedQuestionDelete], (err, result) => {
             if (err) {
               console.log(err);
               return res.status(500).send({ message: "Database question query error" });
@@ -1052,7 +1109,7 @@ const editManualSubject = (req, res) => {
               }
             }
 
-            db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+            db.query("DELETE FROM labs WHERE id IN (?)", [parsedQuestionDelete], (err) => {
               if (err) {
                 console.log("Question Delete Error:", err);
                 return res.status(500).send({ message: "Error deleting questions." });
@@ -1062,7 +1119,7 @@ const editManualSubject = (req, res) => {
         }
 
         if (parsedChoiceDelete) {
-          db.query("DELETE FROM question_answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
+          db.query("DELETE FROM lab_answers WHERE id IN (?)", [parsedChoiceDelete], (err) => {
             if (err) {
               console.log("Choice Delete Error:", err);
               return res.status(500).send({ message: "Error deleting choices." });
@@ -1131,14 +1188,14 @@ const editPdfSubject = (req, res) => {
           let questionId = qid;
           if (qid) {
             await new Promise((resolve, reject) => {
-              db.query("UPDATE question SET content = ?, img = ?, typeId = ? WHERE id = ?", [qContent, qImg, qType, qid], (err) => {
+              db.query("UPDATE labs SET content = ?, img = ?, typeId = ? WHERE id = ?", [qContent, qImg, qType, qid], (err) => {
                 if (err) return reject(err);
                 resolve();
               });
             });
           } else {
             questionId = await new Promise((resolve, reject) => {
-              db.query("INSERT INTO question (subjectId, content, img, typeId) VALUES (?, ?, ?, ?)", [subjectId, qContent, qImg, qType], (err, result) => {
+              db.query("INSERT INTO labs (subjectId, content, img, typeId) VALUES (?, ?, ?, ?)", [subjectId, qContent, qImg, qType], (err, result) => {
                 if (err) return reject(err);
                 resolve(result.insertId);
               });
@@ -1149,23 +1206,23 @@ const editPdfSubject = (req, res) => {
             for (const c of choice) {
               const { id: cid, content: cContent, isCorrect } = c;
               if (cid) {
-                db.query("UPDATE question_answer SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
+                db.query("UPDATE lab_answers SET content = ?, type = ? WHERE id = ?", [cContent, isCorrect, cid], (err) => {
                   if (err) console.log("Choice Update Error:", err);
                 });
               } else {
-                db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
+                db.query("INSERT INTO lab_answers (questionId, content, type) VALUES (?, ?, ?)", [questionId, cContent, isCorrect], (err) => {
                   if (err) console.log("Choice Insert Error:", err);
                 });
               }
             }
           }
           if(answer && answerId){
-            db.query("UPDATE question_answer SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
+            db.query("UPDATE lab_answers SET content = ? WHERE id = ? AND type = 1", [answer, answerId], (err) => {
               if (err) console.log("Choice Update Error:", err);
             });
           }
           if(answer && !answerId){
-            db.query("INSERT INTO question_answer (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
+            db.query("INSERT INTO lab_answers (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
               if (err) console.log("Choice Insert Error:", err);
             });
           }
@@ -1206,7 +1263,7 @@ const editPdfSubject = (req, res) => {
         }
 
         if (parsedQuestionDelete) {
-          db.query("SELECT id, typeId FROM question WHERE id IN (?)", [parsedQuestionDelete], (err, result) => {
+          db.query("SELECT id, typeId FROM labs WHERE id IN (?)", [parsedQuestionDelete], (err, result) => {
             if (err) {
               console.log(err);
               return res.status(500).send({ message: "Database question query error" });
@@ -1224,7 +1281,7 @@ const editPdfSubject = (req, res) => {
               }
             }
 
-            db.query("DELETE FROM question WHERE id IN (?)", [parsedQuestionDelete], (err) => {
+            db.query("DELETE FROM labs WHERE id IN (?)", [parsedQuestionDelete], (err) => {
               if (err) {
                 console.log("Question Delete Error:", err);
                 return res.status(500).send({ message: "Error deleting questions." });
@@ -1234,7 +1291,7 @@ const editPdfSubject = (req, res) => {
         }
 
         if (parsedChoiceDelete) {
-          db.query("DELETE FROM question_answer WHERE id IN (?)", [parsedChoiceDelete], (err) => {
+          db.query("DELETE FROM lab_answers WHERE id IN (?)", [parsedChoiceDelete], (err) => {
             if (err) {
               console.log("Choice Delete Error:", err);
               return res.status(500).send({ message: "Error deleting choices." });

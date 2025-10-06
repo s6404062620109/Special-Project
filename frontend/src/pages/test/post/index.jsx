@@ -11,6 +11,7 @@ function PostTest() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
   const [ question, setQuestion ] = useState([]);
+  const [ errorMessage, setErrorMessage ] = useState("");
   const [ selectedAnswers, setSelectedAnswers ] = useState({});
   const navigate = useNavigate();
   
@@ -93,14 +94,17 @@ function PostTest() {
       setErrorMessage("กรุณาตอบคำถามทั้งหมด");
       return;
     }
-    
+
     try {
       const response = await backend.put(`/posttest/submitPosttest/${courseId}`, { answer: selectedAnswers, enrollmentId }, {
         withCredentials: true
       });
 
       if (response.status === 200 ) {
-        navigate('/courses');
+        setErrorMessage("ส่งคำตอบเสร็จสิ้น");
+        setTimeout(() => {
+          navigate(-1);
+        }, 3000);
       }
     } catch (err) {
       console.log(err);
@@ -109,7 +113,7 @@ function PostTest() {
 
   return (
     <div className={style.container}>
-      <Typography variant='h4' >แบบทดสอบก่อนเรียน</Typography>
+      <Typography variant='h4' >แบบทดสอบหลังเรียน</Typography>
       <form onSubmit={handleSubmit}>
         <TestRead 
           question={question}

@@ -157,7 +157,7 @@ const login = (req, res) => {
             return res.status(500).json({ message: "Error updating verification details." });
           }
 
-          const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "4h" });
+          const token = jwt.sign({ id: user.id }, verifiedKey, { expiresIn: "30d" });
 
           const isProduction = `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}`?.startsWith("https");
 

@@ -96,7 +96,7 @@ function EditUser({
           }
         >
           <MenuItem value="s">นักเรียน</MenuItem>
-          <MenuItem value="t">อายารย์</MenuItem>
+          <MenuItem value="t">อาจารย์</MenuItem>
           <MenuItem value="a">ผู้ดูแลระบบ</MenuItem>
         </Select>
         {message.text && (

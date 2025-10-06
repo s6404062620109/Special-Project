@@ -22,7 +22,7 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
     pretest_rate: courseInfo.pretest_rate,
     posttest_rate: courseInfo.posttest_rate,
   });
-  console.log(courseData)
+
   const announce_state = [
     { name: "คะแนนกำลังอยู่ในขั้นตอนการประเมินผล", value: 0 },
     { name: "คะแนนแบบทดสอบก่อนเรียน", value: 1 },
@@ -118,12 +118,25 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
               required
             />
 
-            <FormControl fullWidth sx={{ mt: 2 }}>
+            <FormControl 
+              sx={{ 
+                mt: 2, 
+                minWidth: 300, 
+                maxWidth: 440, 
+                width: '100%' 
+              }}
+            >
               <InputLabel>รูปแบบประกาศคะแนน</InputLabel>
               <Select
                 value={courseData.announcement}
                 onChange={(e) => setCourseData({ ...courseData, announcement: e.target.value })}
                 MenuProps={{ disablePortal: true }}
+                sx={{
+                  width: '100%',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                }}
               >
                 {announce_state.map((a) => (
                   <MenuItem key={a.value} value={a.value}>

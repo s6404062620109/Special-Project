@@ -98,7 +98,8 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const pathRender = [
     `/exam`,
     `/course/${courseId}/pretest/${enrollmentId}`,
-    `/course/${courseId}/posttest/${enrollmentId}`
+    `/course/${courseId}/posttest/${enrollmentId}`,
+    `/course/${courseId}/${enrollmentId}`
   ];
   const pathToRender = pathRender.includes(location.pathname);
 

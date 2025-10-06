@@ -57,12 +57,12 @@ const getPosttest = (req, res) => {
 function finalizePosttest(enrollmentId, res) {
   const sqlCompare = `
     SELECT 
-      SUM(CASE WHEN q.typeId = 1 THEN p.score ELSE 0 END) AS pre_score,
-      SUM(CASE WHEN q.typeId = 2 THEN p.score ELSE 0 END) AS post_score
-    FROM progress p
-    JOIN question q ON p.questionId = q.id
+      SUM(CASE WHEN p.type = 'pre' THEN p.score ELSE 0 END) AS pre_score,
+      SUM(CASE WHEN p.type = 'post' THEN p.score ELSE 0 END) AS post_score
+    FROM question_progress p
     WHERE p.enrollmentId = ?
   `;
+
   db.query(sqlCompare, [enrollmentId], (err, scores) => {
     if (err) {
       console.log(err);
@@ -71,23 +71,37 @@ function finalizePosttest(enrollmentId, res) {
 
     const preScore = Number(scores[0]?.pre_score || 0);
     const postScore = Number(scores[0]?.post_score || 0);
-    const postTestStatus = postScore >= preScore ? 1 : -1;
 
-    db.query(`UPDATE enrollment SET posttest_complete = ? WHERE id = ?`,
-      [postTestStatus, enrollmentId], (enrollErr) => {
-        if (enrollErr) {
-          console.log(enrollErr);
-          return res.status(500).json({ message: "Enrollment posttest_complete update error" });
-        }
-
-        return res.status(200).json({
-          message: "Posttest progress updated successfully",
-          preScore,
-          postScore,
-          status: postTestStatus
-        });
+    db.query(`SELECT score FROM lab_progress WHERE enrollmentId = ? AND is_completed = 1`, [enrollmentId], (labErr, labResults) => {
+      if (labErr) {
+        console.log(labErr);
+        return res.status(500).json({ message: "Lab progress query error" });
       }
-    );
+
+      const labScores = labResults.map(r => r.score);
+      const totalLabCount = labScores.length;
+      const totalLabScore = labScores.reduce((sum, s) => sum + s, 0);
+      const labPassPercent = totalLabCount ? (totalLabScore / totalLabCount) * 100 : 0;
+
+      const postTestStatus = (postScore > preScore && labPassPercent >= 60) ? 1 : -1;
+
+      db.query(`UPDATE enrollment SET posttest_complete = ?, endat = NOW() WHERE id = ?`,
+        [postTestStatus, enrollmentId], (enrollErr) => {
+          if (enrollErr) {
+            console.log(enrollErr);
+            return res.status(500).json({ message: "Enrollment posttest_complete update error" });
+          }
+
+          return res.status(200).json({
+            message: "Posttest progress updated successfully",
+            preScore,
+            postScore,
+            labPassPercent,
+            status: postTestStatus
+          });
+        }
+      );
+    });
   });
 }
 
@@ -98,7 +112,7 @@ const submitPosttest = (req, res) => {
   const userQuestionIds = Object.keys(answer).map(Number);
 
   try {
-    db.query(`SELECT questionId, type FROM question_answer WHERE id IN (?) AND questionId IN (?)`, 
+    db.query(`SELECT questionId, type FROM question_answers WHERE id IN (?) AND questionId IN (?)`, 
         [userAnswerIds, userQuestionIds], (error, result) => {
 
         if (error) {
@@ -115,7 +129,7 @@ const submitPosttest = (req, res) => {
             .filter((r) => r.type === 1)
             .map((r) => r.questionId);
 
-        db.query(`UPDATE progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ?`, 
+        db.query(`UPDATE question_progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ?`, 
             [questionIdsToUpdate, enrollmentId], (progressErr) => {
 
             if (progressErr) {
@@ -125,7 +139,7 @@ const submitPosttest = (req, res) => {
 
             const updateScore = (callback) => {
                 if (correctQuestionIds.length > 0) {
-                    db.query(`UPDATE progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ?`,
+                    db.query(`UPDATE question_progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ?`,
                     [correctQuestionIds, enrollmentId],(scoreErr) => {
 
                         if (scoreErr) {
@@ -141,8 +155,8 @@ const submitPosttest = (req, res) => {
             };
 
             updateScore(() => {
-                db.query(`SELECT id, questionId FROM progress WHERE enrollmentId = ? AND questionId IN (?)`, 
-                [enrollmentId, userQuestionIds], (error, progressResult) => {
+                db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?)`, 
+                  [enrollmentId, userQuestionIds], (error, progressResult) => {
 
                     if (error) {
                         console.log(error);
@@ -157,13 +171,13 @@ const submitPosttest = (req, res) => {
                       return [ans.content, progress ? progress.id : null];
                     });
 
-                    db.query(`INSERT INTO progress_answer (user_answer, progressId) VALUES ?`,
-                        [answerRecords], (insertErr) => {
-                            if (insertErr) {
-                                console.log(insertErr);
-                                return res.status(500).json({ message: "Progress answer insert error" });
-                            }
-                            finalizePosttest(enrollmentId, res);
+                    db.query(`INSERT INTO question_logs (user_answer, progressId) VALUES ?`,
+                      [answerRecords], (insertErr) => {
+                        if (insertErr) {
+                          console.log(insertErr);
+                          return res.status(500).json({ message: "Progress answer insert error" });
+                        }
+                        finalizePosttest(enrollmentId, res);
                     }); 
                 });
             });

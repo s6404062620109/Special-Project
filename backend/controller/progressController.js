@@ -17,7 +17,7 @@ const checkProgress = (req, res) => {
             return res.status(500).send({ message: "Database lab_progress query error" });
           }
           
-          db.query("SELECT id, subjectId FROM labs WHERE id IN (?)", [labProgressResults.map(lab => lab.questionId)], (labErr, labResults) => {
+          db.query("SELECT id, subjectId, typeId FROM labs WHERE id IN (?)", [labProgressResults.map(lab => lab.questionId)], (labErr, labResults) => {
             if (labErr) {
               return res.status(500).send({ message: "Database subject query error" });
             }
@@ -26,6 +26,7 @@ const checkProgress = (req, res) => {
               const matchedSubject = labResults.find(lab => lab.id === labp.questionId);
               return {
                 ...labp,
+                typeId: matchedSubject ? matchedSubject.typeId : null,
                 subjectId: matchedSubject ? matchedSubject.subjectId : null
               }
             });
@@ -44,6 +45,69 @@ const checkProgress = (req, res) => {
         return res.status(500).json({ message: "Server error.", error });
     }
 }
+
+const checkProgressAnswers = (req, res) => {
+  const { enrollmentId, mode } = req.params;
+
+  if (!enrollmentId || !mode) {
+    return res.status(400).send({ message: "Missing enrollmentId or mode" });
+  }
+
+  try {
+    if (mode === "lab") {
+      db.query("SELECT id, score FROM lab_progress WHERE enrollmentId = ?", [enrollmentId], (err, results) => {
+        if (err) return res.status(500).send({ message: "Database lab_progress query error" });
+        if (results.length === 0) return res.status(404).send({ message: "Progress not found" });
+
+        const progressScoreMap = {};
+        results.forEach(p => { progressScoreMap[p.id] = p.score; });
+        const progressIds = results.map(p => p.id);
+
+        db.query("SELECT * FROM lab_logs WHERE progressId IN (?)", [progressIds], (logErr, logResults) => {
+          if (logErr) return res.status(500).send({ message: "Database lab_logs query error" });
+
+          const mergedResults = logResults.map(log => ({
+            ...log,
+            score: progressScoreMap[log.progressId] || 0
+          }));
+
+          return res.status(200).send({ answers: mergedResults });
+        });
+      });
+    }
+
+    else if (mode === "pre" || mode === "post") {
+      const type = mode === "pre" ? "pre" : "post";
+      db.query("SELECT id, score FROM question_progress WHERE enrollmentId = ? AND type = ?", [enrollmentId, type], (err, results) => {
+        if (err) return res.status(500).send({ message: "Database question_progress query error" });
+        if (results.length === 0) return res.status(404).send({ message: "Progress not found" });
+
+        const progressScoreMap = {};
+        results.forEach(p => { progressScoreMap[p.id] = p.score; });
+        const progressIds = results.map(p => p.id);
+
+        db.query("SELECT * FROM question_logs WHERE progressId IN (?)", [progressIds], (logErr, logResults) => {
+          if (logErr) return res.status(500).send({ message: "Database question_logs query error" });
+
+          const mergedResults = logResults.map(log => ({
+            ...log,
+            score: progressScoreMap[log.progressId] || 0
+          }));
+
+          return res.status(200).send({ answers: mergedResults });
+        });
+      });
+    }
+
+    else {
+      return res.status(400).send({ message: "Invalid mode" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
 
 const getLatest = (req, res) => {
   const { enrollmentId } = req.params;
@@ -129,13 +193,11 @@ const getAllProgressAnswers = (req, res) => {
   const ids = questionIds.split(",").map(Number);
 
   try {
-    db.query(
-      `SELECT p.id AS progressId, p.questionId, pa.user_answer
-       FROM progress p
-       LEFT JOIN progress_answer pa ON pa.progressId = p.id
+    db.query(`SELECT p.id AS progressId, p.questionId, log.user_answer
+       FROM lab_progress p
+       LEFT JOIN lab_logs log ON log.progressId = p.id
        WHERE p.enrollmentId = ? AND p.questionId IN (?) AND p.is_completed = 1`,
-      [enrollmentId, ids],
-      (err, results) => {
+      [enrollmentId, ids], (err, results) => {
         if (err) {
           console.log(err);
           return res.status(500).json({ message: "Database query error" });
@@ -152,6 +214,7 @@ const getAllProgressAnswers = (req, res) => {
 
 module.exports = {
     checkProgress,
+    checkProgressAnswers,
     getLatest,
     getAllProgressAnswers
 }

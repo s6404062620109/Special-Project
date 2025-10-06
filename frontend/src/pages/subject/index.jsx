@@ -1,18 +1,29 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
-import { useNavigate, useParams } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthContext } from '../../context/AuthProvider';
-import backend from '../../api/backend';
+import { useEffect, useState, useRef, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthProvider";
+import backend from "../../api/backend";
 
-import style from './css/subject.module.css';
-import NavSubject from './NavSubject';
-import Reader from '../../components/Reader';
-import Labs from './Labs';
+import style from "./css/subject.module.css";
+import NavSubject from "./NavSubject";
+import Reader from "../../components/Reader";
+import Labs from "./Labs";
 
-import { Backdrop, Box, IconButton, Slide, Stack } from '@mui/material';
-import ListIcon from '@mui/icons-material/List';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+  Backdrop,
+  Box,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Slide,
+  Stack,
+  Tab,
+  Tabs,
+} from "@mui/material";
+import ListIcon from "@mui/icons-material/List";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 function useLabProgress(courseId, subjectId, enrollmentId) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -71,7 +82,9 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
 
     try {
       const response = await backend.get(
-        `/progress/getAllProgressAnswers/${enrollmentId}/${courseId}?questionIds=${ids.join(",")}`,
+        `/progress/getAllProgressAnswers/${enrollmentId}/${courseId}?questionIds=${ids.join(
+          ","
+        )}`,
         { withCredentials: true, signal: controller.signal }
       );
 
@@ -103,7 +116,7 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
       return acc;
     }, {});
 
-    const initialAnswers = questions.map(q => {
+    const initialAnswers = questions.map((q) => {
       if (progressMap[q.id]) {
         return {
           questionId: q.id,
@@ -177,15 +190,19 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
     let valid = true;
 
     if (
-      (answer.lab_type === 3 || answer.lab_type === 4 || answer.lab_type === 5) &&
+      (answer.lab_type === 3 ||
+        answer.lab_type === 4 ||
+        answer.lab_type === 5) &&
       (answer.answer === null || answer.answer === "")
     ) {
       valid = false;
       setErrorMessage(`ต้องเลือกคำตอบสำหรับคำถามที่ ${idx + 1}.`);
     }
 
-    if (answer.lab_type === 6 &&
-      (!Array.isArray(answer.answer) || answer.answer.length === 0)) {
+    if (
+      answer.lab_type === 6 &&
+      (!Array.isArray(answer.answer) || answer.answer.length === 0)
+    ) {
       valid = false;
       setErrorMessage(`คำถามที่ ${idx + 1} ต้องการคำตอบอย่างน้อย 1 คำตอบ`);
     }
@@ -208,7 +225,7 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
       if (response.status === 200) {
         setErrorMessage(response.data.message);
         fetchAllProgressAnswers([questionId]);
-        
+
         setTimeout(() => setErrorMessage(""), 3000);
       }
     } catch (error) {
@@ -239,7 +256,8 @@ function Subject() {
   const [subjectList, setSubjectList] = useState([]);
   const [content, setContent] = useState({ name: "", content: null });
   const [openNavSubject, setOpenNavSubject] = useState(false);
-  const [labs, setLabs] = useState(true);
+  const [labs, setLabs] = useState(false);
+  const [activeTab, setActiveTab] = useState("lesson");
 
   const {
     currentQuestionIndex,
@@ -256,12 +274,13 @@ function Subject() {
   } = useLabProgress(courseId, subjectId, enrollmentId);
 
   const readerRef = useRef(null);
-  const labsRef = useRef(null);
+  const endRef = useRef(null);
   const navigate = useNavigate();
 
   const fetchSubjectData = async () => {
     try {
-      const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`,
+      const response = await backend.get(
+        `/subjects/getSubject/${courseId}/${subjectId}`,
         { withCredentials: true }
       );
 
@@ -297,7 +316,8 @@ function Subject() {
 
   const fetchLastProgress = async () => {
     try {
-      const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`,
+      const response = await backend.get(
+        `/progress/getLatestProgress/${enrollmentId}/${courseId}`,
         { withCredentials: true }
       );
       if (response.status === 200) {
@@ -308,10 +328,15 @@ function Subject() {
     }
   };
 
+  const handleChangeTab = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
   const handleLabSpawn = async (questionId) => {
     try {
       const response = await backend.post(
-        `/labs/startLabSession/${courseId}`, { userId: userData.id, subjectId, questionId },
+        `/labs/startLabSession/${courseId}`,
+        { userId: userData.id, subjectId, questionId },
         { withCredentials: true }
       );
 
@@ -339,16 +364,21 @@ function Subject() {
 
   const checkPretestCompletion = async () => {
     try {
-      const response = await backend.get(`/progress/checkCourseProgress/${enrollmentId}/${courseId}`, {
-        withCredentials: true
-      });
+      const response = await backend.get(
+        `/progress/checkCourseProgress/${enrollmentId}/${courseId}`,
+        {
+          withCredentials: true,
+        }
+      );
 
       if (response.status === 200) {
         const pretestProgress = response.data.pretest_progress;
 
-        const pretestCompleted = pretestProgress.every((item) => item.is_completed === 1);
+        const pretestCompleted = pretestProgress.every(
+          (item) => item.is_completed === 1
+        );
 
-        if(!pretestCompleted){
+        if (!pretestCompleted) {
           alert("กรุณาทำแบบทดสอบก่อนเรียนให้เสร็จก่อนเข้าเรียน");
           navigate(`/course/${courseId}/${enrollmentId}`);
           return;
@@ -358,142 +388,156 @@ function Subject() {
       console.log(error);
     }
   };
-  
+
   useEffect(() => {
     fetchSubjectData();
     fetchSubjectList();
     fetchLabQuestions();
     checkPretestCompletion();
   }, [courseId, subjectId]);
-  console.log(questions);
+
   return (
     <div className={style.container}>
-      <Stack
-        direction="row"
-        alignItems="flex-start"
-        justifyContent="space-between"
-        sx={{ width: "100%", gap: 2 }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <div ref={readerRef}>
-            <Reader
-              content={content}
-              enrollmentId={enrollmentId}
-              subjectId={subjectId}
-            />
-          </div>
-        </Box>
+      <Stack sx={{ width: "100%", mb: 2 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleChangeTab}
+          textColor="primary"
+          indicatorColor="primary"
+          centered
+        >
+          <Tab label="บทเรียน" value="lesson" />
+          <Tab label="ปฏิบัติการทดสอบ" value="lab" />
+        </Tabs>
+      </Stack>
 
-        <Backdrop
-          open={openNavSubject}
-          sx={{ zIndex: 1300 }}
-          onClick={() => setOpenNavSubject(false)}
-        />
+      {activeTab === "lesson" && (
+        <Stack
+          direction="row"
+          alignItems="flex-start"
+          justifyContent="space-between"
+          sx={{ width: "100%", gap: 2 }}
+        >
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <div ref={readerRef}>
+              <Reader
+                content={content}
+                enrollmentId={enrollmentId}
+                subjectId={subjectId}
+              />
+            </div>
+            <div ref={endRef}></div>
+          </Box>
 
-        {!openNavSubject && (
-          <IconButton
-            onClick={() => setOpenNavSubject(true)}
-            sx={{
-              position: "fixed",
-              bottom: "40%",
-              right: "5px",
-              transform: "translateY(-50%)",
-              zIndex: 1301,
-              background: "white",
-              border: "1px solid #b3b3b3",
-              opacity: 0.5,
-              ":hover": { opacity: 1 },
-            }}
-          >
-            <ListIcon fontSize="large" />
-          </IconButton>
-        )}
-
-        <Slide direction="left" in={openNavSubject} mountOnEnter unmountOnExit>
           <Stack
             sx={{
               position: "fixed",
-              top: "35%",
-              right: "20px",
+              bottom: "20px",
+              left: "40px",
               transform: "translateY(-50%)",
+              height: "100px",
+              justifyContent: "space-between",
               zIndex: 1301,
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            <NavSubject
-              courseId={courseId}
-              subjectList={subjectList}
-              enrollmentId={enrollmentId}
-            />
-          </Stack>
-        </Slide>
+            <IconButton
+              onClick={() => {
+                readerRef.current?.scrollIntoView({ behavior: "smooth" });
+              }}
+              sx={{
+                color: "black",
+                opacity: 0.5,
+                ":hover": {
+                  opacity: 1,
+                  color: "white",
+                  background: "#1976d2",
+                },
+              }}
+            >
+              <ExpandLessIcon />
+            </IconButton>
 
+            <IconButton
+              onClick={() => {
+                endRef.current?.scrollIntoView({ behavior: "smooth" });
+              }}
+              sx={{
+                color: "black",
+                opacity: 0.5,
+                ":hover": {
+                  opacity: 1,
+                  color: "white",
+                  background: "#1976d2",
+                },
+              }}
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </Stack>
+        </Stack>
+      )}
+
+      {activeTab === "lab" && (
+        <Labs
+          currentQuestionIndex={currentQuestionIndex}
+          setCurrentQuestionIndex={setCurrentQuestionIndex}
+          handleChangePage={handleChangePage}
+          questions={questions}
+          handleLabSpawn={handleLabSpawn}
+          answers={answers}
+          progressAnswers={progressAnswers}
+          handleLabAnswerChange={handleLabAnswerChange}
+          errorMessage={errorMessage}
+          handleLabSubmit={handleLabSubmit}
+          fetchLastProgress={fetchLastProgress}
+        />
+      )}
+
+      <Backdrop
+        open={openNavSubject}
+        sx={{ zIndex: 1300 }}
+        onClick={() => setOpenNavSubject(false)}
+      />
+
+      <Slide direction="left" in={openNavSubject} mountOnEnter unmountOnExit>
         <Stack
           sx={{
             position: "fixed",
-            bottom: "20px",
-            left: "40px",
+            top: "35%",
+            right: "20px",
             transform: "translateY(-50%)",
-            height: "100px",
-            justifyContent: "space-between",
             zIndex: 1301,
           }}
+          onClick={(e) => e.stopPropagation()}
         >
-          <IconButton
-            onClick={() => {
-              readerRef.current?.scrollIntoView({ behavior: "smooth" });
-            }}
-            sx={{
-              color: "black",
-              opacity: 0.5,
-              ":hover": {
-                opacity: 1,
-                color: "white",
-                background: "#1976d2",
-              },
-            }}
-          >
-            <ExpandLessIcon />
-          </IconButton>
-
-          <IconButton
-            onClick={() => {
-              labsRef.current?.scrollIntoView({ behavior: "smooth" });
-            }}
-            sx={{
-              color: "black",
-              opacity: 0.5,
-              ":hover": {
-                opacity: 1,
-                color: "white",
-                background: "#1976d2",
-              },
-            }}
-          >
-            <ExpandMoreIcon />
-          </IconButton>
-        </Stack>
-      </Stack>
-
-      {labs && (
-        <div ref={labsRef}>
-          <Labs
-            currentQuestionIndex={currentQuestionIndex}
-            setCurrentQuestionIndex={setCurrentQuestionIndex}
-            handleChangePage={handleChangePage}
-            questions={questions}
-            handleLabSpawn={handleLabSpawn}
-            answers={answers}
-            progressAnswers={progressAnswers}
-            handleLabAnswerChange={handleLabAnswerChange}
-            errorMessage={errorMessage}
-            handleLabSubmit={handleLabSubmit}
-            fetchLastProgress={fetchLastProgress}
+          <NavSubject
+            courseId={courseId}
+            subjectList={subjectList}
+            enrollmentId={enrollmentId}
           />
-        </div>
+        </Stack>
+      </Slide>
+
+      {!openNavSubject && (
+        <IconButton
+          onClick={() => setOpenNavSubject(true)}
+          sx={{
+            position: "fixed",
+            bottom: "40%",
+            right: "5px",
+            transform: "translateY(-50%)",
+            zIndex: 1301,
+            background: "white",
+            border: "1px solid #b3b3b3",
+            opacity: 0.5,
+            ":hover": { opacity: 1 },
+          }}
+        >
+          <ListIcon fontSize="large" />
+        </IconButton>
       )}
     </div>
   );
 }
 
-export default Subject
+export default Subject;

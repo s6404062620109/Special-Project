@@ -4,6 +4,8 @@ import { AuthContext } from "../../context/AuthProvider";
 
 import style from "./css/subjectdata.module.css";
 import { Typography } from "@mui/material";
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
 
 function SubjectData({ id, name, courseId, labProgress, enrollmentId }) {
   const { userData } = useContext(AuthContext);
@@ -22,9 +24,9 @@ function SubjectData({ id, name, courseId, labProgress, enrollmentId }) {
   }
 
   const matchedProgressList = labProgress.filter(
-  (p) =>
-    p.subjectId === id &&
-    (p.typeId === 3 || p.typeId === 4 || p.typeId === 5 || p.typeId === 6)
+    (p) =>
+      Number(p.subjectId) === Number(id) &&
+      [3, 4, 5, 6].includes(p.typeId)
   );
 
   const isAllCompleted = matchedProgressList.length > 0 && matchedProgressList.every((p) => p.is_completed === 1);
@@ -41,7 +43,10 @@ function SubjectData({ id, name, courseId, labProgress, enrollmentId }) {
       {userData.id && (
         <td>
           {isAllCompleted && (
-            <Typography variant="h6" color="green">Lab Completed</Typography>
+            <CheckIcon color="success" />
+          )}
+          {labProgress.length > 0 && !isAllCompleted &&(
+            <ClearIcon color="error" />
           )}
         </td>
       )}

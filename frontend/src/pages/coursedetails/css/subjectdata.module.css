@@ -8,6 +8,10 @@
     border-bottom: 1px solid black;
 }
 
+.content td:nth-child(2) {
+    text-align: center;
+}
+
 .content td:nth-child(1) > p {
     margin: 8px 0;
     padding: 0 16px;

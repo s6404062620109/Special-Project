@@ -60,7 +60,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
               disabled={mode === "delete"} 
             />
           }
-          label="Correct"
+          label="ถูกต้อง"
           sx={{ width: { xs: '100%', sm: '30%' } }}
         />
       </Stack>

@@ -355,7 +355,7 @@ function ManageUser() {
                             onClick={() => handleEditClick(user)}
                             startIcon={<EditIcon />}
                           >
-                            Edit
+                            แก้ไข
                           </Button>
                         ) : (
                           <IconButton
@@ -383,7 +383,7 @@ function ManageUser() {
                               <DeleteIcon />
                             }
                           >
-                            Delete
+                            ลบ
                           </Button>
                         ) : (
                           <IconButton
