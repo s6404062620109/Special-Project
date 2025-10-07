@@ -117,7 +117,7 @@ const checkCourseEnroll = (req, res) => {
     const { userId, courseId } = req.params;
 
     try{
-      db.query(`SELECT * FROM enrollment WHERE userId = ? AND courseId = ?`, [userId, courseId], (err, results) => {
+      db.query(`SELECT * FROM enrollment WHERE userId = ? AND courseId = ? AND posttest_complete IN (0, 1)`, [userId, courseId], (err, results) => {
         if (err) {
           console.error(err);
           return res.status(500).json({ message: "Database enrollment query error" });

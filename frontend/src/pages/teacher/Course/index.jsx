@@ -119,11 +119,11 @@ function EditCourse() {
   const isXs = useMediaQuery("(max-width:600px)");
   const isSm = useMediaQuery("(max-width:900px)");
 
-  const lineChartData = chartData?.users?.map((u) => {
+  const lineChartData = chartData?.users?.map((u, index) => {
       const duplicateCount = chartData.users.filter(
         (user) => user.name === u.name
       ).length;
-      const nameWithId = duplicateCount > 1 ? `${u.name}-${u.userId}` : u.name;
+      const nameWithId = duplicateCount > 1 ? `${u.name}-${index}` : u.name;
 
       return {
         userId: u.id,

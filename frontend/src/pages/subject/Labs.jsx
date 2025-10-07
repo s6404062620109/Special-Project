@@ -173,7 +173,7 @@ function Labs({
         return null;
     }
   };
-
+  
   return (
     <Stack>
       <Typography variant="h6" align="center">

@@ -63,11 +63,11 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
   );
 
   /** Fetch progress answers */
-  const fetchAllProgressAnswers = async (ids) => {
+  const fetchAllProgressAnswers = async (ids, force = false) => {
     if (!ids || ids.length === 0) return;
 
     const idsKey = ids.join(",");
-    if (lastQuestionIdsRef.current === idsKey) return;
+    if (!force && lastQuestionIdsRef.current === idsKey) return;
     lastQuestionIdsRef.current = idsKey;
 
     if (controllerRef.current) {
@@ -213,15 +213,14 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
 
     const answer = answers.find((a) => a.questionId === questionId);
     try {
-      const response = await backend.put(
-        `/labs/submitLabQuestions/${courseId}/${enrollmentId}`,
+      const response = await backend.put(`/labs/submitLabQuestions/${courseId}/${enrollmentId}`,
         { answer },
         { withCredentials: true }
       );
 
       if (response.status === 200) {
         setErrorMessage(response.data.message);
-        fetchAllProgressAnswers([questionId]);
+        fetchAllProgressAnswers(questionIds, true);
 
         setTimeout(() => setErrorMessage(""), 3000);
       }

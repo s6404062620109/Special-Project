@@ -83,7 +83,7 @@ function finalizePosttest(enrollmentId, res) {
       const totalLabScore = labScores.reduce((sum, s) => sum + s, 0);
       const labPassPercent = totalLabCount ? (totalLabScore / totalLabCount) * 100 : 0;
 
-      const postTestStatus = (postScore > preScore && labPassPercent >= 60) ? 1 : -1;
+      const postTestStatus = (postScore >= preScore && labPassPercent >= 60) ? 1 : -1;
 
       db.query(`UPDATE enrollment SET posttest_complete = ?, endat = NOW() WHERE id = ?`,
         [postTestStatus, enrollmentId], (enrollErr) => {

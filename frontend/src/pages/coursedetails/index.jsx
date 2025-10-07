@@ -227,6 +227,7 @@ function CourseDetail() {
         withCredentials: true,
       });
       if (response.status === 200) {
+        console.log(response.data.results);
         setHistory(response.data.results);
       }
     } catch (err) {

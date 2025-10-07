@@ -74,7 +74,7 @@ const testAnalysis = (req, res) => {
         }
 
         // สร้างชุดข้อมูล
-        const usersSummary = [];
+        const summary = [];
         let pretestMax = 0;
         let posttestMax = 0;
 
@@ -92,24 +92,27 @@ const testAnalysis = (req, res) => {
           }
         }
 
-        // รวมคะแนนราย user
-        for (const user of users) {
-          const enrollment = enrollments.find(e => e.userId === user.id);
-          if (!enrollment) continue;
+        // สร้าง Map ของ user เพื่อให้ค้นหาได้เร็วขึ้น
+        const userMap = new Map(users.map(u => [u.id, u]));
 
-          const userProgress = progressResults.filter(p => p.enrollmentId === enrollment.id);
+        // รวมคะแนนตามแต่ละ enrollment
+        for (const enrollment of enrollments) {
+          const user = userMap.get(enrollment.userId);
+          if (!user) continue;
 
-          const pretestScore = userProgress
+          const enrollmentProgress = progressResults.filter(p => p.enrollmentId === enrollment.id);
+
+          const pretestScore = enrollmentProgress
             .filter(p => p.type === "pre" && p.is_completed === 1)
             .reduce((sum, p) => sum + (p.score || 0), 0);
 
-          const posttestScore = userProgress
+          const posttestScore = enrollmentProgress
             .filter(p => p.type === "post" && p.is_completed === 1)
             .reduce((sum, p) => sum + (p.score || 0), 0);
 
-          usersSummary.push({
+          summary.push({
             userId: user.id,
-            name: user.name + ' ' + user.surname,
+            name: `${user.name} ${user.surname}`,
             email: user.email,
             pretestScore,
             posttestScore
@@ -118,7 +121,7 @@ const testAnalysis = (req, res) => {
 
         // ✅ ส่งข้อมูลกลับ
         return res.status(200).send({
-          users: usersSummary,
+          users: summary,
           pretestMax,
           posttestMax
         });
