@@ -80,7 +80,7 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
               </IconButton>
             </TableCell>
             <TableCell>
-              Pretest
+              แบบทดสอบก่อนเรียน
             </TableCell>
             <TableCell>
               {pretestScore} คะแนน / {pretest.length} คะแนน
@@ -106,7 +106,7 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
               </IconButton>
             </TableCell>
             <TableCell>
-              Posttest
+              แบบทดสอบหลังเรียน
             </TableCell>
             <TableCell>
               {posttestScore} คะแนน / {posttest.length} คะแนน
@@ -132,7 +132,7 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
               </IconButton>
             </TableCell>
             <TableCell>
-              Labs 
+              ปฏิบัติการทดสอบ 
             </TableCell>
             <TableCell>
               {labtestScore} คะแนน / {labs.length} คะแนน
@@ -272,6 +272,7 @@ function EnrollSum() {
 
       if (response.status === 200) {
         setEnrollments(response.data.finalFormat || []);
+        console.log("Enrollment data fetched successfully:", response.data);
       }
     } catch (error) {
       console.error(error);

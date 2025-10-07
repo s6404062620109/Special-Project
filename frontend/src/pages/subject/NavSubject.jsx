@@ -49,7 +49,7 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
       <div className={style["subjectlist"]}>
         <div className={style["subjectlist-title"]}>
           <p>
-            All Subject
+            บทเรียนทั้งหมด
           </p>
         </div>
 

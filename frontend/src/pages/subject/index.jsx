@@ -81,10 +81,7 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
     controllerRef.current = controller;
 
     try {
-      const response = await backend.get(
-        `/progress/getAllProgressAnswers/${enrollmentId}/${courseId}?questionIds=${ids.join(
-          ","
-        )}`,
+      const response = await backend.get(`/progress/getAllProgressAnswers/${enrollmentId}/${courseId}?questionIds=${ids.join(",")}`,
         { withCredentials: true, signal: controller.signal }
       );
 
@@ -332,36 +329,6 @@ function Subject() {
     setActiveTab(newValue);
   };
 
-  const handleLabSpawn = async (questionId) => {
-    try {
-      const response = await backend.post(
-        `/labs/startLabSession/${courseId}`,
-        { userId: userData.id, subjectId, questionId },
-        { withCredentials: true }
-      );
-
-      if (response.status === 200) {
-        const { terminalUrl } = response.data;
-        const labWindow = window.open(terminalUrl, "_blank");
-
-        const labCheckInterval = setInterval(() => {
-          if (labWindow.closed) {
-            clearInterval(labCheckInterval);
-            backend
-              .post(
-                `/labs/clearLabSession/${courseId}`,
-                { userId: userData.id },
-                { withCredentials: true }
-              )
-              .catch((err) => console.error("cleanup error", err));
-          }
-        }, 1000);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const checkPretestCompletion = async () => {
     try {
       const response = await backend.get(
@@ -483,7 +450,6 @@ function Subject() {
           setCurrentQuestionIndex={setCurrentQuestionIndex}
           handleChangePage={handleChangePage}
           questions={questions}
-          handleLabSpawn={handleLabSpawn}
           answers={answers}
           progressAnswers={progressAnswers}
           handleLabAnswerChange={handleLabAnswerChange}

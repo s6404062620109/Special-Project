@@ -62,7 +62,6 @@ function EditCourse() {
       );
 
       if (response.status === 200) {
-        console.log(response.data);
         setChartData(response.data);
       }
     } catch (error) {

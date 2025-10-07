@@ -99,7 +99,7 @@ const submitPretest = (req, res) => {
         .map((r) => r.questionId);
 
       // 2. update progress: set is_completed = true, reset score = 0
-      db.query(`UPDATE question_progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ?`, 
+      db.query(`UPDATE question_progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ? AND type = 'pre'`, 
         [questionIdsToUpdate, enrollmentId], (progressErr) => {
         if (progressErr) {
           console.log(progressErr);
@@ -108,13 +108,13 @@ const submitPretest = (req, res) => {
 
         // 3. update score = 1 สำหรับคำตอบที่ถูก
         if (correctQuestionIds.length > 0) {
-          db.query(`UPDATE question_progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ?`, [correctQuestionIds, enrollmentId], (scoreErr) => {
+          db.query(`UPDATE question_progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ? AND type = 'pre'`, [correctQuestionIds, enrollmentId], (scoreErr) => {
             if (scoreErr) {
               console.log(scoreErr);
               return res.status(500).json({ message: "Score update error" });
             }
 
-            db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?)`, 
+            db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?) AND type = 'pre'`, 
               [enrollmentId, userQuestionIds], (error, progressResult) => {
                 if (error) {
                   console.log(error);

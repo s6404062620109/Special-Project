@@ -31,7 +31,6 @@ function Labs({
   setCurrentQuestionIndex,
   handleChangePage,
   questions,
-  handleLabSpawn,
   answers,
   progressAnswers,
   handleLabAnswerChange,
@@ -150,32 +149,6 @@ function Labs({
                 label={choice.content}
               />
             ))}
-          </Stack>
-        );
-
-      case 4: // Short text + spawn
-        return (
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            gap={2}
-            sx={{ width: "80%", margin: "8px auto" }}
-          >
-            <TextField
-              fullWidth
-              label="Answer"
-              value={currentAnswer?.answer || ""}
-              onChange={(e) =>
-                handleLabAnswerChange(currentQuestion.id, 4, e.target.value)
-              }
-            />
-            <Button
-              variant="contained"
-              onClick={() => handleLabSpawn?.(currentQuestion.id)}
-            >
-              สร้างห้องจำลอง
-            </Button>
           </Stack>
         );
 

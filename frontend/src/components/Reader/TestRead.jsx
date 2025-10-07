@@ -8,7 +8,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const location = useLocation();
-  const { courseId, enrollmentId, subjectId } = useParams();
+  const { courseId, enrollmentId, subjectId, mode } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
   const [ cmdFileContent, setCmdFileContent ] = useState('');
@@ -96,7 +96,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
     }
   }, [currentItem]);
   const pathRender = [
-    `/exam`,
+    `/exam/${mode}/${courseId}`,
     `/course/${courseId}/pretest/${enrollmentId}`,
     `/course/${courseId}/posttest/${enrollmentId}`,
     `/course/${courseId}/${enrollmentId}`

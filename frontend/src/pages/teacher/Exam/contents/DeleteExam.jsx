@@ -17,6 +17,7 @@ import QuestionItem from "../component/QuestionItem";
 
 export const DeleteExam = ({
   questions,
+  setPreviewOpen,
   handleImgChange,
   handleQuestionChange,
   handleChoiceChange,
@@ -52,7 +53,11 @@ export const DeleteExam = ({
             แก้ไขคำถาม
           </Typography>
 
-          <Button variant="outlined" startIcon={<PreviewIcon />}>
+          <Button 
+            variant="outlined" 
+            startIcon={<PreviewIcon />}
+            onClick={setPreviewOpen}
+          >
             ดูตัวอย่าง
           </Button>
         </Stack>

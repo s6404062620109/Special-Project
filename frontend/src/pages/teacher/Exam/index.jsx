@@ -425,6 +425,7 @@ function Exam() {
             {mode === "delete" && (
               <DeleteExam 
                 questions={questions}
+                setPreviewOpen={handlePreview}
                 handleQuestionChange={handleQuestionChange}
                 handleChoiceChange={handleChoiceChange}
                 handleAddChoice={handleAddChoice}

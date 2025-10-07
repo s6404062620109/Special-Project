@@ -47,7 +47,7 @@ const testAnalysis = (req, res) => {
     const enrollmentIds = enrollments.map(e => e.id);
 
     // ดึงข้อมูล user ที่เกี่ยวข้อง
-    db.query("SELECT id, name, email FROM user WHERE id IN (?)", [userIds], (error, users) => {
+    db.query("SELECT id, name, surname, email FROM user WHERE id IN (?)", [userIds], (error, users) => {
       if (error) {
         console.error(error);
         return res.status(500).send({ message: "Database user query error." });
@@ -109,7 +109,7 @@ const testAnalysis = (req, res) => {
 
           usersSummary.push({
             userId: user.id,
-            name: user.name,
+            name: user.name + ' ' + user.surname,
             email: user.email,
             pretestScore,
             posttestScore
@@ -227,33 +227,76 @@ const enrollSummary = (req, res) => {
   }
   try{
     db.query("SELECT * FROM enrollment WHERE courseId = ?", [courseId], (err, enrollments) => {
-      if(err) return res.status(500).send({ message: "Database enrollment query error." });
-      if(!enrollments || enrollments.length === 0) return res.status(404).send({ message: "No enrollment found." });
+      if(err) {
+        console.error(err);
+        return res.status(500).send({ message: "Database enrollment query error." });
+      }
+      if(!enrollments || enrollments.length === 0) {
+        return res.status(404).send({ message: "No enrollment found." });
+      
+      }
       const enrollmentIds = enrollments.map(e => e.id);
       const userIds = enrollments.map(e => e.userId);
-      db.query("SELECT id, sex, name, surname FROM user WHERE id IN (?)", [userIds], (err, users) => {
-        if(err) return res.status(500).send({ message: "Database user query error." });
-        if(!users || users.length === 0) return res.status(404).send({ message: "No user found." });
+      db.query("SELECT id, name, surname FROM user WHERE id IN (?)", [userIds], (err, users) => {
+        if(err) {
+          console.error(err);
+          return res.status(500).send({ message: "Database user query error." });
+        }
+
+        if(!users || users.length === 0) {
+          return res.status(404).send({ message: "No user found." });
+        }
+
         db.query("SELECT * FROM labs WHERE subjectId IN (SELECT id FROM subject WHERE courseId = ?)", [courseId], (err, labs) => {
-          if(err) return res.status(500).send({ message: "Database labs query error." });
+          if(err) {
+            console.error(err);
+            return res.status(500).send({ message: "Database labs query error." });
+          }
           const labIds = labs.map(l => l.id);
-          db.query("SELECT * FROM lab_answers WHERE questionId IN (?)", [labIds.length ? labIds : [0]], (err, labAnswers) => {
-            if(err) return res.status(500).send({ message: "Database lab_answers query error." });
+
+          db.query("SELECT * FROM lab_answers WHERE questionId IN (?) AND type = 1", [labIds.length ? labIds : [0]], (err, labAnswers) => {
+            if(err) {
+              console.error(err);
+              return res.status(500).send({ message: "Database lab_answers query error." });
+            }
             db.query("SELECT * FROM lab_progress WHERE enrollmentId IN (?)", [enrollmentIds.length ? enrollmentIds : [0]], (err, labProgress) => {
-              if(err) return res.status(500).send({ message: "Database lab_progress query error." });
+              if(err) {
+                console.error(err);
+                return res.status(500).send({ message: "Database lab_progress query error." });
+              }
+
               const labProgressIds = labProgress.map(lp => lp.id);
               db.query("SELECT * FROM lab_logs WHERE progressId IN (?)", [labProgressIds.length ? labProgressIds : [0]], (err, labLogs) => {
-                if(err) return res.status(500).send({ message: "Database lab_logs query error." });
+                if(err) {
+                  console.error(err);
+                  return res.status(500).send({ message: "Database lab_logs query error." });
+                }
                 db.query("SELECT * FROM questions WHERE courseId = ?", [courseId], (err, questions) => {
-                  if(err) return res.status(500).send({ message: "Database questions query error." });
+                  if(err) {
+                    console.error(err);
+                    return res.status(500).send({ message: "Database questions query error." });
+                  }
+
                   const questionIds = questions.map(q => q.id);
-                  db.query("SELECT * FROM question_answers WHERE questionId IN (?)", [questionIds.length ? questionIds : [0]], (err, questionAnswers) => {
-                    if(err) return res.status(500).send({ message: "Database question_answers query error." });
+                  db.query("SELECT * FROM question_answers WHERE questionId IN (?) AND type = 1", [questionIds.length ? questionIds : [0]], (err, questionAnswers) => {
+                    if(err) {
+                      console.error(err);
+                      return res.status(500).send({ message: "Database question_answers query error." });
+                    }
+
                     db.query("SELECT * FROM question_progress WHERE enrollmentId IN (?)", [enrollmentIds.length ? enrollmentIds : [0]], (err, questionProgress) => {
-                      if(err) return res.status(500).send({ message: "Database question_progress query error." });
+                      if(err) {
+                        console.error(err);
+                        return res.status(500).send({ message: "Database question_progress query error." });
+                      }
+
                       const questionProgressIds = questionProgress.map(qp => qp.id);
                       db.query("SELECT * FROM question_logs WHERE progressId IN (?)", [questionProgressIds.length ? questionProgressIds : [0]], (err, questionLogs) => {
-                        if(err) return res.status(500).send({ message: "Database question_logs query error." });
+                        if(err) {
+                          console.error(err);
+                          return res.status(500).send({ message: "Database question_logs query error." });
+                        }
+
                         // --- Build lookup maps ---
                         const usersMap = Object.fromEntries(users.map(u => [u.id, u]));
                         // --- LABS ---

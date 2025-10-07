@@ -129,7 +129,7 @@ const submitPosttest = (req, res) => {
             .filter((r) => r.type === 1)
             .map((r) => r.questionId);
 
-        db.query(`UPDATE question_progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ?`, 
+        db.query(`UPDATE question_progress SET is_completed = 1, score = 0 WHERE questionId IN (?) AND enrollmentId = ? AND type = 'post'`, 
             [questionIdsToUpdate, enrollmentId], (progressErr) => {
 
             if (progressErr) {
@@ -139,7 +139,7 @@ const submitPosttest = (req, res) => {
 
             const updateScore = (callback) => {
                 if (correctQuestionIds.length > 0) {
-                    db.query(`UPDATE question_progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ?`,
+                    db.query(`UPDATE question_progress SET score = 1 WHERE questionId IN (?) AND enrollmentId = ? AND type = 'post'`,
                     [correctQuestionIds, enrollmentId],(scoreErr) => {
 
                         if (scoreErr) {
