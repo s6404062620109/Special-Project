@@ -35,8 +35,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(bodyParser.json());
+app.use(express.json({ limit: '100mb' })); // For parsing application/json
+app.use(express.urlencoded({ limit: '100mb', extended: true })); // For parsing application/x-www-form-urlencoded
 
 /* authRoutes */
 const authRoutes = require("./routes/authRoutes");

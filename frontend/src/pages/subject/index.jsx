@@ -220,9 +220,11 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
 
       if (response.status === 200) {
         setErrorMessage(response.data.message);
-        fetchAllProgressAnswers(questionIds, true);
 
-        setTimeout(() => setErrorMessage(""), 3000);
+        setTimeout(() => {
+          setErrorMessage("");
+          fetchAllProgressAnswers(questionIds, true);
+        }, 3000);
       }
     } catch (error) {
       console.error("handleLabSubmit error:", error);

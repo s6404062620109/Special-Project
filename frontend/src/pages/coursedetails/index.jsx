@@ -227,7 +227,6 @@ function CourseDetail() {
         withCredentials: true,
       });
       if (response.status === 200) {
-        console.log(response.data.results);
         setHistory(response.data.results);
       }
     } catch (err) {
@@ -661,7 +660,22 @@ function CourseDetail() {
               margin: "auto",
               alignItems: { xs: "flex-start", sm: "center" },
             }}
-          >        
+          > 
+            {userData.id && enrollmentId !== "null" && history.length === 0 && (
+              <Typography variant="subtitle1" align="center" color="red">
+                คุณไม่ผ่านการเรียนรู้ของคอร์ส 
+                <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
+              </Typography>
+            )}
+
+            {userData.id && enrollmentId !== "null" && 
+            history.length > 0 && history[0].posttest_complete === 1 && (
+              <Typography variant="subtitle1" align="center" color="green">
+                คุณผ่านการเรียนรู้ของคอร์สนี้แล้ว
+                <CheckIcon color="success" sx={{ ml: 1, mb: -0.5 }} />
+              </Typography>
+            )}
+                 
             {(userData.id && history.length === 0) && (
               <Button
                 variant="contained"
@@ -670,10 +684,10 @@ function CourseDetail() {
                 }}
                 onClick={() => enrollCourse()}
               >
-                สมัครเรียน
+                {enrollmentId !== "null" ? "สมัครเรียนใหม่" : "สมัครเรียน"}
               </Button>
             )}
-    
+
             {(userData.id && history.length > 0) && (
               <Button 
                 variant="contained"

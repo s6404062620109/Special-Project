@@ -155,8 +155,8 @@ const submitPosttest = (req, res) => {
             };
 
             updateScore(() => {
-                db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?)`, 
-                  [enrollmentId, userQuestionIds], (error, progressResult) => {
+                db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?) AND type = 'post'`, 
+                  [enrollmentId, userQuestionIds], (error, progressResult) => { // 👈 Added "AND type = 'post'"
 
                     if (error) {
                         console.log(error);

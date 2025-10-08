@@ -100,7 +100,7 @@ function NavSubject({ subjectList, courseId, enrollmentId }) {
             }}
           >
             {isPostTestCompleted ? `PostTest Score: ${postTestScore} / ${progress.posttest.length}` : areAllLabsCompleted 
-                ? "PostTest" : "ต้องทำปฎิบัติการทดสอบทั้งหมดก่อน"
+                ? "แบบทดสอบหลังเรียน" : "ต้องทำปฎิบัติการทดสอบทั้งหมดก่อน"
             }
           </p>
         </div>

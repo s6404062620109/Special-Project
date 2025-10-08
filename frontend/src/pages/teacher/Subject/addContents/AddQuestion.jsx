@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, Pagination, Stack, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import PreviewIcon from '@mui/icons-material/Preview';
 import QuestionItem from '../components/QuestionItem';
@@ -22,7 +23,19 @@ function AddQuestion({
 }) {
   const navigate = useNavigate();
   const { courseId } = useParams();  
+  const [currentPage, setCurrentPage] = useState(1);
 
+  const itemsPerPage = 10;
+  const pageCount = Math.ceil(questionInput.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentQuestions = questionInput.slice(startIndex, endIndex);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    window.scrollTo(0, 0); // Scroll to top on page change
+  };
+  
   return (
     <Stack
       alignItems='center'
@@ -56,32 +69,62 @@ function AddQuestion({
         </Stack>
 
         <Stack>
-          {questionInput.map((question, index) => (
-            <QuestionItem
-              key={index}
-              index={index}
-              question={question}
-              questionType={questionType}
-              onQuestionChange={handleQuestionChange}
-              onTypeChange={handleQuestionTypeChange}
-              onChoiceChange={handleChoiceChange}
-              onAddChoice={addChoice}
-              onDeleteChoice={deleteChoice}
-              onDeleteQuestion={deleteQuestion}
-              onUpload={handleOpenLabUpload}
-              onOpenImg={handleOpenImgDialog}
-            />
-          ))}
+          {currentQuestions.map((question, index) => {
+            const originalIndex = startIndex + index;
+            return (
+              <QuestionItem
+                key={question.id || originalIndex}
+                index={originalIndex}
+                question={question}
+                questionType={questionType}
+                onQuestionChange={handleQuestionChange}
+                onTypeChange={handleQuestionTypeChange}
+                onChoiceChange={handleChoiceChange}
+                onAddChoice={addChoice}
+                onDeleteChoice={deleteChoice}
+                onDeleteQuestion={deleteQuestion}
+                onUpload={handleOpenLabUpload}
+                onOpenImg={handleOpenImgDialog}
+              />
+            );
+          })}
         </Stack>
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={addQuestion}
-          sx={{ marginTop: "20px" }}
+        <Stack
+          alignItems='center'
+          justifyContent='center'
+          sx={{ width: '100%' }}
         >
-          เพิ่มปฏิบัติการทดสอบ
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={addQuestion}
+            sx={{ marginTop: "20px" }}
+          >
+            เพิ่มปฏิบัติการทดสอบ
+          </Button>
+        </Stack>
+        
+
+        {pageCount > 1 && (
+          <Stack 
+            sx={{ 
+              width: "100%",
+              mt: 3 
+            }}
+          >
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              sx={{
+                display: 'flex',
+                justifyContent: 'center'
+              }}
+            />
+          </Stack>
+        )}
       </Box>
 
       <Stack

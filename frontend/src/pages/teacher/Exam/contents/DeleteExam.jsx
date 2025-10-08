@@ -1,18 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   Box,
   Button,
-  IconButton,
   Stack,
-  TextField,
   Typography,
+  Pagination,
 } from "@mui/material";
 
 import PreviewIcon from "@mui/icons-material/Preview";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import QuestionItem from "../component/QuestionItem";
 
 export const DeleteExam = ({
@@ -27,6 +24,18 @@ export const DeleteExam = ({
   handleSubmit,
 }) => {
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 10;
+  const pageCount = Math.ceil(questions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentQuestions = questions.slice(startIndex, endIndex);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    window.scrollTo(0, 0);
+  };
   return (
     <Stack
       alignItems="center"
@@ -63,19 +72,22 @@ export const DeleteExam = ({
         </Stack>
 
         <Stack>
-          {questions.map((question, index) => (
-            <QuestionItem
-              key={index}
-              index={index}
-              question={question}
-              onQuestionChange={handleQuestionChange}
-              onChoiceChange={handleChoiceChange}
-              onAddChoice={handleAddChoice}
-              onDeleteChoice={handleDeleteChoice}
-              onDeleteQuestion={handleDeleteQuestion}
-              onOpenImg={handleImgChange}
-            />
-          ))}
+          {currentQuestions.map((question, index) => {
+            const originalIndex = startIndex + index;
+            return (
+              <QuestionItem
+                key={question.id || originalIndex}
+                index={originalIndex}
+                question={question}
+                onQuestionChange={handleQuestionChange}
+                onChoiceChange={handleChoiceChange}
+                onAddChoice={handleAddChoice}
+                onDeleteChoice={handleDeleteChoice}
+                onDeleteQuestion={handleDeleteQuestion}
+                onOpenImg={handleImgChange}
+              />
+            );
+          })}
 
           {questions.length === 0 && (
             <Stack
@@ -95,6 +107,26 @@ export const DeleteExam = ({
             </Stack>
           )}
         </Stack>
+
+        {pageCount > 1 && (
+          <Stack 
+            sx={{ 
+              width: "100%",
+              mt: 3 
+            }}
+          >
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              sx={{
+                display: 'flex',
+                justifyContent: 'center'
+              }}
+            />
+          </Stack>
+        )}
       </Box>
 
       <Stack

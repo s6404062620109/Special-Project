@@ -1,11 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Pagination, Stack, Typography } from '@mui/material';
 
 import PreviewIcon from '@mui/icons-material/Preview';
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import QuestionItem from '../component/QuestionItem';
 
 export const AddExam = ({
@@ -22,6 +21,18 @@ export const AddExam = ({
   handleSubmit
 }) => {
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 10;
+  const pageCount = Math.ceil(questions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentQuestions = questions.slice(startIndex, endIndex);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    window.scrollTo(0, 0);
+  };
   
   return (
     <Stack
@@ -37,7 +48,7 @@ export const AddExam = ({
           background: 'white',
           padding: '20px',
           borderRadius: '8px',
-          width: "90%"
+          width: "90%",
         }}
       >
         <Stack
@@ -57,30 +68,63 @@ export const AddExam = ({
         </Stack>
 
         <Stack>
-          {questions.map((question, index) => (
-            <QuestionItem
-              key={index}
-              index={index}
-              question={question}
-              onQuestionChange={handleQuestionChange}
-              onChoiceChange={handleChoiceChange}
-              onAddChoice={handleAddChoice}
-              onDeleteChoice={handleDeleteChoice}
-              onDeleteQuestion={handleDeleteQuestion}
-              onAddImg={handleAddImg}
-              onDeleteImg={handleDeleteImg}
-            />
-          ))}
+          {currentQuestions.map((question, index) => {
+            const originalIndex = startIndex + index;
+            return (
+              <QuestionItem
+                key={question.id || originalIndex}
+                index={originalIndex}
+                question={question}
+                onQuestionChange={handleQuestionChange}
+                onChoiceChange={handleChoiceChange}
+                onAddChoice={handleAddChoice}
+                onDeleteChoice={handleDeleteChoice}
+                onDeleteQuestion={handleDeleteQuestion}
+                onAddImg={handleAddImg}
+                onDeleteImg={handleDeleteImg}
+              />
+            );
+          })}
         </Stack>
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          sx={{ marginTop: "20px" }}
-          onClick={() => handleAddquestion()}
+        <Stack
+          alignItems="center"
+          sx={{ 
+            width: "100%", 
+          }}
         >
-          เพิ่มคำถามใหม่
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{ 
+              marginTop: "20px" 
+            }}
+            onClick={() => handleAddquestion()}
+          >
+            เพิ่มคำถามใหม่
+          </Button>
+        </Stack>
+
+        {pageCount > 1 && (
+          <Stack 
+            sx={{ 
+              width: "100%",
+              mt: 3 
+            }}
+          >
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              sx={{
+                display: 'flex',
+                justifyContent: 'center'
+              }}
+            />
+          </Stack>
+        )}
+        
       </Box>
 
       <Stack

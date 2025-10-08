@@ -6,7 +6,7 @@ const getAll = (req, res) => {
   const courseId = req.params.courseId;
 
   const sql = `
-    SELECT 
+    SELECT
       c.id AS courseId,
       c.name AS courseName,
       c.icon AS courseIcon,
@@ -17,18 +17,17 @@ const getAll = (req, res) => {
       c.announce_state,
       c.pretest_rate,
       c.posttest_rate,
+      (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id) AS countEnrollments,
+      (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id AND posttest_complete = 1) AS countPosttestComplete,
       u.sex AS teacherSex,
       u.name AS teacherName,
       u.surname AS teacherSurname,
       u.email AS teacherEmail,
       u.profile_img AS teacherImg,
-      COUNT(DISTINCT e.id) AS countEnrollments,
-      SUM(CASE WHEN e.posttest_complete = 1 THEN 1 ELSE 0 END) AS countPosttestComplete,
       COUNT(DISTINCT q.id) AS countQuestions,
       COUNT(DISTINCT l.id) AS countLabs
     FROM course c
-    LEFT JOIN user u ON u.id = c.teacherId
-    LEFT JOIN enrollment e ON e.courseId = c.id
+    LEFT JOIN user u ON c.teacherId = u.id
     LEFT JOIN subject s ON s.courseId = c.id
     LEFT JOIN questions q ON q.courseId = c.id
     LEFT JOIN labs l ON l.subjectId = s.id

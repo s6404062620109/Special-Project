@@ -137,14 +137,14 @@ const createFolder = (folderPath) => {
 }
 
 const createCourse = (req, res) => {
-    const { name, icon, enable, teacherId } = req.body;
+    const { name, icon, teacherId } = req.body;
     
     if (!name || !teacherId || !icon) {
         return res.status(400).json({ message: "Name, icon, and teacherId are required." });
     }
 
     try {
-        db.query("INSERT INTO course (name, icon, teacherId, enable, createat) VALUES (?, ?, ?, ?, NOW())", [name, icon, teacherId, enable], (err, result) => {
+        db.query("INSERT INTO course (name, icon, teacherId, createat) VALUES (?, ?, ?, NOW())", [name, icon, teacherId], (err, result) => {
           if (err) {
             console.error("Database query error:", err);
             return res.status(500).json({ message: "Database query error" });
@@ -223,197 +223,129 @@ const deleteCourse = (req, res) => {
     }
 }
 
-const enrollSummary = (req, res) => {
+const enrollSummary = async (req, res) => {
   const { courseId } = req.params;
-  if(typeof courseId !== 'string' || !courseId){
+  if (typeof courseId !== 'string' || !courseId) {
     return res.status(400).send({ message: "Invalid Course ID." });
   }
-  try{
-    db.query("SELECT * FROM enrollment WHERE courseId = ?", [courseId], (err, enrollments) => {
-      if(err) {
-        console.error(err);
-        return res.status(500).send({ message: "Database enrollment query error." });
-      }
-      if(!enrollments || enrollments.length === 0) {
-        return res.status(404).send({ message: "No enrollment found." });
-      
-      }
-      const enrollmentIds = enrollments.map(e => e.id);
-      const userIds = enrollments.map(e => e.userId);
-      db.query("SELECT id, name, surname FROM user WHERE id IN (?)", [userIds], (err, users) => {
-        if(err) {
-          console.error(err);
-          return res.status(500).send({ message: "Database user query error." });
-        }
 
-        if(!users || users.length === 0) {
-          return res.status(404).send({ message: "No user found." });
-        }
+  const query = (sql, params) => new Promise((resolve, reject) => {
+    db.query(sql, params, (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
 
-        db.query("SELECT * FROM labs WHERE subjectId IN (SELECT id FROM subject WHERE courseId = ?)", [courseId], (err, labs) => {
-          if(err) {
-            console.error(err);
-            return res.status(500).send({ message: "Database labs query error." });
-          }
-          const labIds = labs.map(l => l.id);
+  try {
+    const enrollments = await query("SELECT * FROM enrollment WHERE courseId = ?", [courseId]);
+    if (!enrollments.length) {
+      return res.status(404).send({ message: "No enrollment found." });
+    }
 
-          db.query("SELECT * FROM lab_answers WHERE questionId IN (?) AND type = 1", [labIds.length ? labIds : [0]], (err, labAnswers) => {
-            if(err) {
-              console.error(err);
-              return res.status(500).send({ message: "Database lab_answers query error." });
-            }
-            db.query("SELECT * FROM lab_progress WHERE enrollmentId IN (?)", [enrollmentIds.length ? enrollmentIds : [0]], (err, labProgress) => {
-              if(err) {
-                console.error(err);
-                return res.status(500).send({ message: "Database lab_progress query error." });
-              }
+    const enrollmentIds = enrollments.map(e => e.id);
+    const userIds = enrollments.map(e => e.userId);
 
-              const labProgressIds = labProgress.map(lp => lp.id);
-              db.query("SELECT * FROM lab_logs WHERE progressId IN (?)", [labProgressIds.length ? labProgressIds : [0]], (err, labLogs) => {
-                if(err) {
-                  console.error(err);
-                  return res.status(500).send({ message: "Database lab_logs query error." });
-                }
-                db.query("SELECT * FROM questions WHERE courseId = ?", [courseId], (err, questions) => {
-                  if(err) {
-                    console.error(err);
-                    return res.status(500).send({ message: "Database questions query error." });
-                  }
+    const [
+      users,
+      labs,
+      questions,
+      labProgress,
+      questionProgress
+    ] = await Promise.all([
+      query("SELECT id, name, surname FROM user WHERE id IN (?)", [userIds]),
+      query("SELECT * FROM labs WHERE subjectId IN (SELECT id FROM subject WHERE courseId = ?)", [courseId]),
+      query("SELECT * FROM questions WHERE courseId = ?", [courseId]),
+      query("SELECT * FROM lab_progress WHERE enrollmentId IN (?)", [enrollmentIds]),
+      query("SELECT * FROM question_progress WHERE enrollmentId IN (?)", [enrollmentIds])
+    ]);
 
-                  const questionIds = questions.map(q => q.id);
-                  db.query("SELECT * FROM question_answers WHERE questionId IN (?) AND type = 1", [questionIds.length ? questionIds : [0]], (err, questionAnswers) => {
-                    if(err) {
-                      console.error(err);
-                      return res.status(500).send({ message: "Database question_answers query error." });
-                    }
+    const labIds = labs.map(l => l.id);
+    const questionIds = questions.map(q => q.id);
+    const labProgressIds = labProgress.map(lp => lp.id);
+    const questionProgressIds = questionProgress.map(qp => qp.id);
 
-                    db.query("SELECT * FROM question_progress WHERE enrollmentId IN (?)", [enrollmentIds.length ? enrollmentIds : [0]], (err, questionProgress) => {
-                      if(err) {
-                        console.error(err);
-                        return res.status(500).send({ message: "Database question_progress query error." });
-                      }
+    const [
+      labAnswers,
+      questionAnswers,
+      labLogs,
+      questionLogs
+    ] = await Promise.all([
+      query("SELECT * FROM lab_answers WHERE questionId IN (?) AND type = 1", [labIds.length ? labIds : [0]]),
+      query("SELECT * FROM question_answers WHERE questionId IN (?) AND type = 1", [questionIds.length ? questionIds : [0]]),
+      query("SELECT * FROM lab_logs WHERE progressId IN (?)", [labProgressIds.length ? labProgressIds : [0]]),
+      query("SELECT * FROM question_logs WHERE progressId IN (?)", [questionProgressIds.length ? questionProgressIds : [0]])
+    ]);
 
-                      const questionProgressIds = questionProgress.map(qp => qp.id);
-                      db.query("SELECT * FROM question_logs WHERE progressId IN (?)", [questionProgressIds.length ? questionProgressIds : [0]], (err, questionLogs) => {
-                        if(err) {
-                          console.error(err);
-                          return res.status(500).send({ message: "Database question_logs query error." });
-                        }
+    // --- Build lookup maps ---
+    const usersMap = new Map(users.map(u => [u.id, u]));
+    const labsMap = new Map(labs.map(l => [l.id, l]));
+    const questionsMap = new Map(questions.map(q => [q.id, q]));
 
-                        // --- Build lookup maps ---
-                        const usersMap = Object.fromEntries(users.map(u => [u.id, u]));
-                        // --- LABS ---
-                        const labsMap = Object.fromEntries(labs.map(l => [l.id, l]));
-                        const labAnswersMap = labAnswers.reduce((acc, ans) => {
-                          if (!acc[ans.questionId]) acc[ans.questionId] = [];
-                          acc[ans.questionId].push(ans);
-                          return acc;
-                        }, {});
-                        const labLogsMap = labLogs.reduce((acc, log) => {
-                          if (!acc[log.progressId]) acc[log.progressId] = [];
-                          acc[log.progressId].push(log);
-                          return acc;
-                        }, {});
-                        // --- QUESTIONS ---
-                        const questionsMap = Object.fromEntries(questions.map(q => [q.id, q]));
-                        const questionAnswersMap = questionAnswers.reduce((acc, ans) => {
-                          if (!acc[ans.questionId]) acc[ans.questionId] = [];
-                          acc[ans.questionId].push(ans);
-                          return acc;
-                        }, {});
-                        const questionLogsMap = questionLogs.reduce((acc, log) => {
-                          if (!acc[log.progressId]) acc[log.progressId] = [];
-                          acc[log.progressId].push(log);
-                          return acc;
-                        }, {});
+    const groupById = (arr, key) => arr.reduce((acc, item) => {
+      (acc[item[key]] = acc[item[key]] || []).push(item);
+      return acc;
+    }, {});
 
-                        // --- Group labs by typeId (3,5,6) ---
-                        const labsByType = { 3: [], 5: [], 6: [] };
-                        labs.forEach(lab => {
-                          if ([3, 5, 6].includes(lab.typeId)) {
-                            labsByType[lab.typeId].push(lab);
-                          }
-                        });
+    const labAnswersMap = groupById(labAnswers, 'questionId');
+    const questionAnswersMap = groupById(questionAnswers, 'questionId');
+    const labLogsMap = groupById(labLogs, 'progressId');
+    const questionLogsMap = groupById(questionLogs, 'progressId');
 
-                        // --- Group question_progress by type (pre/post) ---
-                        const questionProgressByType = { pre: [], post: [] };
-                        questionProgress.forEach(qp => {
-                          if (qp.type === 'pre') questionProgressByType.pre.push(qp);
-                          else if (qp.type === 'post') questionProgressByType.post.push(qp);
-                        });
+    const finalFormat = enrollments.map(enroll => {
+      const user = usersMap.get(enroll.userId) || {};
+      const progress = [];
 
-                        // --- Build final format for EnrollSum.jsx ---
-                        const finalFormat = enrollments.map(enroll => {
-                          const user = usersMap[enroll.userId] || {};
-                          // --- Collect all progress for this enrollment ---
-                          const progress = [];
-                          // Add lab progress (for labs type 3,5,6)
-                          labProgress.filter(lp => lp.enrollmentId === enroll.id).forEach(lp => {
-                            const lab = labsMap[lp.questionId];
-                            if (!lab || ![3,5,6].includes(lab.typeId)) return;
-                            progress.push({
-                              id: lp.id,
-                              type: 'lab',
-                              questionId: lp.questionId,
-                              content: lab.content,
-                              typeId: lab.typeId,
-                              correctAnswers: (labAnswersMap[lp.questionId]||[]).map(a=>a.content),
-                              userAnswers: labLogsMap[lp.id] ? labLogsMap[lp.id].map(l => l.user_answer) : [],
-                              score: lp.score,
-                              is_completed: lp.is_completed
-                            });
-                          });
-                          // Add question progress (pre/post)
-                          questionProgress.filter(qp => qp.enrollmentId === enroll.id).forEach(qp => {
-                            const question = questionsMap[qp.questionId];
-                            progress.push({
-                              id: qp.id,
-                              type: 'question',
-                              questionId: qp.questionId,
-                              content: question ? question.content : null,
-                              typeId: qp.type === 'pre' ? 1 : (qp.type === 'post' ? 2 : 0),
-                              correctAnswers: (questionAnswersMap[qp.questionId]||[]).map(a=>a.content),
-                              userAnswers: questionLogsMap[qp.id] ? questionLogsMap[qp.id].map(l => l.user_answer) : [],
-                              score: qp.score,
-                              is_completed: qp.is_completed,
-                              qtype: qp.type // pre/post
-                            });
-                          });
-                          // --- Calculate scores ---
-                          let pretestScore = 0, posttestScore = 0, labtestScore = 0;
-                          let pretestCount = 0, posttestCount = 0, labCount = 0;
-                          progress.forEach(q => {
-                            if (q.typeId === 1) { pretestScore += q.score || 0; pretestCount++; }
-                            else if (q.typeId === 2) { posttestScore += q.score || 0; posttestCount++; }
-                            else { labtestScore += q.score || 0; labCount++; }
-                          });
-                          const total = progress.length;
-                          const completed = progress.filter(q => q.is_completed === 1).length;
-                          const progressPercent = total > 0 ? (completed / total) * 100 : 0;
-                          const grouped = [{ questions: progress }];
-                          return {
-                            id: enroll.id,
-                            userId: enroll.userId,
-                            user: { name: user.name + (user.surname ? ' ' + user.surname : '') },
-                            progressPercent,
-                            pretestScore,
-                            posttestScore,
-                            labtestScore,
-                            progress: grouped
-                          };
-                        });
-                        return res.status(200).send({ finalFormat });
-                      });
-                    });
-                  });
-                });
-              });
-            });
-          });
+      // Add lab progress
+      labProgress.filter(lp => lp.enrollmentId === enroll.id).forEach(lp => {
+        const lab = labsMap.get(lp.questionId);
+        if (!lab || ![3, 5, 6].includes(lab.typeId)) return;
+        progress.push({
+          id: lp.id, type: 'lab', questionId: lp.questionId, content: lab.content, typeId: lab.typeId,
+          correctAnswers: (labAnswersMap[lp.questionId] || []).map(a => a.content),
+          userAnswers: (labLogsMap[lp.id] || []).map(l => l.user_answer),
+          score: lp.score, is_completed: lp.is_completed
         });
       });
+
+      // Add question progress
+      questionProgress.filter(qp => qp.enrollmentId === enroll.id).forEach(qp => {
+        const question = questionsMap.get(qp.questionId);
+        progress.push({
+          id: qp.id, type: 'question', questionId: qp.questionId, content: question ? question.content : null,
+          typeId: qp.type === 'pre' ? 1 : (qp.type === 'post' ? 2 : 0),
+          correctAnswers: (questionAnswersMap[qp.questionId] || []).map(a => a.content),
+          userAnswers: (questionLogsMap[qp.id] || []).map(l => l.user_answer),
+          score: qp.score, is_completed: qp.is_completed, qtype: qp.type
+        });
+      });
+
+      // --- Calculate scores ---
+      let pretestScore = 0, posttestScore = 0, labtestScore = 0;
+      progress.forEach(q => {
+        if (q.typeId === 1) pretestScore += q.score || 0;
+        else if (q.typeId === 2) posttestScore += q.score || 0;
+        else labtestScore += q.score || 0;
+      });
+
+      const total = progress.length;
+      const completed = progress.filter(q => q.is_completed === 1).length;
+      const progressPercent = total > 0 ? (completed / total) * 100 : 0;
+
+      return {
+        id: enroll.id,
+        userId: enroll.userId,
+        user: { name: `${user.name || ''} ${user.surname || ''}`.trim() },
+        progressPercent,
+        pretestScore,
+        posttestScore,
+        labtestScore,
+        progress: [{ questions: progress }]
+      };
     });
-  }catch(error){
+
+    return res.status(200).send({ finalFormat });
+
+  } catch (error) {
     console.log(error);
     return res.status(500).send({ message: "Server error.", error });
   }

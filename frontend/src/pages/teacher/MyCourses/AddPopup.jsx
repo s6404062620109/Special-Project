@@ -11,7 +11,6 @@ function AddPopup({ onClose, onAddCourse }) {
   const [courseData, setCourseData] = useState({
     name: "",
     icon: "",
-    enable: false
   });
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -20,8 +19,9 @@ function AddPopup({ onClose, onAddCourse }) {
   });
 
   const handleSubmit = (e) => {
+    e.preventDefault();
+
     if(courseData.name === "" || courseData.icon === ""){
-      e.preventDefault();
       setSnackbar({
         open: true,
         message: "Name and icon are required.",

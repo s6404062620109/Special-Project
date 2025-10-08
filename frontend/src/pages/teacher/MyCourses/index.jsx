@@ -9,18 +9,10 @@ import style from './css/mycourses.module.css';
 import AddPopup from './AddPopup';
 import { Button, IconButton, Typography, useMediaQuery } from '@mui/material';
 
-const menuItemStyle = {
-  padding: "0 16px",
-  width: "100%",
-  display: "flex",
-  gap: "10px",
-};
-
 function MyCourses() {
   const { userData } = useContext(AuthContext);
   const [ myCourses, setMyCourses ] = useState([]);
   const [ isPopupOpen, setIsPopupOpen ] = useState(false);
-  const [ anchorEl, setAnchorEl ] = useState(null);
   const navigate = useNavigate();
 
   const fetchMyCourses = async () => {
@@ -43,13 +35,13 @@ function MyCourses() {
   const handleAddCourse = async ({ name, icon, enable }) => {
     try {
       const response = await backend.post("/teacher/addCourse", 
-        { name, icon, enable, teacherId: userData.id }, 
+        { name, icon, teacherId: userData.id }, 
         { withCredentials: true }
       );
     
       if (response.status === 200) {
-        window.location.reload();
-        return;
+        fetchMyCourses();
+        setIsPopupOpen(false);
       }
 
     } catch (error) {
