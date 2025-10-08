@@ -46,7 +46,6 @@ function Labs({
     currentQuestionIndex
   );
 
-
   const lastProgressLengthRef = useRef(progressAnswers.length);
   useEffect(() => {
     if (progressAnswers.length > lastProgressLengthRef.current) {
@@ -100,6 +99,7 @@ function Labs({
         return (
           <RadioGroup
             sx={{ width: "80%", margin: "8px auto" }}
+            disabled={isAnswered}
             name={`radio-${currentQuestion.id}`}
             value={String(currentAnswer?.answer?.answerId ?? "")}
             onChange={(e) => {
@@ -118,7 +118,7 @@ function Labs({
               <FormControlLabel
                 key={choice.id}
                 value={String(choice.id)}
-                control={<Radio />}
+                control={<Radio disabled={isAnswered} />}
                 label={choice.content}
               />
             ))}
@@ -136,6 +136,7 @@ function Labs({
                     checked={Array.isArray(currentAnswer?.answer) &&
                       currentAnswer.answer.some((a) => a.answerId === choice.id)}
                     onChange={(e) =>
+                      !isAnswered &&
                       handleLabAnswerChange(
                         currentQuestion.id,
                         6,
@@ -144,6 +145,7 @@ function Labs({
                         e.target.checked
                       )
                     }
+                    disabled={isAnswered}
                   />
                 }
                 label={choice.content}
@@ -228,14 +230,14 @@ function Labs({
             >
               <Typography
                 variant="body2"
-                color={errorMessage === "บันทึกคำตอบเรียบร้อยแล้ว" ? "green" : "red"}
+                color={errorMessage === "บันทึกคำตอบเรียบร้อยแล้ว" || errorMessage === "คุณได้ทำปฏิบัติการทดสอบทั้งหมดแล้ว กำลังไปทเรียนต่อไป..." ? "green" : "red"}
               >
                 {errorMessage}
               </Typography>
 
               {!isAnswered && (
                 <Button
-                  variant="contained"
+                  variant="contained"                  
                   sx={{ 
                     width: { xs: "50%", md: "15%"} 
                   }}

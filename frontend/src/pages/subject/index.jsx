@@ -33,6 +33,14 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
   const [errorMessage, setErrorMessage] = useState("");
   const controllerRef = useRef(null);
   const lastQuestionIdsRef = useRef(null);
+  
+  const allQuestionsAnswered = useMemo(() => {
+    if (!questions.length) return false;
+
+    const answeredIds = new Set(progressAnswers.map(p => p.questionId));
+
+    return answeredIds.size === questions.length;
+  }, [progressAnswers, questions]);
 
   /** Pagination */
   const handleChangePage = (event, page) => {
@@ -207,6 +215,20 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
     return valid;
   };
 
+  const fetchLastProgress = async () => {
+    try {
+      const response = await backend.get(
+        `/progress/getLatestProgress/${enrollmentId}/${courseId}`,
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+         window.location.href = `/course/${courseId}/${response.data.inProgress}`;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   /** Submit answer */
   const handleLabSubmit = async (questionId) => {
     if (!labValidations(questionId)) return;
@@ -220,11 +242,20 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
 
       if (response.status === 200) {
         setErrorMessage(response.data.message);
+        fetchAllProgressAnswers(questionIds, true);
 
-        setTimeout(() => {
-          setErrorMessage("");
-          fetchAllProgressAnswers(questionIds, true);
-        }, 3000);
+        // ตรวจสอบว่าคำตอบที่เพิ่งส่งไปเป็นคำตอบของข้อสุดท้ายหรือไม่
+        const answeredIds = new Set(progressAnswers.map(p => p.questionId));
+        if (!answeredIds.has(questionId) && (answeredIds.size + 1 === questions.length)) {
+          setErrorMessage("คุณได้ทำปฏิบัติการทดสอบทั้งหมดแล้ว กำลังไปทเรียนต่อไป...");
+          setTimeout(fetchLastProgress, 2000);
+          
+        }
+
+        setTimeout(() =>{
+          setErrorMessage("")
+          setCurrentQuestionIndex(currentQuestionIndex + 1)
+        }, 2000);
       }
     } catch (error) {
       console.error("handleLabSubmit error:", error);
@@ -242,6 +273,8 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
     setAnswers,
     progressAnswers,
     fetchLabQuestions,
+    fetchLastProgress,
+    allQuestionsAnswered,
     handleLabAnswerChange,
     errorMessage,
     handleLabSubmit,
@@ -266,6 +299,8 @@ function Subject() {
     setAnswers,
     progressAnswers,
     fetchLabQuestions,
+    fetchLastProgress,
+    allQuestionsAnswered,
     handleLabAnswerChange,
     errorMessage,
     handleLabSubmit,
@@ -306,20 +341,6 @@ function Subject() {
       const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
       if (response.status === 200) {
         setSubjectList(response.data.subject || []);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchLastProgress = async () => {
-    try {
-      const response = await backend.get(
-        `/progress/getLatestProgress/${enrollmentId}/${courseId}`,
-        { withCredentials: true }
-      );
-      if (response.status === 200) {
-        navigate(`/course/${courseId}/${response.data.inProgress}`);
       }
     } catch (error) {
       console.log(error);
