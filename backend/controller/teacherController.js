@@ -170,7 +170,7 @@ const updateCourse = (req, res) => {
     if( typeof courseId !== 'string' || 
       typeof name !== 'string' || 
       typeof icon !== 'string' || 
-      typeof enable !== 'number' || 
+      typeof enable !== "boolean" || 
       typeof pretest_rate !== 'number' || 
       typeof posttest_rate !== 'number' || 
       typeof announce_state !== 'number' ){
