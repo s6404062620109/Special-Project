@@ -103,7 +103,7 @@ function PostTest() {
       if (response.status === 200 ) {
         setErrorMessage("ส่งคำตอบเสร็จสิ้น");
         setTimeout(() => {
-          navigate(-1);
+          navigate(`/course/${courseId}/${enrollmentId}`);
         }, 3000);
       }
     } catch (err) {
