@@ -221,16 +221,35 @@ function CourseDetail() {
     }
   };
 
+  const findAndNavigateToLatestEnrollment = async () => {
+    try {
+      const response = await backend.get(`/enroll/getLatestEnrollment/${userData.id}/${courseId}`, { withCredentials: true });
+
+      if (response.status === 200 && response.data.latestEnrollmentId) {
+        navigate(`/course/${courseId}/${response.data.latestEnrollmentId}`, { replace: true });
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        navigate(`/course/${courseId}/null`, { replace: true });
+      }
+    }
+  };
+
   const fetchHistory = async () => {
     try {
-      const response = await backend.get(`/enroll/checkCourseEnroll/${userData.id}/${courseId}`, {
+      const response = await backend.get(`/enroll/checkCourseEnroll/${userData.id}/${courseId}/${enrollmentId}`, {
         withCredentials: true,
       });
+      
       if (response.status === 200) {
         setHistory(response.data.results);
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        findAndNavigateToLatestEnrollment();
+      } else {
+        console.log(error);
+      }
     }
   };
 
@@ -328,6 +347,9 @@ function CourseDetail() {
     if (enrollmentId && enrollmentId !== "null" && history.length > 0) {
       fethProgress();
     }
+    // else if (enrollmentId !== "null" && history.length === 0) {
+    //   navigate(`/course/${courseId}/null`);
+    // }
   }, [history, enrollmentId]);
 
   const isPreTestCompleted = pretestProgress.length > 0 && pretestProgress.every((item) => item.is_completed === 1);
@@ -341,7 +363,7 @@ function CourseDetail() {
   const handleChangeTab = (event, newValue) => {
     setRender(newValue);
   };
-  
+
   const mergedPretestData = React.useMemo(() => {
     if (!questionList.pretestList.length || !pretestProgress.length || !pretestAnswers.length)
       return [];
@@ -661,7 +683,7 @@ function CourseDetail() {
               alignItems: { xs: "flex-start", sm: "center" },
             }}
           > 
-            {userData.id && enrollmentId !== "null" && history.length === 0 && (
+            {userData.id && enrollmentId !== "null" && history.length === 0 && !isPostTestCompleted && (
               <Typography variant="subtitle1" align="center" color="red">
                 คุณไม่ผ่านการเรียนรู้ของคอร์ส 
                 <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
@@ -688,7 +710,7 @@ function CourseDetail() {
               </Button>
             )}
 
-            {(userData.id && history.length > 0) && (
+            {(userData.id && history.length > 0 && history[0].posttest_complete === 0) && (
               <Button 
                 variant="contained"
                 onClick={fetchLatestProgress}

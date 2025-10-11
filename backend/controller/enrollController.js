@@ -114,13 +114,22 @@ const checkCoursesEnroll = (req, res) => {
 }
 
 const checkCourseEnroll = (req, res) => {
-    const { userId, courseId } = req.params;
+    const { userId, courseId, enrollmentId } = req.params;
+
+    if(!userId || !courseId || !enrollmentId){
+      return res.status(400).json({ message: "User ID, Course ID, and Enrollment ID are required." });
+    }
 
     try{
-      db.query(`SELECT * FROM enrollment WHERE userId = ? AND courseId = ? AND posttest_complete IN (0, 1)`, [userId, courseId], (err, results) => {
+      db.query(`SELECT * FROM enrollment WHERE id = ? AND userId = ? AND courseId = ? AND posttest_complete IN (0, 1)`, 
+        [enrollmentId, userId, courseId], (err, results) => {
         if (err) {
           console.error(err);
           return res.status(500).json({ message: "Database enrollment query error" });
+        }
+
+        if (results.length === 0) {
+          return res.status(404).json({ message: "No enrollment found." });
         }
           
         else{
@@ -133,8 +142,35 @@ const checkCourseEnroll = (req, res) => {
     }
 }
 
+const getLatestEnrollment = (req, res) => {
+  const { userId, courseId } = req.params;
+
+  if (!userId || !courseId) {
+    return res.status(400).json({ message: "User ID and Course ID are required." });
+  }
+
+  try {
+    db.query(`SELECT id FROM enrollment WHERE userId = ? AND courseId = ? AND posttest_complete IN (0, -1) ORDER BY startat DESC LIMIT 1`, 
+      [userId, courseId], (err, results) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Database query error" });
+        }
+        if (results.length === 0) {
+          return res.status(404).json({ message: "No active or failed enrollment found." });
+        }
+      return res.status(200).json({ latestEnrollmentId: results[0].id });
+    });
+  } 
+  catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
 module.exports = {
     enrollCourse,
     checkCoursesEnroll,
-    checkCourseEnroll
+    checkCourseEnroll,
+    getLatestEnrollment
 }

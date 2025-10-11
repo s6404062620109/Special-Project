@@ -5,7 +5,7 @@
     margin: auto;
     border: 1px solid;
     border-radius: 15px;
-    overflow: hidden; /* เพื่อให้ animation ไม่ล้นออกนอก container */
+    overflow: hidden;
 }
 
 .process {
@@ -15,7 +15,7 @@
     background: #42FF00;
     height: 1rem;
     border-radius: 15px;
-    transition: width 0.5s ease-out; /* เพิ่ม transition สำหรับการเปลี่ยนแปลง width */
+    transition: width 0.5s ease-out;
 }
 
 .container > label {
@@ -28,7 +28,7 @@
 }
 
 .loading {
-    background: linear-gradient(90deg, #42FF00 25%, #2ecc71 50%, #42FF00 75%);
+    background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
     background-size: 200% 100%;
     animation: loadingAnimation 1.5s infinite linear;
 }

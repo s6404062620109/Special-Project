@@ -361,7 +361,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 },
             ],
             img: null,
-            type: questionType[0].id,
+            type: null,
         };
         setQuestionInput([...questionInput, newQuestion]);
     };
@@ -396,69 +396,70 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
     };
 
     const questionValidation = () => {
-        if(questionInput.length === 0) {
-            return "At least one question is required";
+        if (questionInput.length === 0) {
+            return "กรุณาเพิ่มคำถามอย่างน้อย 1 ข้อ";
         }
-
-        for (let i = 0; i < questionInput.length; i++) {
-            const item = questionInput[i];
-            if (item.content === "") {
-                return `Question ${i + 1} content is required`;
-            }
-
-            if (item.type === 1 || item.type === 2 || item.type === 3 || item.type === 6){
-                if (item.choice.length === 0) {
-                return `At least one choice is required for Question ${i + 1}`;
+        if(questionInput.length > 0){
+            for (let i = 0; i < questionInput.length; i++) {
+                const item = questionInput[i];
+                if (item.content === "") {
+                    return `Question ${i + 1} content is required`;
                 }
-                for (let j = 0; j < item.choice.length; j++) {
-                    const choice = item.choice[j];
-                    if (choice.content === "") {
-                        return `Choice ${j + 1} content for Question ${i + 1} is required`;
+
+                if (item.type === 1 || item.type === 2 || item.type === 3 || item.type === 6){
+                    if (item.choice.length < 2) {
+                        return `ต้องการตัวเลือกอย่างน้อย 2 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
+                    }
+                    for (let j = 0; j < item.choice.length; j++) {
+                        const choice = item.choice[j];
+                        if (choice.content === "") {
+                            return `ต้องการเนื้อหาสำหรับตัวเลือกที่ ${j + 1} ของคำถามที่ ${i + 1}`;
+                        }
+                    }
+
+                    const correctChoices = item.choice.filter(choice => choice.isCorrect);
+                    if(item.type === 6 && correctChoices.length === 1){
+                        return `ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 2 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
+                    }
+                    if (correctChoices.length === 0) {
+                        return `ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 1 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
+                    }
+
+                    const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
+                    if (incorrectChoices.length === 0) {
+                        return `คำถามที่ ${i + 1} ต้องมีตัวเลือกที่ไม่ถูกต้องอย่างน้อย 1 ตัวเลือก`;
                     }
                 }
 
-                const correctChoices = item.choice.filter(choice => choice.isCorrect);
-                if(item.type === 6 && correctChoices.length === 1){
-                    return `Question ${i + 1} of type Lab multiple choice must have than one more correct choice.`
-                }
-                if (correctChoices.length === 0) {
-                    return `Question ${i + 1} of type "${item.type}" must have least one correct choice`;
-                }
+                if (item.type === 5) {
+                    if (item.htmlFile === null) {
+                        return `ต้องการไฟล์ .html สำหรับคำถามที่ ${i + 1}`;
+                    }
+                    if (item.htmlFile) {
+                        if (!item.htmlFile.name.endsWith(".html")) {
+                            return `คำถามที่ ${i + 1} ต้องการไฟล์ .html เท่านั้น`;
+                        }
+                    }
 
-                const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
-                if (incorrectChoices.length === 0) {
-                    return `Question ${i + 1} of type "${item.type}" must have at least one incorrect choice`;
-                }
-            }
-
-            if (item.type === 5) {
-                if (item.htmlFile === null) {
-                    return `Question ${i + 1}: htmlFile is required.`;
-                }
-                if (item.htmlFile) {
-                    if (!item.htmlFile.name.endsWith(".html")) {
-                        return `Question ${i + 1}: htmlFile must be a .html file.`;
+                    if(item.answer === ""){
+                        return `คำถามที่ ${i + 1} ต้องการคำตอบ`;
                     }
                 }
 
-                if(item.answer === ""){
-                    return `Question ${i + 1}: Answer is required`;
-                }
-            }
-
-            if (item.type === 4) {
-                if (item.Cmdfile === null) {
-                    return `Question ${i + 1}: Cmdfile is required.`;
-                }
-
-                if (item.Cmdfile) {
-                    if (!item.Cmdfile.name.endsWith(".sh")) {
-                        return `Question ${i + 1}: Cmdfile must be a .sh file.`;
+                if (item.type === 4) {
+                    if (item.Cmdfile === null) {
+                        return `ต้องการไฟล์ .sh สำหรับคำถามที่ ${i + 1}`;
                     }
-                }
 
-                if(item.answer === ""){
-                    return `Question ${i + 1}: Answer is required`;
+                    if (item.Cmdfile) {
+                        if (!item.Cmdfile.name.endsWith(".sh")) {
+                            return `คำถามที่ ${i + 1} ต้องการไฟล์ .sh เท่านั้น`;
+                        }
+                    }
+
+                    if(item.answer === ""){
+                        return `คำถามที่ ${i + 1} ต้องการคำตอบ`;
+                    }
                 }
             }
         }
@@ -862,8 +863,7 @@ function EditSubject() {
                 />
             )}
 
-            {( mode === "question" && 
-            questionInput.length > 0) && (
+            {( mode === "question" ) && (
                 <EditQuestion
                     questionInput={questionInput}
                     questionType={questionType}

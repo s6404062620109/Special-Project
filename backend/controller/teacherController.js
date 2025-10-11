@@ -170,14 +170,12 @@ const updateCourse = (req, res) => {
     if( typeof courseId !== 'string' || 
       typeof name !== 'string' || 
       typeof icon !== 'string' || 
-      typeof enable !== "boolean" || 
+      typeof enable !== "number" || 
       typeof pretest_rate !== 'number' || 
       typeof posttest_rate !== 'number' || 
       typeof announce_state !== 'number' ){
         return res.status(400).send({ message: "Invalid Course ID, Name, Icon, Enable, Pretest_rate, Posttest_rate, Announce_state." });
     }
-    
-
     
     if (!name?.trim() || !icon?.trim() || enable === undefined || pretest_rate === undefined || posttest_rate === undefined || announce_state === undefined) {
         return res.status(400).json({ message: "Name ,icon, enable, pretest_rate, posttest_rate and announce_state are required." });
