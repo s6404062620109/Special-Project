@@ -77,19 +77,13 @@ const testAnalysis = (req, res) => {
         const summary = [];
         let pretestMax = 0;
         let posttestMax = 0;
-
-        // หาจำนวนข้อสูงสุดของ pre/post จาก questionId ที่ไม่ซ้ำ
-        const seenPre = new Set();
-        const seenPost = new Set();
-        for (const r of progressResults) {
-          if (r.type === "pre" && !seenPre.has(r.questionId)) {
-            pretestMax++;
-            seenPre.add(r.questionId);
-          }
-          if (r.type === "post" && !seenPost.has(r.questionId)) {
-            posttestMax++;
-            seenPost.add(r.questionId);
-          }
+        
+        // หาจำนวนข้อสูงสุดของ pre/post จาก enrollment แรก
+        if (enrollments.length > 0) {
+          const firstEnrollmentId = enrollments[0].id;
+          const firstEnrollmentProgress = progressResults.filter(p => p.enrollmentId === firstEnrollmentId);
+          pretestMax = firstEnrollmentProgress.filter(p => p.type === 'pre').length;
+          posttestMax = firstEnrollmentProgress.filter(p => p.type === 'post').length;
         }
 
         // สร้าง Map ของ user เพื่อให้ค้นหาได้เร็วขึ้น
@@ -248,13 +242,13 @@ const enrollSummary = async (req, res) => {
       labs,
       questions,
       labProgress,
-      questionProgress
+      questionProgress,
     ] = await Promise.all([
       query("SELECT id, name, surname FROM user WHERE id IN (?)", [userIds]),
       query("SELECT * FROM labs WHERE subjectId IN (SELECT id FROM subject WHERE courseId = ?)", [courseId]),
       query("SELECT * FROM questions WHERE courseId = ?", [courseId]),
       query("SELECT * FROM lab_progress WHERE enrollmentId IN (?)", [enrollmentIds]),
-      query("SELECT * FROM question_progress WHERE enrollmentId IN (?)", [enrollmentIds])
+      query("SELECT * FROM question_progress WHERE enrollmentId IN (?)", [enrollmentIds]),
     ]);
 
     const labIds = labs.map(l => l.id);
@@ -327,17 +321,27 @@ const enrollSummary = async (req, res) => {
 
       const total = progress.length;
       const completed = progress.filter(q => q.is_completed === 1).length;
-      const progressPercent = total > 0 ? (completed / total) * 100 : 0;
+      let status;
+      
+      if (enroll.posttest_complete === 1 && enroll.pretest_complete === 1 && completed === total) {
+        status = 1;
+      } else if (enroll.posttest_complete === -1) {
+        status = -1; 
+      } else {
+        status = 0;
+      }
 
       return {
         id: enroll.id,
         userId: enroll.userId,
         user: { name: `${user.name || ''} ${user.surname || ''}`.trim() },
-        progressPercent,
         pretestScore,
         posttestScore,
         labtestScore,
-        progress: [{ questions: progress }]
+        startat: enroll.startat,
+        endat: enroll.endat,
+        progress: [{ questions: progress }],
+        status: status
       };
     });
 

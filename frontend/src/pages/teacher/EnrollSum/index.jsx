@@ -16,10 +16,22 @@ import {
   Button,
   Stack,
   TableSortLabel,
-  CircularProgress,
   useMediaQuery,
+  TextField,
+  Grid,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
-import { KeyboardArrowDown, KeyboardArrowLeft, KeyboardArrowUp } from "@mui/icons-material";
+import { 
+  KeyboardArrowDown, 
+  KeyboardArrowLeft, 
+  KeyboardArrowUp, 
+} from "@mui/icons-material";
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
+import SchoolIcon from '@mui/icons-material/School';
 
 function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScore }) {
   const [openPre, setOpenPre] = useState(false);
@@ -69,7 +81,8 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
   );
 
   return (
-    <>
+    <Table size="small" sx={{ width: "100%" }}>
+      <TableBody>
       {/* Pretest */}
       {pretest.length > 0 && (
         <>
@@ -87,7 +100,7 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell colSpan={4} sx={{ p: 0 }}>
+            <TableCell colSpan={3} sx={{ p: 0 }}>
               <Collapse in={openPre} timeout="auto" unmountOnExit>
                 <Box margin={1}>{renderQuestionTable(pretest)}</Box>
               </Collapse>
@@ -113,7 +126,7 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell colSpan={4} sx={{ p: 0 }}>
+            <TableCell colSpan={3} sx={{ p: 0 }}>
               <Collapse in={openPost} timeout="auto" unmountOnExit>
                 <Box margin={1}>{renderQuestionTable(posttest)}</Box>
               </Collapse>
@@ -139,7 +152,7 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell colSpan={4} sx={{ p: 0 }}>
+            <TableCell colSpan={3} sx={{ p: 0 }}>
               <Collapse in={openLab} timeout="auto" unmountOnExit>
                 <Box margin={1}>{renderQuestionTable(labs)}</Box>
               </Collapse>
@@ -147,40 +160,72 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
           </TableRow>
         </>
       )}
-    </>
+      </TableBody>
+    </Table>
   );
 };
 
-function CircularProgressWithLabel(props) {
+function AttemptRow({ attemptData, attemptNumber }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-      <CircularProgress variant="determinate" {...props} />
-      <Box
-        sx={{
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: "100%"
-        }}
-      >
-        <Typography
-          variant="caption"
-          component="div"
-          sx={{ color: 'text.secondary' }}
-        >
-          {`${Math.round(props.value)}%`}
-        </Typography>
-      </Box>
-    </Box>
+    <>
+      <TableRow hover sx={{ '& > *': { borderBottom: 'unset' } }}>
+        <TableCell>
+          <IconButton size="small" onClick={() => setOpen(!open)}>
+            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          </IconButton>
+        </TableCell>
+        <TableCell >
+          ครั้งที่ {attemptNumber}
+        </TableCell>
+        <TableCell>
+          <Typography variant="body2">
+            {new Date(attemptData.startat).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })}
+          </Typography>
+        </TableCell>
+        <TableCell>
+          {new Date(attemptData.endat).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })}
+        </TableCell>
+        <TableCell>
+          {(() => {
+            switch (attemptData.status) {
+              case 1:
+                return <Stack direction="row" gap={1} color="success.main">
+                  <Typography variant="body2">ผ่าน</Typography> 
+                  <CheckIcon fontSize="small" />
+                </Stack>;
+              case -1:
+                return <Stack direction="row" gap={1} color="error.main">
+                  <Typography variant="body2">ไม่ผ่าน</Typography> 
+                  <ClearIcon fontSize="small" />
+                </Stack>;
+              default:
+                return <Stack direction="row" gap={1} color="text.secondary">
+                  <Typography variant="body2">กำลังเรียนอยู่</Typography> 
+                  <SchoolIcon fontSize="small" />
+                </Stack>;
+            }
+          })()}
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <GroupedProgressRow
+              progress={attemptData.progress}
+              pretestScore={attemptData.pretestScore}
+              posttestScore={attemptData.posttestScore}
+              labtestScore={attemptData.labtestScore}
+            />
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
   );
 }
 
-function Row({ row }) {
+function UserRow({ userGroup }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -191,39 +236,35 @@ function Row({ row }) {
             {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
         </TableCell>
-        <TableCell>{row.userId}</TableCell>
-        <TableCell>{row.user?.name ?? "N/A"}</TableCell>
-        <TableCell>
-          {row.progressPercent ? (
-            <CircularProgressWithLabel value={row.progressPercent} />
-          ):(
-            <>-</>
-          )}
-        </TableCell>
+        <TableCell>{userGroup.userId}</TableCell>
+        <TableCell>{userGroup.name}</TableCell>
+        <TableCell align="center">{userGroup.attempts.length}</TableCell>
       </TableRow>
-
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={4}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box margin={2}>
-              <Typography variant="h6" gutterBottom>
-                รายละเอียดคำถาม
+            <Box margin={1}>
+              <Typography variant="h6" gutterBottom component="div" sx={{ ml: 2, mt: 1 }}>
+                ประวัติการลงทะเบียน
               </Typography>
-              <Table size="small">
+              <Table size="small" aria-label="attempts">
                 <TableHead>
                   <TableRow>
                     <TableCell />
-                    <TableCell>คำถาม</TableCell>
-                    <TableCell>คะแนน</TableCell>
+                    <TableCell sx={{ width: '25%' }}>การลงทะเบียน</TableCell>
+                    <TableCell sx={{ width: '20%' }}>วันที่เริ่มเรียน</TableCell>
+                    <TableCell sx={{ width: '20%' }}>วันที่สิ้นสุดการเรียน</TableCell>
+                    <TableCell sx={{ width: '25%' }}>สถานะ</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <GroupedProgressRow
-                    progress={row.progress}
-                    pretestScore={row.pretestScore}
-                    posttestScore={row.posttestScore}
-                    labtestScore={row.labtestScore}
-                  />
+                  {userGroup.attempts.map((attempt, index) => (
+                    <AttemptRow
+                      key={attempt.id}
+                      attemptData={attempt}
+                      attemptNumber={index + 1}
+                    />
+                  ))}
                 </TableBody>
               </Table>
             </Box>
@@ -263,7 +304,71 @@ function EnrollSum() {
   const [enrollments, setEnrollments] = useState([]);
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("userId");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
 
+  const groupedEnrollments = React.useMemo(() => {
+    if (!enrollments.length) return [];
+
+    const byUser = enrollments.reduce((acc, enrollment) => {
+      const userId = enrollment.userId;
+      if (!acc[userId]) {
+        acc[userId] = {
+          userId: userId,
+          name: enrollment.user?.name ?? "N/A",
+          attempts: [],
+        };
+      }
+      acc[userId].attempts.push(enrollment);
+      return acc;
+    }, {});
+
+    return Object.values(byUser).map(userGroup => ({
+      ...userGroup,
+      attempts: userGroup.attempts.sort((a, b) => a.id - b.id),
+    }));
+  }, [enrollments]);
+
+  const filteredAndSortedEnrollments = React.useMemo(() => {
+    let filteredByUser = groupedEnrollments;
+
+    // 1. Filter by user name/ID
+    if (searchQuery) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      filteredByUser = groupedEnrollments.filter(userGroup =>
+        userGroup.name.toLowerCase().includes(lowercasedQuery) ||
+        String(userGroup.userId).toLowerCase().includes(lowercasedQuery)
+      );
+    }
+
+    // 2. Filter attempts within each user group by date and status
+    const filteredByContent = filteredByUser.map(userGroup => {
+      const filteredAttempts = userGroup.attempts.filter(attempt => {
+        // Status filter
+        const statusMatch = statusFilter === "all" || attempt.status === statusFilter;
+
+        // Date range filter
+        const attemptStartDate = new Date(attempt.startat);
+        const attemptEndDate = attempt.endat ? new Date(attempt.endat) : null;
+        const filterStartDate = dateRange.startDate ? new Date(dateRange.startDate) : null;
+        const filterEndDate = dateRange.endDate ? new Date(dateRange.endDate) : null;
+
+        if (filterEndDate) filterEndDate.setHours(23, 59, 59, 999); // Set to end of day
+
+        const startDateMatch = !filterStartDate || attemptStartDate >= filterStartDate;
+        const endDateMatch = !filterEndDate || (attemptEndDate && attemptEndDate <= filterEndDate);
+
+        return statusMatch && startDateMatch && endDateMatch;
+      });
+
+      return { ...userGroup, attempts: filteredAttempts };
+    }).filter(userGroup => userGroup.attempts.length > 0); // 3. Remove users with no matching attempts
+
+
+    return stableSort(filteredByContent, getComparator(order, orderBy));
+  }, [groupedEnrollments, searchQuery, order, orderBy, statusFilter, dateRange]);
+  
   const fetchSumEnrollment = async () => {
     try {
       const response = await backend.get(`/teacher/sumEnrollments/${courseId}`, {
@@ -272,7 +377,6 @@ function EnrollSum() {
 
       if (response.status === 200) {
         setEnrollments(response.data.finalFormat || []);
-        console.log("Enrollment data fetched successfully:", response.data);
       }
     } catch (error) {
       console.error(error);
@@ -287,6 +391,17 @@ function EnrollSum() {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
+  };
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+    setDateRange(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setDateRange({ startDate: "", endDate: "" });
   };
 
   const tabletQuery = useMediaQuery('(max-width:720px)');
@@ -329,6 +444,76 @@ function EnrollSum() {
         รายชื่อนักเรียนทั้งหมด
       </Typography>
 
+      <Stack 
+        direction={tabletQuery ? "column" : "row"} 
+        spacing={2}
+        alignItems="center"
+      >
+        <TextField
+          label="ค้นหาตามชื่อ หรือ เลขประจำตัว"
+          variant="outlined"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            width: "100%"
+          }}
+        />
+
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          sx={{ width: tabletQuery ? "100%" : "60%" }}
+        >
+          <TextField
+            label="วันที่เริ่มเรียน (ตั้งแต่)"
+            type="date"
+            name="startDate"
+            value={dateRange.startDate}
+            onChange={handleDateChange}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ minWidth: "30%" }}
+          />
+
+          <TextField
+            label="วันที่สิ้นสุด (ถึง)"
+            type="date"
+            name="endDate"
+            value={dateRange.endDate}
+            onChange={handleDateChange}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ minWidth: "30%" }}
+          />
+            
+          <FormControl sx={{ minWidth: "30%" }}>
+            <InputLabel id="status-filter-label">สถานะ</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="สถานะ"
+            >
+              <MenuItem value="all">ทั้งหมด</MenuItem>
+              <MenuItem value={1}>ผ่าน</MenuItem>
+              <MenuItem value={-1}>ไม่ผ่าน</MenuItem>
+              <MenuItem value={0}>กำลังเรียนอยู่</MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
+        
+         <Button 
+            variant="contained" 
+            onClick={handleResetFilters}
+            sx={{ 
+              width: tabletQuery ? "100%" : "auto",
+              height: "40px"
+            }}
+          >
+            รีเซ็ต
+          </Button>
+      </Stack>
+
       <TableContainer component={Paper} sx={{ mt: 3 }}>
         <Table>
           <TableHead>
@@ -353,24 +538,24 @@ function EnrollSum() {
                 </TableSortLabel>
               </TableCell>
               
-              <TableCell sortDirection={orderBy === "progressPercent" ? order : false}>
+              <TableCell align="center" sortDirection={orderBy === "attempts" ? order : false}>
                 <TableSortLabel
-                  active={orderBy === "progressPercent"}
-                  direction={orderBy === "progressPercent" ? order : "asc"}
-                  onClick={() => handleSort("progressPercent")}
+                  active={orderBy === "attempts"}
+                  direction={orderBy === "attempts" ? order : "asc"}
+                  onClick={() => handleSort("attempts")}
                 >
-                  ความคืบหน้าการเรียน
+                  จำนวนครั้งที่เรียน
                 </TableSortLabel>
               </TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {stableSort(enrollments, getComparator(order, orderBy)).map((row) => (
-              <Row key={row.id} row={row} />
+            {filteredAndSortedEnrollments.map((userGroup) => (
+              <UserRow key={userGroup.userId} userGroup={userGroup} />
             ))}
 
-            {enrollments.length === 0 && (
+            {filteredAndSortedEnrollments.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} align="center">
                   <Typography

@@ -110,10 +110,14 @@ const checkProgressAnswers = (req, res) => {
 
 
 const getLatest = (req, res) => {
-  const { enrollmentId } = req.params;
+  const { enrollmentId, courseId } = req.params;
+
+  if (!enrollmentId || !courseId) {
+    return res.status(400).json({ message: "Missing enrollmentId or courseId" });
+  }
 
   try {
-    db.query(`SELECT courseId, pretest_complete, posttest_complete, completed_labs, total_labs FROM enrollment WHERE id = ?`, [enrollmentId], (err, results) => {
+    db.query(`SELECT courseId, pretest_complete, posttest_complete, completed_labs, total_labs FROM enrollment WHERE id = ? AND courseId = ?`, [enrollmentId, courseId], (err, results) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ message: "Database enrollment query error" });

@@ -133,17 +133,30 @@
       <p>From: RealBank Security &lt;security@realbank-support.com&gt;</p>
       <p>
         Please
-        <a href="#" onclick="recordAction('Click Link'); return false;"
-          >click here</a
+        <a href="#" onclick="recordAction('Click link'); return false;"
+        >
+        click here
+        </a
         >
         to verify your account
       </p>
+    </div>
+
+    <div class="status" style="text-align: center; margin-top: 20px;">
+      <em>Select an action above to proceed.</em>
     </div>
 
     <script>
       function recordAction(action) {
         window.parent.postMessage({ answer: action }, "*");
       }
+
+      window.addEventListener("message", (event) => {
+        if (event.data && event.data.command === "reset") {
+          document.querySelector(".status").innerHTML =
+            '<em>Select an action above to proceed.</em>';
+        }
+      });
     </script>
   </body>
 </html>

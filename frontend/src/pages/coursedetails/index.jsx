@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
-import { Avatar, Button, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, Stack, Tab, Tabs, Typography } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 
@@ -118,7 +118,10 @@ const renderTestSection = (announcement, {
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
-  const [ render, setRender ] = useState("detail");
+  const [ render, setRender ] = useState({
+    detail: true,
+    test: false,
+  });
   const [ questionList, setQuestionList ] = useState({
     pretestList: [],
     posttestList: [],
@@ -347,9 +350,6 @@ function CourseDetail() {
     if (enrollmentId && enrollmentId !== "null" && history.length > 0) {
       fethProgress();
     }
-    // else if (enrollmentId !== "null" && history.length === 0) {
-    //   navigate(`/course/${courseId}/null`);
-    // }
   }, [history, enrollmentId]);
 
   const isPreTestCompleted = pretestProgress.length > 0 && pretestProgress.every((item) => item.is_completed === 1);
@@ -359,10 +359,6 @@ function CourseDetail() {
   const postTestScore = isPostTestCompleted ? posttestProgress.reduce((acc, item) => acc + item.score, 0) : null;
 
   const isLabCompleted = labProgress.length > 0 && labProgress.every((item) => item.is_completed === 1);
-
-  const handleChangeTab = (event, newValue) => {
-    setRender(newValue);
-  };
 
   const mergedPretestData = React.useMemo(() => {
     if (!questionList.pretestList.length || !pretestProgress.length || !pretestAnswers.length)
@@ -452,130 +448,185 @@ function CourseDetail() {
 
   return (
     <div className={style.container}>
-      <Stack sx={{ width: "100%", mb: 2 }}>
-        <Tabs
-          value={render}
-          onChange={handleChangeTab}
-          textColor="primary"
-          indicatorColor="primary"
-          centered
-        >
-          <Tab label="รายละเอียดคอร์ส" value="detail" />
-          <Tab label="รายละเอียดคะแนนแบบทดสอบ" value="test" disabled={history.length === 0}/>
-        </Tabs>
-      </Stack>
 
-      {render === "detail" && (
-        <>
-          <div className={style.head}>
-            <div>
-              <img alt="Course Icon Image" src={courseInfo.icon} />
-              <p>{courseInfo.name}</p>
-            </div>
-
-            <Stack 
-              gap={2}
-              sx={{
-                alignItems: { xs: "center", sm: "flex-start" },
-                flexDirection: 'column',
-                justifyContent: { xs: "center", sm: "space-between" },
-              }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                สร้างเมื่อ{" "}
-                {courseInfo.createat
-                  ? new Date(courseInfo.createat).toLocaleString("th-TH", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "Asia/Bangkok",
-                    })
-                  : "-"}
-              </Typography>
-
-              <Typography variant="caption" color="text.secondary">
-                แก้ไขเมื่อ{" "}
-                {courseInfo.updateat
-                  ? new Date(courseInfo.updateat).toLocaleString("th-TH", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "Asia/Bangkok",
-                    })
-                  : "-"}
-              </Typography>
-              
-            </Stack>
-
-          </div>
-
-          <Typography 
-            variant="h6"
-            sx={{
-              marginTop: 2
-            }}
-          >
-            อาจารย์ผู้สอน
-          </Typography>
+      <div className={style.head}>
+        <div className={style["headWrap"]}>
+          <img alt="Course Icon Image" src={courseInfo.icon} />
 
           <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
+            gap={2}
             sx={{
-              p: 2,
-              borderRadius: 2,
-              boxShadow: 1,
-              flexWrap: "wrap",
-              justifyContent: "space-evenly",
-              gap: 2,
-              marginBottom: 2,
+              alignItems: "center",
+              flexDirection: 'column',
+              justifyContent: { xs: "center", sm: "space-between" },
             }}
           >
+            <p>{courseInfo.name}</p>
+            <Typography variant="caption" color="text.secondary">
+              สร้างเมื่อ{" "}
+              {courseInfo.createat
+                ? new Date(courseInfo.createat).toLocaleString("th-TH", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "Asia/Bangkok",
+                })
+              : "-"}
+            </Typography>
 
-            <Stack 
-              direction="row"
-              alignItems="center"
-              gap={2}
-            >
-              <Avatar
-                src={teacherInfo.profile_img || undefined}
-                alt={teacherInfo.name}
-                sx={{ width: 72, height: 72 }}
-              />
-              <Stack spacing={0.5}>
-                <Typography variant="subtitle1" fontWeight="600">
-                  {(() => {
-                    const isEnglish = /^[A-Za-z\s]+$/.test(teacherInfo.name + " " + teacherInfo.surname);
-
-                    // ถ้าเป็นภาษาอังกฤษ
-                    if (isEnglish) {
-                      if (teacherInfo.sex === "m") return `Mr. ${teacherInfo.name} ${teacherInfo.surname}`;
-                      if (teacherInfo.sex === "f") return `Mrs. ${teacherInfo.name} ${teacherInfo.surname}`;
-                      if (teacherInfo.sex === "n") return `Sir. ${teacherInfo.name} ${teacherInfo.surname}`;
-                    }
-
-                    // ถ้าเป็นภาษาไทย
-                    if (teacherInfo.sex === "m") return `นาย${teacherInfo.name} ${teacherInfo.surname}`;
-                    if (teacherInfo.sex === "f") return `นาง${teacherInfo.name} ${teacherInfo.surname}`;
-                    if (teacherInfo.sex === "n") return `คุณ${teacherInfo.name} ${teacherInfo.surname}`;
-
-                    // ถ้าไม่ทราบเพศ
-                    return teacherInfo.name && teacherInfo.surname
-                      ? `${teacherInfo.name} ${teacherInfo.surname}`
-                      : "ไม่ทราบชื่ออาจารย์";
-                  })()}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ wordBreak: "break-word" }}
-                >
-                  {teacherInfo.email || "-"}
-                </Typography>
-              </Stack>
-            </Stack>
+            <Typography variant="caption" color="text.secondary">
+              แก้ไขเมื่อ{" "}
+              {courseInfo.updateat
+                ? new Date(courseInfo.updateat).toLocaleString("th-TH", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "Asia/Bangkok",
+                })
+              : "-"}
+            </Typography>
 
           </Stack>
+        </div>
 
+        <Stack
+          justifyContent="center"
+          alignItems="center"
+          gap={2}
+          sx={{
+            width: { sm: "100%", md: "80%"},
+            margin: "auto",
+            alignItems: { xs: "flex-start", sm: "center" },
+          }}
+        >                   
+          {(userData.id && history.length === 0) && (
+            <Button
+              variant="contained"
+              sx={{
+                width: { md: '50%', xs: '100%' }
+              }}
+              onClick={() => enrollCourse()}
+            >
+              {enrollmentId !== "null" ? "สมัครเรียนใหม่" : "สมัครเรียน"}
+            </Button>
+          )}
+
+          {(userData.id && history.length > 0 && history[0].posttest_complete === 0) && (
+            <Button 
+              variant="contained"
+              onClick={fetchLatestProgress}
+              sx={{
+                width: { md: '50%', xs: '100%' }
+              }} 
+            >
+              เข้าเรียนต่อ
+            </Button>
+          )}
+
+          {userData.id && enrollmentId !== "null" && history.length === 0 && !isPostTestCompleted && (
+            <Typography variant="subtitle1" align="center" color="red">
+              คุณไม่ผ่านการเรียนรู้ของคอร์ส 
+            <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
+            </Typography>
+          )}
+
+          {userData.id && enrollmentId !== "null" && 
+            history.length > 0 && history[0].posttest_complete === 1 && (
+              <Typography variant="subtitle1" align="center" color="green">
+                คุณผ่านการเรียนรู้ของคอร์สนี้แล้ว
+                <CheckIcon color="success" sx={{ ml: 1, mb: -0.5 }} />
+              </Typography>
+          )}
+              
+          {history.length > 0 && (
+            <Stack
+              sx={{
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: { xs: "center", sm: "space-evenly" },
+                alignItems: { xs: "center", sm: "flex-start" },
+                gap: 2,
+              }}
+            >
+              {history[0].startat && (
+                <Typography variant="subtitle1" color="text.secondary">
+                  เริ่มเรียนเมื่อ{" "}
+                  {history[0].startat
+                    ? new Date(history[0].startat).toLocaleString("th-TH", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "Asia/Bangkok",
+                    })
+                  : "-"}
+                </Typography>
+              )}
+                
+              {history[0].endat && (
+                <Typography variant="subtitle1" color="text.secondary">
+                  สำเร็จการเรียนเมื่อ{" "}
+                  {history[0].endat
+                    ? new Date(history[0].endat).toLocaleString("th-TH", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "Asia/Bangkok",
+                    })
+                  : "-"}
+                </Typography>
+              )}            
+            </Stack>
+          )}
+        </Stack>
+      </div>
+
+      <Tabs value={render.detail ? "detail" : false}>
+        <Tab 
+          value="detail" 
+          label="รายละเอียดคอร์ส" 
+          onClick={() => setRender({ ...render, detail: !render.detail })}
+          sx={{
+            fontWeight: render.detail ? "600" : "400"
+          }} 
+        />
+      </Tabs>
+
+      {render.detail && (
+        <>
+          <Stack 
+            direction="row" 
+            alignItems="center"
+            justifyContent="center" 
+            gap={2}
+            sx={{
+              padding: "16px 0",
+            }}
+          >
+            <Stack>
+              <Typography variant="caption" color="text.secondary">อาจารย์ผู้สอน</Typography>
+              <Stack direction="row" alignItems="center" gap={1.5}>
+                <Avatar
+                  src={teacherInfo.profile_img || undefined}
+                  alt={teacherInfo.name}
+                  sx={{ width: 42, height: 42 }}
+                />
+                <Stack>
+                  <Typography variant="subtitle1" fontWeight="600">
+                    {(() => {
+                      const isEnglish = /^[A-Za-z\s]+$/.test(teacherInfo.name + " " + teacherInfo.surname);
+                      if (isEnglish) {
+                        if (teacherInfo.sex === "m") return `Mr. ${teacherInfo.name} ${teacherInfo.surname}`;
+                        if (teacherInfo.sex === "f") return `Mrs. ${teacherInfo.name} ${teacherInfo.surname}`;
+                        return `Sir. ${teacherInfo.name} ${teacherInfo.surname}`;
+                      }
+                      if (teacherInfo.sex === "m") return `นาย${teacherInfo.name} ${teacherInfo.surname}`;
+                      if (teacherInfo.sex === "f") return `นาง${teacherInfo.name} ${teacherInfo.surname}`;
+                      if (teacherInfo.sex === "n") return `คุณ${teacherInfo.name} ${teacherInfo.surname}`;
+                      return teacherInfo.name && teacherInfo.surname ? `${teacherInfo.name} ${teacherInfo.surname}` : "ไม่ทราบชื่ออาจารย์";
+                    })()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ wordBreak: "break-word" }}>
+                    {teacherInfo.email || "-"}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Stack>
+          </Stack>
           {userData.id && history.length > 0 && (
             <Stack
               sx={{
@@ -673,55 +724,7 @@ function CourseDetail() {
             </table>
           </div>
 
-          <Stack
-            justifyContent="center"
-            alignItems="center"
-            gap={2}
-            sx={{
-              width: { sm: "100%", md: "80%"},
-              margin: "auto",
-              alignItems: { xs: "flex-start", sm: "center" },
-            }}
-          > 
-            {userData.id && enrollmentId !== "null" && history.length === 0 && !isPostTestCompleted && (
-              <Typography variant="subtitle1" align="center" color="red">
-                คุณไม่ผ่านการเรียนรู้ของคอร์ส 
-                <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
-              </Typography>
-            )}
-
-            {userData.id && enrollmentId !== "null" && 
-            history.length > 0 && history[0].posttest_complete === 1 && (
-              <Typography variant="subtitle1" align="center" color="green">
-                คุณผ่านการเรียนรู้ของคอร์สนี้แล้ว
-                <CheckIcon color="success" sx={{ ml: 1, mb: -0.5 }} />
-              </Typography>
-            )}
-                 
-            {(userData.id && history.length === 0) && (
-              <Button
-                variant="contained"
-                sx={{
-                  width: { md: '50%', xs: '100%' }
-                }}
-                onClick={() => enrollCourse()}
-              >
-                {enrollmentId !== "null" ? "สมัครเรียนใหม่" : "สมัครเรียน"}
-              </Button>
-            )}
-
-            {(userData.id && history.length > 0 && history[0].posttest_complete === 0) && (
-              <Button 
-                variant="contained"
-                onClick={fetchLatestProgress}
-                sx={{
-                  width: { md: '50%', xs: '100%' }
-                }} 
-              >
-                เข้าเรียนต่อ
-              </Button>
-            )}
-          </Stack>
+          
 
           <Stack
             justifyContent="space-evenly"
@@ -729,7 +732,7 @@ function CourseDetail() {
             sx={{
               flexDirection: { xs: "column", sm: "row" },
               alignItems: { xs: "center", sm: "space-evenly" },
-              marginTop: 2
+              margin: "16px auto",
             }}
           >
             <Typography variant="h6">
@@ -741,47 +744,21 @@ function CourseDetail() {
             </Typography>
           </Stack>
 
-          {history.length > 0 && (
-            <Stack
-            sx={{
-              margin: "24px 0",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: { xs: "center", sm: "space-evenly" },
-              alignItems: { xs: "center", sm: "flex-start" },
-              gap: 2,
-            }}
-          >
-            {history[0].startat && (
-              <Typography variant="subtitle1" color="text.secondary">
-                เริ่มเรียนเมื่อ{" "}
-                {history[0].startat
-                  ? new Date(history[0].startat).toLocaleString("th-TH", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "Asia/Bangkok",
-                    })
-                  : "-"}
-              </Typography>
-            )}
-            
-            {history[0].endat && (
-              <Typography variant="subtitle1" color="text.secondary">
-                สำเร็จการเรียนเมื่อ{" "}
-                {history[0].endat
-                  ? new Date(history[0].endat).toLocaleString("th-TH", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "Asia/Bangkok",
-                    })
-                  : "-"}
-              </Typography>
-            )}            
-          </Stack>
-          )}
         </>
       )}
+
+      <Tabs value={render.test ? "test" : false}>
+        <Tab 
+          value="test" 
+          label="ประวัติการเรียน" 
+          onClick={() => setRender({ ...render, test: !render.test })}
+          sx={{
+            fontWeight: render.detail ? "600" : "400"
+          }} 
+        />
+      </Tabs>
       
-      {render === "test" && (
+      {render.test && (
         <>
           {userData.id && pretestProgress.length > 0 && posttestProgress.length > 0&& (
             <div className={style.testSection}>

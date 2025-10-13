@@ -11,7 +11,14 @@ import {
   DialogActions,
   DialogTitle,
   IconButton,
+  Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -123,10 +130,10 @@ function EditCourse() {
       const duplicateCount = chartData.users.filter(
         (user) => user.name === u.name
       ).length;
-      const nameWithId = duplicateCount > 1 ? `${u.name}-${index}` : u.name;
+      const nameWithId = duplicateCount > 1 ? `${u.name}-ครั้งที่ ${index+1}` : u.name;
 
       return {
-        userId: u.id,
+        userId: u.userId,
         x: nameWithId,
         email: u.email,
         pretest: u.pretestScore,
@@ -138,9 +145,8 @@ function EditCourse() {
   const maxY = Math.max(
     chartData?.pretestMax || 0,
     chartData?.posttestMax || 0,
-    10
   );
-  
+
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -303,80 +309,44 @@ function EditCourse() {
               ]}
             />
 
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={4}
-              mt={2}
-              justifyContent="flex-start"
-              alignItems={{ xs: "flex-start", sm: "center" }}
-            >
+            <TableContainer component={Paper} sx={{ mt: 4 }}>
+              <Table sx={{ minWidth: 650 }} aria-label="score summary table">
               {(() => {
                 const maxPre = Math.max(...lineChartData.map((d) => d.pretest));
-                const maxPreUser = lineChartData.find(
-                  (d) => d.pretest === maxPre
-                )?.x;
-                const maxPost = Math.max(
-                  ...lineChartData.map((d) => d.posttest)
-                );
-                const maxPostUser = lineChartData.find(
-                  (d) => d.posttest === maxPost
-                )?.x;
-
-                return (
-                  <>
-                    <Typography>
-                      <span style={{ fontWeight: "bold", color: "#1976d2" }}>
-                        คะแนนสูงสุดแบบทดสอบก่อนเรียน:
-                      </span>{" "}
-                      {maxPreUser} {maxPre} คะแนน
-                    </Typography>
-                    <Typography>
-                      <span style={{ fontWeight: "bold", color: "#2e7d32" }}>
-                        คะแนนสูงสุดแบบทดสอบหลังเรียน:
-                      </span>{" "}
-                      {maxPostUser} {maxPost} คะแนน
-                    </Typography>
-                  </>
-                );
-              })()}
-            </Stack>
-
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={4}
-              mt={2}
-              justifyContent="flex-start"
-              alignItems={{ xs: "flex-start", sm: "center" }}
-            >
-              {(() => {
+                const maxPreUser = lineChartData.find((d) => d.pretest === maxPre)?.x;
+                const maxPost = Math.max(...lineChartData.map((d) => d.posttest));
+                const maxPostUser = lineChartData.find((d) => d.posttest === maxPost)?.x;
                 const minPre = Math.min(...lineChartData.map((d) => d.pretest));
-                const minPreUser = lineChartData.find(
-                  (d) => d.pretest === minPre
-                )?.x;
-                const minPost = Math.min(
-                  ...lineChartData.map((d) => d.posttest)
-                );
-                const minPostUser = lineChartData.find(
-                  (d) => d.posttest === minPost
-                )?.x;
+                const minPreUser = lineChartData.find((d) => d.pretest === minPre)?.x;
+                const minPost = Math.min(...lineChartData.map((d) => d.posttest));
+                const minPostUser = lineChartData.find((d) => d.posttest === minPost)?.x;
+
                 return (
                   <>
-                    <Typography>
-                      <span style={{ fontWeight: "bold", color: "#1976d2" }}>
-                        คะแนนต่ำสุดแบบทดสอบก่อนเรียน:
-                      </span>{" "}
-                      {minPreUser} {minPre} คะแนน
-                    </Typography>
-                    <Typography>
-                      <span style={{ fontWeight: "bold", color: "#2e7d32" }}>
-                        คะแนนต่ำสุดแบบทดสอบหลังเรียน:
-                      </span>{" "}
-                      {minPostUser} {minPost} คะแนน
-                    </Typography>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell />
+                        <TableCell align="left" sx={{ fontWeight: 'bold', color: '#1976d2' }}>แบบทดสอบก่อนเรียน</TableCell>
+                        <TableCell align="left" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>แบบทดสอบหลังเรียน</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>คะแนนสูงสุด</TableCell>
+                        <TableCell align="left">{maxPreUser} ({maxPre} คะแนน)</TableCell>
+                        <TableCell align="left">{maxPostUser} ({maxPost} คะแนน)</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>คะแนนต่ำสุด</TableCell>
+                        <TableCell align="left">{minPreUser} ({minPre} คะแนน)</TableCell>
+                        <TableCell align="left">{minPostUser} ({minPost} คะแนน)</TableCell>
+                      </TableRow>
+                    </TableBody>
                   </>
                 );
               })()}
-            </Stack>
+              </Table>
+            </TableContainer>
           </div>
         )}
       </div>
