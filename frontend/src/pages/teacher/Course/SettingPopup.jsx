@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import style from './css/editpopup.module.css';
+import style from './css/popup.module.css';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -39,34 +39,56 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
         { name: "แสดงคะแนนและรายละเอียด", value: 3 },
     ];
 
-    const courseInfoValidation = (showError = false) => {
-        let errorMessage = '';
-        if (subject.length === 0) errorMessage = "กรุณาเพิ่มบทเรียนอย่างน้อย 1 บทเรียน";
-        else if (courseData.pretest_rate < 1) errorMessage = "กรุณาป้อนอัตราการเลือกข้อสอบก่อนเรียนอย่างน้อย 1 ข้อ";
-        else if (courseData.pretest_rate > count_questions || courseData.posttest_rate > count_questions) errorMessage = `กรุณาป้อนอัตราการเลือกข้อสอบ ก่อน/หลังเรียน ไม่ให้เกิน ${count_questions} ข้อ`;
-        else if (courseData.posttest_rate < 1) errorMessage = "กรุณาป้อนอัตราการเลือกข้อสอบหลังเรียนอย่างน้อย 1 ข้อ";
-        else if (count_questions < 5) errorMessage = "กรุณาเพิ่มข้อสอบที่คลังข้อสอบอย่างน้อย 5 ข้อ";
-        else if (count_labs < 5) errorMessage = "กรุณาเพิ่มปฎิบัติการทดสอบที่บทเรียนอย่างน้อย 5 ข้อ";
-        
-        if (errorMessage && showError) {
-            setSnackbar({ open: true, message: errorMessage, severity: 'warning' });
+    const getValidationErrors = (showError = false) => {
+        const errors = [];
+
+        if (subject.length === 0) {
+            errors.push("ต้องมีบทเรียนอย่างน้อย 1 บทเรียน");
         }
-        return errorMessage || null; 
+        if (count_questions < 5) {
+            errors.push("ต้องมีข้อสอบในคลังอย่างน้อย 5 ข้อ");
+        }
+        if (count_labs < 5) {
+            errors.push("ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 5 ข้อ");
+        }
+        if (courseData.pretest_rate < 1) {
+            errors.push("ต้องกำหนดจำนวนข้อสอบก่อนเรียนอย่างน้อย 1 ข้อ");
+        }
+        if (courseData.posttest_rate < 1) {
+            errors.push("ต้องกำหนดจำนวนข้อสอบหลังเรียนอย่างน้อย 1 ข้อ");
+        }
+        if (courseData.pretest_rate > count_questions || courseData.posttest_rate > count_questions) {
+            errors.push(`จำนวนข้อสอบก่อน/หลังเรียนต้องไม่เกิน ${count_questions} `);
+        }
+        
+        if (errors.length > 0 && showError) {
+            setSnackbar({ open: true, message: errors[0], severity: 'warning' });
+        }
+        return errors;
     };  
 
     const handleSave = async (e) => {
         e.preventDefault();
+        
+        // ตรวจสอบค่า rate ที่ป้อนเข้ามาเสมอ
+        if (Number(courseData.pretest_rate) < 1 || Number(courseData.posttest_rate) < 1 || Number(courseData.pretest_rate) > count_questions || Number(courseData.posttest_rate) > count_questions) {
+            getValidationErrors(true); // เรียกเพื่อแสดง Snackbar แต่ไม่ใช้ค่า return
+            return;
+        }
 
-        const validationError = courseInfoValidation(true);
-        if (validationError && courseData.enable) return;
+        // ตรวจสอบความพร้อมของคอร์สเฉพาะตอนที่จะเปิดเผยแพร่
+        if (courseData.enable) {
+            const validationErrors = getValidationErrors(true);
+            if (validationErrors.length > 0) return;
+        }
 
         try {
             const response = await backend.put(`/teacher/updateCourseSettings/${courseInfo.id}`,
                 {
-                    enable: courseData.enable,
-                    announcement: courseData.announcement,
-                    pretest_rate: courseData.pretest_rate,
-                    posttest_rate: courseData.posttest_rate,
+                    enable: Number(courseData.enable),
+                    announcement: Number(courseData.announcement),
+                    pretest_rate: Number(courseData.pretest_rate),
+                    posttest_rate: Number(courseData.posttest_rate),
                 },
                 { withCredentials: true }
             );
@@ -111,7 +133,11 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
         Number(courseData.pretest_rate) !== courseInfo.pretest_rate ||
         Number(courseData.posttest_rate) !== courseInfo.posttest_rate;
 
-    const isCourseValidForEnable = courseInfoValidation() === null;
+    const validationErrors = getValidationErrors();
+    const isCourseValidForEnable = validationErrors.length === 0;
+    
+    // เงื่อนไขหลักในการเปิดใช้งานฟอร์มตั้งค่า
+    const isReadyForSettings = subject.length >= 1 && count_questions >= 5 && count_labs >= 5;
 
     return (
         <div className={style.popupOverlay}>
@@ -119,9 +145,27 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                 <Typography variant='h5' sx={{ fontWeight: '600' }}>
                     ตั้งค่าคอร์สเรียน
                 </Typography>
-                <Divider sx={{ borderColor: '#ccc', marginY: 2, borderWidth: '1px' }} />
+
+                <Divider 
+                    sx={{ 
+                        borderColor: '#000000ff', 
+                        marginBottom: 2,
+                        borderWidth: '1px' }} />
 
                 <form onSubmit={handleAttemptSave} className={style.formWrapper}>
+                    {!isReadyForSettings && (
+                        <Stack sx={{ mb: 2, p: 2, border: '1px solid #ffa726', borderRadius: '4px', bgcolor: '#fff3e0' }}>
+                            <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 'bold' }}>
+                                ต้องดำเนินการให้ครบตามเงื่อนไขก่อนจึงจะสามารถตั้งค่าได้:
+                            </Typography>
+                            <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
+                                {subject.length < 1 && <li><Typography variant="caption" color="warning.dark">ต้องมีบทเรียนอย่างน้อย 1 บทเรียน</Typography></li>}
+                                {count_questions < 5 && <li><Typography variant="caption" color="warning.dark">ต้องมีข้อสอบในคลังอย่างน้อย 5 ข้อ</Typography></li>}
+                                {count_labs < 5 && <li><Typography variant="caption" color="warning.dark">ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 5 ข้อ</Typography></li>}
+                            </ul>
+                        </Stack>
+                    )}
+
                     <FormControl fullWidth>
                         <InputLabel id="announcement-label">รูปแบบประกาศคะแนน</InputLabel>
                         <Select
@@ -129,6 +173,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                             value={courseData.announcement}
                             onChange={(e) => setCourseData({ ...courseData, announcement: e.target.value })}
                             label="รูปแบบประกาศคะแนน"
+                            disabled={!isReadyForSettings}
                             MenuProps={{ disablePortal: true }}
                         >
                             {announce_state.map((a) => (
@@ -154,6 +199,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                             onChange={(e) => setCourseData({ ...courseData, pretest_rate: e.target.value })}
                             fullWidth
                             required
+                            disabled={!isReadyForSettings}
                             sx={{ 
                                 inputProps: { 
                                     min: 1, 
@@ -169,6 +215,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                             onChange={(e) => setCourseData({ ...courseData, posttest_rate: e.target.value })}
                             fullWidth
                             required
+                            disabled={!isReadyForSettings}
                             sx={{ 
                                 inputProps: { 
                                     min: 1, 
@@ -181,16 +228,16 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                     <FormControlLabel
                         control={
                             <Switch
-                                checked={courseData.enable}
+                                checked={Boolean(courseData.enable)}
                                 onChange={(e) => {
-                                    const validationError = courseInfoValidation();
-                                    if (e.target.checked && validationError) {
-                                        setSnackbar({ open: true, message: validationError, severity: 'warning' });
+                                    const errors = getValidationErrors();
+                                    if (e.target.checked && errors.length > 0) {
+                                        setSnackbar({ open: true, message: `ยังไม่สามารถเผยแพร่ได้: ${errors[0]}`, severity: 'warning' });
                                         return;
                                     }
                                     setCourseData({ ...courseData, enable: e.target.checked });
                                 }}
-                                disabled={!isCourseValidForEnable && !courseData.enable}
+                                disabled={!isReadyForSettings || (!isCourseValidForEnable && !courseData.enable)}
                             />
                         }
                         label="เผยแพร่คอร์ส"

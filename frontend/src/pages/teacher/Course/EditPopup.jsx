@@ -3,29 +3,22 @@ import backend from '../../../api/backend';
 import {
   Alert,
   Divider,
-  FormControl,
-  IconButton,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
   Slide,
   Snackbar,
   Stack,
-  Switch,
   TextField,
   Typography,
   Button,
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import style from './css/editpopup.module.css';
+import style from './css/popup.module.css';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
-function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, onSave }) {
+function EditPopup({ courseInfo, onClose, onSave }) {
   const [courseData, setCourseData] = useState({
     name: courseInfo.name,
     icon: courseInfo.icon,
@@ -35,13 +28,6 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
     posttest_rate: courseInfo.posttest_rate,
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
-
-  const announce_state = [
-    { name: "ยังไม่ประกาศผล", value: 0 },
-    { name: "คะแนนแบบทดสอบก่อนเรียน", value: 1 },
-    { name: "แสดงคะแนนรวมทั้งหมด", value: 2 },
-    { name: "แสดงคะแนนและรายละเอียด", value: 3 },
-  ];
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];

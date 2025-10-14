@@ -438,9 +438,6 @@ function EditCourse() {
       {fixCoursePopup && (
         <EditPopup
           courseInfo={data.courseInfo}
-          subject={data.subject}
-          count_questions={data.countQuestions}
-          count_labs={data.countLabs}
           onClose={() => setFixCoursePopup(false)}
           onSave={handleSaveCourse}
         />

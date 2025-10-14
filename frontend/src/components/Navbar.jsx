@@ -17,7 +17,6 @@ function Navbar() {
       const response = await backend.post('/auth/logout', { email: userData.email }, { withCredentials: true });
       if(response.status === 200){
         localStorage.removeItem('email');
-        alert(response.data.message);
         window.location.href = '/';
       } 
     } catch (error) {

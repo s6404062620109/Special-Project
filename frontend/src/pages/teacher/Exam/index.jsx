@@ -310,14 +310,16 @@ function Exam() {
 
   const handleSubmit = async () => {
     const { isValid, validMessage } = validation();
-    if (!isValid) {
-      setMessage(validMessage);
-      setSnackBarState({ open: true, Transition: SlideTransition });
-      setTimeout(() => {
-        setSnackBarState({ open: false, Transition: SlideTransition });
-        setMessage("");
-      }, 3000);
-      return;
+    if (mode !== "delete"){
+      if (!isValid) {
+        setMessage(validMessage);
+        setSnackBarState({ open: true, Transition: SlideTransition });
+        setTimeout(() => {
+          setSnackBarState({ open: false, Transition: SlideTransition });
+          setMessage("");
+        }, 3000);
+        return;
+      }
     }
     
     if (mode === "add") {
@@ -349,7 +351,7 @@ function Exam() {
   function SlideTransition(props) {
     return <Slide {...props} direction="up" />;
   }
-
+  console.log(questions)
   return (
     <div className={style.pageWrapper}>
       <div className={style.head}>

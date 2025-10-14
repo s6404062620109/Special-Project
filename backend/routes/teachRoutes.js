@@ -17,6 +17,8 @@ router.post("/addCourse", authUserRole.checkCourseCreation, teacherController.cr
 
 router.put("/update/:courseId", authUserRole.verifiedTeacherCourse, teacherController.updateCourse);
 
+router.put("/updateCourseSettings/:courseId", authUserRole.verifiedTeacherCourse, teacherController.updateSettingCourse);
+
 router.delete("/deleteCourse/:courseId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteCourse);
 
 router.get("/sumEnrollments/:courseId", authUserRole.verifiedTeacherCourse, teacherController.enrollSummary);

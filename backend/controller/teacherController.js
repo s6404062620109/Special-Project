@@ -161,17 +161,17 @@ const updateCourse = (req, res) => {
     const { courseId } = req.params;
     const { name, icon } = req.body;
 
+    if(!courseId || !name){
+      return res.status(400).send({ message: "Require courseid, name." })
+    }
+
     if( typeof courseId !== 'string' || 
       typeof name !== 'string' ){
-        return res.status(400).send({ message: "Invalid Course ID, Name." });
+        return res.status(400).send({ message: "Invalid courseid, name." });
     }
 
     if (typeof icon !== 'string' && icon !== null) {
       return res.status(400).json({ message: "Invalid icon format. It must be a string or null." });
-    }
-    
-    if (!name?.trim()) {
-        return res.status(400).json({ message: "Name and icon are required." });
     }
 
     try{
@@ -183,6 +183,39 @@ const updateCourse = (req, res) => {
             }
 
             return res.status(200).send({ message: "อัพเดทคอร์สเรัยนเสร็จสิ้น."});
+        });
+
+    } catch(error){
+        console.log(error);
+        return res.status(500).send({ message: "Server error.", error });
+    }
+}
+
+const updateSettingCourse = (req, res) => {
+    const { courseId } = req.params;
+    const { enable, pretest_rate, posttest_rate, announcement } = req.body;
+    
+    if (courseId === undefined || enable === undefined || announcement === undefined || pretest_rate === undefined || posttest_rate === undefined) {
+      return res.status(400).send({ message: "Require courseid, enable, announcement, pretest_rate, posttest_rate." })
+    }
+
+    if( typeof courseId !== 'string' || 
+      typeof enable !== 'number' || 
+      typeof announcement !== 'number' || 
+      typeof pretest_rate !== 'number' || 
+      typeof posttest_rate !== 'number') {
+        return res.status(400).send({ message: "Invalid courseid, enable, announcement, pretest_rate, posttest_rate." });
+    }
+
+    try{
+        db.query("UPDATE course SET pretest_rate = ?, posttest_rate = ?, enable = ?, updateat = NOW(), announce_state = ? WHERE id = ?", 
+          [pretest_rate, posttest_rate, enable, announcement, courseId], (error) => {
+            if(error){
+                console.log(error);
+                return res.status(500).send({ message: "Database course query error." });
+            }
+
+            return res.status(200).send({ message: "ตั้งค่าคอร์สเรัยนเสร็จสิ้น."});
         });
 
     } catch(error){
@@ -1363,6 +1396,7 @@ module.exports = {
   testAnalysis,
   createCourse,
   updateCourse,
+  updateSettingCourse,
   deleteCourse,
   enrollSummary,
   getQuestions,

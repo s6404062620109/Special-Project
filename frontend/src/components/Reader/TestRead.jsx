@@ -4,6 +4,7 @@ import backend from '../../api/backend';
 
 import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton, TextField } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
@@ -167,9 +168,10 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               >
                 {currentItem.content.split("\\n").map((line, index) => (
                   <React.Fragment key={index}>
-                    {currentIndex+1}.
-                    {line}
-                    <br />
+                    <Typography color='#000' fontSize="20px">
+                      {currentIndex+1}.
+                      {line}
+                    </Typography>
                   </React.Fragment>
                 ))}
               </FormLabel>
@@ -185,9 +187,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                       key={index}
                       value={choice.aId}
                       disabled={!canSelected}
-                      control={<Radio />}
+                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
                       label={choice.content}
                       checked={selectedAnswers[currentItem.qId]?.answerId === String(choice.aId)}
+                      sx={{
+                        color: "#000"
+                      }}
                     />
                   ))}
                   {currentItem.choice.map((choice, index) => (
@@ -195,7 +200,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                       key={index}
                       value={choice.aId}
                       disabled={!canSelected}
-                      control={<Radio />}
+                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
                       label={choice.content}
                       checked={selectedAnswers[currentItem.qId]?.answerId === String(choice.aId)}
                     />
@@ -211,17 +216,41 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                       key={index}
                       value={choice.aId}
                       disabled={!canSelected}
-                      control={<Radio />}
-                      label={choice.content}
+                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
+                      label={
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Typography>{choice.content}</Typography>
+                          {!canSelected && (choice.isCorrect === 1 || choice.type === 1) && (
+                            <CheckCircleIcon color="success" sx={{ fontSize: '1rem' }} />
+                          )}
+                        </Stack>
+                      }
+                      sx={{
+                        '& .Mui-disabled': {
+                          color: 'rgba(0, 0, 0, 0.87)', 
+                        },
+                      }}
                     />
                   ))}
                   {currentItem.choice?.map((choice, index) => (
                     <FormControlLabel
                       key={index}
-                      value={choice.aId}
+                      value={choice.id}
                       disabled={!canSelected}
-                      control={<Radio />}
-                      label={choice.content}
+                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
+                      label={
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Typography>{choice.content}</Typography>
+                          {!canSelected && (choice.isCorrect === 1 || choice.type === 1) && (
+                            <CheckCircleIcon color="success" sx={{ fontSize: '1rem' }} />
+                          )}
+                        </Stack>
+                      }
+                      sx={{
+                        '& .Mui-disabled': {
+                          color: 'rgba(0, 0, 0, 0.87)', // Force label text to be black when disabled
+                        },
+                      }}
                     />
                   ))}
                 </RadioGroup>
