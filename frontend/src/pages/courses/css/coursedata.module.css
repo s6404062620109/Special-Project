@@ -27,6 +27,7 @@
   display: flex;
   align-items: center;
   gap: 5%;
+  padding: 16px 0;
 
   img {
     width: 45px;
@@ -65,17 +66,10 @@
 
 
 @media screen and (max-width: 640px) {
-  .card > td:nth-child(2),
-  .card > td:nth-child(3),
-  .card > td:nth-child(4) 
-  {
-    display: none;
-  }
 
   .card > td:nth-child(1) > .tcell-wrap {
     display: none;
   }
-
 
   .tcell-mobile-wrap {
     display: flex;
@@ -84,7 +78,7 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 36px 0;
+    padding: 24px 0;
   }
 
   .tcell-mobile-wrap > div {

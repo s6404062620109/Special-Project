@@ -159,25 +159,24 @@ const createCourse = (req, res) => {
 
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
-    const { name, icon, enable, pretest_rate, posttest_rate, announce_state } = req.body;
+    const { name, icon } = req.body;
 
     if( typeof courseId !== 'string' || 
-      typeof name !== 'string' || 
-      typeof icon !== 'string' || 
-      typeof enable !== "number" || 
-      typeof pretest_rate !== 'number' || 
-      typeof posttest_rate !== 'number' || 
-      typeof announce_state !== 'number' ){
-        return res.status(400).send({ message: "Invalid Course ID, Name, Icon, Enable, Pretest_rate, Posttest_rate, Announce_state." });
+      typeof name !== 'string' ){
+        return res.status(400).send({ message: "Invalid Course ID, Name." });
+    }
+
+    if (typeof icon !== 'string' && icon !== null) {
+      return res.status(400).json({ message: "Invalid icon format. It must be a string or null." });
     }
     
-    if (!name?.trim() || !icon?.trim() || enable === undefined || pretest_rate === undefined || posttest_rate === undefined || announce_state === undefined) {
-        return res.status(400).json({ message: "Name ,icon, enable, pretest_rate, posttest_rate and announce_state are required." });
+    if (!name?.trim()) {
+        return res.status(400).json({ message: "Name and icon are required." });
     }
 
     try{
-        db.query("UPDATE course SET name = ?, icon = ?, pretest_rate = ?, posttest_rate = ?, enable = ?, updateat = NOW() , announce_state = ? WHERE id = ?", 
-          [name, icon, pretest_rate, posttest_rate, enable, announce_state, courseId], (error) => {
+        db.query("UPDATE course SET name = ?, icon = ?, updateat = NOW() WHERE id = ?", 
+          [name, icon, courseId], (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });

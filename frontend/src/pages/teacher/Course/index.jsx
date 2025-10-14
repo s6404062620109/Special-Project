@@ -5,7 +5,9 @@ import { AuthContext } from "../../../context/AuthProvider";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SchoolIcon from '@mui/icons-material/School';
 import {
+  Avatar,
   Button,
   Dialog,
   DialogActions,
@@ -27,6 +29,7 @@ import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
 import { LineChart } from "@mui/x-charts";
 import TestPopup from "./TestPopup";
+import SettingPopup from "./SettingPopup";
 
 function EditCourse() {
   const { courseId } = useParams();
@@ -39,6 +42,7 @@ function EditCourse() {
   });
   const [ chartData, setChartData ] = useState(null);
   const [ editPopupOpen, setEditPopupOpen ] = useState(false);
+  const [ fixCoursePopup, setFixCoursePopup ] = useState(false);
   const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
   const [ examDialogOpen, setExamOpenDialog ] = useState(false);
   const navigate = useNavigate();
@@ -118,9 +122,14 @@ function EditCourse() {
   };
 
   const handleSaveCourse = () => {
-    setEditPopupOpen(false);
+    setFixCoursePopup(false);
     fetchSubjects();
   };
+
+  const handleSettingCourse = () => {
+    setEditPopupOpen(false);
+    fetchSubjects();
+  }
 
   const tabletQuery = useMediaQuery("(max-width:720px)");
   const isXs = useMediaQuery("(max-width:600px)");
@@ -152,17 +161,24 @@ function EditCourse() {
       <div className={style.container}>
         <div className={style.head}>
           <div className={style["info-wrapper"]}>
-            <img
-              alt="course icon"
-              src={data.courseInfo.icon}
-              style={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "8px",
-              }}
-            />
+            {data.courseInfo.icon ? (
+              <img
+                alt="course icon"
+                src={data.courseInfo.icon}
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "8px",
+                }}
+              />
+            ):(
+              <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                <SchoolIcon />
+              </Avatar>
+            )}
+            
             <h2>{data.courseInfo.name}</h2>
-            <IconButton onClick={() => setEditPopupOpen(true)}>
+            <IconButton onClick={() => setFixCoursePopup(true)}>
               <EditIcon />
             </IconButton>
           </div>
@@ -186,6 +202,7 @@ function EditCourse() {
               >
                 รายชื่อผู้เรียน
               </Button>
+
               <Button
                 variant="contained"
                 sx={{
@@ -194,6 +211,17 @@ function EditCourse() {
                 onClick={() => setExamOpenDialog(true)}
               >
                 คลังข้อสอบ
+              </Button>
+
+              <Button
+                variant="contained"
+                sx={{
+                  width: { xs: "100%", sm: "50%" },
+                  backgroundColor: "#868686ff",
+                }}
+                onClick={() => setEditPopupOpen(true)}
+              >
+                ตั้งค่าคอร์ส
               </Button>
           </Stack>
           
@@ -205,15 +233,21 @@ function EditCourse() {
             <table className={style.subjectTable}>
               <thead>
                 <tr>
-                  <th>บทเรียน</th>
+                  <th>
+                    <Typography variant="body1" fontWeight={600}>บทเรียน</Typography>
+                  </th>
                   <th colSpan={3}></th>
                 </tr>
               </thead>
               <tbody>
                 {data.subject.length > 0 ? (
-                  data.subject.map((subject) => (
+                  data.subject.map((subject, index) => (
                     <tr key={subject.id}>
-                      <td>{subject.name}</td>
+                      <td>
+                        <Typography variant="body2">
+                            {index+1}. {subject.name}
+                        </Typography>
+                      </td>
                       <td>
                         {tabletQuery ? (
                           <IconButton
@@ -401,14 +435,25 @@ function EditCourse() {
         </DialogActions>
       </Dialog>
 
-      {editPopupOpen && (
+      {fixCoursePopup && (
         <EditPopup
           courseInfo={data.courseInfo}
           subject={data.subject}
           count_questions={data.countQuestions}
           count_labs={data.countLabs}
-          onClose={() => setEditPopupOpen(false)}
+          onClose={() => setFixCoursePopup(false)}
           onSave={handleSaveCourse}
+        />
+      )}
+
+      {editPopupOpen && (
+        <SettingPopup
+          courseInfo={data.courseInfo}
+          subject={data.subject}
+          count_questions={data.countQuestions}
+          count_labs={data.countLabs}
+          onClose={() => setEditPopupOpen(false)}
+          onSave={handleSettingCourse}
         />
       )}
 

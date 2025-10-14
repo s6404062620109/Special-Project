@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 import backend from '../../../api/backend';
 import {
+  Alert,
+  Divider,
   FormControl,
+  IconButton,
   FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
+  Slide,
+  Snackbar,
   Stack,
   Switch,
   TextField,
+  Typography,
+  Button,
 } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import style from './css/editpopup.module.css';
+
+function SlideTransition(props) {
+  return <Slide {...props} direction="left" />;
+}
 
 function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, onSave }) {
   const [courseData, setCourseData] = useState({
@@ -22,12 +34,13 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
     pretest_rate: courseInfo.pretest_rate,
     posttest_rate: courseInfo.posttest_rate,
   });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   const announce_state = [
-    { name: "คะแนนกำลังอยู่ในขั้นตอนการประเมินผล", value: 0 },
+    { name: "ยังไม่ประกาศผล", value: 0 },
     { name: "คะแนนแบบทดสอบก่อนเรียน", value: 1 },
-    { name: "คะแนนแบบทดสอบก่อนเรียนและหลังเรียน", value: 2 },
-    { name: "คะแนนแบบทดสอบก่อนเรียน หลังเรียน และรายละเอียดการประเมินผล", value: 3 },
+    { name: "แสดงคะแนนรวมทั้งหมด", value: 2 },
+    { name: "แสดงคะแนนและรายละเอียด", value: 3 },
   ];
 
   const handleFileChange = (e) => {
@@ -39,72 +52,126 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
     }
   };
 
-  const courseInfoValidation = () => {
-    if (courseData.name === "") return alert("กรุณากรอกชื่อคอร์ส");
-    if (subject.length === 0) return alert("กรุณาเพิ่มบทเรียนอย่างน้อย 1 บทเรียน");
-    if (courseData.pretest_rate < 1) return alert("กรุณาป้อนอัตราการเลือกข้อสอบก่อนเรียนอย่างน้อย 1 ข้อ");
-    if (courseData.pretest_rate > count_questions || courseData.pretest_rate > count_questions){
-      return alert(`กรุณาป้อนอัตราการเลือกข้อสอบ ก่อน/หลังเรียน ไม่ให้เกิน ${count_questions} ข้อ`);
+  const courseInfoValidation = (showError = false) => {
+    let errorMessage = '';    
+    if (courseData.name.trim() === "") {
+      errorMessage = "กรุณากรอกชื่อคอร์ส";
     }
-    if (courseData.posttest_rate < 1) return alert("กรุณาป้อนอัตราการเลือกข้อสอบหลังเรียนอย่างน้อย 1 ข้อ");
-    if (count_questions < 5) return alert("กรุณาเพิ่มข้อสอบที่คลังข้อสอบอย่างน้อย 5 ข้อ");
-    if (count_labs < 5) return alert("กรุณาเพิ่มปฎิบัติการทดสอบที่บทเรียนอย่างน้อย 5 ข้อ");
+    
+    if (errorMessage && showError) {
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
+    }
 
-    return true;
-  };
+    return errorMessage || null; 
+  };  
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!courseInfoValidation()) return;
+
+    const validationError = courseInfoValidation(true);
+    if (validationError) return;
 
     try {
       const response = await backend.put(`/teacher/update/${courseInfo.id}`,
         {
           name: courseData.name,
-          icon: courseData.icon,
-          enable: courseData.enable,
-          announce_state: courseData.announcement,
-          pretest_rate: Number(courseData.pretest_rate),
-          posttest_rate: Number(courseData.posttest_rate),
+          icon: courseData.icon
         },
         { withCredentials: true }
       );
 
       if (response.status === 200) {
-        alert(response.data.message);
-        onSave();
+        setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+        setTimeout(() => {
+          onSave();
+        }, 1500); 
       }
     } catch (error) {
       console.log(error);
-      alert(error?.response?.data?.message || "Error saving course");
+      setSnackbar({ open: true, message: error?.response?.data?.message || "Error saving course", severity: 'error' });
     }
+  };
+
+  const isFormValid = courseData.name.trim() !== "";
+
+  const handleAttemptSave = (e) => {
+    e.preventDefault();
+    const hasChanges = courseData.name !== courseInfo.name || courseData.icon !== courseInfo.icon;
+    if (!hasChanges) {
+      setSnackbar({ open: true, message: 'ไม่มีการเปลี่ยนแปลงข้อมูล', severity: 'info' });
+    } else {
+      handleSave(e);
+    }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
     <div className={style.popupOverlay}>
       <div className={style.popupContent}>
-        <form onSubmit={handleSave} className={style.formWrapper}>
-          
-          {/* ส่วนอัปโหลดไอคอน */}
+        <Typography 
+          variant='h5'
+          sx={{ 
+            fontWeight: '600'
+          }}
+        >
+          แก้ไขคอร์สเรียน
+        </Typography>
+
+        <Divider 
+          sx={{ 
+            borderColor: '#ccc', 
+            marginBottom: 2,
+            borderWidth: '1px',
+            borderColor: '#000000ff'
+          }}
+        />
+        <form onSubmit={handleAttemptSave} className={style.formWrapper}>
+
           <div className={style.fileInput}>
             <label>ไอคอนคอร์ส</label>
-            <div
-              className={style.previewImageContainer}
-              onClick={() => document.getElementById("fileInput").click()}
+            <Stack 
+              direction="column" 
+              alignItems="center" 
+              spacing={1}
+              sx={{
+                width: "100%",
+              }}
             >
-              {courseData.icon ? (
-                <img src={courseData.icon} alt="Preview" className={style.previewImage} />
-              ) : (
-                <span className={style.uploadText}>Click to Upload</span>
+              <div
+                className={style.previewImageContainer}
+                onClick={() => document.getElementById("fileInput").click()}
+              >
+                {courseData.icon ? (
+                  <img src={courseData.icon} alt="Preview" className={style.previewImage} />
+                ) : (
+                  <span className={style.uploadText}>Click to Upload</span>
+                )}
+              </div>
+              <input
+                id="fileInput"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
+              {courseData.icon && (
+                <Button
+                  variant='text'
+                  color="error"
+                  size="small"
+                  startIcon={<DeleteIcon/>}
+                  onClick={() => setCourseData({ ...courseData, icon: null })}
+                >
+                  ลบรูปภาพ
+                </Button>
               )}
-            </div>
-            <input
-              id="fileInput"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              style={{ display: "none" }}
-            />
+            </Stack>
           </div>
 
           <div className={style.formGroup}>
@@ -117,87 +184,25 @@ function EditPopup({ courseInfo, subject, count_questions, count_labs, onClose, 
               fullWidth
               required
             />
-
-            <FormControl 
-              sx={{ 
-                mt: 2, 
-                minWidth: 300, 
-                maxWidth: 440, 
-                width: '100%' 
-              }}
-            >
-              <InputLabel>รูปแบบประกาศคะแนน</InputLabel>
-              <Select
-                value={courseData.announcement}
-                onChange={(e) => setCourseData({ ...courseData, announcement: e.target.value })}
-                MenuProps={{ disablePortal: true }}
-                sx={{
-                  width: '100%',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                }}
-              >
-                {announce_state.map((a) => (
-                  <MenuItem key={a.value} value={a.value}>
-                    {a.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              sx={{ mt: 2 }}
-            >
-              <TextField
-                variant="outlined"
-                label="อัตราการเลือกข้อสอบก่อนเรียน"
-                type="number"
-                value={courseData.pretest_rate}
-                onChange={(e) => setCourseData({ ...courseData, pretest_rate: e.target.value })}
-                fullWidth
-                required
-              />
-
-              <TextField
-                variant="outlined"
-                label="อัตราการเลือกข้อสอบหลังเรียน"
-                type="number"
-                value={courseData.posttest_rate}
-                onChange={(e) => setCourseData({ ...courseData, posttest_rate: e.target.value })}
-                fullWidth
-                required
-              />
-            </Stack>
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={courseData.enable}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      if (!courseInfoValidation()) {
-                        e.preventDefault();
-                        return;
-                      }
-                    }
-                    setCourseData({ ...courseData, enable: e.target.checked });
-                  }}
-                  disabled={!courseInfoValidation()}
-                />
-              }
-              label="เผยแพร่คอร์ส"
-              sx={{ mt: 2 }}
-            />
           </div>
 
           <div className={style.buttonGroup}>
             <button type="button" onClick={onClose}>ยกเลิก</button>
-            <button type="submit">บันทึก</button>
+            <button type="submit" disabled={!isFormValid}>บันทึก</button>
           </div>
         </form>
+        
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          slots={{ transition: SlideTransition }}
+        >
+          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </div>
     </div>
   );

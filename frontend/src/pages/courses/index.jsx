@@ -53,11 +53,6 @@ function Courses() {
             <thead>
               <tr>
                 <th></th>
-                {userData.id && (
-                  <th>
-                    <p>ความคืบหน้าการเรียน</p>
-                  </th>
-                )}
                 <th></th>
               </tr>
             </thead>

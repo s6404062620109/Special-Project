@@ -4,24 +4,27 @@ import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
 import {
-  Avatar,
   Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
+  IconButton,
+  Paper,
   Stack,
   Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Tabs,
   Typography,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import style from "./css/coursedetails.module.css";
 import SubjectData from "./SubjectData";
 import TestDialog from "./testDialog";
-import Processbar from "../courses/Processbar";
 
 const renderTestSection = (
   announcement,
@@ -36,10 +39,10 @@ const renderTestSection = (
 ) => {
   if (announcement === 0) {
     return (
-      <Typography variant="h6">ยังไม่มีการประกาศผล</Typography>
+      <Typography variant="h6">ยังไม่มีการประกาศคะแนน</Typography>
     );
   }
-
+  
   const pretestProgressCompleted =
     pretestProgress.length > 0 &&
     pretestProgress.every((item) => item.is_completed === 1);
@@ -51,94 +54,112 @@ const renderTestSection = (
     labProgress.every((item) => item.is_completed === 1);
   const labScore = labProgress.reduce((acc, item) => acc + item.score, 0);
 
-  return (
-    <>
-      <Typography variant="h5" fontWeight="bold">
-        ผลการทำแบบทดสอบ
-      </Typography>
-      <Stack
-        sx={{
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: { xs: "center", sm: "space-evenly" },
-          gap: 2,
-          width: "80%",
+  if (!pretestProgressCompleted && !posttestProgressCompleted && !labProgressCompleted) {
+    return (
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          textAlign: "center", 
+          margin: "16px 0" 
         }}
       >
-        {(announcement === 1 || announcement === 2 || announcement === 3) &&
-          pretestProgressCompleted && (
-            <Stack
-              alignItems="center"
-              gap={2}
-              sx={{
-                flexDirection: "column",
-                justifyContent: { xs: "center", sm: "space-between" },
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6">
-                แบบทดสอบก่อนเรียน {preTestScore} / {pretestProgress.length}{" "}
-                คะแนน
-              </Typography>
-              {announcement === 3 && (
-                <Button
-                  variant="contained"
-                  onClick={() => setShowTestList({ mode: "pre", state: true })}
-                >
-                  ดูรายละเอียด
-                </Button>
-              )}
-            </Stack>
-          )}
+        ยังไม่พบการทำแบบทดสอบ
+      </Typography>
+    );
+  }
 
-        {(announcement === 2 || announcement === 3) && labProgressCompleted && (
-          <Stack
-            alignItems="center"
-            gap={2}
-            sx={{
-              flexDirection: "column",
-              justifyContent: { xs: "center", sm: "space-between" },
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6">
-              ปฎิบัติการทดสอบ {labScore} / {labProgress.length} คะแนน
-            </Typography>
-            {announcement === 3 && (
-              <Button
-                variant="contained"
-                onClick={() => setShowTestList({ mode: "lab", state: true })}
-              >
-                ดูรายละเอียด
-              </Button>
+  return (
+    <>
+      <TableContainer 
+        component={Paper} 
+        sx={{ 
+          width: "100%", 
+          margin: "16px auto" 
+        }}
+      >
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#f7f3f3ff" }}>
+              <TableCell sx={{ fontWeight: "bold" }}>
+                <Typography variant="h6">แบบทดสอบ</Typography>
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                <Typography variant="h6">คะแนน</Typography>
+              </TableCell>
+              { announcement === 3 && (
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="h6">รายละเอียด</Typography>
+                </TableCell>
+              )}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {(announcement === 1 || announcement === 2 || announcement === 3) && pretestProgressCompleted && (
+              <TableRow>
+                <TableCell>
+                  <Typography variant="body1">ก่อนเรียน</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="body1">{preTestScore} / {pretestProgress.length}</Typography>
+                </TableCell>
+                {announcement === 3 && (
+                  <TableCell align="center">
+                    <IconButton
+                      onClick={() => setShowTestList({ mode: "pre", state: true })}
+                      color="primary"
+                      aria-label="view pre-test details"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </TableCell>
+                )}
+              </TableRow>
             )}
-          </Stack>
-        )}
-
-        {(announcement === 2 || announcement === 3) &&
-          posttestProgressCompleted && (
-            <Stack
-              gap={2}
-              sx={{
-                flexDirection: "column",
-                justifyContent: { xs: "center", sm: "space-between" },
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6">
-                แบบทดสอบหลังเรียน {postTestScore} / {posttestProgress.length}{" "}
-                คะแนน
-              </Typography>
-              {announcement === 3 && (
-                <Button
-                  variant="contained"
-                  onClick={() => setShowTestList({ mode: "post", state: true })}
-                >
-                  ดูรายละเอียด
-                </Button>
-              )}
-            </Stack>
-          )}
-      </Stack>
+            {(announcement === 2 || announcement === 3) && labProgressCompleted && (
+              <TableRow>
+                <TableCell>
+                  <Typography variant="body1">ระหว่างเรียน</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="body1">{labScore} / {labProgress.length}</Typography>
+                </TableCell>
+                {announcement === 3 && (
+                  <TableCell align="center">
+                    <IconButton
+                      onClick={() => setShowTestList({ mode: "lab", state: true })}
+                      color="primary"
+                      aria-label="view lab details"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+            {(announcement === 2 || announcement === 3) && posttestProgressCompleted && (
+              <TableRow>
+                <TableCell>
+                  <Typography variant="body1">หลังเรียน</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="body1">{postTestScore} / {posttestProgress.length}</Typography>
+                </TableCell>
+                {announcement === 3 && (
+                  <TableCell align="center">
+                    <IconButton
+                      onClick={() => setShowTestList({ mode: "post", state: true })}
+                      color="primary"
+                      aria-label="view post-test details"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   );
 };
@@ -277,8 +298,7 @@ function CourseDetail() {
 
   const fetchHistory = async () => {
     try {
-      const response = await backend.get(
-        `/enroll/checkCourseEnroll/${userData.id}/${courseId}/${enrollmentId}`,
+      const response = await backend.get(`/enroll/checkCourseEnroll/${userData.id}/${courseId}/${enrollmentId}`,
         {
           withCredentials: true,
         }
@@ -387,8 +407,10 @@ function CourseDetail() {
 
   useEffect(() => {
     fetchCourseInfo();
-    fetchHistory();
-  }, [courseId, userData.id]);
+    if (enrollmentId) {
+      fetchHistory();
+    }
+  }, [courseId, userData.id, enrollmentId]);
 
   useEffect(() => {
     if (history.length > 0 && enrollmentId === "null") {
@@ -578,43 +600,56 @@ function CourseDetail() {
           </Stack>
         </div>
 
-        <Stack
-          justifyContent="center"
-          alignItems="center"
-          gap={2}
-          sx={{
-            width: { sm: "100%", md: "80%" },
-            margin: "auto",
-            alignItems: { xs: "flex-start", sm: "center" },
-          }}
-        >
-          {userData.id && history.length === 0 && (
-            <Button
-              variant="contained"
-              sx={{
-                width: { md: "50%", xs: "100%" },
-              }}
-              onClick={() => enrollCourse()}
-            >
-              {enrollmentId !== "null" ? "สมัครเรียนใหม่" : "สมัครเรียน"}
-            </Button>
-          )}
-
-          {userData.id &&
-            history.length > 0 &&
-            history[0].posttest_complete === 0 && (
+        {userData.id &&
+          (history.length === 0 ||
+            (history.length > 0 && history[0].posttest_complete !== 1)) && (
+          <Stack
+            justifyContent="center"
+            alignItems="center"
+            gap={2}
+            sx={{
+              width: { xs: "100%", sm: "80%", md: "60%" },
+              margin: "auto",
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
+            {history.length === 0 && (
               <Button
                 variant="contained"
-                onClick={fetchLatestProgress}
-                sx={{
-                  width: { md: "50%", xs: "100%" },
-                }}
+                sx={{ width: "100%" }}
+                onClick={enrollCourse}
               >
-                เข้าเรียนต่อ
+                สมัครเรียน
               </Button>
             )}
 
-        </Stack>
+            {history.length > 0 && history[0].posttest_complete === -1 && (
+              <Button
+                variant="contained"
+                sx={{ 
+                  width: "100%",
+                  color: "warning.main", 
+                }}
+                onClick={enrollCourse}
+              >
+                สมัครเรียนใหม่
+              </Button>
+            )}
+
+            {history.length > 0 && history[0].posttest_complete === 0 && (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={fetchLatestProgress}
+                  sx={{ width: "100%" }}
+                >
+                  เข้าเรียนต่อ
+                </Button>
+              </>
+            )}
+          </Stack>
+        )}
+
       </div>
 
       <Tabs 
@@ -636,85 +671,69 @@ function CourseDetail() {
       </Tabs>
 
       <>
-        {userData.id && history.length > 0 && (
+        {userData.id && (
           <Stack
             sx={{
-              gap: 1,
-              width: "80%",
+              gap: 2,
+              width: { xs: "100%", sm: "80%", md: "60%" },
               margin: "16px auto auto auto",
             }}
           >
-            {history[0].posttest_complete === 0 ? (
-              <>
-                <Processbar
-                  pretest_complete={history[0].pretest_complete}
-                  posttest_complete={history[0].posttest_complete}
-                  completed_labs={history[0].completed_labs}
-                  total_labs={subjectList.length}
-                />
-              </>
-            ):(
-              <>
-                {userData.id &&
-                  enrollmentId !== "null" &&
-                  history.length === 0 &&
-                  !isPostTestCompleted && (
-                    <Typography variant="subtitle1" align="center" color="red">
-                      คุณไม่ผ่านการเรียนรู้ของคอร์ส
-                      <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
-                    </Typography>
-                  )}
+            <>
+              {userData.id &&
+              enrollmentId !== "null" && history.length > 0 &&
+              history[0].posttest_complete === -1 &&  (
+                <Typography variant="subtitle1" align="center" color="red">
+                  คุณไม่ผ่านการเรียนรู้ของคอร์ส
+                  <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
+                </Typography>
+              )}
 
-                {userData.id &&
-                  enrollmentId !== "null" &&
-                  history.length > 0 &&
-                  history[0].posttest_complete === 1 && (
-                    <Typography variant="subtitle1" align="center" color="green">
-                      คุณผ่านการเรียนรู้ของคอร์สนี้แล้ว
-                      <CheckIcon color="success" sx={{ ml: 1, mb: -0.5 }} />
-                    </Typography>
-                  )}
-              </>
-            )}
+              {userData.id &&
+              enrollmentId !== "null" &&
+              history.length > 0 &&
+              history[0].posttest_complete === 1 && (
+                <Typography variant="subtitle1" align="center" color="green">
+                  คุณผ่านการเรียนรู้ของคอร์สนี้แล้ว
+                  <CheckIcon color="success" sx={{ ml: 1, mb: -0.5 }} />
+                </Typography>
+              )}
+            </>
             
             {history.length > 0 && (
               <Stack
                 sx={{
                   flexDirection: { xs: "column", sm: "row" },
-                  justifyContent: { xs: "center", sm: "space-evenly" },
+                  justifyContent: { xs: "center", sm: "space-between" },
                   alignItems: { xs: "center", sm: "flex-start" },
                   gap: 2,
                 }}
               >
-                {history[0].startat && (
-                  <Typography variant="subtitle1" color="text.secondary">
-                    เริ่มเรียนเมื่อ{" "}
-                    {history[0].startat
-                      ? new Date(history[0].startat).toLocaleString("th-TH", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                          timeZone: "Asia/Bangkok",
-                        })
-                    : "-"}
-                  </Typography>
-                )}
+                <Typography variant="subtitle1" color="text.secondary">
+                  เริ่มเรียน: {" "}
+                  {history[0].startat
+                    ? new Date(history[0].startat).toLocaleString("th-TH", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                        timeZone: "Asia/Bangkok",
+                      })
+                  : "-"}
+                </Typography>
 
-                {history[0].endat && (
-                  <Typography variant="subtitle1" color="text.secondary">
-                    สำเร็จการเรียนเมื่อ{" "}
-                      {history[0].endat
-                      ? new Date(history[0].endat).toLocaleString("th-TH", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                          timeZone: "Asia/Bangkok",
-                        })
-                      : "-"}
-                  </Typography>
-                )}
+                <Typography variant="subtitle1" color="text.secondary">
+                  จบการเรียน: {" "}
+                    {history[0].endat
+                    ? new Date(history[0].endat).toLocaleString("th-TH", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                        timeZone: "Asia/Bangkok",
+                      })
+                    : "-"}
+                </Typography>
               </Stack>
             )}
             
-            {history[0].postest_complete === 0 && (
+            {(history.length > 0 && history[0].posttest_complete !== -1) && (
               <Stack
                 sx={{
                   flexDirection: { xs: "column", sm: "row" },

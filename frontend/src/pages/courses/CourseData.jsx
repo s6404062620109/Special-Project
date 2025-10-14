@@ -5,7 +5,8 @@ import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
 import style from "./css/coursedata.module.css";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
+import CheckIcon from '@mui/icons-material/Check';
 
 
 function CourseData({ id, name, icon, enrollmentId, courseId }) {
@@ -60,7 +61,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
       fetchLatestProgress();
     } 
     
-    else if (status === "ลงทะเบียนเรียน") {
+    else if (status === "สมัครเรียนใหม่") {
       enrollCourse();
     } 
     
@@ -77,7 +78,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
     if (enrollmentId !== null) {
       setButtonText("เข้าเรียนต่อ");
     } else {
-      setButtonText("ลงทะเบียนเรียน");
+      setButtonText("สมัครเรียนใหม่");
     }
 
   }, [id, userData, enrollmentId]);
@@ -112,32 +113,12 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
           <div>
             <img alt="Icon Image" src={icon} />
             <p>{name}</p>
-          </div>
-          {userData.id &&(
-            <>
-              {filteredHistory.length > 0 ? (
-                (() => {
-                  const latestEnroll = filteredHistory.at(-1);
-
-                  return (
-                    <Processbar
-                      pretest_complete={latestEnroll.pretest_complete}
-                      posttest_complete={latestEnroll.posttest_complete}
-                      completed_labs={latestEnroll.completed_labs}
-                      total_labs={latestEnroll.total_labs}
-                    />
-                  );
-                })()
-              ) : (
-                <></>
-              )}
-            </>
-          )}          
+          </div>         
           
         </div>
       </td>
 
-      {userData.id &&(
+      {/* {userData.id &&(
         <td>
           {filteredHistory.length > 0 ? (
             (() => {
@@ -156,7 +137,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
             <></>
           )}
         </td>
-      )}
+      )} */}
       
       <td>
         {filteredHistory.length > 0 ? (
@@ -167,6 +148,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
               return (
                 <Button
                   variant="contained"
+                  color="warning"
                   onClick={() => {
                     const reEnroll = async () => {
                       try {
@@ -185,7 +167,7 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
                     reEnroll();
                   }}
                 >
-                  ลงทะเบียนใหม่
+                  สมัครเรียนใหม่
                 </Button>
               );
             } else if (
@@ -193,7 +175,10 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
               latestEnroll.posttest_complete === 1 &&
               latestEnroll.completed_labs === latestEnroll.total_labs
             ) {
-              return <p>Complete!</p>;
+              return <Typography variant="subtitle1" align="center" color="green">
+                        คุณสำเร็จคอร์สนี้แล้ว
+                        <CheckIcon color="success" sx={{ ml: 1, mb: -0.5 }} />
+                      </Typography>;
             } else {
               return <Button variant="contained" onClick={() => handleClick(buttonText)}>{buttonText}</Button>;
             }

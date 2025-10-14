@@ -12,7 +12,7 @@
     background: white;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     border-radius: 12px;
-    width: 80%;
+    width: 60%;
     max-height: 100vh;
     padding: 16px;
     margin: auto;
@@ -64,12 +64,6 @@
 
     .head{
         text-align: center;
-    }
-    .courseTable table thead tr > th:nth-child(2),
-    .courseTable table thead tr > th:nth-child(3),
-    .courseTable table thead tr > th:nth-child(4)
-    {
-        display: none;
     }
 
     .course-name{

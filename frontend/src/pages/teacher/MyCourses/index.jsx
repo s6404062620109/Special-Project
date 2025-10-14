@@ -4,15 +4,37 @@ import backend from '../../../api/backend';
 import { AuthContext } from '../../../context/AuthProvider';
 
 import DeleteIcon from '@mui/icons-material/Delete';
+import SchoolIcon from '@mui/icons-material/School';
 
 import style from './css/mycourses.module.css';
 import AddPopup from './AddPopup';
-import { Button, IconButton, Typography, useMediaQuery } from '@mui/material';
+import { 
+  Alert,
+  Avatar, 
+  Button, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogContentText, 
+  DialogTitle, 
+  IconButton, 
+  Slide, 
+  Snackbar, 
+  Typography, 
+  useMediaQuery 
+} from '@mui/material';
+
+function SlideTransition(props) {
+  return <Slide {...props} direction="left" />;
+}
 
 function MyCourses() {
   const { userData } = useContext(AuthContext);
   const [ myCourses, setMyCourses ] = useState([]);
   const [ isPopupOpen, setIsPopupOpen ] = useState(false);
+  const [ deleteDialogOpen, setDeleteDialogOpen ] = useState(false);
+  const [ courseToDelete, setCourseToDelete ] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const navigate = useNavigate();
 
   const fetchMyCourses = async () => {
@@ -40,39 +62,58 @@ function MyCourses() {
       );
     
       if (response.status === 200) {
+        setSnackbar({ open: true, message: 'เพิ่มคอร์สเรียนสำเร็จ', severity: 'success' });
         fetchMyCourses();
         setIsPopupOpen(false);
       }
 
     } catch (error) {
       console.error("Error adding course:", error);
+      setSnackbar({ open: true, message: error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มคอร์ส', severity: 'error' });
     }
   };
 
-  const handleDeleteCourse = async (courseId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this course?");
-    if (!confirmDelete) return;
-    
+  const handleDeleteClick = (courseId) => {
+    setCourseToDelete(courseId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setCourseToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!courseToDelete) return;
+
     try {
-      const response = await backend.delete(`/teacher/deleteCourse/${courseId}/${userData.id}`, { withCredentials: true });
-    
+      const response = await backend.delete(`/teacher/deleteCourse/${courseToDelete}/${userData.id}`, { withCredentials: true });
+
       if (response.status === 200) {
-        alert(response.data.message);
-        setMyCourses((prevCourses) => prevCourses.filter((course) => course.id !== courseId));
+        setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+        setMyCourses((prevCourses) => prevCourses.filter((course) => course.id !== courseToDelete));
       }
-      
+
     } catch (error) {
       console.error('Error deleting course:', error);
       if (error.response) {
-        alert(error.response.data.message);
+        setSnackbar({ open: true, message: error.response.data.message, severity: 'error' });
+      } else {
+        setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการลบคอร์ส', severity: 'error' });
       }
-      else {
-        alert("An error occurred while deleting the course.");
-      }
+    } finally {
+      handleCloseDeleteDialog();
     }
   };
   
   const tabletQuery = useMediaQuery("(max-width:720px)");
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   return (
     <div className={style.pageWrapper}>
@@ -96,7 +137,9 @@ function MyCourses() {
                             style={{ width: "50px", height: "50px", marginRight: "10px" }}
                           />
                         ) : (
-                          <span>No Icon</span>
+                          <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                            <SchoolIcon />
+                          </Avatar>
                         )}
                         {course?.name || "Unnamed Course"}
                       </td>
@@ -115,7 +158,7 @@ function MyCourses() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteCourse(course.id);
+                            handleDeleteClick(course.id);
                           }}
                         >
                           <DeleteIcon/>
@@ -145,6 +188,43 @@ function MyCourses() {
           onAddCourse={handleAddCourse}
         />
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"ยืนยันการลบคอร์สเรียน"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            คุณแน่ใจหรือไม่ว่าต้องการลบคอร์สเรียนนี้? การกระทำนี้จะส่งผลให้ผู้เรียนไม่สามารถเข้าถึงคอร์สได้อีกต่อไป
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>ยกเลิก</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>ยืนยัน</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        TransitionComponent={SlideTransition}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          variant="filled" 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   )
 }
