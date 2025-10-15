@@ -63,4 +63,8 @@ router.put("/updatePdfSubject/:courseId/:subjectId", authUserRole.verifiedTeache
 
 router.delete("/deleteSubjectOnCourse/:courseId/:subjectId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteSubject);
 
+router.delete("/deleteStudentEnrollments/:courseId/:userId", authUserRole.verifiedTeacherCourse, teacherController.deleteStudentEnrollments);
+
+router.delete("/deleteEnrollment/:courseId/:enrollmentId", authUserRole.verifiedTeacherCourse, teacherController.deleteEnrollment);
+
 module.exports = router;

@@ -111,7 +111,6 @@ function EditPopup({ courseInfo, onClose, onSave }) {
 
         <Divider 
           sx={{ 
-            borderColor: '#ccc', 
             marginBottom: 2,
             borderWidth: '1px',
             borderColor: '#000000ff'

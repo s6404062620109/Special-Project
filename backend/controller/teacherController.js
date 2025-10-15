@@ -1391,6 +1391,54 @@ const deleteSubject = (req, res) => {
 
 /* teacher_subject controller */
 
+/* teacher_enrollment controller*/
+
+const deleteStudentEnrollments = (req, res) => {
+  const { courseId, userId } = req.params;
+
+  if(!courseId || !userId) {
+    return res.status(400).json({ message: "Courseid, userid are required." })
+  }
+
+  try{
+    db.query("DELETE FROM enrollment WHERE courseId = ? AND userId = ?", [courseId, userId], (error) => {
+      if(error){
+        console.log(error);
+        return res.status(500).json({ message: "Database enrollment query error." });
+      }
+
+      return res.status(200).json({ message: "ลบผู้เรียนสำเร็จ" })
+    });
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Server Error", error })
+  }
+}
+
+const deleteEnrollment = (req, res) => {
+  const { courseId, enrollmentId } = req.params;
+
+  if (!courseId || !enrollmentId) {
+    return res.status(400).json({ message: "Courseid and enrollmentid are required." })
+  }
+
+  try{
+    db.query("DELETE FROM enrollment WHERE id = ? AND courseId = ?", [enrollmentId, courseId], (error) => {
+      if(error){
+        console.log(error);
+        return res.status(500).json({ message: "Database enrollment query error." })
+      }
+
+      return res.status(200).json({ message: "ลบประวัติการเรียนสำเร็จ" })
+    });
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Server Error", error })
+  }
+}
+
+/* teacher_enrollment controller*/
+
 module.exports = {
   getMyCourses,
   testAnalysis,
@@ -1409,5 +1457,7 @@ module.exports = {
   addPdfSubject,
   editManualSubject,
   editPdfSubject,
-  deleteSubject
+  deleteSubject,
+  deleteStudentEnrollments,
+  deleteEnrollment
 }

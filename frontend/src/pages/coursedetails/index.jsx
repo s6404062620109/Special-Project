@@ -639,7 +639,7 @@ function CourseDetail() {
                 variant="contained"
                 sx={{ 
                   width: "100%",
-                  color: "warning.main", 
+                  bgcolor: "warning.main", 
                 }}
                 onClick={enrollCourse}
               >

@@ -18,10 +18,15 @@ import {
   TableSortLabel,
   useMediaQuery,
   TextField,
-  Grid,
   Select,
   MenuItem,
   InputLabel,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
   FormControl,
 } from "@mui/material";
 import { 
@@ -31,6 +36,8 @@ import {
 } from "@mui/icons-material";
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MuiAlert from '@mui/material/Alert';
 import SchoolIcon from '@mui/icons-material/School';
 
 function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScore }) {
@@ -165,12 +172,12 @@ function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScor
   );
 };
 
-function AttemptRow({ attemptData, attemptNumber }) {
+function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <TableRow hover sx={{ '& > *': { borderBottom: 'unset' } }}>
+      <TableRow hover>
         <TableCell>
           <IconButton size="small" onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
@@ -208,9 +215,17 @@ function AttemptRow({ attemptData, attemptNumber }) {
             }
           })()}
         </TableCell>
+
+        <TableCell>
+          <IconButton
+            onClick={() => handleDeleteEnrollment(attemptData.id)}
+          >
+            <DeleteIcon color="error"/>
+          </IconButton>
+        </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0, borderBottom: 'unset' }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <GroupedProgressRow
               progress={attemptData.progress}
@@ -225,7 +240,7 @@ function AttemptRow({ attemptData, attemptNumber }) {
   );
 }
 
-function UserRow({ userGroup }) {
+function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnrollment }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -239,9 +254,16 @@ function UserRow({ userGroup }) {
         <TableCell>{userGroup.userId}</TableCell>
         <TableCell>{userGroup.name}</TableCell>
         <TableCell align="center">{userGroup.attempts.length}</TableCell>
+        <TableCell align="center">
+          <IconButton
+            onClick={() => handleDeleteStudentEnrollments(userGroup.userId)}
+          >
+            <DeleteIcon color="error" />
+          </IconButton>
+        </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={4}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div" sx={{ ml: 2, mt: 1 }}>
@@ -251,10 +273,11 @@ function UserRow({ userGroup }) {
                 <TableHead>
                   <TableRow>
                     <TableCell />
-                    <TableCell sx={{ width: '25%' }}>การลงทะเบียน</TableCell>
+                    <TableCell sx={{ width: '20%' }}>การลงทะเบียน</TableCell>
                     <TableCell sx={{ width: '20%' }}>วันที่เริ่มเรียน</TableCell>
                     <TableCell sx={{ width: '20%' }}>วันที่สิ้นสุดการเรียน</TableCell>
-                    <TableCell sx={{ width: '25%' }}>สถานะ</TableCell>
+                    <TableCell sx={{ width: '20%' }}>สถานะ</TableCell>
+                    <TableCell sx={{ width: "10%" }}>ลบประวัติ</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -263,6 +286,7 @@ function UserRow({ userGroup }) {
                       key={attempt.id}
                       attemptData={attempt}
                       attemptNumber={index + 1}
+                      handleDeleteEnrollment={handleDeleteEnrollment}
                     />
                   ))}
                 </TableBody>
@@ -288,6 +312,21 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+const ConfirmationDialog = ({ open, onClose, onConfirm, title, description }) => (
+  <Dialog open={open} onClose={onClose}>
+    <DialogTitle>{title}</DialogTitle>
+    <DialogContent><DialogContentText>{description}</DialogContentText></DialogContent>
+    <DialogActions>
+      <Button onClick={onClose}>ยกเลิก</Button>
+      <Button onClick={onConfirm} color="error" autoFocus>ยืนยัน</Button>
+    </DialogActions>
+  </Dialog>
+);
+
 function stableSort(array, comparator) {
   const stabilized = array.map((el, index) => [el, index]);
   stabilized.sort((a, b) => {
@@ -307,6 +346,76 @@ function EnrollSum() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogContent, setDialogContent] = useState({ title: '', description: '', onConfirm: null });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const fetchSumEnrollment = async () => {
+    try {
+      const response = await backend.get(`/teacher/sumEnrollments/${courseId}`, {
+        withCredentials: true,
+      });
+
+      if (response.status === 200) {
+        setEnrollments(response.data.finalFormat || []);
+      }
+    } catch (error) {
+      console.error(error);
+      if (error.response && error.response.data.message === "No enrollment found.") {
+        setEnrollments([]);
+      }
+    }
+  };
+
+  const openDeleteDialog = ({ title, description, onConfirm }) => {
+    setDialogContent({ title, description, onConfirm });
+    setDialogOpen(true);
+  };
+
+  const handleDeleteEnrollment = async (id) => {
+    openDeleteDialog({
+      title: "ยืนยันการลบประวัติการเรียน",
+      description: "คุณแน่ใจหรือไม่ว่าต้องการลบประวัติการเรียนครั้งนี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
+      onConfirm: async () => {
+        setDialogOpen(false);
+        try {
+          const response = await backend.delete(`/teacher/deleteEnrollment/${courseId}/${id}`, { withCredentials: true });
+          if (response.status === 200) {
+            setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+            fetchSumEnrollment();
+          }
+        } catch (error) { 
+          setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการลบ', severity: 'error' });
+          console.log(error); 
+        }
+      },
+    });
+  };
+
+  const handleDeleteStudentEnrollments = async (userId) => {
+    openDeleteDialog({
+      title: "ยืนยันการลบผู้เรียน",
+      description: `คุณแน่ใจหรือไม่ว่าต้องการลบประวัติการเรียนทั้งหมดของผู้เรียนคนนี้? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+      onConfirm: async () => {
+        setDialogOpen(false);
+        try {
+          const response = await backend.delete(`/teacher/deleteStudentEnrollments/${courseId}/${userId}`, { withCredentials: true });
+          if (response.status === 200) {
+            setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+            fetchSumEnrollment();
+          }
+        } catch (error) { 
+          setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการลบ', severity: 'error' });
+          console.log(error); 
+        }
+      },
+    });
+  };
 
   const groupedEnrollments = React.useMemo(() => {
     if (!enrollments.length) return [];
@@ -368,20 +477,6 @@ function EnrollSum() {
 
     return stableSort(filteredByContent, getComparator(order, orderBy));
   }, [groupedEnrollments, searchQuery, order, orderBy, statusFilter, dateRange]);
-  
-  const fetchSumEnrollment = async () => {
-    try {
-      const response = await backend.get(`/teacher/sumEnrollments/${courseId}`, {
-        withCredentials: true,
-      });
-
-      if (response.status === 200) {
-        setEnrollments(response.data.finalFormat || []);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   useEffect(() => {
     fetchSumEnrollment();
@@ -438,6 +533,24 @@ function EnrollSum() {
           </IconButton>
         )}
         
+        <ConfirmationDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onConfirm={dialogContent.onConfirm}
+          title={dialogContent.title}
+          description={dialogContent.description}
+        />
+
+        <Snackbar 
+          open={snackbar.open} 
+          autoHideDuration={6000} 
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Stack>
 
       <Typography variant="h5" sx={{ textAlign: "center" }}>
@@ -547,12 +660,23 @@ function EnrollSum() {
                   จำนวนครั้งที่เรียน
                 </TableSortLabel>
               </TableCell>
+
+              <TableCell align="center" sortDirection={orderBy === "attempts" ? order : false}>
+                <TableSortLabel>
+                  ลบผู้เรียน
+                </TableSortLabel>
+              </TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {filteredAndSortedEnrollments.map((userGroup) => (
-              <UserRow key={userGroup.userId} userGroup={userGroup} />
+              <UserRow 
+                key={userGroup.userId} 
+                userGroup={userGroup} 
+                handleDeleteStudentEnrollments={handleDeleteStudentEnrollments}
+                handleDeleteEnrollment={handleDeleteEnrollment}
+              />
             ))}
 
             {filteredAndSortedEnrollments.length === 0 && (
