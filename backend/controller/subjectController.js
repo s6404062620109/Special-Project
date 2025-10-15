@@ -31,7 +31,7 @@ const getAll = (req, res) => {
     LEFT JOIN subject s ON s.courseId = c.id
     LEFT JOIN questions q ON q.courseId = c.id
     LEFT JOIN labs l ON l.subjectId = s.id
-    WHERE c.id = ?
+    WHERE c.id = ? AND c.enable = 1
     GROUP BY c.id
   `;
 

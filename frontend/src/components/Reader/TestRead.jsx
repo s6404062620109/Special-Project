@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import backend from '../../api/backend';
 
-import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Stack, Typography, Select, MenuItem, IconButton, TextField } from '@mui/material'
+import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, Stack, Typography, Select, MenuItem, IconButton, TextField } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
@@ -46,6 +44,22 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const canSelected = pathsToSelected.includes(location.pathname);
 
   const isInteractive = typeof handleAnswerChange === 'function' && selectedAnswers;
+
+  const handleCheckboxChange = (questionId, answerId, answerContent) => {
+    const currentAnswers = selectedAnswers[questionId]?.answerId || [];
+    const currentContent = selectedAnswers[questionId]?.answerContent || [];
+    const answerIndex = currentAnswers.indexOf(String(answerId));
+
+    let newAnswers, newContent;
+    if (answerIndex > -1) {
+      newAnswers = currentAnswers.filter(id => id !== String(answerId));
+      newContent = currentContent.filter(content => content !== answerContent);
+    } else {
+      newAnswers = [...currentAnswers, String(answerId)];
+      newContent = [...currentContent, answerContent];
+    }
+    handleAnswerChange(questionId, newAnswers, newContent);
+  };
 
   useEffect(() => {
     if(question.length > 0){
@@ -109,7 +123,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
       gap={2}
       sx={{
         padding: '20px',
-        borderRadius: '8px'
+        borderRadius: '8px',
       }}
     >
       <Stack
@@ -175,38 +189,65 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                   </React.Fragment>
                 ))}
               </FormLabel>
-              {isInteractive ? (
+              
+              {isInteractive && (currentItem.type === 3 || pathToRender) && (
                 <RadioGroup
                   aria-labelledby="question-label"
                   name="radio-buttons-group"
                   value={selectedAnswers[currentItem.qId]?.answerId || ''}
-                  onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value, currentItem.choice.find(choice => choice.aId === Number(e.target.value)).content)}
+                  onChange={(e) => handleAnswerChange(currentItem.qId, e.target.value, (currentItem.choices || currentItem.choice).find(choice => choice.aId === Number(e.target.value)).content)}
                 >
-                  {currentItem.choices?.map((choice, index) => (
+                  {(currentItem.choices || currentItem.choice)?.map((choice, index) => (
                     <FormControlLabel
                       key={index}
                       value={choice.aId}
                       disabled={!canSelected}
-                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
+                      control={<Radio />}
                       label={choice.content}
-                      checked={selectedAnswers[currentItem.qId]?.answerId === String(choice.aId)}
-                      sx={{
-                        color: "#000"
-                      }}
-                    />
-                  ))}
-                  {currentItem.choice.map((choice, index) => (
-                    <FormControlLabel
-                      key={index}
-                      value={choice.aId}
-                      disabled={!canSelected}
-                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
-                      label={choice.content}
-                      checked={selectedAnswers[currentItem.qId]?.answerId === String(choice.aId)}
+                      sx={{ color: "#000" }}
                     />
                   ))}
                 </RadioGroup>
-              ) : (
+              )}
+              {isInteractive && currentItem.type === 6 && (
+                <FormControl component="fieldset">
+                  {currentItem.choices?.map((choice, index) => (
+                    <FormControlLabel
+                      key={index}
+                      control={
+                        <Checkbox
+                          checked={selectedAnswers[currentItem.qId]?.answerId?.includes(String(choice.aId)) || false}
+                          onChange={() => handleCheckboxChange(currentItem.qId, choice.aId, choice.content)}
+                          disabled={!canSelected}
+                        />
+                      }
+                      label={choice.content}
+                      sx={{ color: "#000" }}
+                    />
+                  ))}
+                  {currentItem.choice?.map((choice, index) => (
+                    <FormControlLabel
+                      key={index}
+                      control={
+                        <Checkbox
+                          checked={selectedAnswers[currentItem.qId]?.answerId?.includes(String(choice.aId)) || false}
+                          onChange={() => handleCheckboxChange(currentItem.qId, choice.aId, choice.content)}
+                          disabled={!canSelected}
+                        />
+                      }
+                      label={choice.content}
+                      sx={{
+                        '& .Mui-disabled': {
+                          color: 'rgba(0, 0, 0, 0.87)',
+                        },
+                        '& .MuiFormControlLabel-label': { color: 'rgba(0, 0, 0, 0.87)' }
+                      }}
+                    />
+                  ))}
+                </FormControl>
+              )}
+
+              {!isInteractive && (currentItem.type === 3 || pathToRender) && (
                 <RadioGroup
                   aria-labelledby="question-label"
                   name="radio-buttons-group"
@@ -214,46 +255,106 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                   {currentItem.choices?.map((choice, index) => (
                     <FormControlLabel
                       key={index}
-                      value={choice.aId}
-                      disabled={!canSelected}
-                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
+                      value={choice.aId ?? choice.id}
+                      control={
+                        <Radio 
+                          checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} 
+                          disabled={!canSelected}
+                          sx={{ '&.Mui-checked.Mui-disabled': { color: 'rgba(0, 0, 0, 0.87)' } }}
+                        />
+                      }
                       label={
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <Typography>{choice.content}</Typography>
-                          {!canSelected && (choice.isCorrect === 1 || choice.type === 1) && (
-                            <CheckCircleIcon color="success" sx={{ fontSize: '1rem' }} />
-                          )}
+                          <Typography
+                            sx={{ color: 'rgba(0, 0, 0, 0.87)' }}
+                          >
+                            {choice.content}
+                          </Typography>
                         </Stack>
                       }
                       sx={{
-                        '& .Mui-disabled': {
-                          color: 'rgba(0, 0, 0, 0.87)', 
-                        },
+                        '& .MuiFormControlLabel-label': { color: 'rgba(0, 0, 0, 0.87)' }
                       }}
                     />
                   ))}
                   {currentItem.choice?.map((choice, index) => (
                     <FormControlLabel
                       key={index}
-                      value={choice.id}
-                      disabled={!canSelected}
-                      control={<Radio checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} />}
+                      value={choice.id ?? choice.aId}
+                      control={
+                        <Radio 
+                          checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} 
+                          disabled={!canSelected}
+                          sx={{ '&.Mui-checked.Mui-disabled': { color: 'rgba(0, 0, 0, 0.87)' } }}
+                        />
+                      }
                       label={
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <Typography>{choice.content}</Typography>
-                          {!canSelected && (choice.isCorrect === 1 || choice.type === 1) && (
-                            <CheckCircleIcon color="success" sx={{ fontSize: '1rem' }} />
-                          )}
+                          <Typography
+                            sx={{ color: 'rgba(0, 0, 0, 0.87)' }}
+                          >
+                            {choice.content}
+                          </Typography>
                         </Stack>
                       }
                       sx={{
-                        '& .Mui-disabled': {
-                          color: 'rgba(0, 0, 0, 0.87)', // Force label text to be black when disabled
-                        },
+                        '& .MuiFormControlLabel-label': { color: 'rgba(0, 0, 0, 0.87)' }
                       }}
                     />
                   ))}
                 </RadioGroup>
+              )}
+              {!isInteractive && currentItem.type === 6 && (
+                 <FormControl component="fieldset">
+                    {currentItem.choices?.map((choice, index) => (
+                      <FormControlLabel
+                        key={index}
+                        control={
+                          <Checkbox 
+                            checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} 
+                            disabled={!canSelected}
+                            sx={{ '&.Mui-checked.Mui-disabled': { color: 'rgba(0, 0, 0, 0.87)' } }}
+                          />
+                        }
+                        label={
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <Typography
+                              sx={{ color: 'rgba(0, 0, 0, 0.87)' }}
+                            >
+                              {choice.content}
+                            </Typography>
+                          </Stack>
+                        }
+                        sx={{ 
+                          '& .MuiFormControlLabel-label': { color: 'rgba(0, 0, 0, 0.87)' } 
+                        }}
+                      />
+                    ))}
+                    {currentItem.choice?.map((choice, index) => (
+                      <FormControlLabel
+                        key={index}
+                        control={
+                          <Checkbox 
+                            checked={!canSelected && (choice.isCorrect === 1 || choice.type === 1)} 
+                            disabled={!canSelected}
+                            sx={{ '&.Mui-checked.Mui-disabled': { color: 'rgba(0, 0, 0, 0.87)' } }}
+                          />
+                        }
+                        label={
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <Typography
+                              sx={{ color: 'rgba(0, 0, 0, 0.87)' }}
+                            >
+                              {choice.content}
+                            </Typography>
+                          </Stack>
+                        }
+                        sx={{ 
+                          '& .MuiFormControlLabel-label': { color: 'rgba(0, 0, 0, 0.87)' } 
+                        }}
+                      />
+                    ))}
+                </FormControl>
               )}
             </FormControl>
           )}
@@ -281,6 +382,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                 label="Answer"
                 value={currentItem.answer || ""}
                 disabled={!canSelected}
+                sx={{
+                  '& .MuiInputBase-input.Mui-disabled': {
+                    WebkitTextFillColor: 'rgba(0, 0, 0, 0.87)',
+                    color: 'rgba(0, 0, 0, 0.87)'
+                  },
+                }}
               />
             </Stack>
           )}
@@ -335,6 +442,12 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
                 label="Answer"
                 value={currentItem.answer || ""}
                 disabled={!canSelected}
+                sx={{
+                  '& .MuiInputBase-input.Mui-disabled': {
+                    WebkitTextFillColor: 'rgba(0, 0, 0, 0.87)',
+                    color: 'rgba(0, 0, 0, 0.87)'
+                  },
+                }}
               />
             </Stack>
           )}

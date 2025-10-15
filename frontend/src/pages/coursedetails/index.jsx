@@ -4,6 +4,7 @@ import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
 import {
+  Avatar,
   Button,
   IconButton,
   Paper,
@@ -18,6 +19,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
+import SchoolIcon from '@mui/icons-material/School';
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -239,6 +241,9 @@ function CourseDetail() {
       }
     } catch (err) {
       console.log(err);
+      if(err.response.status === 404 && err.response.data.message === "Course not found"){
+        navigate('/courses')
+      }
     }
   };
 
@@ -544,7 +549,13 @@ function CourseDetail() {
     <div className={style.container}>
       <div className={style.head}>
         <div className={style["headWrap"]}>
-          <img alt="Course Icon Image" src={courseInfo.icon} />
+          {courseInfo.icon ? (
+            <img alt="Course Icon Image" src={courseInfo.icon} />
+          ) : (
+            <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+              <SchoolIcon />
+            </Avatar>
+          )}
 
           <Stack
             gap={1}

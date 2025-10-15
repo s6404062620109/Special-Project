@@ -4,8 +4,9 @@ import backend from '../../api/backend';
 import { AuthContext } from '../../context/AuthProvider';
 
 import style from './css/courseboard.module.css';
-import { Button, Typography } from '@mui/material';
+import { Avatar, Button, Typography } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import SchoolIcon from '@mui/icons-material/School';
 
 function CourseBoard({ enrollment }) {
     const [courses, setCourses] = useState([]);
@@ -92,29 +93,57 @@ function CourseBoard({ enrollment }) {
                             {sortedCourses.map((course, index) => (
                                 <tr key={index} onClick={() => navigate(`/course/${course.courseId}/${course.id}`)}> 
                                     <td>
-                                        <img
-                                            src={course.icon}
-                                            alt="Course Icon"
-                                            width="50"
-                                            height="50"
-                                        />
+                                        {course.icon ? (
+                                            <img
+                                                src={course.icon}
+                                                alt="Course Icon"
+                                                width="50"
+                                                height="50"
+                                            />
+                                        ):(
+                                            <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                                                <SchoolIcon />
+                                            </Avatar>
+                                        )}
+                                        
 
                                         <p>{course.name}</p>
                                     </td>
 
                                     <td>
                                         {course.posttest_complete === 0 && (
-                                            <Button variant="contained" onClick={(e) => { e.stopPropagation(); handleContinue(course.id, course.courseId); }}>
+                                            <Button 
+                                                variant="contained" 
+                                                onClick={(e) => { 
+                                                    e.stopPropagation(); 
+                                                    handleContinue(course.id, course.courseId); 
+                                                }}
+                                            >
                                                 เข้าเรียนต่อ
                                             </Button>
                                         )}
                                         {course.posttest_complete === -1 && (
-                                            <Button variant="contained" color="warning" onClick={(e) => { e.stopPropagation(); handleEnroll(course.courseId); }}>
+                                            <Button 
+                                                variant="contained" 
+                                                color="warning" 
+                                                onClick={(e) => { 
+                                                    e.stopPropagation(); 
+                                                    handleEnroll(course.courseId); 
+                                                }}
+                                            >
                                                 สมัครเรียนใหม่
                                             </Button>
                                         )}
                                         {course.posttest_complete === 1 && (
-                                            <Typography variant="subtitle1" align="center" color="green" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Typography 
+                                                variant="subtitle1" 
+                                                color="green" 
+                                                sx={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center' 
+                                                }}
+                                            >
                                                 สำเร็จการเรียน
                                                 <CheckIcon color="success" sx={{ ml: 1 }} />
                                             </Typography>

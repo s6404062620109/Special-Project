@@ -344,6 +344,9 @@ function Subject() {
       }
     } catch (error) {
       console.log(error);
+      if(error.response.status === 404 && error.response.data.message === "Course not found"){
+        navigate('/courses')
+      }
     }
   };
 

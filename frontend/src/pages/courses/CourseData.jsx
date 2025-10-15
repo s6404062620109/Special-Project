@@ -5,8 +5,9 @@ import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 
 import style from "./css/coursedata.module.css";
-import { Button, Typography } from "@mui/material";
+import { Avatar, Button, Typography } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
+import SchoolIcon from '@mui/icons-material/School';
 
 
 function CourseData({ id, name, icon, enrollmentId, courseId }) {
@@ -96,7 +97,13 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
             }
           }}
         >
-          <img alt="Icon Image" src={icon} />
+          {icon ? (
+            <img alt="Icon Image" src={icon} />
+          ):(
+            <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+              <SchoolIcon />
+            </Avatar>
+          )}
           <p>{name}</p>
         </div>
 
@@ -111,7 +118,13 @@ function CourseData({ id, name, icon, enrollmentId, courseId }) {
           }}
         >
           <div>
-            <img alt="Icon Image" src={icon} />
+            {icon ? (
+              <img alt="Icon Image" src={icon} />
+            ):(
+              <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                <SchoolIcon />
+              </Avatar>
+            )}
             <p>{name}</p>
           </div>         
           

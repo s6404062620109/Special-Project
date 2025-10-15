@@ -237,7 +237,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                                     }
                                     setCourseData({ ...courseData, enable: e.target.checked });
                                 }}
-                                disabled={!isReadyForSettings || (!isCourseValidForEnable && !courseData.enable)}
+                                disabled={!isReadyForSettings}
                             />
                         }
                         label="เผยแพร่คอร์ส"

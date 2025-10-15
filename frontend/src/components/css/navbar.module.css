@@ -140,16 +140,21 @@ nav{
     }
 }
   
-.functions ul > li:hover {
+.functions ul > li:nth-child(2):hover,
+.functions ul > li:nth-child(3):hover {
     background-color: #f0f0f0;
     cursor: pointer;
+}
+
+.functions > ul > .mobile-name {
+    display: none;
 }
 
 .logo-mobile{
     display: none;
 }
 
-/* mobile screen */
+/* tablet screen */
 @media screen and (max-width: 1024px) {
     .logoContainer{
         display: none;
@@ -167,5 +172,18 @@ nav{
     .functionsContainer-mobile{
         display: flex;
         align-items: center;
+    }
+}
+
+/* mobile screen */
+@media screen and (max-width: 600px) {
+    .userAuth{
+        width: 300px;
+    }
+    .userInfo div > label{
+        display: none;
+    }
+    .functions > ul > .mobile-name {
+        display: flex;
     }
 }

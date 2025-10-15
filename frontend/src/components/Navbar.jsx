@@ -143,6 +143,30 @@ function Navbar() {
             {menuVisible && ( 
               <div className={style.functions}>
                 <ul>
+                  <li className={style["mobile-name"]}>
+                    <label>
+                      {(() => {
+                          const isEnglish = /^[A-Za-z\s]+$/.test(userData.name + " " + userData.surname);
+
+                          // ถ้าเป็นภาษาอังกฤษ
+                          if (isEnglish) {
+                            if (userData.sex === "m") return `Mr. ${userData.name} ${userData.surname}`;
+                            if (userData.sex === "f") return `Mrs. ${userData.name} ${userData.surname}`;
+                            if (userData.sex === "n") return `Sir. ${userData.name} ${userData.surname}`;
+                          }
+
+                          // ถ้าเป็นภาษาไทย
+                          if (userData.sex === "m") return `นาย${userData.name} ${userData.surname}`;
+                          if (userData.sex === "f") return `นาง${userData.name} ${userData.surname}`;
+                          if (userData.sex === "n") return `คุณ${userData.name} ${userData.surname}`;
+
+                          // ถ้าไม่ทราบเพศ
+                          return userData.name && userData.surname
+                            ? `${userData.name} ${userData.surname}`
+                            : "ไม่ทราบชื่ออาจารย์";
+                        })()}
+                    </label>
+                  </li>
                   <li onClick={() => navigate(`/profile`)}>
                     <img
                       alt='Profile Button'

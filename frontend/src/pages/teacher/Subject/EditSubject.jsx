@@ -406,7 +406,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                     return `Question ${i + 1} content is required`;
                 }
 
-                if (item.type === 1 || item.type === 2 || item.type === 3 || item.type === 6){
+                if (item.type === 3 || item.type === 6){
                     if (item.choice.length < 2) {
                         return `ต้องการตัวเลือกอย่างน้อย 2 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
                     }
@@ -417,15 +417,15 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                         }
                     }
 
-                    const correctChoices = item.choice.filter(choice => choice.isCorrect);
-                    if(item.type === 6 && correctChoices.length === 1){
+                    const correctChoices = item.choice.filter(choice => choice.isCorrect === 1);
+                    if (item.type === 6 && correctChoices.length === 1){
                         return `ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 2 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
-                    }
-                    if (correctChoices.length === 0) {
-                        return `ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 1 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
+                    }1
+                    if (item.type === 3 && correctChoices.length !== 1) {
+                        return `ต้องการตัวเลือกที่ถูกต้อง 1 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
                     }
 
-                    const incorrectChoices = item.choice.filter(choice => !choice.isCorrect);
+                    const incorrectChoices = item.choice.filter(choice => choice.isCorrect === 0);
                     if (incorrectChoices.length === 0) {
                         return `คำถามที่ ${i + 1} ต้องมีตัวเลือกที่ไม่ถูกต้องอย่างน้อย 1 ตัวเลือก`;
                     }

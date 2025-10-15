@@ -164,10 +164,10 @@ const useQuestions = (courseId) => {
         if (choice.type === 0) incorrectCount++;
       });
 
-      if (correctCount === 0) {
+      if (correctCount !== 1) {
         return {
           isValid: false,
-          validMessage: `กรุณากรอกตัวเลือกที่ถูกต้องสำหรับคำถามที่ ${i + 1} อย่างน้อย 1 ตัวเลือก`,
+          validMessage: `กรุณากรอกตัวเลือกที่ถูกต้อง 1 ตัวเลือกสำหรับคำถามที่ ${i + 1}`,
         };
       }
 
@@ -351,7 +351,7 @@ function Exam() {
   function SlideTransition(props) {
     return <Slide {...props} direction="up" />;
   }
-  console.log(questions)
+ 
   return (
     <div className={style.pageWrapper}>
       <div className={style.head}>
