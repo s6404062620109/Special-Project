@@ -7,7 +7,7 @@ const db = require("../database");
 
 const getUsers = (req, res) => {
   try {
-    db.query("SELECT id, email, name, role, profile_img, isApprove FROM user", (error, result) => {
+    db.query("SELECT id, email, sex, name, surname, role, profile_img, isApprove FROM user", (error, result) => {
         if (error) {
           console.log(error);
           return res.status(500).send({ message: "Database user query error." });

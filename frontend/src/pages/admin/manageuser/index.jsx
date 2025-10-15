@@ -15,6 +15,15 @@ import {
   useMediaQuery,
   IconButton,
 } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -41,13 +50,18 @@ function ManageUser() {
   });
   const [selectedUser, setSelectedUser] = useState({
     id: null,
+    sex: "",
     name: "",
+    surname: "",
     email: "",
     profile_img: "",
     role: "s",
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentProfileImg, setCurrentProfileImg] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
 
   const fetchUserData = async () => {
     try {
@@ -110,7 +124,7 @@ function ManageUser() {
 
   const handleAddUser = async () => {
     if (!userData.id) {
-      alert("กรุณาเข้าสู่ระบบ");
+      setSnackbar({ open: true, message: "กรุณาเข้าสู่ระบบ", severity: "warning" });
       window.location.href = "/";
       return;
     }
@@ -121,6 +135,7 @@ function ManageUser() {
       });
       if (response.status === 201) {
         setMessage({ text: response.data.message, status: "success" });
+        setSnackbar({ open: true, message: response.data.message, severity: "success" });
         setNewUser({ name: "", email: "", role: "s" });
         fetchUserData();
         setShowPopup(false);
@@ -134,30 +149,42 @@ function ManageUser() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteClick = (userId) => {
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
     if (!userData.id) {
-      alert("Please authentication first");
+      setSnackbar({ open: true, message: "Please authenticate first", severity: "warning" });
       window.location.href = "/";
       return;
     }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-    if (!confirmDelete) return;
+    if (!userToDelete) return;
 
     try {
-      const response = await backend.delete(`/admin/deleteUser/${userId}`, {
+      const response = await backend.delete(`/admin/deleteUser/${userToDelete}`, {
         withCredentials: true,
       });
 
       if (response.status === 200) {
-        alert(response.data.message);
+        setSnackbar({ open: true, message: response.data.message, severity: "success" });
         fetchUserData();
       }
     } catch (error) {
       console.log(error);
-      alert(error.response?.data?.message || "Error deleting user");
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Error deleting user",
+        severity: "error",
+      });
+    } finally {
+      handleCloseDeleteDialog();
     }
   };
 
@@ -198,6 +225,7 @@ function ManageUser() {
       );
       if (response.status === 200) {
         setMessage({ text: response.data.message, status: "success" });
+        setSnackbar({ open: true, message: response.data.message, severity: "success" });
         fetchUserData();
         setShowEditPopup(false);
       }
@@ -216,13 +244,25 @@ function ManageUser() {
         withCredentials: true,
       });
       if(response.status === 200){
-        alert(response.data.message);
+        setSnackbar({ open: true, message: response.data.message, severity: "success" });
         fetchUserData();
       }
     } catch(error){
       console.log(error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Error approving teacher",
+        severity: "error",
+      });
     }
-  }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const tabletQuery = useMediaQuery("(max-width:720px)");
 
@@ -395,7 +435,7 @@ function ManageUser() {
                               },
                               marginLeft: 0,
                             }}
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteClick(user.id)}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -441,6 +481,34 @@ function ManageUser() {
         <img src="/My_Coursesp/Add.svg" alt="Add button" />
         <p>Add New User</p>
       </button>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"ยืนยันการลบบัญชีผู้ใช้"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีผู้ใช้นี้? การกระทำนี้ไม่สามารถกู้คืนได้
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>ยกเลิก</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

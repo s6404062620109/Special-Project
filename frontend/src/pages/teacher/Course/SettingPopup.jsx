@@ -58,7 +58,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
             errors.push("ต้องกำหนดจำนวนข้อสอบหลังเรียนอย่างน้อย 1 ข้อ");
         }
         if (courseData.pretest_rate > count_questions || courseData.posttest_rate > count_questions) {
-            errors.push(`จำนวนข้อสอบก่อน/หลังเรียนต้องไม่เกิน ${count_questions} `);
+            errors.push(`จำนวนข้อสอบก่อน/หลังเรียนต้องไม่เกิน ${count_questions} ข้อ`);
         }
         
         if (errors.length > 0 && showError) {

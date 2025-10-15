@@ -31,7 +31,88 @@ const getAll = (req, res) => {
     LEFT JOIN subject s ON s.courseId = c.id
     LEFT JOIN questions q ON q.courseId = c.id
     LEFT JOIN labs l ON l.subjectId = s.id
-    WHERE c.id = ? AND c.enable = 1
+    WHERE c.id = ? 
+    GROUP BY c.id
+  `;
+
+  db.query(sql, [courseId], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database query error" });
+    }
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    db.query(`SELECT * FROM subject WHERE courseId = ?`, [courseId], (err, subjectResults) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database subject query error" });
+      }
+
+      const course = result[0];
+      const response = {
+        courseInfo: {
+          id: course.courseId,
+          name: course.courseName,
+          icon: course.courseIcon,
+          teacherId: course.teacherId,
+          enable: course.enable,
+          createat: course.createat,
+          updateat: course.updateat,
+          announce_state: course.announce_state,
+          pretest_rate: course.pretest_rate,
+          posttest_rate: course.posttest_rate,
+        },
+        subject: subjectResults,
+        teacherInfo: {
+          sex: course.teacherSex,
+          name: course.teacherName,
+          surname: course.teacherSurname,
+          email: course.teacherEmail,
+          profile_img: course.teacherImg,
+        },
+        countQuestions: course.countQuestions,
+        countLabs: course.countLabs,
+        countEnrollments: course.countEnrollments,
+        countPosttestComplete: course.countPosttestComplete,
+      };
+
+      return res.status(200).json(response);
+    });
+  });
+};
+
+const getAllSubjectStudent = (req, res) => {
+  const courseId = req.params.courseId;
+
+  const sql = `
+    SELECT
+      c.id AS courseId,
+      c.name AS courseName,
+      c.icon AS courseIcon,
+      c.teacherId,
+      c.enable,
+      c.createat,
+      c.updateat,
+      c.announce_state,
+      c.pretest_rate,
+      c.posttest_rate,
+      (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id) AS countEnrollments,
+      (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id AND posttest_complete = 1) AS countPosttestComplete,
+      u.sex AS teacherSex,
+      u.name AS teacherName,
+      u.surname AS teacherSurname,
+      u.email AS teacherEmail,
+      u.profile_img AS teacherImg,
+      COUNT(DISTINCT q.id) AS countQuestions,
+      COUNT(DISTINCT l.id) AS countLabs
+    FROM course c 
+    LEFT JOIN user u ON c.teacherId = u.id
+    LEFT JOIN subject s ON s.courseId = c.id
+    LEFT JOIN questions q ON q.courseId = c.id
+    LEFT JOIN labs l ON l.subjectId = s.id
+    WHERE c.id = ? AND enable = 1
     GROUP BY c.id
   `;
 
@@ -137,5 +218,6 @@ const getSubject = (req, res) => {
 
 module.exports = {
     getAll,
+    getAllSubjectStudent,
     getSubject
 }

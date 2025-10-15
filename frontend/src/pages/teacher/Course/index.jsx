@@ -11,6 +11,8 @@ import {
   Button,
   Dialog,
   DialogActions,
+  DialogContent,
+  DialogContentText,
   DialogTitle,
   IconButton,
   Paper,
@@ -22,6 +24,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Snackbar,
+  Alert,
   useMediaQuery,
 } from "@mui/material";
 
@@ -46,10 +50,13 @@ function EditCourse() {
   const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
   const [ examDialogOpen, setExamOpenDialog ] = useState(false);
   const navigate = useNavigate();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
 
   const fetchSubjects = async () => {
     try {
-      const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
+      const response = await backend.get(`/subjects/getAllSubject/${courseId}`, { withCredentials: true });
 
       if (response.status === 200) {
         setData({
@@ -94,30 +101,43 @@ function EditCourse() {
     navigate(`/edit-subject/${courseId}/${subjectId}`);
   };
 
-  const handleDelete = async (subjectId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this subject?"
-    );
-    if (!confirmDelete) return;
+  const handleDeleteClick = (subjectId) => {
+    setSubjectToDelete(subjectId);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSubjectToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!subjectToDelete) return;
     try {
       const response = await backend.delete(
-        `/teacher/deleteSubjectOnCourse/${courseId}/${subjectId}/${userData.id}`,
+        `/teacher/deleteSubjectOnCourse/${courseId}/${subjectToDelete}/${userData.id}`,
         {
           withCredentials: true,
         }
       );
       if (response.status === 200) {
-        alert(response.data.message);
+        setSnackbar({ open: true, message: response.data.message, severity: "success" });
         setData((prevData) => ({
           ...prevData,
           subject: prevData.subject.filter(
-            (subject) => subject.id !== subjectId
+            (subject) => subject.id !== subjectToDelete
           ),
         }));
       }
     } catch (error) {
       console.log(error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Error deleting subject",
+        severity: "error",
+      });
+    } finally {
+      handleCloseDeleteDialog();
     }
   };
 
@@ -130,6 +150,13 @@ function EditCourse() {
     setEditPopupOpen(false);
     fetchSubjects();
   }
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const tabletQuery = useMediaQuery("(max-width:720px)");
   const isXs = useMediaQuery("(max-width:600px)");
@@ -282,7 +309,7 @@ function EditCourse() {
                                 backgroundColor: "rgb(255, 87, 51)",
                               },
                             }}
-                            onClick={() => handleDelete(subject.id)}
+                            onClick={() => handleDeleteClick(subject.id)}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -291,7 +318,7 @@ function EditCourse() {
                             variant="contained"
                             color="error"
                             startIcon={<DeleteIcon />}
-                            onClick={() => handleDelete(subject.id)}
+                            onClick={() => handleDeleteClick(subject.id)}
                           >
                             <Typography variant="body1">ลบ</Typography>
                           </Button>
@@ -460,6 +487,34 @@ function EditCourse() {
           setExamDialogOpen={setExamOpenDialog}
         />
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"ยืนยันการลบบทเรียน"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้ไม่สามารถกู้คืนได้
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>ยกเลิก</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

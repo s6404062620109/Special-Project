@@ -1,12 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import backend from '../../../api/backend';
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton,
   TableSortLabel, Typography,
-  Stack
+  Stack,
+  Avatar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SchoolIcon from '@mui/icons-material/School';
 
 import style from './css/managecourse.module.css';
 
@@ -40,6 +50,9 @@ function ManageCourses() {
   const [courses, setCourses] = useState([]);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   const fetchCourses = async () => {
     try {
@@ -58,17 +71,42 @@ function ManageCourses() {
     setOrderBy(property);
   };
 
-  const handleDeleteCourse = async (id) => {
-    console.log(id)
+  const handleDeleteClick = (courseId) => {
+    setCourseToDelete(courseId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setCourseToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!courseToDelete) return;
+
     try {
-      const response = await backend.delete(`/admin/deleteCourse/${id}`, { withCredentials: true });
+      const response = await backend.delete(`/admin/deleteCourse/${courseToDelete}`, { withCredentials: true });
       if (response.status === 200) {
-        alert(response.data.message);
-        setCourses(courses.filter((course) => course.id !== id));
+        setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+        setCourses(courses.filter((course) => course.id !== courseToDelete));
       }
     } catch (err) {
       console.error(err);
+      setSnackbar({ 
+        open: true, 
+        message: err.response?.data?.message || 'เกิดข้อผิดพลาดในการลบคอร์ส', 
+        severity: 'error' 
+      });
+    } finally {
+      handleCloseDeleteDialog();
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   useEffect(() => {
@@ -128,11 +166,18 @@ function ManageCourses() {
                             alignItems="center"
                             gap={2}
                         >
-                            <img
+                          {course.icon ? (
+                             <img
                                 src={course.icon}
                                 alt="course icon"
                                 style={{ width: "40px", height: "40px", borderRadius: "8px" }}
                             />
+                          ):(
+                            <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                              <SchoolIcon />
+                            </Avatar>
+                          )}
+                           
                             {course.name}
                         </Stack>
                     </TableCell>
@@ -142,7 +187,7 @@ function ManageCourses() {
                         }
                     </TableCell>
                     <TableCell>
-                      <IconButton color="error" onClick={() => handleDeleteCourse(course.id)}>
+                      <IconButton color="error" onClick={() => handleDeleteClick(course.id)}>
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>
@@ -153,6 +198,37 @@ function ManageCourses() {
           </TableContainer>
         </div>
       </div>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"ยืนยันการลบคอร์สเรียน"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            คุณแน่ใจหรือไม่ว่าต้องการลบคอร์สเรียนนี้? การกระทำนี้เป็นการลบข้อมูลอย่างถาวรและไม่สามารถกู้คืนได้
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>ยกเลิก</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>ยืนยัน</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

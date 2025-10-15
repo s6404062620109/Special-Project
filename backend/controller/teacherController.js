@@ -133,8 +133,8 @@ const createFolder = (folderPath) => {
 const createCourse = (req, res) => {
     const { name, icon, teacherId } = req.body;
     
-    if (!name || !teacherId || !icon) {
-        return res.status(400).json({ message: "Name, icon, and teacherId are required." });
+    if (!name || !teacherId) {
+        return res.status(400).json({ message: "Name and teacherId are required." });
     }
 
     try {

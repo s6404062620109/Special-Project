@@ -19,9 +19,7 @@ import {
   DialogTitle, 
   IconButton, 
   Slide, 
-  Snackbar, 
-  Typography, 
-  useMediaQuery 
+  Snackbar,  
 } from '@mui/material';
 
 function SlideTransition(props) {
@@ -105,8 +103,6 @@ function MyCourses() {
       handleCloseDeleteDialog();
     }
   };
-  
-  const tabletQuery = useMediaQuery("(max-width:720px)");
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {

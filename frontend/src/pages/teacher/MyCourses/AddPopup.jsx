@@ -21,10 +21,10 @@ function AddPopup({ onClose, onAddCourse }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if(courseData.name === "" || courseData.icon === ""){
+    if(courseData.name === ""){
       setSnackbar({
         open: true,
-        message: "Name and icon are required.",
+        message: "กรุณากรอกชื่อคอร์ส",
         severity: "error"
       });      
       return;

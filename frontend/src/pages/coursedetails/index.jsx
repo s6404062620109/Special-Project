@@ -209,7 +209,7 @@ function CourseDetail() {
 
   const fetchCourseInfo = async () => {
     try {
-      const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
+      const response = await backend.get(`/subjects/getAllSubjectStudent/${courseId}`, { withCredentials: true });
 
       if (response.status === 200) {
         let responseCourse = response.data.courseInfo;
