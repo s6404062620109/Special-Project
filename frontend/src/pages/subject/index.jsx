@@ -12,10 +12,7 @@ import Labs from "./Labs";
 import {
   Backdrop,
   Box,
-  Button,
   IconButton,
-  Menu,
-  MenuItem,
   Slide,
   Stack,
   Tab,
@@ -338,7 +335,9 @@ function Subject() {
 
   const fetchSubjectList = async () => {
     try {
-      const response = await backend.get(`/subjects/getAllSubject/${courseId}`);
+      const response = await backend.get(`/subjects/getAllSubjectStudent/${courseId}`, {
+        withCredentials: true
+      });
       if (response.status === 200) {
         setSubjectList(response.data.subject || []);
       }

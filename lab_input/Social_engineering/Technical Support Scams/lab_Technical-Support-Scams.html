@@ -81,10 +81,32 @@
       <button class="danger" onclick="recordAction('ชำระเงินหลอกลวง')">💳 ชำระเงิน</button>
       <button class="warn" onclick="recordAction('โทรหา Support ปลอม')">📞 โทรหา Support</button>
     </div>
+    <div id="responseBox"></div>
   </div>
 
 <script>
   function recordAction(action) {
+    const responseBox = document.getElementById('responseBox');
+    let message = '';
+    let messageColor = 'black';
+
+    switch (action) {
+      case 'ปิดหน้าต่าง':
+        message = 'การกระทำนี้ปลอดภัย เป็นวิธีที่ถูกต้องในการจัดการกับป็อปอัพหลอกลวง';
+        messageColor = 'green';
+        break;
+      case 'ชำระเงินหลอกลวง':
+        message = 'การกระทำนี้อันตรายมาก! การชำระเงินจะทำให้คุณเสียเงินและอาจถูกขโมยข้อมูลบัตรเครดิต';
+        messageColor = 'red';
+        break;
+      case 'โทรหา Support ปลอม':
+        message = 'การกระทำนี้มีความเสี่ยงสูง! การโทรหาเบอร์ที่ไม่น่าเชื่อถืออาจทำให้คุณถูกหลอกให้ติดตั้งมัลแวร์หรือให้ข้อมูลส่วนตัว';
+        messageColor = 'red';
+        break;
+    }
+
+    responseBox.innerHTML = message;
+    responseBox.style.color = messageColor;
     window.parent.postMessage({ answer: action }, "*");
   }
 </script>

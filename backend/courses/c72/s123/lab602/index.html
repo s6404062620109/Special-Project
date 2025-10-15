@@ -51,6 +51,7 @@
         <button class="cancel-btn" onclick="recordAction('ติดตั้งยกเลิก')">Cancel</button>
         <button class="next-btn" onclick="installProgram()">Next &gt;</button>
       </div>
+      <div id="responseBox"></div>
 
     </div>
   </div>
@@ -58,16 +59,37 @@
   <script>
     function recordAction(action) {
       console.log(action)
+      const responseBox = document.getElementById('responseBox');
+      let message = '';
+      let messageColor = 'black';
+
+      if (action === 'ติดตั้งยกเลิก') {
+        message = 'การกระทำนี้ปลอดภัย เป็นการยกเลิกการติดตั้งโปรแกรมที่อาจไม่น่าเชื่อถือ';
+        messageColor = 'green';
+      }
+
+      responseBox.innerHTML = message;
+      responseBox.style.color = messageColor;
       window.parent.postMessage({ answer: action }, "*");
     }
 
     function installProgram() {
+      const responseBox = document.getElementById('responseBox');
       const bundle1 = document.getElementById('bundle1').checked;
       const bundle2 = document.getElementById('bundle2').checked;
       const acceptTerms = document.getElementById('acceptTerms').checked;
 
+      let message = '';
+      let messageColor = 'black';
+      let actionToSend = '';
+
       if (!acceptTerms) {
-        recordAction("⚠ คุณต้องยอมรับเงื่อนไขก่อนติดตั้ง");
+        message = "⚠ คุณต้องยอมรับเงื่อนไขก่อนติดตั้ง";
+        messageColor = 'orange';
+        actionToSend = "พยายามติดตั้งโดยไม่ยอมรับเงื่อนไข";
+        responseBox.innerHTML = message;
+        responseBox.style.color = messageColor;
+        window.parent.postMessage({ answer: actionToSend }, "*");
         return;
       }
 
@@ -76,11 +98,19 @@
       if (bundle2) issues.push("SpySearch");
 
       if (issues.length === 0) {
-        recordAction("Free PDF Converter");
+        message = 'การกระทำนี้ปลอดภัย คุณได้เลือกไม่ติดตั้งโปรแกรมแฝง (Spyware) ที่ไม่ต้องการ';
+        messageColor = 'green';
+        actionToSend = "ติดตั้งโปรแกรมหลักอย่างเดียว";
       } 
       else {
-        recordAction("Free PDF Converter, " + issues.join(", "));
+        message = 'การกระทำนี้อันตราย! คุณกำลังติดตั้ง Spyware ที่จะเข้ามาสอดแนมและเปลี่ยนการตั้งค่าเบราว์เซอร์ของคุณ';
+        messageColor = 'red';
+        actionToSend = "ติดตั้งโปรแกรมหลักพร้อม Spyware: " + issues.join(", ");
       }
+
+      responseBox.innerHTML = message;
+      responseBox.style.color = messageColor;
+      window.parent.postMessage({ answer: actionToSend }, "*");
     }
   </script>
 </body>

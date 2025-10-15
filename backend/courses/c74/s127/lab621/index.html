@@ -13,7 +13,7 @@
     padding: 0;
   }
   .browser {
-    width: 60%;
+    width: 80%;
     margin: 40px auto;
     border: 1px solid #aaa;
     border-radius: 8px;
@@ -143,6 +143,7 @@
       <button type="button" class="btn-primary" id="loginBtn">Login</button>
     </form>
     <div class="warning">* โปรดตรวจสอบ URL และไอคอน SSL ก่อนกรอกข้อมูล</div>
+    <div id="responseBox"></div>
     <div class="footer">
       © 2025 Bank Secure. All rights reserved.
     </div>
@@ -152,18 +153,38 @@
 
 <script>
   function recordAction(action) {
+    const responseBox = document.getElementById('responseBox');
+    let message = '';
+    let messageColor = 'black';
+
+    switch (action) {
+      case 'เข้าสู่ระบบ':
+        message = 'อันตราย! คุณกำลังส่งข้อมูลบนหน้าเว็บที่ไม่ปลอดภัย (HTTP) ซึ่งอาจถูกดักจับข้อมูลได้ง่าย สังเกตจาก URL ที่ขึ้นต้นด้วย http:// และสัญลักษณ์แม่กุญแจสีแดง';
+        messageColor = 'red';
+        break;
+      case 'กรุณากรอก Username และ Password ก่อน':
+        message = 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนเข้าสู่ระบบ';
+        messageColor = 'orange';
+        break;
+      case 'ออกจากหน้าเว็บ':
+        message = 'การกระทำนี้ปลอดภัย เป็นการตัดสินใจที่ถูกต้องเมื่อพบหน้าเว็บที่น่าสงสัยและไม่ปลอดภัย';
+        messageColor = 'green';
+        break;
+    }
+
+    responseBox.innerHTML = message;
+    responseBox.style.color = messageColor;
     window.parent.postMessage({ answer: action }, "*");
   }
 
   document.getElementById("loginBtn").onclick = () => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
-    if (!username || !password) {
+    if (!username || !password) { 
       recordAction("กรุณากรอก Username และ Password ก่อน");
       return;
     }
-
-    recordAction("เข้าสู่ระบบสำเร็จ");
+    recordAction("เข้าสู่ระบบ");
   };
 
   document.getElementById("goBack").onclick = () => {

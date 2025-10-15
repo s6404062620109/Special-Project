@@ -85,6 +85,7 @@
 
     <a class="download-btn real" onclick="switchToOfficial()">⬇ Direct Download (Installer)</a>
 
+    <div id="responseBox" class="response"></div>
   </div>
 </div>
 
@@ -127,7 +128,20 @@
   }
 
   function recordAction(answer) {
-    console.log(answer)
+    const responseBox = document.getElementById('responseBox');
+    let message = '';
+    let messageColor = 'black';
+
+    if (answer.includes('notepad-plus-plus.org')) {
+        message = 'การกระทำนี้ปลอดภัย เป็นการดาวน์โหลดจากเว็บไซต์ทางการที่น่าเชื่อถือ';
+        messageColor = 'green';
+    } else {
+        message = 'การกระทำนี้อันตรายมาก! ไฟล์ที่ดาวน์โหลดจากแหล่งที่ไม่เป็นทางการอาจเป็น Trojan ที่แฝงตัวมาเพื่อขโมยข้อมูลหรือควบคุมเครื่องของคุณ';
+        messageColor = 'red';
+    }
+
+    responseBox.innerHTML = message;
+    responseBox.style.color = messageColor;
     window.parent.postMessage({ answer: answer }, "*");
   }
 </script>

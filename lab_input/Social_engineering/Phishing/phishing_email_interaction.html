@@ -133,21 +133,48 @@
       <p>From: RealBank Security &lt;security@realbank-support.com&gt;</p>
       <p>
         Please
-        <a href="#" onclick="recordAction('Click link'); return false;"
-        >
-        click here
-        </a
-        >
+        <a href="#" onclick="recordAction('Click link'); return false;">
+          click here
+        </a>
         to verify your account
       </p>
     </div>
 
-    <div class="status" style="text-align: center; margin-top: 20px;">
+    <div class="status" style="text-align: center; margin-top: 20px; padding: 10px; font-size: 16px;">
       <em>Select an action above to proceed.</em>
     </div>
 
     <script>
       function recordAction(action) {
+        const statusDiv = document.querySelector(".status");
+        let message = "";
+        let messageColor = "black";
+
+        switch (action) {
+          case "Report Email as Phishing":
+            message = "การกระทำนี้ปลอดภัย เป็นวิธีที่ถูกต้องในการจัดการกับอีเมลที่น่าสงสัย";
+            messageColor = "green";
+            break;
+          case "Delete Email":
+            message = "การกระทำนี้ค่อนข้างปลอดภัย แต่ไม่ได้ช่วยรายงานอีเมลอันตราย การรายงานจะช่วยป้องกันผู้อื่นได้";
+            messageColor = "orange";
+            break;
+          case "Reply to Email":
+            message = "การกระทำนี้มีความเสี่ยง! การตอบกลับเป็นการยืนยันว่าอีเมลของคุณใช้งานได้จริง และอาจทำให้คุณตกเป็นเป้าหมายมากขึ้น";
+            messageColor = "red";
+            break;
+          case "Click link":
+            message = "การกระทำนี้อันตรายมาก! ลิงก์อาจนำไปสู่เว็บไซต์ปลอมเพื่อขโมยข้อมูลหรือติดตั้งมัลแวร์";
+            messageColor = "red";
+            break;
+          default:
+            message = `<em>Action recorded: ${action}</em>`;
+        }
+
+        statusDiv.innerHTML = message;
+        statusDiv.style.color = messageColor;
+        statusDiv.style.fontWeight = 'bold';
+
         window.parent.postMessage({ answer: action }, "*");
       }
 

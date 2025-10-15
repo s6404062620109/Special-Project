@@ -84,6 +84,10 @@
     .fake-link:hover {
       color: #551a8b;
     }
+    .status-message {
+      padding: 12px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -97,11 +101,11 @@
       <div class="from">university@ac.th</div>
       <div class="subject">[ประกาศ] ตารางสอบกลางภาค</div>
     </div>
-    <div class="detail" id="d1">
+    <div class="detail" id="d1" data-email-id="1">
       <p>เรียน นศ. ทุกท่าน ตารางสอบกลางภาคได้ประกาศแล้ว กรุณาตรวจสอบที่ระบบนักศึกษา</p>
       <div class="actions">
-        <button class="action-btn" onclick="recordAction('เปิดอ่าน ตารางสอบกลางภาค')">📖 เปิดอ่าน</button>
-        <button class="action-btn" onclick="recordAction('รายงาน Phishing ตารางสอบกลางภาค')">
+        <button class="action-btn" onclick="recordAction('เปิดอ่าน ตารางสอบกลางภาค', event)">📖 เปิดอ่าน</button>
+        <button class="action-btn" onclick="recordAction('รายงาน Phishing ตารางสอบกลางภาค', event)">
           <svg
             width="18"
             height="18"
@@ -140,23 +144,24 @@
           </svg>
           รายงานฟิชชิง 
         </button>
-        <button class="action-btn" onclick="recordAction('รายงาน Spam ตารางสอบกลางภาค')">🚫 รายงาน Spam</button>
-        <button class="action-btn" onclick="recordAction('ลบอีเมล ตารางสอบกลางภาค')">🗑 ลบ</button>
+        <button class="action-btn" onclick="recordAction('รายงาน Spam ตารางสอบกลางภาค', event)">🚫 รายงาน Spam</button>
+        <button class="action-btn" onclick="recordAction('ลบอีเมล ตารางสอบกลางภาค', event)">🗑 ลบ</button>
       </div>
+      <div class="status-message" id="status-1"></div>
     </div>
 
     <div class="email-item" onclick="toggleDetail('d2')">
       <div class="from">security@realbank-support.com</div>
       <div class="subject">[เร่งด่วน] บัญชีของคุณถูกระงับ!</div>
     </div>
-    <div class="detail" id="d2">
+    <div class="detail" id="d2" data-email-id="2">
       <p>
         เพื่อความปลอดภัย กรุณากรอก username และ password ของคุณที่นี่ 👉
-        <a class="fake-link" onclick="recordAction('คลิกลิงก์ secure-realbank.com')">secure-realbank.com</a>
+        <a class="fake-link" onclick="recordAction('คลิกลิงก์ secure-realbank.com', event)">secure-realbank.com</a>
       </p>
       <div class="actions">
-        <button class="action-btn" onclick="recordAction('เปิดอ่าน บัญชีถูกระงับ')">📖 เปิดอ่าน</button>
-        <button class="action-btn" onclick="recordAction('รายงาน Phishing บัญชีถูกระงับ')">
+        <button class="action-btn" onclick="recordAction('เปิดอ่าน บัญชีถูกระงับ', event)">📖 เปิดอ่าน</button>
+        <button class="action-btn" onclick="recordAction('รายงาน Phishing บัญชีถูกระงับ', event)">
           <svg
             width="18"
             height="18"
@@ -195,23 +200,24 @@
           </svg>
           รายงานฟิชชิง 
         </button>
-        <button class="action-btn" onclick="recordAction('รายงาน Spam บัญชีถูกระงับ')">🚫 รายงาน Spam</button>
-        <button class="action-btn" onclick="recordAction('ลบอีเมล บัญชีถูกระงับ')">🗑 ลบ</button>
+        <button class="action-btn" onclick="recordAction('รายงาน Spam บัญชีถูกระงับ', event)">🚫 รายงาน Spam</button>
+        <button class="action-btn" onclick="recordAction('ลบอีเมล บัญชีถูกระงับ', event)">🗑 ลบ</button>
       </div>
+      <div class="status-message" id="status-2"></div>
     </div>
 
     <div class="email-item" onclick="toggleDetail('d4')">
       <div class="from">lucky@casino-bonus.win</div>
       <div class="subject">🎰 คุณถูกรางวัล Jackpot!</div>
     </div>
-    <div class="detail" id="d4">
+    <div class="detail" id="d4" data-email-id="4">
       <p>
         ยินดีด้วย! คุณได้รับสิทธิ์เข้าเล่นคาสิโนออนไลน์พร้อมโบนัสฟรี  
-        <a class="fake-link" onclick="recordAction('คลิกลิงก์ casino-bonus.win')">กดที่นี่เพื่อรับสิทธิ์</a>
+        <a class="fake-link" onclick="recordAction('คลิกลิงก์ casino-bonus.win', event)">กดที่นี่เพื่อรับสิทธิ์</a>
       </p>
       <div class="actions">
-        <button class="action-btn" onclick="recordAction('เปิดอ่าน คุณถูกรางวัล Jackpot')">📖 เปิดอ่าน</button>
-        <button class="action-btn" onclick="recordAction('รายงาน Phishing คุณถูกรางวัล Jackpot')">
+        <button class="action-btn" onclick="recordAction('เปิดอ่าน คุณถูกรางวัล Jackpot', event)">📖 เปิดอ่าน</button>
+        <button class="action-btn" onclick="recordAction('รายงาน Phishing คุณถูกรางวัล Jackpot', event)">
           <svg
             width="18"
             height="18"
@@ -250,19 +256,65 @@
           </svg>
           รายงานฟิชชิง 
         </button>
-        <button class="action-btn" onclick="recordAction('รายงาน Spam คุณถูกรางวัล Jackpot')">🚫 รายงาน Spam</button>
-        <button class="action-btn" onclick="recordAction('ลบอีเมล คุณถูกรางวัล Jackpot')">🗑 ลบ</button>
+        <button class="action-btn" onclick="recordAction('รายงาน Spam คุณถูกรางวัล Jackpot', event)">🚫 รายงาน Spam</button>
+        <button class="action-btn" onclick="recordAction('ลบอีเมล คุณถูกรางวัล Jackpot', event)">🗑 ลบ</button>
       </div>
+      <div class="status-message" id="status-4"></div>
     </div>
   </div>
 
   <script>
+    let activeDetail = null;
+
     function toggleDetail(id) {
       const el = document.getElementById(id);
+      if (activeDetail && activeDetail !== el) {
+        activeDetail.style.display = "none";
+      }
       el.style.display = el.style.display === "block" ? "none" : "block";
+      activeDetail = el.style.display === "block" ? el : null;
     }
-    function recordAction(action) {
-      console.log(action);
+
+    function recordAction(action, event) {
+      event.stopPropagation(); // ป้องกันไม่ให้ event ของ email-item ทำงาน
+      const btn = event.target.closest('.action-btn, .fake-link');
+      const detailDiv = btn.closest('.detail');
+      const emailId = detailDiv.getAttribute('data-email-id');
+      const statusDiv = document.getElementById(`status-${emailId}`);
+      
+      let message = "";
+      let messageColor = "black";
+
+      if (action.includes('คลิกลิงก์')) {
+        message = "การกระทำนี้อันตรายมาก! ลิงก์อาจนำไปสู่เว็บไซต์ปลอมเพื่อขโมยข้อมูลหรือติดตั้งมัลแวร์";
+        messageColor = "red";
+      } else if (action.includes('รายงาน Phishing') && emailId === '2') {
+        message = "ถูกต้อง! อีเมลนี้เป็น Phishing การรายงานเป็นวิธีที่ดีที่สุดในการจัดการ";
+        messageColor = "green";
+      } else if (action.includes('รายงาน Spam') && emailId === '4') {
+        message = "ถูกต้อง! อีเมลนี้เป็น Spam การรายงานเป็นวิธีที่เหมาะสม";
+        messageColor = "green";
+      } else if (action.includes('รายงาน Spam') && emailId === '2') {
+        message = "เกือบถูกต้อง! แม้อีเมลนี้จะเข้าข่าย Spam แต่การรายงานเป็น Phishing จะตรงประเด็นกว่า เพราะมีเจตนาขโมยข้อมูล";
+        messageColor = "orange";
+      } else if (action.includes('รายงาน Phishing') && emailId === '4') {
+        message = "เกือบถูกต้อง! อีเมลนี้เป็น Spam ที่เน้นโฆษณา การรายงานเป็น Spam จะเหมาะสมกว่า";
+        messageColor = "orange";
+      } else if (action.includes('ลบอีเมล')) {
+        message = "การลบอีเมลช่วยให้กล่องจดหมายสะอาด แต่ไม่ได้ช่วยป้องกันผู้อื่นจากอีเมลอันตรายเหล่านี้";
+        messageColor = "blue";
+      } else if (action.includes('เปิดอ่าน') && emailId === '1') {
+        message = "การเปิดอ่านอีเมลจากผู้ส่งที่รู้จักและหัวข้อที่สมเหตุสมผลเป็นการกระทำที่ปกติและปลอดภัย";
+        messageColor = "green";
+      } else {
+        message = "โปรดพิจารณาการกระทำของคุณอีกครั้ง การกระทำนี้อาจไม่เหมาะสมกับอีเมลประเภทนี้";
+        messageColor = "black";
+      }
+
+      statusDiv.innerHTML = message;
+      statusDiv.style.color = messageColor;
+      statusDiv.style.fontWeight = 'bold';
+
       window.parent.postMessage({ answer: action }, "*");
     }
   </script>

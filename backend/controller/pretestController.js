@@ -123,7 +123,6 @@ const submitPretest = (req, res) => {
                 if (progressResult.length === 0) {
                   return res.status(404).json({ message: "No progress found" });
                 }
-                
                 const answerRecords = Object.entries(answer).map(([qId, ans]) => {
                   const progress = progressResult.find(p => p.questionId === Number(qId));
                   return {
@@ -135,7 +134,24 @@ const submitPretest = (req, res) => {
             });
           });
         } else {
-          updateEnrollmentAndGetNext(enrollmentId, userAnswers, res);
+          db.query(`SELECT id, questionId FROM question_progress WHERE enrollmentId = ? AND questionId IN (?) AND type = 'pre'`,
+            [enrollmentId, userQuestionIds], (error, progressResult) => {
+              if (error) {
+                console.log(error);
+                return res.status(500).json({ message: "Progress query error" });
+              }
+              if (progressResult.length === 0) {
+                return res.status(404).json({ message: "No progress found" });
+              }
+              const answerRecords = Object.entries(answer).map(([qId, ans]) => {
+                const progress = progressResult.find(p => p.questionId === Number(qId));
+                return {
+                  user_answer: ans.content,
+                  progressId: progress ? progress.id : null
+                };
+              });
+              updateEnrollmentAndGetNext(enrollmentId, answerRecords, res);
+          });
         }
       });
     });

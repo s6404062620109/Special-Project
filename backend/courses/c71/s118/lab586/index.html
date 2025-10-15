@@ -89,11 +89,33 @@
       <button class="btn btn-danger" onclick="recordAction('Clicked Buy Antivirus')">💳 Buy Antivirus Pro</button>
       <button class="btn btn-danger" onclick="recordAction('Clicked Download Trial')">⬇ Download Free Trial</button>
     </div>
+    <div id="responseBox"></div>
   </div>
 
 <script>
     function recordAction(action) {
-    window.parent.postMessage({ questionId: 1, answer: action }, "*");
+      const responseBox = document.getElementById('responseBox');
+      let message = '';
+      let messageColor = 'black';
+
+      switch (action) {
+        case 'Closed popup':
+          message = 'การกระทำนี้ปลอดภัย เป็นวิธีที่ถูกต้องในการจัดการกับป็อปอัพหลอกลวง';
+          messageColor = 'green';
+          break;
+        case 'Clicked Buy Antivirus':
+          message = 'การกระทำนี้อันตรายมาก! การจ่ายเงินสำหรับโปรแกรมที่ไม่รู้จักอาจทำให้คุณเสียเงินและถูกขโมยข้อมูลบัตรเครดิต';
+          messageColor = 'red';
+          break;
+        case 'Clicked Download Trial':
+          message = 'การกระทำนี้มีความเสี่ยงสูง! การดาวน์โหลดไฟล์จากป็อปอัพที่ไม่น่าเชื่อถือมักจะนำไปสู่การติดตั้งมัลแวร์เพิ่มเติม';
+          messageColor = 'red';
+          break;
+      }
+
+      responseBox.innerHTML = message;
+      responseBox.style.color = messageColor;
+      window.parent.postMessage({ questionId: 1, answer: action }, "*");
     }
 </script>
 

@@ -132,6 +132,25 @@
     .reviews { margin-top: 20px; font-size: 14px; color: #444; }
     .review { border-top: 1px solid #eee; padding: 8px 0; }
 
+    /* Security Alert */
+    .alert {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff;
+      border-left: 6px solid #ff5252;
+      padding: 16px 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-size: 15px;
+      color: #333;
+      z-index: 100;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .alert.safe {
+      border-left-color: #4caf50;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.9); }
       to { opacity: 1; transform: scale(1); }
@@ -149,12 +168,13 @@
 
     <div class="page">
 
+      <!-- Popup Ad -->
       <div class="overlay" id="adPopup">
         <div class="popup">
           <button class="close-btn" onclick="closePopup()">x</button>
           <h2>🎉 ดาวน์โหลดฟรีตอนนี้!</h2>
           <p>คุณได้รับสิทธิพิเศษ ดาวน์โหลดตัวติดตั้งความเร็วสูง</p>
-          <button class="btn-fake" onclick="recordAction('ดาวน์โหลดจาก Popup')">
+          <button class="btn-fake" onclick="handleClick('ดาวน์โหลดจาก Popup', false)">
             ⬇ Fast Download
           </button>
           <small style="display:block; margin-top:10px; color:#999;">
@@ -163,6 +183,7 @@
         </div>
       </div>
 
+      <!-- Real Page -->
       <div id="realSection">
         <h2>📥 Download Center - FreeApp v2.5</h2>
         <div class="details">
@@ -176,7 +197,7 @@
           </div>
         </div>
 
-        <button class="btn-download" onclick="recordAction('ดาวน์โหลดจากเว็บไซต์')">
+        <button class="btn-download" onclick="handleClick('ดาวน์โหลดจากเว็บไซต์', true)">
           ⬇ Download Now
         </button>
 
@@ -194,10 +215,28 @@
       window.parent.postMessage({ answer: action }, "*");
     }
 
+    function showAlert(message, safe = false) {
+      const alertBox = document.createElement("div");
+      alertBox.className = "alert" + (safe ? " safe" : "");
+      alertBox.innerHTML = message;
+      document.body.appendChild(alertBox);
+      setTimeout(() => alertBox.remove(), 3500);
+    }
+
+    function handleClick(action, safe) {
+      recordAction(action);
+      if (safe) {
+        showAlert("✅ ปลอดภัย: นี่คือปุ่มดาวน์โหลดจริงจากเว็บไซต์หลัก", true);
+      } else {
+        showAlert("⚠️ เสี่ยงติดไวรัส! ปุ่มนี้อาจเป็น Adware หรือไฟล์อันตราย");
+      }
+    }
+
     function closePopup() {
       document.getElementById("adPopup").style.display = "none";
       document.getElementById("realSection").style.display = "block";
       recordAction("ปิด Popup Adware");
+      showAlert("👍 ดีมาก! คุณปิด Popup ที่อาจเป็นอันตรายได้อย่างถูกต้อง", true);
     }
   </script>
 </body>

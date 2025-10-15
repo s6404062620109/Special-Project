@@ -148,10 +148,26 @@
         </div>
       </div>
     </div>
+    <div class="response" id="responseBox"></div>
 
     <script>
       function selectUrl(el) {
         const url = el.getAttribute("data-url");
+        const responseBox = document.getElementById('responseBox');
+        let message = '';
+        let messageColor = 'black';
+
+        if (url === 'https://www.avast.com') {
+            message = 'URL นี้ปลอดภัย เป็นเว็บไซต์ทางการของผู้ให้บริการ Antivirus ที่น่าเชื่อถือ';
+            messageColor = 'green';
+        } else {
+            message = 'URL นี้อันตราย! การดาวน์โหลดจากเว็บไซต์ที่ไม่เป็นทางการและใช้ชื่อที่ดูน่าสงสัย (.xyz, .ru, .info) มีความเสี่ยงสูงที่จะได้รับไวรัสหรือมัลแวร์';
+            messageColor = 'red';
+        }
+
+        responseBox.innerHTML = message;
+        responseBox.style.color = messageColor;
+
         window.parent.postMessage({ answer: url }, "*");
       }
       function handleKey(e, el) {

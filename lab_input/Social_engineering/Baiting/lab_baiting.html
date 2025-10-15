@@ -85,11 +85,32 @@
     <h2>🎁 ดาวน์โหลดฟรี! โปรแกรมมูลค่า 5,000 บาท</h2>
     <p>ข้อเสนอพิเศษสำหรับคุณเท่านั้น<br>⏰ รีบด่วน ก่อนหมดเวลา!</p>
     <button class="download-btn" onclick="recordAction('คลิกดาวน์โหลดไฟล์ที่ไม่น่าเชื่อถือ')">Download Now</button><br>
+    <div id="responseBox"></div>
   </div>
 </div>
 
 <script>
 function recordAction(action) {
+  const responseBox = document.getElementById('responseBox');
+  let message = '';
+  let messageColor = 'black';
+
+  switch (action) {
+    case 'ปิดป็อปอัพ':
+      message = 'การกระทำนี้ปลอดภัย เป็นวิธีที่ดีในการจัดการกับป็อปอัพที่ไม่น่าเชื่อถือ';
+      messageColor = 'green';
+      break;
+    case 'คลิกดาวน์โหลดไฟล์ที่ไม่น่าเชื่อถือ':
+      message = 'การกระทำนี้อันตรายมาก! การดาวน์โหลดไฟล์จากแหล่งที่ไม่น่าเชื่อถืออาจทำให้คอมพิวเตอร์ของคุณติดไวรัส';
+      messageColor = 'red';
+      break;
+    default:
+      message = `<em>Action recorded: ${action}</em>`;
+  }
+
+  responseBox.innerHTML = message;
+  responseBox.style.color = messageColor;
+
   window.parent.postMessage({ answer: action }, "*");
 }
 </script>

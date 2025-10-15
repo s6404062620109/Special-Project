@@ -15,6 +15,12 @@
     .attachment { border: 1px solid #ccc; padding: 10px; margin-top: 15px; background: #f8f9fa; border-radius: 4px; cursor: pointer; }
     .attachment:hover { background: #e0e0e0; }
     #response { margin: 15px; font-weight: bold; color: #0d47a1; }
+    #responseBox {
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -40,11 +46,37 @@
         📎 <b>Invoice_Aug2025.docm</b> (Microsoft Word Macro-Enabled Document)  
         <br><i>⚠ คำเตือน: ไฟล์นี้อาจมีมาโครที่เป็นอันตราย</i>
       </div>
+      <div id="responseBox"></div>
     </div>
   </div>
 
   <script>
     function recordAction(action) {
+      const responseBox = document.getElementById('responseBox');
+      let message = '';
+      let messageColor = 'black';
+
+      switch (action) {
+        case 'เปิดไฟล์แนบ Invoice_Aug2025.docm':
+          message = 'การกระทำนี้อันตรายที่สุด! ไฟล์แนบที่มีมาโคร (.docm) มักเป็นช่องทางในการติดตั้ง Ransomware ซึ่งจะเข้ารหัสไฟล์ทั้งหมดของคุณและเรียกค่าไถ่';
+          messageColor = 'red';
+          break;
+        case 'รายงานอีเมลนี้':
+          message = 'การกระทำนี้ถูกต้องและปลอดภัยที่สุด! การรายงานอีเมลที่น่าสงสัยจะช่วยป้องกันไม่ให้ผู้อื่นตกเป็นเหยื่อ';
+          messageColor = 'green';
+          break;
+        case 'ลบอีเมลนี้ทันที':
+          message = 'การกระทำนี้ปลอดภัย แต่ไม่ได้ช่วยรายงานเพื่อป้องกันผู้อื่นจากอีเมลอันตรายนี้';
+          messageColor = 'blue';
+          break;
+        case 'ส่งต่อให้คนอื่น':
+          message = 'การกระทำนี้อันตรายมาก! การส่งต่ออีเมลนี้อาจทำให้เพื่อนหรือเพื่อนร่วมงานของคุณตกเป็นเหยื่อและติด Ransomware ได้';
+          messageColor = 'red';
+          break;
+      }
+
+      responseBox.innerHTML = message;
+      responseBox.style.color = messageColor;
       window.parent.postMessage({ answer: action }, "*");
     }
   </script>
