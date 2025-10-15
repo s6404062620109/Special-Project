@@ -45,7 +45,10 @@ function ManageUser() {
   const [message, setMessage] = useState({ text: "", status: "" });
   const [newUser, setNewUser] = useState({
     name: "",
+    surname: "",
+    sex: "n",
     email: "",
+    password: "",
     role: "s",
   });
   const [selectedUser, setSelectedUser] = useState({
@@ -129,6 +132,16 @@ function ManageUser() {
       return;
     }
 
+    if (!newUser.name.trim() || !newUser.surname.trim() || !newUser.email.trim() || !newUser.password.trim()) {
+      const errorMessage = "กรุณากรอกข้อมูลให้ครบทุกช่อง";
+      setMessage({
+        text: errorMessage,
+        status: "error",
+      });
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+      return;
+    }
+
     try {
       const response = await backend.post(`/admin/addUser`, newUser, {
         withCredentials: true,
@@ -136,7 +149,14 @@ function ManageUser() {
       if (response.status === 201) {
         setMessage({ text: response.data.message, status: "success" });
         setSnackbar({ open: true, message: response.data.message, severity: "success" });
-        setNewUser({ name: "", email: "", role: "s" });
+        setNewUser({
+          name: "",
+          surname: "",
+          sex: "n",
+          email: "",
+          password: "",
+          role: "s",
+        });
         fetchUserData();
         setShowPopup(false);
       }
@@ -145,6 +165,11 @@ function ManageUser() {
       setMessage({
         text: error.response?.data?.message || "Error",
         status: "error",
+      });
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "เกิดข้อผิดพลาดในการเพิ่มผู้ใช้",
+        severity: "error",
       });
     }
   };
@@ -192,6 +217,8 @@ function ManageUser() {
     setSelectedUser({
       id: user.id,
       name: user.name,
+      surname: user.surname, 
+      sex: user.sex,
       email: user.email,
       profile_img: user.profile_img,
       role: user.role,
@@ -307,6 +334,28 @@ function ManageUser() {
                     </TableSortLabel>
                   </TableCell>
                   <TableCell
+                    sortDirection={orderBy === "surname" ? order : false}
+                  >
+                    <TableSortLabel
+                      active={orderBy === "surname"}
+                      direction={orderBy === "surname" ? order : "asc"}
+                      onClick={() => handleRequestSort("surname")}
+                    >
+                      นามสกุล
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell
+                    sortDirection={orderBy === "sex" ? order : false}
+                  >
+                    <TableSortLabel
+                      active={orderBy === "sex"}
+                      direction={orderBy === "sex" ? order : "asc"}
+                      onClick={() => handleRequestSort("sex")}
+                    >
+                      เพศ
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell
                     sortDirection={orderBy === "email" ? order : false}
                   >
                     <TableSortLabel
@@ -344,6 +393,12 @@ function ManageUser() {
                   (user) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.surname}</TableCell>
+                      <TableCell>
+                        {user.sex === "m" && "ชาย"}
+                        {user.sex === "f" && "หญิง"}
+                        {user.sex === "n" && "ไม่ระบุ"}
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         {user.role === "s" && "นักเรียน"}
@@ -417,7 +472,7 @@ function ManageUser() {
                             variant="contained"
                             color="error"
                             size="small"
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteClick(user.id)}
                             sx={{ marginLeft: 0 }}
                             startIcon={
                               <DeleteIcon />
@@ -453,7 +508,14 @@ function ManageUser() {
       <AddUser
         open={showPopup}
         onClose={() => {
-          setNewUser({ name: "", email: "", role: "s" })
+          setNewUser({
+            name: "",
+            surname: "",
+            sex: "n",
+            email: "",
+            password: "",
+            role: "s",
+          });
           setShowPopup(false)
         }}
         newUser={newUser}

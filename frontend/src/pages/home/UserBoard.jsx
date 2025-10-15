@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import style from './css/userboard.module.css';
 
-function UserBoard({ email, sex, name , role, profile_img }) {
+function UserBoard({ email, sex, name, surname, role, profile_img }) {
     const [ profileImg, setProfileImg ] = useState('');
 
     useEffect(() => {
@@ -27,11 +27,23 @@ function UserBoard({ email, sex, name , role, profile_img }) {
             <div className={style["information-list"]}>
                 <div className={style["information-item"]}>
                     <p>
+                        เพศ:
+                    </p>
+
+                    <label>
+                        {sex === "m" && "ชาย"}
+                        {sex === "f" && "หญิง"}
+                        {sex === "n" && "ไม่ระบุ"}
+                    </label>
+                </div>
+
+                <div className={style["information-item"]}>
+                    <p>
                         ชื่อ-สกุล:
                     </p>
 
                     <label>
-                        {name}
+                        {name}-{surname}
                     </label>
                 </div>
 

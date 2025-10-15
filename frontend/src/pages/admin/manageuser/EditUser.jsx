@@ -77,6 +77,15 @@ function EditUser({
           }
         />
         <TextField
+          label="นามสกุล"
+          fullWidth
+          margin="dense"
+          value={selectedUser.surname}
+          onChange={(e) =>
+            setSelectedUser({ ...selectedUser, surname: e.target.value })
+          }
+        />
+        <TextField
           label="อีเมล"
           type="email"
           fullWidth
@@ -86,6 +95,21 @@ function EditUser({
             setSelectedUser({ ...selectedUser, email: e.target.value })
           }
         />
+
+        <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>เพศ</Typography>
+        <Select
+          fullWidth
+          margin="dense"
+          value={selectedUser.sex}
+          onChange={(e) =>
+            setSelectedUser({ ...selectedUser, sex: e.target.value })
+          }
+        >
+          <MenuItem value="m">ชาย</MenuItem>
+          <MenuItem value="f">หญิง</MenuItem>
+          <MenuItem value="n">ไม่ระบุ</MenuItem>
+        </Select>
+        
         <Typography variant="body2" sx={{ color: "text.secondary" }}>ตำแหน่ง</Typography>
         <Select
           fullWidth
@@ -99,18 +123,14 @@ function EditUser({
           <MenuItem value="t">อาจารย์</MenuItem>
           <MenuItem value="a">ผู้ดูแลระบบ</MenuItem>
         </Select>
-        {message.text && (
-          <p style={{ color: message.status === "success" ? "green" : "red" }}>
-            {message.text}
-          </p>
-        )}
+
       </DialogContent>
       <DialogActions>
         <Button onClick={onSubmit} variant="contained">
-          Save
+          ยืนยัน
         </Button>
         <Button onClick={onClose} color="error">
-          Cancel
+          ยกเลิก
         </Button>
       </DialogActions>
     </Dialog>

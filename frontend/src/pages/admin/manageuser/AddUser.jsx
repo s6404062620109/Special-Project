@@ -21,14 +21,7 @@ function AddUser({
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle>เพิ่มนักเรียนใหม่</DialogTitle>
-      <DialogContent>
-        <TextField
-          label="ซื่อ"
-          fullWidth
-          margin="dense"
-          value={newUser.name}
-          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-        />
+      <DialogContent>     
         <TextField
           label="อีเมล"
           type="email"
@@ -37,6 +30,47 @@ function AddUser({
           value={newUser.email}
           onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
         />
+
+        <TextField
+          label="รหัสผ่าน"
+          type="password"
+          fullWidth
+          margin="dense"
+          value={newUser.password}
+          onChange={(e) =>
+            setNewUser({ ...newUser, password: e.target.value })
+          }
+        />
+
+        <TextField
+          label="ชื่อ"
+          fullWidth
+          margin="dense"
+          value={newUser.name}
+          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+        />
+        <TextField
+          label="นามสกุล"
+          fullWidth
+          margin="dense"
+          value={newUser.surname}
+          onChange={(e) => setNewUser({ ...newUser, surname: e.target.value })}
+        />
+        <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
+          เพศ
+        </Typography>
+        <Select
+          fullWidth
+          margin="dense"
+          value={newUser.sex}
+          onChange={(e) => setNewUser({ ...newUser, sex: e.target.value })}
+        >
+          <MenuItem value="m">ชาย</MenuItem>
+          <MenuItem value="f">หญิง</MenuItem>
+          <MenuItem value="n">ไม่ระบุ</MenuItem>
+        </Select>
+
+
         <Typography variant="body2" sx={{ color: "text.secondary" }}>ตำแหน่ง</Typography>
         <Select
           fullWidth
@@ -48,11 +82,7 @@ function AddUser({
           <MenuItem value="t">อาจารย์</MenuItem>
           <MenuItem value="a">ผู้ดูแลระบบ</MenuItem>
         </Select>
-        {message.text && (
-          <p style={{ color: message.status === "success" ? "green" : "red" }}>
-            {message.text}
-          </p>
-        )}
+
       </DialogContent>
       <DialogActions>
         <Button onClick={onSubmit} variant="contained">

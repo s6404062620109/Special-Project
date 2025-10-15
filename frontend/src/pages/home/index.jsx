@@ -89,7 +89,9 @@ function Home() {
           <div className={style["container-wrap"]}>
             <UserBoard
               email={userData.email}
+              sex={userData.sex}
               name={userData.name}
+              surname={userData.surname}
               role={userData.role}
               profile_img={userData.profile_img}
             />
