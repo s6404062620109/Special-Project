@@ -48,8 +48,8 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
         if (count_questions < 5) {
             errors.push("ต้องมีข้อสอบในคลังอย่างน้อย 5 ข้อ");
         }
-        if (count_labs < 5) {
-            errors.push("ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 5 ข้อ");
+        if (count_labs < 1) {
+            errors.push("ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 1 ข้อ");
         }
         if (courseData.pretest_rate < 1) {
             errors.push("ต้องกำหนดจำนวนข้อสอบก่อนเรียนอย่างน้อย 1 ข้อ");
@@ -137,7 +137,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
     const isCourseValidForEnable = validationErrors.length === 0;
     
     // เงื่อนไขหลักในการเปิดใช้งานฟอร์มตั้งค่า
-    const isReadyForSettings = subject.length >= 1 && count_questions >= 5 && count_labs >= 5;
+    const isReadyForSettings = subject.length >= 1 && count_questions >= 5 && count_labs >= 1;
 
     return (
         <div className={style.popupOverlay}>
@@ -161,7 +161,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                             <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
                                 {subject.length < 1 && <li><Typography variant="caption" color="warning.dark">ต้องมีบทเรียนอย่างน้อย 1 บทเรียน</Typography></li>}
                                 {count_questions < 5 && <li><Typography variant="caption" color="warning.dark">ต้องมีข้อสอบในคลังอย่างน้อย 5 ข้อ</Typography></li>}
-                                {count_labs < 5 && <li><Typography variant="caption" color="warning.dark">ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 5 ข้อ</Typography></li>}
+                                {count_labs < 1 && <li><Typography variant="caption" color="warning.dark">ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 1 ข้อ</Typography></li>}
                             </ul>
                         </Stack>
                     )}
