@@ -26,7 +26,7 @@ function SetPassword() {
 
     useEffect(() => {
       if(!token){
-        navigate('/');
+        window.location.href = "/";
       }
     },[token]);
 
