@@ -9,7 +9,7 @@ router.use('/courses', express.static(path.join(__dirname, '../courses')));
 
 router.get("/getAllSubject/:courseId", authUserRole.checkCourseCreation, subjectController.getAll);
 
-router.get("/getAllSubjectStudent/:courseId", authUserRole.checkStudentRole, subjectController.getAllSubjectStudent);
+router.get("/getAllSubjectStudent/:courseId", subjectController.getAllSubjectStudent);
 
 router.get("/getSubject/:courseId/:subjectId", authUserRole.verifiedStudentEnrollCourse, subjectController.getSubject);
 
