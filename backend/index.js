@@ -7,33 +7,32 @@ require('dotenv').config();
 const app = express();
 app.use(cookieParser());
 
-// const allowedOrigins = [
-//   `http://${process.env.DEPLOY_URL}:${process.env.FRONTEND_PORT}`,
-//   `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}`,
-//   `http://localhost:8081`,
-// ];
-
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   methods: ["GET", "POST", "PUT", "DELETE"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true,
-// }));
+const allowedOrigins = [,
+  `http://${process.env.DEV_URL}:${process.env.FRONTEND_PORT}`,
+  `http://localhost:8081`,
+];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, true); 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  credentials: true,
 }));
+
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     callback(null, true); 
+//   },
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   credentials: true
+// }));
 
 app.use(express.json({ limit: '100mb' })); // For parsing application/json
 app.use(express.urlencoded({ limit: '100mb', extended: true })); // For parsing application/x-www-form-urlencoded
