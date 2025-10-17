@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Typography } from "@mui/material";
+import { Typography, Snackbar, Alert } from "@mui/material";
 
 import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
@@ -9,12 +9,20 @@ function Profile() {
   const { userData, setUserData } = useContext(AuthContext);
   const [ editMode, setEditMode ] = useState(false);
   const [ tempUserData, setTempUserData ] = useState({ ...userData });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const toggleEditMode = () => {
     setEditMode(!editMode);
     if (!editMode) {
       setTempUserData({ ...userData });
     }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleInputChange = (e) => {
@@ -34,11 +42,11 @@ function Profile() {
       if (response.status === 200) {
         setUserData({ ...tempUserData });
         setEditMode(false);
-        alert("Profile updated successfully!");
+        setSnackbar({ open: true, message: "อัปเดตโปรไฟล์สำเร็จ!", severity: 'success' });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+      setSnackbar({ open: true, message: "ไม่สามารถอัปเดตโปรไฟล์ได้", severity: 'error' });
     }
   };
 
@@ -48,11 +56,11 @@ function Profile() {
         email: userData.email,
       });
       if (response.status === 200) {
-        alert("Password reset link sent to your email.");
+        setSnackbar({ open: true, message: "ลิงก์สำหรับรีเซ็ตรหัสผ่านถูกส่งไปยังอีเมลของคุณแล้ว", severity: 'success' });
       }
     } catch (error) {
       console.error("Error sending reset email:", error);
-      alert("Failed to send reset email.");
+      setSnackbar({ open: true, message: "ไม่สามารถส่งอีเมลสำหรับรีเซ็ตรหัสผ่านได้", severity: 'error' });
     }
   };
 
@@ -61,7 +69,7 @@ function Profile() {
     if (!file) return;
 
     if (file.size > 16 * 1024 * 1024) {
-      alert("File size must be less than 16MB.");
+      setSnackbar({ open: true, message: "ขนาดไฟล์ต้องไม่เกิน 16MB", severity: 'warning' });
       return;
     }
 
@@ -84,7 +92,7 @@ function Profile() {
 
       if(response.status === 200){
         localStorage.removeItem('email');
-        alert(response.data.message);
+        setSnackbar({ open: true, message: response.data.message, severity: 'success' });
         window.location.href = '/';
       } 
     } catch (error) {
@@ -171,6 +179,16 @@ function Profile() {
           )}
         </div>
       </div>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

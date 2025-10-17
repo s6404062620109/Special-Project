@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IconButton, InputAdornment, TextField } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -23,6 +23,12 @@ function SetPassword() {
       password: false,
       cpassword: false
     });
+
+    useEffect(() => {
+      if(!token){
+        navigate('/');
+      }
+    },[token]);
 
     const handleSubmit = async (e) =>{
       e.preventDefault();
