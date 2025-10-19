@@ -11,7 +11,9 @@ import {
   List, 
   ListItem, 
   ListItemText,
-  useMediaQuery
+  useMediaQuery,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { ExpandMore, Delete } from '@mui/icons-material';
 import backend from '../../api/backend';
@@ -28,6 +30,7 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
   const [ files, setFiles ] = useState([]);
   const [existingFiles, setExistingFiles] = useState([]);
   const [ deleteGuides, setDeleteGuides ] = useState("");
+  const [alertInfo, setAlertInfo] = useState({ open: false, message: "", severity: "info" });
 
   const tabletMedia = useMediaQuery('(max-width: 768px)');
 
@@ -55,24 +58,24 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
 
     if (title === "คู่มือการใช้งานสำหรับอาจารย์") {
       if (currentFiles.length >= 2) {
-        alert("สามารถรับไฟล์ได้ไม่เกิน 2 ไฟล์ (PDF + HTML เท่านั้น)");
+        setAlertInfo({ open: true, message: "สามารถรับไฟล์ได้ไม่เกิน 2 ไฟล์ (PDF + HTML เท่านั้น)", severity: "warning" });
         return false;
       }
 
       const typesInFiles = currentFiles.map(f => f.type);
 
       if (file.type === "application/pdf" && typesInFiles.includes("application/pdf")) {
-        alert("มีไฟล์ PDF อยู่แล้ว ต้องอัพโหลดเป็น HTML เท่านั้น");
+        setAlertInfo({ open: true, message: "มีไฟล์ PDF อยู่แล้ว ต้องอัพโหลดเป็น HTML เท่านั้น", severity: "warning" });
         return false;
       }
 
       if (file.type === "text/html" && typesInFiles.includes("text/html")) {
-        alert("มีไฟล์ HTML อยู่แล้ว ต้องอัพโหลดเป็น PDF เท่านั้น");
+        setAlertInfo({ open: true, message: "มีไฟล์ HTML อยู่แล้ว ต้องอัพโหลดเป็น PDF เท่านั้น", severity: "warning" });
         return false;
       }
 
       if (file.type !== "application/pdf" && file.type !== "text/html") {
-        alert("ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF หรือ HTML เท่านั้น");
+        setAlertInfo({ open: true, message: "ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF หรือ HTML เท่านั้น", severity: "error" });
         return false;
       }
     }
@@ -80,12 +83,12 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
     if (title === "คู่มือการใช้งานสำหรับนักเรียน") {
       const hasPDF = currentFiles.some(f => f.type === "application/pdf");
       if (hasPDF && file.type === "application/pdf") {
-        alert("มีไฟล์ PDF สำหรับนักเรียนอยู่แล้ว");
+        setAlertInfo({ open: true, message: "มีไฟล์ PDF สำหรับนักเรียนอยู่แล้ว", severity: "warning" });
         return false;
       }
 
       if (file.type !== "application/pdf") {
-        alert("ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF เท่านั้น");
+        setAlertInfo({ open: true, message: "ไฟล์ไม่ถูกต้อง กรุณาอัพโหลด PDF เท่านั้น", severity: "error" });
         return false;
       }
     }
@@ -153,7 +156,7 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
       });
 
       if (response.status === 200) {
-        alert(response.data.message);
+        setAlertInfo({ open: true, message: response.data.message, severity: "success" });
         setTimeout(() => window.location.reload(), 2000);
       }
     } catch (error) {
@@ -212,6 +215,11 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
 
   return (
     <Card style={cardStyle}>
+      <Snackbar open={alertInfo.open} autoHideDuration={6000} onClose={() => setAlertInfo({ ...alertInfo, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert onClose={() => setAlertInfo({ ...alertInfo, open: false })} severity={alertInfo.severity} sx={{ width: '100%' }}>
+          {alertInfo.message}
+        </Alert>
+      </Snackbar>
       <CardActions
         onClick={handleExpandClick}
         sx={{
