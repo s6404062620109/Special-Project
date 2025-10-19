@@ -18,6 +18,7 @@ import {
   TableRow,
   Tabs,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import SchoolIcon from '@mui/icons-material/School';
 import CheckIcon from "@mui/icons-material/Check";
@@ -55,6 +56,7 @@ const renderTestSection = (
     labProgress.length > 0 &&
     labProgress.every((item) => item.is_completed === 1);
   const labScore = labProgress.reduce((acc, item) => acc + item.score, 0);
+
 
   if (!pretestProgressCompleted && !posttestProgressCompleted && !labProgressCompleted) {
     return (
@@ -545,6 +547,8 @@ function CourseDetail() {
     });
   }, [questionList.labList, labProgress, labAnswers]);
 
+  const tabletQuery = useMediaQuery("(max-width:720px)")
+
   return (
     <div className={style.container}>
       <div className={style.head}>
@@ -863,9 +867,12 @@ function CourseDetail() {
                 <th>
                   <p>บทเรียน</p>
                 </th>
-                <th>
-                  <p>สถานะการทำปฎิบัติการทดสอบ</p>
-                </th>
+                {userData.id && (
+                  <th>
+                    <p>{tabletQuery ? "ปฎิบัติการทดสอบ" : "สถานะการทำปฎิบัติการทดสอบ"}</p>
+                  </th>
+                )}
+                
               </tr>
             </thead>
 
