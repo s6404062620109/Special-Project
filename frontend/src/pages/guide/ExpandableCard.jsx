@@ -216,7 +216,7 @@ function ExpandableCard({ title, handlePreview, guideData = null }) {
   return (
     <Card style={cardStyle}>
       <Snackbar open={alertInfo.open} autoHideDuration={6000} onClose={() => setAlertInfo({ ...alertInfo, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert onClose={() => setAlertInfo({ ...alertInfo, open: false })} severity={alertInfo.severity} sx={{ width: '100%' }}>
+        <Alert variant="filled" onClose={() => setAlertInfo({ ...alertInfo, open: false })} severity={alertInfo.severity} sx={{ width: '100%' }}>
           {alertInfo.message}
         </Alert>
       </Snackbar>
