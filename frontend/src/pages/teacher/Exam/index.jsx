@@ -6,7 +6,20 @@ import { AddExam } from "./contents/AddExam";
 import { EditExam } from "./contents/EditExam";
 import { DeleteExam } from "./contents/DeleteExam";
 
-import { Button, IconButton, Slide, Snackbar, useMediaQuery } from "@mui/material";
+import {
+  Button,
+  IconButton,
+  Slide,
+  Snackbar,
+  useMediaQuery,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  CircularProgress,
+  Box,
+} from "@mui/material";
 import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import backend from "../../../api/backend";
 import Preview from "../Subject/Preview";
@@ -212,6 +225,7 @@ function Exam() {
     open: false,
     Transition: null,
   });
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const {
     questions,
@@ -308,7 +322,7 @@ function Exam() {
     }
   }
 
-  const handleSubmit = async () => {
+  const handleOpenConfirmDialog = () => {
     const { isValid, validMessage } = validation();
     if (mode !== "delete"){
       if (!isValid) {
@@ -321,7 +335,11 @@ function Exam() {
         return;
       }
     }
-    
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setConfirmDialogOpen(false);
     if (mode === "add") {
       handleSubmitAdd();
     } 
@@ -331,6 +349,10 @@ function Exam() {
     else if (mode === "delete") {
       handleSubmitDelete();
     }
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setConfirmDialogOpen(false);
   };
 
   const tabletQuery = useMediaQuery("(max-width:720px)");
@@ -405,7 +427,7 @@ function Exam() {
                 handleDeleteChoice={handleDeleteChoice}
                 handleAddImg={handleAddImg}
                 handleDeleteImg={handleDeleteImg}
-                handleSubmit={handleSubmit}
+                handleSubmit={handleSubmitAdd}
               />
             )}
 
@@ -420,7 +442,7 @@ function Exam() {
                 handleDeleteChoice={handleDeleteChoice}
                 handleAddImg={handleAddImg}
                 handleDeleteImg={handleDeleteImg}
-                handleSubmit={handleSubmit}
+                handleSubmit={handleOpenConfirmDialog}
               />
             )}
 
@@ -433,7 +455,7 @@ function Exam() {
                 handleAddChoice={handleAddChoice}
                 handleDeleteQuestion={handleDeleteQuestion}
                 handleDeleteChoice={handleDeleteChoice}
-                handleSubmit={handleSubmit}
+                handleSubmit={handleOpenConfirmDialog}
               />
             )}
           </>
@@ -467,6 +489,28 @@ function Exam() {
           mode={mode}
         />
       )}
+
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={handleCloseConfirmDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {`ยืนยันการ${mode === "edit" ? "แก้ไข" : "ลบ"}คำถาม`}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`คุณแน่ใจหรือไม่ว่าต้องการ${mode === "edit" ? "แก้ไข" : "ลบ"}คำถามเหล่านี้?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>ยกเลิก</Button>
+          <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
