@@ -36,6 +36,26 @@ function Register() {
   const handleSubmit = async (e) =>{
     e.preventDefault();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      setStatusMessage('รูปแบบอีเมลไม่ถูกต้อง ตัวอย่าง example@email.com');
+      return;
+    }
+
+    const nameRegex = /^[a-zA-Zก-๏\s]+$/;
+    if (!nameRegex.test(data.name) || !nameRegex.test(data.surname)) {
+      setStatusMessage('ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น');
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(data.password)) {
+      setStatusMessage(
+        'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษรประกอบด้วย \nตัวพิมพ์ใหญ่, ตัวพิมพ์เล็ก, ตัวเลข และอักขระพิเศษ(@, $, !, %, *, ?, &)'
+      );
+      return;
+    }
+
     if(data.password !== data.confirm_password){
       setStatusMessage('รหัสผ่านไม่ตรงกัน');
       return;
@@ -83,7 +103,7 @@ function Register() {
                   sx: { color: 'white' }
                 }
               }}
-              type='text'
+              type='email'
               value={data.email}
               onChange={(e) => setData({ ...data, email:e.target.value })}
               required
