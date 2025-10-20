@@ -142,6 +142,33 @@ function ManageUser() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newUser.email)) {
+      const errorMessage = "รูปแบบอีเมลไม่ถูกต้อง ตัวอย่าง example@email.com";
+      setMessage({ text: errorMessage, status: "error" });
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+      return;
+    }
+
+    const nameRegex = /^[a-zA-Zก-๏\s]+$/;
+    if (!nameRegex.test(newUser.name) || !nameRegex.test(newUser.surname)) {
+      const errorMessage = "ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น";
+      setMessage({ text: errorMessage, status: "error" });
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newUser.password)) {
+      const errorMessage = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษรประกอบด้วย ตัวพิมพ์ใหญ่, ตัวพิมพ์เล็ก, ตัวเลข และอักขระพิเศษ(@, $, !, %, *, ?, &)";
+      setMessage({
+        text: errorMessage,
+        status: "error",
+      });
+      setSnackbar({ open: true, message: errorMessage, severity: "error" });
+      return;
+    }
+
     try {
       const response = await backend.post(`/admin/addUser`, newUser, {
         withCredentials: true,
@@ -240,6 +267,22 @@ function ManageUser() {
 
   const handleUpdateUser = async () => {
     try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(selectedUser.email)) {
+        const errorMessage = "รูปแบบอีเมลไม่ถูกต้อง ตัวอย่าง example@email.com";
+        setMessage({ text: errorMessage, status: "error" });
+        setSnackbar({ open: true, message: errorMessage, severity: "error" });
+        return;
+      }
+
+      const nameRegex = /^[a-zA-Zก-๏\s]+$/;
+      if (!nameRegex.test(selectedUser.name) || !nameRegex.test(selectedUser.surname)) {
+        const errorMessage = "ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น";
+        setMessage({ text: errorMessage, status: "error" });
+        setSnackbar({ open: true, message: errorMessage, severity: "error" });
+        return;
+      }
+
       const updatedUser = {
         ...selectedUser,
         profile_img: selectedImage || currentProfileImg,
