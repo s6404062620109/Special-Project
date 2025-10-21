@@ -748,6 +748,28 @@ function CourseDetail() {
                 </Typography>
               )}
             </>
+            {userData.id && (history.length === 0 || (history.length > 0 && history[0].posttest_complete === 0)) && (
+              <Paper
+                elevation={2}
+                sx={{
+                  width: "100%",
+                  border: "1px solid",
+                  borderColor: "info.main",
+                }}
+              >
+                <Typography variant="h6" align="center" color="info.main" gutterBottom>
+                  เกณฑ์การผ่านคอร์สเรียน
+                </Typography>
+                <List dense>
+                  <ListItem>
+                    <ListItemText primary="1. คะแนนแบบทดสอบหลังเรียนต้องไม่น้อยกว่าคะแนนแบบทดสอบก่อนเรียน" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText primary="2. คะแนนปฏิบัติการ (Lab) ต้องไม่ต่ำกว่า 60%" />
+                  </ListItem>
+                </List>
+              </Paper>
+            )}
             
             {history.length > 0 && (
               <Stack
