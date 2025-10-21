@@ -722,10 +722,10 @@ function CourseDetail() {
                       คุณไม่ผ่านเกณฑ์ของคอร์สนี้
                     </Typography>
                     <List dense>
-                      {postTestScore <= preTestScore && (
+                      {postTestScore < preTestScore && (
                         <ListItem>
                           <ListItemIcon><ClearIcon color="error" /></ListItemIcon>
-                          <ListItemText primary="คะแนนแบบทดสอบหลังเรียนน้อยกว่าหรือเท่ากับคะแนนก่อนเรียน" />
+                          <ListItemText primary="คะแนนแบบทดสอบหลังเรียนน้อยกว่าคะแนนแบบทดสอบก่อนเรียน" />
                         </ListItem>
                       )}
                       {labProgress.length > 0 && (labScore / labProgress.length) * 100 < 60 && (
