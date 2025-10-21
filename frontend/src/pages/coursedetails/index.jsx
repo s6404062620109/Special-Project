@@ -7,6 +7,10 @@ import {
   Avatar,
   Button,
   IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Paper,
   Stack,
   Tab,
@@ -38,6 +42,7 @@ const renderTestSection = (
     labProgress,
     preTestScore,
     postTestScore,
+    labScore,
   }
 ) => {
   if (announcement === 0) {
@@ -55,8 +60,6 @@ const renderTestSection = (
   const labProgressCompleted =
     labProgress.length > 0 &&
     labProgress.every((item) => item.is_completed === 1);
-  const labScore = labProgress.reduce((acc, item) => acc + item.score, 0);
-
 
   if (!pretestProgressCompleted && !posttestProgressCompleted && !labProgressCompleted) {
     return (
@@ -448,6 +451,9 @@ function CourseDetail() {
   const isLabCompleted =
     labProgress.length > 0 &&
     labProgress.every((item) => item.is_completed === 1);
+  
+  const labScore = labProgress.reduce((acc, item) => acc + item.score, 0);
+
 
   const mergedPretestData = React.useMemo(() => {
     if (
@@ -696,12 +702,40 @@ function CourseDetail() {
           >
             <>
               {userData.id &&
-              enrollmentId !== "null" && history.length > 0 &&
-              history[0].posttest_complete === -1 &&  (
-                <Typography variant="subtitle1" align="center" color="red">
-                  คุณไม่ผ่านการเรียนรู้ของคอร์ส
-                  <ClearIcon color="error" sx={{ ml: 1, mb: -0.5 }} />
-                </Typography>
+                enrollmentId !== "null" &&
+                history.length > 0 &&
+                history[0].posttest_complete === -1 && (
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      width: "100%",
+                      border: "1px solid",
+                      borderColor: "error.main",
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      align="center"
+                      color="error.main"
+                      gutterBottom
+                    >
+                      คุณไม่ผ่านเกณฑ์ของคอร์สนี้
+                    </Typography>
+                    <List dense>
+                      {postTestScore <= preTestScore && (
+                        <ListItem>
+                          <ListItemIcon><ClearIcon color="error" /></ListItemIcon>
+                          <ListItemText primary="คะแนนแบบทดสอบหลังเรียนน้อยกว่าหรือเท่ากับคะแนนก่อนเรียน" />
+                        </ListItem>
+                      )}
+                      {labProgress.length > 0 && (labScore / labProgress.length) * 100 < 60 && (
+                        <ListItem>
+                          <ListItemIcon><ClearIcon color="error" /></ListItemIcon>
+                          <ListItemText primary="คะแนนปฏิบัติการ (Lab) ไม่ถึง 60%" />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Paper>
               )}
 
               {userData.id &&
@@ -942,6 +976,7 @@ function CourseDetail() {
                 preTestScore,
                 postTestScore,
                 labProgress,
+                labScore,
               })}
             </div>
           )}
