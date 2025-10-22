@@ -353,6 +353,7 @@ function EditCourse() {
               คะแนนแบบทดสอบก่อนเรียน / หลังเรียน
             </Typography>
             <LineChart
+              height={isXs ? 300 : isSm ? 400 : 600}
               xAxis={[
                 { data: lineChartData.map((d) => d.x), scaleType: "band" },
               ]}
