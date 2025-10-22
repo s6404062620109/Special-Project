@@ -15,14 +15,14 @@ const register = (req, res) => {
   const isTeacherRequest = teacher_request || false;
 
   try {
-    db.query("SELECT * FROM user WHERE email = ?", [email], async (err, results) => {
+    db.query("SELECT * FROM user WHERE email = ? AND name = ?", [email, name], async (err, results) => {
       if (err) {
         console.log(err);
         return res.status(500).json({ message: "Database user query error." });
       }
 
       if (results.length > 0) {
-        return res.status(400).json({ message: "มีอีเมลนี้ในระบบแล้ว กรุณาใช้อีเมลอื่น." });
+        return res.status(400).json({ message: "มีอีเมลหรือชื่อผู้ใช้นี้อยู่แล้วในระบบ." });
       }
 
       const saltRounds = 10;

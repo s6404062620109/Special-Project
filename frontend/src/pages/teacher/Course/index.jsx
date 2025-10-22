@@ -163,20 +163,26 @@ function EditCourse() {
   const isSm = useMediaQuery("(max-width:900px)");
 
   const lineChartData = chartData?.users?.map((u, index) => {
-      const usersWithSameName = chartData.users.filter(user => user.name === u.name);
-      const duplicateCount = usersWithSameName.length;
+      const firstName = u.name.split(' ')[0];
 
-      let nameWithId = u.name;
+      // ตรวจสอบว่ามีชื่อจริง (firstName) ซ้ำกันในกลุ่มข้อมูลทั้งหมดหรือไม่
+      const usersWithSameFirstName = chartData.users.filter(user => user.name.split(' ')[0] === firstName);
+      const duplicateCount = usersWithSameFirstName.length;
+
+      let xAxisLabel = firstName;
+      let tooltipFullName = u.name;
+
       if (duplicateCount > 1) {
+        // หากมีชื่อซ้ำ ให้หาว่าเป็นชื่อที่ซ้ำกันลำดับที่เท่าไหร่
         const occurrenceIndex = chartData.users
           .slice(0, index + 1)
-          .filter(user => user.name === u.name).length;
-        nameWithId = `${u.name}-ครั้งที่ ${occurrenceIndex}`;
+          .filter(user => user.name.split(' ')[0] === firstName).length;
+        xAxisLabel = `${firstName}-${occurrenceIndex}`;
       }
 
       return {
         userId: u.userId,
-        x: nameWithId,
+        x: xAxisLabel,
         email: u.email,
         pretest: u.pretestScore,
         posttest: u.posttestScore,
@@ -367,11 +373,13 @@ function EditCourse() {
                   yAxisId: "linear",
                   data: lineChartData.map((d) => d.pretest),
                   label: "แบบทดสอบก่อนเรียน",
+                  valueFormatter: (value) => `${value}`,
                 },
                 {
                   yAxisId: "linear",
                   data: lineChartData.map((d) => d.posttest),
                   label: "แบบทดสอบหลังเรียน",
+                  valueFormatter: (value) => `${value}`,
                 },
               ]}
             />
