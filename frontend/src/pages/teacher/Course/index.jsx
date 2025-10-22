@@ -170,7 +170,6 @@ function EditCourse() {
       const duplicateCount = usersWithSameFirstName.length;
 
       let xAxisLabel = firstName;
-      let tooltipFullName = u.name;
 
       if (duplicateCount > 1) {
         // หากมีชื่อซ้ำ ให้หาว่าเป็นชื่อที่ซ้ำกันลำดับที่เท่าไหร่
@@ -354,8 +353,6 @@ function EditCourse() {
               คะแนนแบบทดสอบก่อนเรียน / หลังเรียน
             </Typography>
             <LineChart
-              width={isXs ? 300 : isSm ? 600 : 800}
-              height={isXs ? 300 : isSm ? 400 : 600}
               xAxis={[
                 { data: lineChartData.map((d) => d.x), scaleType: "band" },
               ]}
