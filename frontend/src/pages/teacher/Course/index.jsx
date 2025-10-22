@@ -163,10 +163,16 @@ function EditCourse() {
   const isSm = useMediaQuery("(max-width:900px)");
 
   const lineChartData = chartData?.users?.map((u, index) => {
-      const duplicateCount = chartData.users.filter(
-        (user) => user.name === u.name
-      ).length;
-      const nameWithId = duplicateCount > 1 ? `${u.name}-ครั้งที่ ${index+1}` : u.name;
+      const usersWithSameName = chartData.users.filter(user => user.name === u.name);
+      const duplicateCount = usersWithSameName.length;
+
+      let nameWithId = u.name;
+      if (duplicateCount > 1) {
+        const occurrenceIndex = chartData.users
+          .slice(0, index + 1)
+          .filter(user => user.name === u.name).length;
+        nameWithId = `${u.name}-ครั้งที่ ${occurrenceIndex}`;
+      }
 
       return {
         userId: u.userId,
