@@ -31,7 +31,10 @@ import {
 
 import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
-import { LineChart } from "@mui/x-charts";
+import { BarChart } from "@mui/x-charts/BarChart";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import TestPopup from "./TestPopup";
 import SettingPopup from "./SettingPopup";
 
@@ -53,6 +56,10 @@ function EditCourse() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
+  const [filter, setFilter] = useState({
+    startDate: null,
+    endDate: null,
+  });
 
   const fetchSubjects = async () => {
     try {
@@ -159,43 +166,65 @@ function EditCourse() {
   };
 
   const tabletQuery = useMediaQuery("(max-width:720px)");
-  const isXs = useMediaQuery("(max-width:600px)");
-  const isSm = useMediaQuery("(max-width:900px)");
 
-  const lineChartData = chartData?.users?.map((u, index) => {
-      const firstName = u.name.split(' ')[0];
+  const filteredUsers = chartData?.users?.filter(user => {
+    const userStartDate = user.startat ? new Date(user.startat) : null;
+    const userEndDate = user.endat ? new Date(user.endat) : null;
 
-      // ตรวจสอบว่ามีชื่อจริง (firstName) ซ้ำกันในกลุ่มข้อมูลทั้งหมดหรือไม่
-      const usersWithSameFirstName = chartData.users.filter(user => user.name.split(' ')[0] === firstName);
-      const duplicateCount = usersWithSameFirstName.length;
-
-      let xAxisLabel = firstName;
-
-      if (duplicateCount > 1) {
-        // หากมีชื่อซ้ำ ให้หาว่าเป็นชื่อที่ซ้ำกันลำดับที่เท่าไหร่
-        const occurrenceIndex = chartData.users
-          .slice(0, index + 1)
-          .filter(user => user.name.split(' ')[0] === firstName).length;
-        xAxisLabel = `${firstName}-${occurrenceIndex}`;
-      }
-
-      return {
-        userId: u.userId,
-        x: xAxisLabel,
-        email: u.email,
-        pretest: u.pretestScore,
-        posttest: u.posttestScore,
-      };
+    let startMatch = true;
+    if (filter.startDate) {
+      startMatch = userStartDate &&
+        userStartDate.getFullYear() === filter.startDate.getFullYear() &&
+        userStartDate.getMonth() === filter.startDate.getMonth();
     }
-  ) || [];
 
-  const maxY = Math.max(
+    let endMatch = true;
+    if (filter.endDate) {
+      endMatch = userEndDate &&
+        userEndDate.getFullYear() === filter.endDate.getFullYear() &&
+        userEndDate.getMonth() === filter.endDate.getMonth();
+    }
+
+    return startMatch && endMatch;
+  }) || [];
+
+  const lineChartData = filteredUsers.map((u, index) => {
+    const fullName = u.name;
+
+    // ตรวจสอบว่ามีชื่อจริง (firstName) ซ้ำกันในกลุ่มข้อมูลทั้งหมดหรือไม่
+    const usersWithSameName = filteredUsers.filter(user => user.name === fullName);
+    const duplicateCount = usersWithSameName.length;
+
+    let xAxisLabel = fullName;
+
+    if (duplicateCount > 1) {
+      // หากมีชื่อซ้ำ ให้หาว่าเป็นชื่อที่ซ้ำกันลำดับที่เท่าไหร่
+      const occurrenceIndex = filteredUsers
+        .slice(0, index + 1)
+        .filter(user => user.name === fullName).length;
+      xAxisLabel = `${fullName}-${occurrenceIndex}`;
+    }
+
+    return {
+      userId: u.userId,
+      x: xAxisLabel,
+      email: u.email,
+      pretest: u.pretestScore,
+      posttest: u.posttestScore,
+    };
+  });
+
+  const handleResetFilter = () => {
+    setFilter({ startDate: null, endDate: null });
+  };
+
+  const maxX = Math.max(
     chartData?.pretestMax || 0,
     chartData?.posttestMax || 0,
   );
 
   return (
-    <div className={style.pageWrapper}>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <div className={style.container}>
         <div className={style.head}>
           <div className={style["info-wrapper"]}>
@@ -347,42 +376,106 @@ function EditCourse() {
           </div>
         </div>
 
-        {lineChartData.length > 0 && (
+        {chartData && (
           <div style={{ width: "100%", marginTop: 40 }}>
             <Typography variant="h6">
               คะแนนแบบทดสอบก่อนเรียน / หลังเรียน
             </Typography>
-            <LineChart
-              height={isXs ? 300 : isSm ? 400 : 600}
-              xAxis={[
-                { data: lineChartData.map((d) => d.x), scaleType: "band" },
-              ]}
+
+            <Stack
+              sx={{
+                flexDirection: { xs: "column", md: "row"},
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 2,
+                p: 2,
+                width: "100%"
+              }}
+            >
+              <Stack
+                sx={{
+                  flexDirection: { xs: "column", md: "row"},
+                  width: { xs: "100%", md: "60%" },
+                  gap: 2,
+                }}
+              >
+                <DatePicker
+                  label="เดือน/ปี ที่เริ่มเรียน"
+                  views={['year', 'month']}
+                  value={filter.startDate}
+                  onChange={(newValue) => setFilter(prev => ({ ...prev, startDate: newValue }))}
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
+                <DatePicker
+                  label="เดือน/ปี ที่จบการเรียน"
+                  views={['year', 'month']}
+                  value={filter.endDate}
+                  onChange={(newValue) => setFilter(prev => ({ ...prev, endDate: newValue }))}
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
+              </Stack>
+              
+
+              <Button
+                variant="outlined"
+                onClick={handleResetFilter}
+                sx={{ 
+                  height: "100%",
+                  width: { xs: "100%", md: "25%" },
+                }}
+              >
+                ล้างตัวกรอง
+              </Button>
+            </Stack>
+
+            {lineChartData.length === 0 && (
+              <Paper sx={{ p: 2, textAlign: 'center', mt: 2 }}>
+                <Typography>
+                  {chartData?.users?.length > 0
+                    ? "ไม่พบข้อมูลตามตัวกรองที่เลือก"
+                    : "ยังไม่มีข้อมูลคะแนนของผู้เรียน"
+                  }
+                </Typography>
+              </Paper>
+            )}
+
+            {lineChartData.length > 0 && (
+            <>
+            <BarChart
+              dataset={lineChartData}
+              layout="horizontal"
               yAxis={[
                 {
-                  id: "linear",
-                  scaleType: "linear",
-                  position: "left",
+                  scaleType: 'band',
+                  dataKey: 'x',
+                  width: 140,
+                },
+              ]}
+              xAxis={[
+                {
+                  scaleType: 'linear',
+                  position: 'top',
                   min: 0,
-                  max: maxY,
+                  tickNumber: maxX,
+                  max: maxX,
                 },
               ]}
               series={[
                 {
-                  yAxisId: "linear",
-                  data: lineChartData.map((d) => d.pretest),
+                  dataKey: 'pretest',
                   label: "แบบทดสอบก่อนเรียน",
                   valueFormatter: (value) => `${value}`,
                 },
                 {
-                  yAxisId: "linear",
-                  data: lineChartData.map((d) => d.posttest),
+                  dataKey: 'posttest',
                   label: "แบบทดสอบหลังเรียน",
                   valueFormatter: (value) => `${value}`,
                 },
               ]}
+              height={lineChartData.length * 60 + 100}
             />
 
-            <TableContainer component={Paper} sx={{ mt: 4 }}>
+            <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table sx={{ minWidth: 650 }} aria-label="score summary table">
               {(() => {
                 const maxPre = Math.max(...lineChartData.map((d) => d.pretest));
@@ -420,6 +513,8 @@ function EditCourse() {
               })()}
               </Table>
             </TableContainer>
+            </>
+            )}
           </div>
         )}
       </div>
@@ -527,7 +622,7 @@ function EditCourse() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </div>
+    </LocalizationProvider>
   );
 }
 

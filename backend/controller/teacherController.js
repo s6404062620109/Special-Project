@@ -103,13 +103,15 @@ const testAnalysis = (req, res) => {
           const posttestScore = enrollmentProgress
             .filter(p => p.type === "post" && p.is_completed === 1)
             .reduce((sum, p) => sum + (p.score || 0), 0);
-
+          
           summary.push({
             userId: user.id,
             name: `${user.name} ${user.surname}`,
             email: user.email,
             pretestScore,
-            posttestScore
+            posttestScore,
+            startat: enrollment.startat,
+            endat: enrollment.endat
           });
         }
 

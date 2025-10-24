@@ -27,6 +27,7 @@ import {
   DialogContentText,
   DialogTitle,
   Snackbar,
+  CircularProgress,
   FormControl,
 } from "@mui/material";
 import { 
@@ -34,6 +35,7 @@ import {
   KeyboardArrowLeft, 
   KeyboardArrowUp, 
 } from "@mui/icons-material";
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -192,7 +194,7 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
           </Typography>
         </TableCell>
         <TableCell>
-          {new Date(attemptData.endat).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })}
+          { attemptData.endat ? new Date(attemptData.endat).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" }) : "-"}
         </TableCell>
         <TableCell>
           {(() => {
@@ -243,6 +245,31 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
 function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnrollment }) {
   const [open, setOpen] = useState(false);
 
+  const firstAttempt = userGroup.attempts[0];
+  const lastAttempt = userGroup.attempts[userGroup.attempts.length - 1];
+
+  const renderStatus = (status) => {
+    if (status === undefined || status === null) return "-";
+    switch (status) {
+      case 1:
+        return <Stack direction="row" gap={1} color="success.main" justifyContent="center">
+          <Typography variant="body2">ผ่าน</Typography>
+          <CheckIcon fontSize="small" />
+        </Stack>;
+      case -1:
+        return <Stack direction="row" gap={1} color="error.main" justifyContent="center">
+          <Typography variant="body2">ไม่ผ่าน</Typography>
+          <ClearIcon fontSize="small" />
+        </Stack>;
+      default:
+        return <Stack direction="row" gap={1} color="text.secondary" justifyContent="center">
+          <Typography variant="body2">กำลังเรียนอยู่</Typography>
+          <SchoolIcon fontSize="small" />
+        </Stack>;
+    }
+  };
+
+
   return (
     <>
       <TableRow hover>
@@ -254,6 +281,8 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
         <TableCell>{userGroup.userId}</TableCell>
         <TableCell>{userGroup.name}</TableCell>
         <TableCell align="center">{userGroup.attempts.length}</TableCell>
+        <TableCell align="center">{renderStatus(firstAttempt?.status)}</TableCell>
+        <TableCell align="center">{renderStatus(lastAttempt?.status)}</TableCell>
         <TableCell align="center">
           <IconButton
             onClick={() => handleDeleteStudentEnrollments(userGroup.userId)}
@@ -263,7 +292,7 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div" sx={{ ml: 2, mt: 1 }}>
@@ -348,6 +377,7 @@ function EnrollSum() {
   const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogContent, setDialogContent] = useState({ title: '', description: '', onConfirm: null });
+  const [exporting, setExporting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const handleCloseSnackbar = (event, reason) => {
@@ -499,6 +529,48 @@ function EnrollSum() {
     setDateRange({ startDate: "", endDate: "" });
   };
 
+  const handleExportCSV = () => {
+    if (filteredAndSortedEnrollments.length === 0) {
+      setSnackbar({ open: true, message: 'ไม่มีข้อมูลสำหรับส่งออก', severity: 'warning' });
+      return;
+    }
+    setExporting(true);
+
+    const headers = [
+      "เลขประจำตัวนักเรียน", "ชื่อนักเรียน", "ครั้งที่เรียน",
+      "วันที่เริ่มเรียน", "วันที่สิ้นสุดการเรียน", "สถานะ",
+      "คะแนนก่อนเรียน", "คะแนนหลังเรียน", "คะแนนปฏิบัติการ"
+    ];
+
+    const statusText = { 1: "ผ่าน", 0: "กำลังเรียนอยู่", "-1": "ไม่ผ่าน" };
+
+    const rows = filteredAndSortedEnrollments.flatMap(userGroup =>
+      userGroup.attempts.map((attempt, attemptIndex) => [
+        userGroup.userId,
+        `"${userGroup.name}"`,
+        attemptIndex + 1,
+        new Date(attempt.startat).toLocaleString("th-TH"),
+        attempt.endat ? new Date(attempt.endat).toLocaleString("th-TH") : "-",
+        statusText[attempt.status] || "ไม่ทราบ",
+        attempt.pretestScore,
+        attempt.posttestScore,
+        attempt.labtestScore
+      ])
+    );
+
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const bom = "\uFEFF"; // BOM for UTF-8 to support Thai characters in Excel
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `enrollment_summary_${courseId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setExporting(false);
+  };
+
   const tabletQuery = useMediaQuery('(max-width:720px)');
 
   return (
@@ -623,9 +695,37 @@ function EnrollSum() {
               height: "40px"
             }}
           >
-            รีเซ็ต
+            Clear
           </Button>
       </Stack>
+
+      <Stack 
+        sx={{
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "space-between" ,
+          alignItems: "center",
+          gap: 2
+        }}
+      >
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={exporting ? <CircularProgress size={20} color="inherit" /> : <FileDownloadIcon />}
+          onClick={handleExportCSV}
+          disabled={exporting || filteredAndSortedEnrollments.length === 0}
+          sx={{
+            width: { xs: "100%", md: 200 },
+            mb: tabletQuery ? 1 : 0
+          }}
+        >
+          {exporting ? "กำลังส่งออก..." : "ดาวโหลดไฟล์ CSV"}
+        </Button>
+
+        <Typography variant="body1">
+          ผลลัพธ์: {filteredAndSortedEnrollments.length} คน
+        </Typography>
+      </Stack>
+
 
       <TableContainer component={Paper} sx={{ mt: 3 }}>
         <Table>
@@ -661,6 +761,14 @@ function EnrollSum() {
                 </TableSortLabel>
               </TableCell>
 
+              <TableCell align="center">
+                  การเรียนครั้งแรก
+              </TableCell>
+
+              <TableCell align="center">
+                  การเรียนล่าสุด
+              </TableCell>
+
               <TableCell align="center" sortDirection={orderBy === "attempts" ? order : false}>
                 <TableSortLabel>
                   ลบผู้เรียน
@@ -681,7 +789,7 @@ function EnrollSum() {
 
             {filteredAndSortedEnrollments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center">
                   <Typography
                     variant="h6"
                     color="error.main"
