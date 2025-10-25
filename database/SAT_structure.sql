@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 05, 2025 at 12:17 PM
+-- Generation Time: Oct 25, 2025 at 12:44 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -24,6 +24,18 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `cancellation_log`
+--
+
+CREATE TABLE `cancellation_log` (
+  `id` int NOT NULL,
+  `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `enrollmentId` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `course`
 --
 
@@ -31,8 +43,8 @@ CREATE TABLE `course` (
   `id` int NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `icon` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
-  `pretest_rate` int NOT NULL DEFAULT '1',
-  `posttest_rate` int NOT NULL DEFAULT '1',
+  `pretest_rate` int NOT NULL DEFAULT '0',
+  `posttest_rate` int NOT NULL DEFAULT '0',
   `teacherId` int NOT NULL,
   `enable` tinyint(1) NOT NULL DEFAULT '0',
   `createat` datetime NOT NULL,
@@ -188,19 +200,26 @@ CREATE TABLE `user` (
   `id` int NOT NULL,
   `email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
-  `sex` varchar(10) COLLATE utf8mb3_bin NOT NULL,
+  `sex` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `surname` varchar(255) COLLATE utf8mb3_bin NOT NULL,
+  `surname` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `role` char(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `profile_img` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
   `verified_key` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
   `verified_expired` datetime DEFAULT NULL,
-  `isApprove` tinyint(1) NOT NULL
+  `isApprove` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `cancellation_log`
+--
+ALTER TABLE `cancellation_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `enroll_cancel` (`enrollmentId`);
 
 --
 -- Indexes for table `course`
@@ -291,6 +310,12 @@ ALTER TABLE `user`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `cancellation_log`
+--
+ALTER TABLE `cancellation_log`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `course`
@@ -422,14 +447,14 @@ ALTER TABLE `question_answers`
 -- Constraints for table `question_logs`
 --
 ALTER TABLE `question_logs`
-  ADD CONSTRAINT `question_record` FOREIGN KEY (`progressId`) REFERENCES `question_progress` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `question_record` FOREIGN KEY (`progressId`) REFERENCES `question_progress` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `question_progress`
 --
 ALTER TABLE `question_progress`
   ADD CONSTRAINT `question_enroll` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `questionp_id` FOREIGN KEY (`questionId`) REFERENCES `questions` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `questionp_id` FOREIGN KEY (`questionId`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `subject`
