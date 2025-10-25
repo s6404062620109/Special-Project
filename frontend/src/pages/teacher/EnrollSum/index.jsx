@@ -209,6 +209,11 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
                   <Typography variant="body2">ไม่ผ่าน</Typography> 
                   <ClearIcon fontSize="small" />
                 </Stack>;
+              case -2:
+                return <Stack direction="row" gap={1} color="error.main">
+                  <Typography variant="body2">ยกเลิกการเรียน</Typography> 
+                  <ClearIcon fontSize="small" />
+                </Stack>;
               default:
                 return <Stack direction="row" gap={1} color="text.secondary">
                   <Typography variant="body2">กำลังเรียนอยู่</Typography> 
@@ -229,12 +234,23 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0, borderBottom: 'unset' }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <GroupedProgressRow
-              progress={attemptData.progress}
-              pretestScore={attemptData.pretestScore}
-              posttestScore={attemptData.posttestScore}
-              labtestScore={attemptData.labtestScore}
-            />
+            {attemptData.status === -2 ? (
+              <Box sx={{ margin: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  เหตุผลการยกเลิก:
+                </Typography>
+                <Typography variant="body1" sx={{ mt: 1 }}>
+                  {attemptData.reason || "ไม่ได้ระบุเหตุผล"}
+                </Typography>
+              </Box>
+            ) : (
+              <GroupedProgressRow
+                progress={attemptData.progress}
+                pretestScore={attemptData.pretestScore}
+                posttestScore={attemptData.posttestScore}
+                labtestScore={attemptData.labtestScore}
+              />
+            )}
           </Collapse>
         </TableCell>
       </TableRow>
@@ -245,27 +261,38 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
 function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnrollment }) {
   const [open, setOpen] = useState(false);
 
-  const firstAttempt = userGroup.attempts[0];
   const lastAttempt = userGroup.attempts[userGroup.attempts.length - 1];
+  
+  const renderStatus = () => {
+    if (!lastAttempt) return "-";
 
-  const renderStatus = (status) => {
-    if (status === undefined || status === null) return "-";
-    switch (status) {
+    switch (lastAttempt.status) {
       case 1:
-        return <Stack direction="row" gap={1} color="success.main" justifyContent="center">
-          <Typography variant="body2">ผ่าน</Typography>
+        if (userGroup.attempts.length === 1) {
+          return <Stack direction="row" gap={1} color="success.main" justifyContent="center">
+            <Typography variant="body2" fontWeight={600}>ผ่าน</Typography>
+            <CheckIcon fontSize="small" />
+          </Stack>;
+        }
+        return <Stack direction="row" gap={1} color="warning.main" justifyContent="center">
+          <Typography variant="body2" fontWeight={600}>ผ่าน (แก้ตัว)</Typography>
           <CheckIcon fontSize="small" />
         </Stack>;
       case -1:
         return <Stack direction="row" gap={1} color="error.main" justifyContent="center">
-          <Typography variant="body2">ไม่ผ่าน</Typography>
+          <Typography variant="body2" fontWeight={600}>ไม่ผ่าน</Typography>
+          <ClearIcon fontSize="small" />
+        </Stack>;
+      case -2:
+        return <Stack direction="row" gap={1} color="error.main" justifyContent="center">
+          <Typography variant="body2" fontWeight={600}>ยกเลิกการเรียน</Typography>
           <ClearIcon fontSize="small" />
         </Stack>;
       default:
         return <Stack direction="row" gap={1} color="text.secondary" justifyContent="center">
-          <Typography variant="body2">กำลังเรียนอยู่</Typography>
-          <SchoolIcon fontSize="small" />
-        </Stack>;
+            <Typography variant="body2" fontWeight={600}>กำลังเรียนอยู่</Typography>
+            <SchoolIcon fontSize="small" />
+          </Stack>;
     }
   };
 
@@ -281,8 +308,7 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
         <TableCell>{userGroup.userId}</TableCell>
         <TableCell>{userGroup.name}</TableCell>
         <TableCell align="center">{userGroup.attempts.length}</TableCell>
-        <TableCell align="center">{renderStatus(firstAttempt?.status)}</TableCell>
-        <TableCell align="center">{renderStatus(lastAttempt?.status)}</TableCell>
+        <TableCell align="center">{renderStatus()}</TableCell>
         <TableCell align="center">
           <IconButton
             onClick={() => handleDeleteStudentEnrollments(userGroup.userId)}
@@ -539,23 +565,27 @@ function EnrollSum() {
     const headers = [
       "เลขประจำตัวนักเรียน", "ชื่อนักเรียน", "ครั้งที่เรียน",
       "วันที่เริ่มเรียน", "วันที่สิ้นสุดการเรียน", "สถานะ",
-      "คะแนนก่อนเรียน", "คะแนนหลังเรียน", "คะแนนปฏิบัติการ"
+      "คะแนนก่อนเรียน", "คะแนนหลังเรียน", "คะแนนปฏิบัติการ", "เหตุผลการยกเลิก"
     ];
 
-    const statusText = { 1: "ผ่าน", 0: "กำลังเรียนอยู่", "-1": "ไม่ผ่าน" };
+    const statusText = { 1: "ผ่าน", 0: "กำลังเรียนอยู่", "-1": "ไม่ผ่าน", "-2": "ยกเลิกการเรียน" };
 
     const rows = filteredAndSortedEnrollments.flatMap(userGroup =>
-      userGroup.attempts.map((attempt, attemptIndex) => [
-        userGroup.userId,
-        `"${userGroup.name}"`,
-        attemptIndex + 1,
-        new Date(attempt.startat).toLocaleString("th-TH"),
-        attempt.endat ? new Date(attempt.endat).toLocaleString("th-TH") : "-",
-        statusText[attempt.status] || "ไม่ทราบ",
-        attempt.pretestScore,
-        attempt.posttestScore,
-        attempt.labtestScore
-      ])
+      userGroup.attempts.map((attempt, attemptIndex) => {
+        const reason = attempt.reason ? `"${attempt.reason.replace(/"/g, '""')}"` : "-";
+        return [
+          userGroup.userId,
+          `"${userGroup.name}"`,
+          attemptIndex + 1,
+          new Date(attempt.startat).toLocaleString("th-TH"),
+          attempt.endat ? new Date(attempt.endat).toLocaleString("th-TH") : "-",
+          statusText[attempt.status] || "ไม่ทราบ",
+          attempt.pretestScore,
+          attempt.posttestScore,
+          attempt.labtestScore,
+          attempt.status === -2 ? reason : "-"
+        ];
+      })
     );
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
@@ -682,6 +712,7 @@ function EnrollSum() {
               <MenuItem value="all">ทั้งหมด</MenuItem>
               <MenuItem value={1}>ผ่าน</MenuItem>
               <MenuItem value={-1}>ไม่ผ่าน</MenuItem>
+              <MenuItem value={-2}>ยกเลิกการเรียน</MenuItem>
               <MenuItem value={0}>กำลังเรียนอยู่</MenuItem>
             </Select>
           </FormControl>
@@ -762,17 +793,11 @@ function EnrollSum() {
               </TableCell>
 
               <TableCell align="center">
-                  การเรียนครั้งแรก
+                สถานะการเรียน
               </TableCell>
 
               <TableCell align="center">
-                  การเรียนล่าสุด
-              </TableCell>
-
-              <TableCell align="center" sortDirection={orderBy === "attempts" ? order : false}>
-                <TableSortLabel>
-                  ลบผู้เรียน
-                </TableSortLabel>
+                ลบผู้เรียน
               </TableCell>
             </TableRow>
           </TableHead>

@@ -7,6 +7,13 @@ import {
   Avatar,
   Button,
   IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  Alert,
   List,
   ListItem,
   ListItemIcon,
@@ -21,6 +28,7 @@ import {
   TableHead,
   TableRow,
   Tabs,
+  TextField,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -171,6 +179,63 @@ const renderTestSection = (
   );
 };
 
+function CancelEnrollmentDialog({ open, onClose, onConfirm }) {
+  const [reason, setReason] = useState('');
+  const { courseId, enrollmentId } = useParams();
+
+  const handleConfirm = async () => {
+    if(enrollmentId === null || courseId === null){
+      return;
+    }
+    
+    try{
+      const response = await backend.put(`/enroll/enrollCancel/${enrollmentId}/${courseId}`, { withCredentials: true });
+
+      if(response.status === 200){
+
+      }
+    } catch(error){
+      console.log(error);
+    }
+
+    onConfirm(reason);
+    setReason('');
+  };
+
+  const handleClose = () => {
+    onClose();
+    setReason('');
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <DialogTitle>ยืนยันการยกเลิกการลงทะเบียน</DialogTitle>
+      <DialogContent>
+        <DialogContentText sx={{ mb: 2 }}>
+          คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการลงทะเบียนเรียนในครั้งนี้? การกระทำนี้จะทำให้การเรียนปัจจุบันสิ้นสุดลงทันที
+        </DialogContentText>
+        <TextField
+          autoFocus
+          margin="dense"
+          id="reason"
+          label="เหตุผลในการยกเลิก (ไม่บังคับ)"
+          type="text"
+          fullWidth
+          variant="standard"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>ยกเลิก</Button>
+        <Button onClick={handleConfirm} color="error">
+          ยืนยันการยกเลิก
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
@@ -210,6 +275,8 @@ function CourseDetail() {
     mode: "",
     state: false,
   });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const fetchCourseInfo = async () => {
@@ -387,8 +454,7 @@ function CourseDetail() {
 
   const enrollCourse = async () => {
     try {
-      const response = await backend.post(
-        `/enroll/enrollCourse`,
+      const response = await backend.post(`/enroll/enrollCourse`,
         {
           courseId: courseId,
           userId: userData.id,
@@ -401,6 +467,38 @@ function CourseDetail() {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleCancelEnrollment = async (reason) => {
+
+    if (!enrollmentId || enrollmentId === 'null' || !courseId) {
+      console.error("โปรดระบุ enrollmentId และ courseId.");
+      return;
+    }
+
+    try {
+      const response = await backend.put(`/enroll/enrollCancel/${enrollmentId}/${courseId}`, 
+        { reason },
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+        setTimeout(() => {
+          setCancelDialogOpen(false);
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Failed to cancel enrollment:", error);
+      setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการยกเลิก', severity: 'error' });
     }
   };
 
@@ -637,7 +735,9 @@ function CourseDetail() {
             {history.length === 0 && (
               <Button
                 variant="contained"
-                sx={{ width: "100%" }}
+                sx={{ 
+                  width: { xs: "100%", md: "50%" }
+                }}
                 onClick={enrollCourse}
               >
                 สมัครเรียน
@@ -658,7 +758,13 @@ function CourseDetail() {
             )}
 
             {history.length > 0 && history[0].posttest_complete === 0 && (
-              <>
+              <Stack
+                sx={{
+                  flexDirection: "column",
+                  gap: 2,
+                  width: { xs: "100%", md: "50%"}
+                }}
+              >
                 <Button
                   variant="contained"
                   onClick={fetchLatestProgress}
@@ -666,7 +772,16 @@ function CourseDetail() {
                 >
                   เข้าเรียนต่อ
                 </Button>
-              </>
+
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => setCancelDialogOpen(true)}
+                  sx={{ width: "100%" }}
+                >
+                  ยกเลิกการเรียน
+                </Button>
+              </Stack>
             )}
           </Stack>
         )}
@@ -925,7 +1040,7 @@ function CourseDetail() {
                 </th>
                 {userData.id && (
                   <th>
-                    <p>{tabletQuery ? "ปฎิบัติการทดสอบ" : "สถานะการทำปฎิบัติการทดสอบ"}</p>
+                    <p>{tabletQuery ? "ปฏิบัติการทดสอบ" : "สถานะการทำปฏิบัติการทดสอบ"}</p>
                   </th>
                 )}
                 
@@ -959,11 +1074,11 @@ function CourseDetail() {
           }}
         >
           <Typography variant="h6">
-            ผู้ลงทะเบียนเรียน {count.countEnrollments} คน
+            จำนวนการลงทะเบียน {count.countEnrollments} ครั้ง
           </Typography>
 
           <Typography variant="h6">
-            ผู้สำเร็จการศึกษา {count.countPosttestComplete} คน
+            จำนวนผู้เรียนที่ผ่านแล้ว {count.countPosttestComplete} คน
           </Typography>
         </Stack>
       </>
@@ -1030,6 +1145,23 @@ function CourseDetail() {
           mode={showTestList.mode}
         />
       )}
+
+      <CancelEnrollmentDialog
+        open={cancelDialogOpen}
+        onClose={() => setCancelDialogOpen(false)}
+        onConfirm={handleCancelEnrollment}
+      />
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }} variant="filled">
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

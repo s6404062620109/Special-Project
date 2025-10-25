@@ -91,13 +91,47 @@ const enrollCourse = (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Server error.", error });
   }
-};
+}
+
+const enrollCancel = (req, res) => {
+  const { courseId, enrollmentId } = req.params;
+  const { reason } = req.body;
+
+  if(!courseId || !enrollmentId) {
+    return res.status(400).json({ message: "CourseId, enrollmentId are require." });
+  }
+
+  try{
+    db.query("UPDATE enrollment SET pretest_complete = -2, posttest_complete = -2, endat = NOW() WHERE id = ? AND courseId = ?", [ enrollmentId, courseId ], (error) => {
+      if(error){
+        console.log(error);
+        return res.status(500).json({ message: "Database enrollment query error." });
+      }
+
+      db.query("INSERT INTO cancellation_log (reason, enrollmentId) VALUES (?, ?)", [ reason, enrollmentId ], (insertError) => {
+        if(insertError){
+          console.log(error);
+          return res.status(500).json({ message: "Database cancellation_log query error." });
+        }
+
+        return res.status(200).json({ message: "ยกเลิกการลงทะเบียนสำเร็จ" });
+      });
+    });
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Server error", error });
+  }
+}
 
 const checkCoursesEnroll = (req, res) => {
     const { userId } = req.params;
 
+    if (!userId) {
+      return res.status(400).json({ message: "Require userId." });
+    }
+
     try{
-      db.query(`SELECT * FROM enrollment WHERE userId = ?`, [userId], (err, results) => {
+      db.query(`SELECT * FROM enrollment WHERE userId = ? AND posttest_complete IN (0, 1, -1)`, [userId], (err, results) => {
         if (err) {
           console.error(err);
           return res.status(500).json({ message: "Database enrollment query error" });
@@ -121,7 +155,7 @@ const checkCourseEnroll = (req, res) => {
     }
 
     try{
-      db.query(`SELECT * FROM enrollment WHERE id = ? AND userId = ? AND courseId = ? `, 
+      db.query(`SELECT * FROM enrollment WHERE id = ? AND userId = ? AND courseId = ? AND posttest_complete IN (0, -1) AND pretest_complete IN (0, 1)`, 
         [enrollmentId, userId, courseId], (err, results) => {
         if (err) {
           console.error(err);
@@ -170,6 +204,7 @@ const getLatestEnrollment = (req, res) => {
 
 module.exports = {
     enrollCourse,
+    enrollCancel,
     checkCoursesEnroll,
     checkCourseEnroll,
     getLatestEnrollment

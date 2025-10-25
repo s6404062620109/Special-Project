@@ -202,7 +202,7 @@ function EditCourse() {
       const occurrenceIndex = filteredUsers
         .slice(0, index + 1)
         .filter(user => user.name === fullName).length;
-      xAxisLabel = `${fullName}-${occurrenceIndex}`;
+      xAxisLabel = `${fullName} (${occurrenceIndex})`;
     }
 
     return {

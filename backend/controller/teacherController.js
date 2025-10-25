@@ -33,7 +33,7 @@ const testAnalysis = (req, res) => {
   }
 
   // ดึงข้อมูล enrollment ทั้งหมดใน course นี้
-  db.query("SELECT * FROM enrollment WHERE courseId = ?", [courseId], (error, enrollments) => {
+  db.query("SELECT * FROM enrollment WHERE courseId = ? AND posttest_complete IN (1, -1)", [courseId], (error, enrollments) => {
     if (error) {
       console.error(error);
       return res.status(500).send({ message: "Database enrollment query error." });
@@ -289,6 +289,9 @@ const enrollSummary = async (req, res) => {
     const questionIds = questions.map(q => q.id);
     const labProgressIds = labProgress.map(lp => lp.id);
     const questionProgressIds = questionProgress.map(qp => qp.id);
+    const cancelledEnrollmentIds = enrollments
+      .filter(e => e.posttest_complete === -2 && e.pretest_complete === -2)
+      .map(e => e.id);
 
     const [
       labAnswers,
@@ -299,8 +302,10 @@ const enrollSummary = async (req, res) => {
       query("SELECT * FROM lab_answers WHERE questionId IN (?) AND type = 1", [labIds.length ? labIds : [0]]),
       query("SELECT * FROM question_answers WHERE questionId IN (?) AND type = 1", [questionIds.length ? questionIds : [0]]),
       query("SELECT * FROM lab_logs WHERE progressId IN (?)", [labProgressIds.length ? labProgressIds : [0]]),
-      query("SELECT * FROM question_logs WHERE progressId IN (?)", [questionProgressIds.length ? questionProgressIds : [0]])
+      query("SELECT * FROM question_logs WHERE progressId IN (?)", [questionProgressIds.length ? questionProgressIds : [0]]),
     ]);
+
+    const cancellationLogs = cancelledEnrollmentIds.length > 0 ? await query("SELECT * FROM cancellation_log WHERE enrollmentId IN (?)", [cancelledEnrollmentIds]) : [];
 
     // --- Build lookup maps ---
     const usersMap = new Map(users.map(u => [u.id, u]));
@@ -316,6 +321,7 @@ const enrollSummary = async (req, res) => {
     const questionAnswersMap = groupById(questionAnswers, 'questionId');
     const labLogsMap = groupById(labLogs, 'progressId');
     const questionLogsMap = groupById(questionLogs, 'progressId');
+    const cancellationLogsMap = new Map(cancellationLogs.map(log => [log.enrollmentId, log]));
 
     const finalFormat = enrollments.map(enroll => {
       const user = usersMap.get(enroll.userId) || {};
@@ -361,9 +367,14 @@ const enrollSummary = async (req, res) => {
         status = 1;
       } else if (enroll.posttest_complete === -1) {
         status = -1; 
-      } else {
+      } else if (enroll.posttest_complete === -2 && enroll.pretest_complete === -2) {
+        status = -2;
+      }
+      else {
         status = 0;
       }
+
+      const cancellationLog = cancellationLogsMap.get(enroll.id);
 
       return {
         id: enroll.id,
@@ -375,7 +386,8 @@ const enrollSummary = async (req, res) => {
         startat: enroll.startat,
         endat: enroll.endat,
         progress: [{ questions: progress }],
-        status: status
+        status: status,
+        reason: cancellationLog ? cancellationLog.reason : null
       };
     });
 
