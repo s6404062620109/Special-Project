@@ -155,7 +155,7 @@ const checkCourseEnroll = (req, res) => {
     }
 
     try{
-      db.query(`SELECT * FROM enrollment WHERE id = ? AND userId = ? AND courseId = ? AND posttest_complete IN (0, -1) AND pretest_complete IN (0, 1)`, 
+      db.query(`SELECT * FROM enrollment WHERE id = ? AND userId = ? AND courseId = ? AND posttest_complete IN (0, 1, -1) AND pretest_complete IN (0, 1)`, 
         [enrollmentId, userId, courseId], (err, results) => {
         if (err) {
           console.error(err);
