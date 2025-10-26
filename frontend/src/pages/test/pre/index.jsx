@@ -6,6 +6,32 @@ import style from './css/pretest.module.css';
 import { AuthContext } from '../../../context/AuthProvider';
 import TestRead from '../../../components/Reader/TestRead';
 import { Button, Typography } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
+
+function ExpiredDialog({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>คอร์สหมดอายุ หรือไม่พบการลงทะเบียน</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          ระยะเวลาการเรียนของคุณในคอร์สนี้อาจสิ้นสุดลงแล้ว หรือไม่พบข้อมูลการลงทะเบียนเรียน
+          ระบบจะนำคุณกลับไปยังหน้ารายละเอียดคอร์ส
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" autoFocus>
+          ตกลง
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 function Pretest() {
   const { courseId, enrollmentId } = useParams();
@@ -13,6 +39,7 @@ function Pretest() {
   const [ question, setQuestion ] = useState([]);
   const [ selectedAnswers, setSelectedAnswers ] = useState({});
   const [ errorMessage, setErrorMessage ] = useState('');
+  const [ expiredDialogOpen, setExpiredDialogOpen ] = useState(false);
   const navigate = useNavigate();
 
    const checkPretestCompletion = async () => {
@@ -34,6 +61,13 @@ function Pretest() {
       }
     } catch (error) {
       console.log(error);
+      if (
+        error?.response?.status === 404 ||
+        error?.response?.data?.message === "No courses found." ||
+        error?.response?.data?.message === "คอร์สนี้หมดอายุการเรียนแล้ว"
+      ) {
+        setExpiredDialogOpen(true);
+      }
     }
   };
 
@@ -131,6 +165,11 @@ function Pretest() {
   return (
     <div className={style.container}>
       <Typography variant='h4' >แบบทดสอบก่อนเรียน</Typography>
+
+      <ExpiredDialog
+        open={expiredDialogOpen}
+        onClose={() => navigate(`/course/${courseId}/${enrollmentId}`)}
+      />
 
       <form onSubmit={handleSubmit}>
 

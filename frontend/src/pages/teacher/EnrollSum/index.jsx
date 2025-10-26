@@ -194,7 +194,11 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
           </Typography>
         </TableCell>
         <TableCell>
-          { attemptData.endat ? new Date(attemptData.endat).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" }) : "-"}
+          {attemptData.endat
+            ? new Date(attemptData.endat).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })
+            : (attemptData.expires_at
+                ? new Date(attemptData.expires_at).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })
+                : "-")}
         </TableCell>
         <TableCell>
           {(() => {
@@ -212,6 +216,11 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
               case -2:
                 return <Stack direction="row" gap={1} color="error.main">
                   <Typography variant="body2">ยกเลิกการเรียน</Typography> 
+                  <ClearIcon fontSize="small" />
+                </Stack>;
+              case -3:
+                return <Stack direction="row" gap={1} color="error.main">
+                  <Typography variant="body2">หมดเวลาการเรียน</Typography> 
                   <ClearIcon fontSize="small" />
                 </Stack>;
               default:
@@ -288,6 +297,11 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
           <Typography variant="body2" fontWeight={600}>ยกเลิกการเรียน</Typography>
           <ClearIcon fontSize="small" />
         </Stack>;
+      case -3:
+        return <Stack direction="row" gap={1} color="error.main" justifyContent="center">
+          <Typography variant="body2" fontWeight={600}>หมดเวลาการเรียน</Typography>
+          <ClearIcon fontSize="small" />
+        </Stack>;
       default:
         return <Stack direction="row" gap={1} color="text.secondary" justifyContent="center">
             <Typography variant="body2" fontWeight={600}>กำลังเรียนอยู่</Typography>
@@ -295,7 +309,6 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
           </Stack>;
     }
   };
-
 
   return (
     <>
@@ -330,7 +343,11 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
                     <TableCell />
                     <TableCell sx={{ width: '20%' }}>การลงทะเบียน</TableCell>
                     <TableCell sx={{ width: '20%' }}>วันที่เริ่มเรียน</TableCell>
-                    <TableCell sx={{ width: '20%' }}>วันที่สิ้นสุดการเรียน</TableCell>
+                    {userGroup.attempts.some(attempt => attempt.endat === null) ? (
+                      <TableCell sx={{ width: '20%' }}>วันที่ควรเรียนจบ</TableCell>
+                    ) : (
+                      <TableCell sx={{ width: '20%' }}>วันที่สิ้นสุดการเรียน</TableCell>
+                    )}
                     <TableCell sx={{ width: '20%' }}>สถานะ</TableCell>
                     <TableCell sx={{ width: "10%" }}>ลบประวัติ</TableCell>
                   </TableRow>
@@ -473,6 +490,33 @@ function EnrollSum() {
     });
   };
 
+  const handleDeleteFiltered = async () => {
+    const enrollmentIdsToDelete = filteredAndSortedEnrollments.flatMap(userGroup =>
+      userGroup.attempts.map(attempt => attempt.id)
+    );
+
+    if (enrollmentIdsToDelete.length === 0) {
+      setSnackbar({ open: true, message: 'ไม่มีข้อมูลที่กรองไว้เพื่อลบ', severity: 'warning' });
+      return;
+    }
+
+    openDeleteDialog({
+      title: "ยืนยันการลบข้อมูลทั้งหมด",
+      description: `คุณแน่ใจหรือไม่ว่าต้องการลบประวัติการเรียนที่กรองไว้ทั้งหมด ${enrollmentIdsToDelete.length} รายการ? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+      onConfirm: async () => {
+        setDialogOpen(false);
+        try {
+          const response = await backend.delete(`/teacher/deleteFilteredEnrollments/${courseId}`, { data: { enrollmentIds: enrollmentIdsToDelete }, withCredentials: true });
+          setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+          fetchSumEnrollment();
+        } catch (error) {
+          setSnackbar({ open: true, message: error?.response?.data?.message || 'เกิดข้อผิดพลาดในการลบข้อมูลที่กรองไว้', severity: 'error' });
+          console.log(error);
+        }
+      },
+    });
+  };
+
   const groupedEnrollments = React.useMemo(() => {
     if (!enrollments.length) return [];
 
@@ -519,7 +563,7 @@ function EnrollSum() {
         const filterStartDate = dateRange.startDate ? new Date(dateRange.startDate) : null;
         const filterEndDate = dateRange.endDate ? new Date(dateRange.endDate) : null;
 
-        if (filterEndDate) filterEndDate.setHours(23, 59, 59, 999); // Set to end of day
+        if (filterEndDate) filterEndDate.setHours(23, 59, 59, 999);
 
         const startDateMatch = !filterStartDate || attemptStartDate >= filterStartDate;
         const endDateMatch = !filterEndDate || (attemptEndDate && attemptEndDate <= filterEndDate);
@@ -564,11 +608,11 @@ function EnrollSum() {
 
     const headers = [
       "เลขประจำตัวนักเรียน", "ชื่อนักเรียน", "ครั้งที่เรียน",
-      "วันที่เริ่มเรียน", "วันที่สิ้นสุดการเรียน", "สถานะ",
+      "วันที่เริ่มเรียน", "วันที่สิ้นสุดการเรียน", "วันที่ควรเรียนจบ", "สถานะ",
       "คะแนนก่อนเรียน", "คะแนนหลังเรียน", "คะแนนปฏิบัติการ", "เหตุผลการยกเลิก"
     ];
 
-    const statusText = { 1: "ผ่าน", 0: "กำลังเรียนอยู่", "-1": "ไม่ผ่าน", "-2": "ยกเลิกการเรียน" };
+    const statusText = { 1: "ผ่าน", 0: "กำลังเรียนอยู่", "-1": "ไม่ผ่าน", "-2": "ยกเลิกการเรียน", "-3": "หมดเวลาการเรียน" };
 
     const rows = filteredAndSortedEnrollments.flatMap(userGroup =>
       userGroup.attempts.map((attempt, attemptIndex) => {
@@ -579,6 +623,7 @@ function EnrollSum() {
           attemptIndex + 1,
           new Date(attempt.startat).toLocaleString("th-TH"),
           attempt.endat ? new Date(attempt.endat).toLocaleString("th-TH") : "-",
+          attempt.expires_at ? new Date(attempt.expires_at).toLocaleString("th-TH") : "-",
           statusText[attempt.status] || "ไม่ทราบ",
           attempt.pretestScore,
           attempt.posttestScore,
@@ -711,9 +756,10 @@ function EnrollSum() {
             >
               <MenuItem value="all">ทั้งหมด</MenuItem>
               <MenuItem value={1}>ผ่าน</MenuItem>
+              <MenuItem value={0}>กำลังเรียนอยู่</MenuItem>
               <MenuItem value={-1}>ไม่ผ่าน</MenuItem>
               <MenuItem value={-2}>ยกเลิกการเรียน</MenuItem>
-              <MenuItem value={0}>กำลังเรียนอยู่</MenuItem>
+              <MenuItem value={-3}>หมดเวลาการเรียน</MenuItem>
             </Select>
           </FormControl>
         </Stack>
@@ -738,23 +784,55 @@ function EnrollSum() {
           gap: 2
         }}
       >
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={exporting ? <CircularProgress size={20} color="inherit" /> : <FileDownloadIcon />}
-          onClick={handleExportCSV}
-          disabled={exporting || filteredAndSortedEnrollments.length === 0}
+        <Stack 
+          direction="row" 
+          spacing={2}
           sx={{
-            width: { xs: "100%", md: 200 },
-            mb: tabletQuery ? 1 : 0
+            width: { xs: "100%", md: "40%" },
           }}
         >
-          {exporting ? "กำลังส่งออก..." : "ดาวโหลดไฟล์ CSV"}
-        </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={exporting ? <CircularProgress size={20} color="inherit" /> : <FileDownloadIcon />}
+            onClick={handleExportCSV}
+            disabled={exporting || filteredAndSortedEnrollments.length === 0}
+            sx={{
+              width: { xs: "100%", md: "auto" },
+            }}
+          >
+            {exporting ? "กำลังส่งออก..." : "ดาวโหลดไฟล์ CSV"}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={handleDeleteFiltered}
+            disabled={filteredAndSortedEnrollments.length === 0}
+            sx={{ 
+              width: { xs: "100%", md: "auto" } 
+            }}
+          >
+            ลบทั้งหมด
+          </Button>
+        </Stack>
 
-        <Typography variant="body1">
-          ผลลัพธ์: {filteredAndSortedEnrollments.length} คน
-        </Typography>
+        <Stack
+          sx={{
+            flexDirection: { xs: "column", md: "row" },
+            justifyContent: "center",
+            alignItems: "center" ,
+            gap: 2
+          }}
+        >
+          <Typography variant="body1">
+            จำนวนผู้เรียน: {filteredAndSortedEnrollments.length} คน
+          </Typography>
+          <Typography variant="body1">
+            จำนวนการเรียน: {filteredAndSortedEnrollments.flatMap(userGroup => userGroup.attempts.map(attempt => attempt.id)).length} ครั้ง
+          </Typography>
+        </Stack>
+        
       </Stack>
 
 

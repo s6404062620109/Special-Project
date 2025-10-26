@@ -17,6 +17,7 @@ const getAll = (req, res) => {
       c.announce_state,
       c.pretest_rate,
       c.posttest_rate,
+      c.duration_days,
       (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id) AS countEnrollments,
       (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id AND posttest_complete = 1) AS countPosttestComplete,
       u.sex AS teacherSex,
@@ -63,6 +64,7 @@ const getAll = (req, res) => {
           announce_state: course.announce_state,
           pretest_rate: course.pretest_rate,
           posttest_rate: course.posttest_rate,
+          duration_days: course.duration_days,
         },
         subject: subjectResults,
         teacherInfo: {

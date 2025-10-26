@@ -6,6 +6,8 @@ import {
   Divider,
   FormControl,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -18,17 +20,19 @@ import {
 } from "@mui/material";
 
 import style from './css/popup.module.css';
+import ClearIcon from '@mui/icons-material/Clear';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
 function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClose, onSave }) {
-    const [courseData, setCourseData] = useState({
+    const [ courseData, setCourseData ] = useState({
         enable: courseInfo.enable,
         announcement: courseInfo.announce_state,
         pretest_rate: courseInfo.pretest_rate,
         posttest_rate: courseInfo.posttest_rate,
+        duration_days: courseInfo.duration_days,
     });
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
@@ -38,7 +42,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
         { name: "แสดงคะแนนรวมทั้งหมด", value: 2 },
         { name: "แสดงคะแนนและรายละเอียด", value: 3 },
     ];
-
+  
     const getValidationErrors = (showError = false) => {
         const errors = [];
 
@@ -89,6 +93,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                     announcement: Number(courseData.announcement),
                     pretest_rate: Number(courseData.pretest_rate),
                     posttest_rate: Number(courseData.posttest_rate),
+                    duration_days: courseData.duration_days ? Number(courseData.duration_days) : null,
                 },
                 { withCredentials: true }
             );
@@ -111,7 +116,8 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
             courseData.enable !== courseInfo.enable ||
             courseData.announcement !== courseInfo.announce_state ||
             Number(courseData.pretest_rate) !== courseInfo.pretest_rate ||
-            Number(courseData.posttest_rate) !== courseInfo.posttest_rate;
+            Number(courseData.posttest_rate) !== courseInfo.posttest_rate ||
+            Number(courseData.duration_days) !== courseInfo.duration_days;
 
         if (!hasChanges) {
             setSnackbar({ open: true, message: 'ไม่มีการเปลี่ยนแปลงข้อมูล', severity: 'info' });
@@ -131,7 +137,8 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
         courseData.enable !== courseInfo.enable ||
         courseData.announcement !== courseInfo.announce_state ||
         Number(courseData.pretest_rate) !== courseInfo.pretest_rate ||
-        Number(courseData.posttest_rate) !== courseInfo.posttest_rate;
+        Number(courseData.posttest_rate) !== courseInfo.posttest_rate ||
+        Number(courseData.duration_days) !== courseInfo.duration_days;
 
     const validationErrors = getValidationErrors();
     const isCourseValidForEnable = validationErrors.length === 0;
@@ -183,6 +190,33 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                             ))}
                         </Select>
                     </FormControl>
+
+                    <TextField
+                        variant="outlined"
+                        label="จำนวนวันที่ควรเรียนจบ (ไม่บังคับ)"
+                        type="number"
+                        value={courseData.duration_days || ''}
+                        onChange={(e) => setCourseData({ ...courseData, duration_days: e.target.value === '' ? null : e.target.value })}
+                        fullWidth
+                        disabled={!isReadyForSettings}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="clear duration days"
+                                        onClick={() => setCourseData({ ...courseData, duration_days: null })}
+                                        edge="end"
+                                        disabled={!isReadyForSettings || courseData.duration_days === null}
+                                    >
+                                        <ClearIcon />
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                            inputProps: {
+                                min: 1,
+                            },
+                        }}
+                    />
 
                     <Stack 
                         direction={{ xs: "column", sm: "row" }} 

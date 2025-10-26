@@ -195,9 +195,13 @@ const updateCourse = (req, res) => {
 
 const updateSettingCourse = (req, res) => {
     const { courseId } = req.params;
-    const { enable, pretest_rate, posttest_rate, announcement } = req.body;
+    const { enable, pretest_rate, posttest_rate, announcement, duration_days } = req.body;
     
-    if (courseId === undefined || enable === undefined || announcement === undefined || pretest_rate === undefined || posttest_rate === undefined) {
+    if (courseId === undefined || 
+      enable === undefined || 
+      announcement === undefined || 
+      pretest_rate === undefined || 
+      posttest_rate === undefined) {
       return res.status(400).send({ message: "Require courseid, enable, announcement, pretest_rate, posttest_rate." })
     }
 
@@ -210,12 +214,28 @@ const updateSettingCourse = (req, res) => {
     }
 
     try{
-        db.query("UPDATE course SET pretest_rate = ?, posttest_rate = ?, enable = ?, updateat = NOW(), announce_state = ? WHERE id = ?", 
-          [pretest_rate, posttest_rate, enable, announcement, courseId], (error) => {
+        db.query("UPDATE course SET pretest_rate = ?, posttest_rate = ?, enable = ?, updateat = NOW(), announce_state = ? , duration_days = ? WHERE id = ?", 
+          [pretest_rate, posttest_rate, enable, announcement, duration_days, courseId], (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });
             }
+
+            if (duration_days !== null && duration_days !== undefined) {
+              db.query("UPDATE enrollment SET expires_at = DATE_ADD(startat, INTERVAL ? DAY) WHERE courseId = ?", [duration_days, courseId], (err) => {
+                if (err) {
+                  console.error(err);
+                  return res.status(500).json({message: "Database enrollment update error."});
+                }
+              });
+            } else{
+              db.query("UPDATE enrollment SET expires_at = null WHERE courseId = ?", [courseId], (err) => {
+                if (err) {
+                  console.error(err);
+                  return res.status(500).json({message: "Database enrollment update error."});
+                }
+              })
+            } 
 
             return res.status(200).send({ message: "ตั้งค่าคอร์สเรัยนเสร็จสิ้น."});
         });
@@ -369,6 +389,8 @@ const enrollSummary = async (req, res) => {
         status = -1; 
       } else if (enroll.posttest_complete === -2 && enroll.pretest_complete === -2) {
         status = -2;
+      } else if (enroll.expires_at && new Date(enroll.expires_at) < new Date()) {
+        status = -3;
       }
       else {
         status = 0;
@@ -385,6 +407,7 @@ const enrollSummary = async (req, res) => {
         labtestScore,
         startat: enroll.startat,
         endat: enroll.endat,
+        expires_at: enroll.expires_at,
         progress: [{ questions: progress }],
         status: status,
         reason: cancellationLog ? cancellationLog.reason : null
@@ -1451,6 +1474,28 @@ const deleteEnrollment = (req, res) => {
   }
 }
 
+const deleteFilteredEnrollments = (req, res) => {
+  const { courseId } = req.params;
+  const { enrollmentIds } = req.body;
+
+  if (!courseId || !enrollmentIds || !Array.isArray(enrollmentIds) || enrollmentIds.length === 0) {
+    return res.status(400).json({ message: "Course ID and a non-empty array of enrollment IDs are required." });
+  }
+
+  try {
+    db.query("DELETE FROM enrollment WHERE id IN (?) AND courseId = ?", [enrollmentIds, courseId], (error, result) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Database enrollment query error." });
+      }
+      return res.status(200).json({ message: `ลบประวัติการเรียนที่เลือกทั้งหมด ${result.affectedRows} รายการสำเร็จ` });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error", error });
+  }
+};
+
 /* teacher_enrollment controller*/
 
 module.exports = {
@@ -1473,5 +1518,6 @@ module.exports = {
   editPdfSubject,
   deleteSubject,
   deleteStudentEnrollments,
-  deleteEnrollment
+  deleteEnrollment,
+  deleteFilteredEnrollments
 }

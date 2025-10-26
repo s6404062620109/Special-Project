@@ -236,6 +236,24 @@ function CancelEnrollmentDialog({ open, onClose, onConfirm }) {
   );
 }
 
+function ExpiredDialog({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>คอร์สหมดอายุ</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          ระยะเวลาการเรียนของคุณในคอร์สนี้ได้สิ้นสุดลงแล้ว ระบบจะทำการรีเฟรชหน้าเพื่ออัปเดตสถานะของคุณ
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" autoFocus>
+          ตกลง
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function CourseDetail() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
@@ -251,6 +269,7 @@ function CourseDetail() {
     icon: "",
     createat: null,
     updateat: null,
+    expires_at: null,
     announcement: 0,
   });
   const [count, setCount] = useState({
@@ -277,6 +296,7 @@ function CourseDetail() {
   });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [expiredDialogOpen, setExpiredDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const fetchCourseInfo = async () => {
@@ -356,8 +376,7 @@ function CourseDetail() {
 
   const findAndNavigateToLatestEnrollment = async () => {
     try {
-      const response = await backend.get(
-        `/enroll/getLatestEnrollment/${userData.id}/${courseId}`,
+      const response = await backend.get(`/enroll/getLatestEnrollment/${userData.id}/${courseId}`,
         { withCredentials: true }
       );
 
@@ -395,8 +414,7 @@ function CourseDetail() {
 
   const fethProgress = async () => {
     try {
-      const response = await backend.get(
-        `/progress/checkCourseProgress/${history[0].id}/${courseId}`,
+      const response = await backend.get(`/progress/checkCourseProgress/${history[0].id}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -409,13 +427,17 @@ function CourseDetail() {
       }
     } catch (error) {
       console.log(error);
+      if (error.response && error.response.status === 403 && error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
+        setExpiredDialogOpen(true);
+      } else {
+        setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการเข้าเรียนต่อ', severity: 'error' });
+      }
     }
   };
 
   const fetchProgressAnswers = async () => {
     try {
-      const response = await backend.get(
-        `/progress/checkProgressAnswers/${courseId}/${enrollmentId}/${showTestList.mode}`,
+      const response = await backend.get(`/progress/checkProgressAnswers/${courseId}/${enrollmentId}/${showTestList.mode}`,
         {
           withCredentials: true,
         }
@@ -437,8 +459,7 @@ function CourseDetail() {
 
   const fetchLatestProgress = async () => {
     try {
-      const response = await backend.get(
-        `/progress/getLatestProgress/${enrollmentId}/${courseId}`,
+      const response = await backend.get(`/progress/getLatestProgress/${enrollmentId}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -448,7 +469,12 @@ function CourseDetail() {
         navigate(`/course/${courseId}/${response.data.inProgress}`);
       }
     } catch (error) {
-      console.log(error);
+      if (error.response && error.response.status === 403 && error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
+        setExpiredDialogOpen(true);
+        return;
+      } else {
+        setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการเข้าเรียนต่อ', severity: 'error' });
+      }
     }
   };
 
@@ -906,7 +932,8 @@ function CourseDetail() {
                   : "-"}
                 </Typography>
 
-                <Typography variant="subtitle1" color="text.secondary">
+                {history[0].endat !== null ? (
+                  <Typography variant="subtitle1" color="text.secondary">
                   จบการเรียน: {" "}
                     {history[0].endat
                     ? new Date(history[0].endat).toLocaleString("th-TH", {
@@ -916,6 +943,18 @@ function CourseDetail() {
                       })
                     : "-"}
                 </Typography>
+                ) : (
+                  <Typography variant="subtitle1" color="text.secondary">
+                  ควรเรียนจบก่อน: {" "}
+                    {history[0].expires_at
+                    ? new Date(history[0].expires_at).toLocaleString("th-TH", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                        timeZone: "Asia/Bangkok",
+                      })
+                    : "-"}
+                </Typography>
+                )}
               </Stack>
             )}
             
@@ -1150,6 +1189,11 @@ function CourseDetail() {
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
         onConfirm={handleCancelEnrollment}
+      />
+
+      <ExpiredDialog
+        open={expiredDialogOpen}
+        onClose={() => window.location.reload()}
       />
 
       <Snackbar 

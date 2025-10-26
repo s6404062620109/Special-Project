@@ -67,4 +67,6 @@ router.delete("/deleteStudentEnrollments/:courseId/:userId", authUserRole.verifi
 
 router.delete("/deleteEnrollment/:courseId/:enrollmentId", authUserRole.verifiedTeacherCourse, teacherController.deleteEnrollment);
 
+router.delete("/deleteFilteredEnrollments/:courseId", authUserRole.verifiedTeacherCourse, teacherController.deleteFilteredEnrollments);
+
 module.exports = router;

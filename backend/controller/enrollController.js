@@ -14,7 +14,7 @@ const enrollCourse = (req, res) => {
   try {
     const sql = `
       SELECT 
-        c.pretest_rate, c.posttest_rate,
+        c.pretest_rate, c.posttest_rate, c.duration_days,
         q.id AS questionId,
         l.id AS labId,
         l.typeId AS labType
@@ -46,11 +46,20 @@ const enrollCourse = (req, res) => {
         return shuffled.slice(0, count);
       };
 
+      const durationDays = results[0].duration_days;
       const pretestQids = getRandomItems(questionIds, pretestRate);
       const posttestQids = getRandomItems(questionIds, posttestRate);
 
-      db.query("INSERT INTO enrollment (courseId, completed_labs, total_labs, userId, startat) VALUES (?, ?, ?, ?, ?)",
-        [courseId, 0, labIds.length, userId, new Date()], (err, enrollResult) => {
+      const startTime = new Date();
+      let expiresAt = null;
+
+      if (durationDays !== null && durationDays !== undefined) {
+        expiresAt = new Date(startTime);
+        expiresAt.setDate(expiresAt.getDate() + durationDays);
+      }
+
+      db.query("INSERT INTO enrollment (courseId, completed_labs, total_labs, userId, startat, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
+        [courseId, 0, labIds.length, userId, startTime, expiresAt], (err, enrollResult) => {
           if (err) {
             console.log(err);
             return res.status(500).json({ message: "Failed to insert enrollment." });

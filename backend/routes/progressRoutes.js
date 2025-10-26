@@ -4,7 +4,7 @@ const authUserRole = require("../middleware/authUserRole");
 
 const router = express.Router();
 
-router.get("/checkCourseProgress/:enrollmentId/:courseId", authUserRole.verifiedStudentEnrollCourse, progressController.checkProgress);
+router.get("/checkCourseProgress/:enrollmentId/:courseId", authUserRole.verifiedStudentEnrollCourse, authUserRole.verifiedEnrollCourseExpired, progressController.checkProgress);
 
 router.get("/checkProgressAnswers/:courseId/:enrollmentId/:mode", authUserRole.verifiedStudentEnrollCourse, progressController.checkProgressAnswers);
   

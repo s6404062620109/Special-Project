@@ -53,10 +53,10 @@ function EditCourse() {
   const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
   const [ examDialogOpen, setExamOpenDialog ] = useState(false);
   const navigate = useNavigate();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [subjectToDelete, setSubjectToDelete] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
-  const [filter, setFilter] = useState({
+  const [ deleteDialogOpen, setDeleteDialogOpen ] = useState(false);
+  const [ subjectToDelete, setSubjectToDelete ] = useState(null);
+  const [ snackbar, setSnackbar ] = useState({ open: false, message: "", severity: "info" });
+  const [filter, setFilter ] = useState({
     startDate: null,
     endDate: null,
   });

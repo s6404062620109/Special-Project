@@ -6,6 +6,32 @@ import style from "./css/posttest.module.css";
 import { AuthContext } from '../../../context/AuthProvider';
 import TestRead from '../../../components/Reader/TestRead';
 import { Button, Typography } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
+
+function ExpiredDialog({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>คอร์สหมดอายุ หรือไม่พบการลงทะเบียน</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          ระยะเวลาการเรียนของคุณในคอร์สนี้อาจสิ้นสุดลงแล้ว หรือไม่พบข้อมูลการลงทะเบียนเรียน
+          ระบบจะนำคุณกลับไปยังหน้ารายละเอียดคอร์ส
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" autoFocus>
+          ตกลง
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 function PostTest() {
   const { courseId, enrollmentId } = useParams();
@@ -13,6 +39,7 @@ function PostTest() {
   const [ question, setQuestion ] = useState([]);
   const [ errorMessage, setErrorMessage ] = useState("");
   const [ selectedAnswers, setSelectedAnswers ] = useState({});
+  const [ expiredDialogOpen, setExpiredDialogOpen ] = useState(false);
   const navigate = useNavigate();
   
   const checkLabCompletion = async () => {
@@ -36,6 +63,13 @@ function PostTest() {
       }
     } catch (error) {
       console.log(error);
+      if (
+        error?.response?.status === 404 ||
+        error?.response?.data?.message === "No courses found." ||
+        error?.response?.data?.message === "คอร์สนี้หมดอายุการเรียนแล้ว"
+      ) {
+        setExpiredDialogOpen(true);
+      }
     }
   };
 
@@ -114,6 +148,12 @@ function PostTest() {
   return (
     <div className={style.container}>
       <Typography variant='h4' >แบบทดสอบหลังเรียน</Typography>
+
+      <ExpiredDialog
+        open={expiredDialogOpen}
+        onClose={() => navigate(`/course/${courseId}/${enrollmentId}`)}
+      />
+
       <form onSubmit={handleSubmit}>
         <TestRead 
           question={question}
@@ -121,6 +161,14 @@ function PostTest() {
           selectedAnswers={selectedAnswers}
         />
 
+        <Typography 
+          variant='body2' 
+          fontWeight="semi-bold" 
+          color={errorMessage === "ส่งคำตอบเสร็จสิ้น" ? "green" : "red"}
+        >
+          {errorMessage}
+        </Typography>
+                
         <Button 
           variant="contained" 
           color="success" 

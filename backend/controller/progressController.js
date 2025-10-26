@@ -108,7 +108,6 @@ const checkProgressAnswers = (req, res) => {
   }
 };
 
-
 const getLatest = (req, res) => {
   const { enrollmentId, courseId } = req.params;
 
@@ -117,7 +116,7 @@ const getLatest = (req, res) => {
   }
 
   try {
-    db.query(`SELECT courseId, pretest_complete, posttest_complete, completed_labs, total_labs FROM enrollment WHERE id = ? AND courseId = ?`, [enrollmentId, courseId], (err, results) => {
+    db.query(`SELECT courseId, pretest_complete, posttest_complete, completed_labs, total_labs, expires_at FROM enrollment WHERE id = ? AND courseId = ?`, [enrollmentId, courseId], (err, results) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ message: "Database enrollment query error" });
@@ -125,6 +124,19 @@ const getLatest = (req, res) => {
 
       if (results.length === 0){
         return res.status(404).json({ message: "Enrollment not found" });
+      }
+
+      const enrollment = results[0];
+
+      if (enrollment.expires_at && new Date() > new Date(enrollment.expires_at)) {
+
+        db.query("UPDATE enrollment SET endat = NOW(), posttest_complete = -3 WHERE id = ?", [enrollmentId], (updateErr) => {
+          if (updateErr) {
+            console.error("Failed to update expired enrollment:", updateErr);
+          }
+          return res.status(403).json({ message: "คอร์สนี้หมดอายุการเรียนแล้ว" });
+        });
+        return; 
       }
 
       const pretestComplete = results[0].pretest_complete;

@@ -17,6 +17,12 @@ import {
   Stack,
   Tab,
   Tabs,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import ListIcon from "@mui/icons-material/List";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -278,14 +284,33 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
   };
 }
 
+function ExpiredDialog({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>คอร์สหมดอายุ หรือไม่พบการลงทะเบียน</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          ระยะเวลาการเรียนของคุณในคอร์สนี้อาจสิ้นสุดลงแล้ว หรือไม่พบข้อมูลการลงทะเบียนเรียน
+          ระบบจะนำคุณกลับไปยังหน้ารายละเอียดคอร์ส
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" autoFocus>
+          ตกลง
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function Subject() {
   const { courseId, subjectId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
   const [subjectList, setSubjectList] = useState([]);
   const [content, setContent] = useState({ name: "", content: null });
   const [openNavSubject, setOpenNavSubject] = useState(false);
-  const [labs, setLabs] = useState(false);
   const [activeTab, setActiveTab] = useState("lesson");
+  const [expiredDialogOpen, setExpiredDialogOpen] = useState(false);
 
   const {
     currentQuestionIndex,
@@ -309,8 +334,7 @@ function Subject() {
 
   const fetchSubjectData = async () => {
     try {
-      const response = await backend.get(
-        `/subjects/getSubject/${courseId}/${subjectId}`,
+      const response = await backend.get(`/subjects/getSubject/${courseId}/${subjectId}`,
         { withCredentials: true }
       );
 
@@ -323,13 +347,6 @@ function Subject() {
       }
     } catch (err) {
       console.log(err);
-      if (
-        err?.response?.status === 404 ||
-        err?.response?.data?.message === "No courses found."
-      ) {
-        alert("โปรดลงทะเบียนเรียนใหม่ก่อนเข้าเรียน");
-        navigate(`/course/${courseId}/${enrollmentId}`);
-      }
     }
   };
 
@@ -377,6 +394,13 @@ function Subject() {
       }
     } catch (error) {
       console.log(error);
+      if (
+        error?.response?.status === 404 ||
+        error?.response?.data?.message === "No courses found." ||
+        error?.response?.data?.message === "คอร์สนี้หมดอายุการเรียนแล้ว"
+      ) {
+        setExpiredDialogOpen(true);
+      }
     }
   };
 
@@ -389,6 +413,11 @@ function Subject() {
 
   return (
     <div className={style.container}>
+      <ExpiredDialog
+        open={expiredDialogOpen}
+        onClose={() => navigate(`/course/${courseId}/${enrollmentId}`)}
+      />
+
       <Stack sx={{ width: "100%", mb: 2 }}>
         <Tabs
           value={activeTab}
