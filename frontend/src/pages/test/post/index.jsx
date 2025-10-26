@@ -67,15 +67,26 @@ function PostTest() {
 
       if (response.status === 200) {
         const pretestProgress = response.data.pretest_progress;
+        const posttestProgress = response.data.posttest_progress;
         const labProgress = response.data.lab_progress;
 
         const pretestCompleted = pretestProgress.every((item) => item.is_completed === 1);
+        const posttestCompleted = posttestProgress.every((item) => item.is_completed === 1);
         const labCompleted = labProgress.every((item) => item.is_completed === 1);
 
         if(!pretestCompleted && !labCompleted){
           setAlertDialog({
             open: true,
             message: "กรุณาทำแบบทดสอบก่อนเรียน และปฎิบัติการทดสอบทั้งหมดก่อน",
+            redirect: -1
+          });
+          return;
+        }
+
+        if(posttestCompleted){
+          setAlertDialog({
+            open: true,
+            message: "คุณได้ทำแบบทดสอบหลังเรียนแล้ว ไม่อนุญาตให้ทำอีกครั้ง",
             redirect: -1
           });
           return;
@@ -120,7 +131,6 @@ function PostTest() {
   };
 
   useEffect(() => {
-    localStorage.removeItem("selector-question-type");
     if (userData.id === null) {
       setAlertDialog({
         open: true,

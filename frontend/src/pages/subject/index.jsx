@@ -307,6 +307,22 @@ function ExpiredDialog({ open, onClose }) {
   );
 }
 
+function AlertDialog({ open, onClose, message }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>แจ้งเตือน</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {message}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" autoFocus>ตกลง</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function Subject() {
   const { courseId, subjectId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
