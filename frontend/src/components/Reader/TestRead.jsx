@@ -10,7 +10,6 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
   const { courseId, enrollmentId, subjectId, mode } = useParams();
   const [ currentIndex, setCurrentIndex ] = useState(0);
   const [ selectedType, setSelectedType ] = useState('all');
-  const [ cmdFileContent, setCmdFileContent ] = useState('');
   const [ htmlFileContent, setHtmlFileContent ] = useState('');
   const [ questionType, setQuestionType ] = useState([]);
 
@@ -63,7 +62,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
 
   useEffect(() => {
     if(question.length > 0){
-      setQuestionType([ 3, 5, 6 ]);
+      setQuestionType([ 3, 4, 5, 6 ]);
     }
   }, [question]);
 
@@ -73,24 +72,6 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
 
   useEffect(() => {
     if (!currentItem) return;
-
-    if (currentItem.type === 4 && currentItem.Cmdfile) {
-      if (typeof currentItem.Cmdfile.content === 'string') {
-        setCmdFileContent(currentItem.Cmdfile.content);
-      } 
-      else if (currentItem.Cmdfile instanceof File) {
-        const reader = new FileReader();
-        reader.onload = (e) => setCmdFileContent(e.target.result);
-        reader.onerror = () => setCmdFileContent('ไม่สามารถอ่านไฟล์ shell script ได้');
-        reader.readAsText(currentItem.Cmdfile);
-      } 
-      else {
-        setCmdFileContent('');
-      }
-    } 
-    else {
-      setCmdFileContent('');
-    }
 
     if (currentItem.type === 5 && currentItem.htmlFile) {
       if (currentItem.htmlFile instanceof File) {
@@ -367,6 +348,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               >
                 {currentItem.content.split("\\n").map((line, index) => (
                   <React.Fragment key={index}>
+                    {currentIndex+1}.
                     {line}
                     <br />
                   </React.Fragment>
@@ -403,6 +385,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
               >
                 {currentItem.content.split("\\n").map((line, index) => (
                   <React.Fragment key={index}>
+                    {currentIndex+1}.
                     {line}
                     <br />
                   </React.Fragment>

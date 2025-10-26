@@ -14,7 +14,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
       onChange("content", content);
     }
   };
-  console.log(choice)
+
   return (
     <Stack
       sx={{

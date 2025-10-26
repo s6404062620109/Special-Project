@@ -721,7 +721,7 @@ function EditSubject() {
             let subjectValication = subjectValidation();
             let pdfValication = pdfValidation();
             let questionValication = questionValidation();
-            console.log(questionInput)
+
             if(editMode === "manual"){
                 if(subjectValication || questionValication){
                     const error = subjectValication || questionValication;
@@ -731,6 +731,7 @@ function EditSubject() {
                 }
                 setMode("submit");
                 return;
+                
             }
             else if(editMode === "pdf"){
                 if(pdfValication || questionValication){
