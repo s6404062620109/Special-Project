@@ -57,7 +57,7 @@ const QuestionItem = ({
       </Stack>
 
       <TextField
-        label="Question Content"
+        label="เนื้อหา"
         fullWidth
         value={content}
         onChange={(e) => setContent(e.target.value)}

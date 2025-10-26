@@ -16,7 +16,7 @@ const getLabQuestions = (req, res) => {
     }
 
     try{
-      db.query("SELECT * FROM labs WHERE subjectId = ? AND typeId in (3, 5, 6)", [subjectId], (error, result) => {
+      db.query("SELECT * FROM labs WHERE subjectId = ? AND typeId in (3, 4, 5, 6)", [subjectId], (error, result) => {
         if(error){
           console.log(error);
           return res.status(500).send({ message: "Database question query error." });
@@ -47,6 +47,15 @@ const getLabQuestions = (req, res) => {
                   id: answer.id,
                   content: answer.content,
                 }))
+              });
+            }
+
+            else if(item.typeId === 4){
+              questionFormat.push({
+                id: item.id,
+                content: item.content,
+                img: item.img,
+                type: item.typeId,
               });
             }
 
@@ -117,7 +126,7 @@ const getAllLabQuestion = (req, res) => {
         }
 
         const subjectIds = result.map(item => item.id);
-        db.query("SELECT * FROM labs WHERE subjectId IN (?) AND typeId IN (3, 5, 6)", [subjectIds], (error, labResult) => {
+        db.query("SELECT * FROM labs WHERE subjectId IN (?) AND typeId IN (3, 4, 5, 6)", [subjectIds], (error, labResult) => {
           if(error){
             console.log(error);
             return res.status(500).send({ message: "Database question query error." });
@@ -151,6 +160,16 @@ const getAllLabQuestion = (req, res) => {
                   }))
                 });
               }
+
+              if(item.typeId === 4){
+                questionFormat.push({
+                  id: item.id,
+                  content: item.content,
+                  img: item.img,
+                  type: item.typeId,
+                });
+              }
+
 
               else if(item.typeId === 5){
                 const htmlFolderPath = path.join(__dirname, `../courses/c${courseId}/s${item.subjectId}/lab${item.id}`);
@@ -408,6 +427,56 @@ const submitLabQuestions = async (req, res) => {
                 }
 
                 db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer.content, progressId], (error) => {
+                  if (error) {
+                    console.log(error);
+                    return res.status(500).send({ message: "Database progress_answer insert error" });
+                  }
+                  return res.status(200).send({ message: "บันทึกคำตอบเรียบร้อยแล้ว" });
+                });
+              });
+            });
+          }
+        }
+
+        if(answer.lab_type === 4){
+          const correctAnswer = userAnswer === answerResult[0].content;
+          if(correctAnswer){
+            db.query("UPDATE lab_progress SET is_completed = 1, score = 1 WHERE id = ?", [progressId], (error) => {
+              if (error) {
+                console.log(error);
+                return res.status(500).send({ message: "Database progress update error" });
+              }
+
+              db.query("UPDATE enrollment SET completed_labs = completed_labs + 1 WHERE id = ?", [enrollmentId], (error) => {
+                if (error){
+                  console.log(error);
+                  return res.status(500).send({ message: "Database enrollment update error" });
+                }
+
+                db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer, progressId], (error) => {
+                  if (error) {
+                    console.log(error);
+                    return res.status(500).send({ message: "Database progress_answer insert error" });
+                  }
+                  return res.status(200).send({ message: "บันทึกคำตอบเรียบร้อยแล้ว" });
+                });
+              });
+            });
+          }
+          else{
+            db.query("UPDATE lab_progress SET is_completed = 1, score = 0 WHERE id = ?", [progressId], (error) => {
+              if (error) {
+                console.log(error);
+                return res.status(500).send({ message: "Database progress update error" });
+              }
+
+              db.query("UPDATE enrollment SET completed_labs = completed_labs + 1 WHERE id = ?", [enrollmentId], (error) => {
+                if (error){
+                  console.log(error);
+                  return res.status(500).send({ message: "Database enrollment update error" });
+                }
+
+                db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer, progressId], (error) => {
                   if (error) {
                     console.log(error);
                     return res.status(500).send({ message: "Database progress_answer insert error" });

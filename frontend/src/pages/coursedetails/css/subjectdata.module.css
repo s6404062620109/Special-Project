@@ -9,7 +9,7 @@
 }
 
 .content td:nth-child(2) {
-    text-align: center;
+    text-align: right;
 }
 
 .content td:nth-child(1) > p {

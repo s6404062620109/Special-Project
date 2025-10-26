@@ -362,7 +362,7 @@ function CourseDetail() {
         }
       );
 
-      if (pretestResponse.status === 200 && posttestResponse.status === 200) {
+      if (pretestResponse.status === 200 && posttestResponse.status === 200 && labResponse.status === 200) {
         setQuestionList({
           pretestList: pretestResponse.data.questions,
           posttestList: posttestResponse.data.questions,
@@ -427,7 +427,7 @@ function CourseDetail() {
       }
     } catch (error) {
       console.log(error);
-      if (error.response && error.response.status === 403 && error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
+      if (error.response.status === 403 || error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
         setExpiredDialogOpen(true);
       } else {
         setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการเข้าเรียนต่อ', severity: 'error' });
@@ -553,14 +553,18 @@ function CourseDetail() {
   }, [history, enrollmentId, courseId, navigate]);
 
   useEffect(() => {
-    if (enrollmentId && enrollmentId !== "null" && history.length > 0) {
+    if (
+      enrollmentId &&
+      enrollmentId !== "null" &&
+      history.length > 0 
+    ) {
       fethProgress();
     }
   }, [history, enrollmentId]);
 
+
   const isPreTestCompleted =
-    pretestProgress.length > 0 &&
-    pretestProgress.every((item) => item.is_completed === 1);
+    pretestProgress.length > 0 && pretestProgress.every((item) => item.is_completed === 1);
   const preTestScore = isPreTestCompleted
     ? pretestProgress.reduce((acc, item) => acc + item.score, 0)
     : null;
@@ -577,7 +581,6 @@ function CourseDetail() {
     labProgress.every((item) => item.is_completed === 1);
   
   const labScore = labProgress.reduce((acc, item) => acc + item.score, 0);
-
 
   const mergedPretestData = React.useMemo(() => {
     if (
@@ -656,8 +659,9 @@ function CourseDetail() {
       if (q.type === 6) {
         // type 6 → รวมหลายคำตอบเป็น array
         userAnswer = answers.map((a) => a.user_answer);
-      } else {
-        // type อื่น → เอา record แรก
+      } 
+      else {
+        // type 3, 4, 5 → เอา record แรก
         userAnswer = answers.length ? answers[0].user_answer : null;
       }
 

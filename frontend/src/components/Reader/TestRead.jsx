@@ -149,6 +149,7 @@ function TestRead({ question, handleAnswerChange, selectedAnswers = null }) {
             {questionType.map((type) => (
               <MenuItem key={type} value={type}>
                 {type === 3 && "เลือกคำตอบเพียง 1 คำตอบ"}
+                {type === 4 && "เติมคำตอบด้วยตนเอง"}
                 {type === 5 && "เลือกคำตอบจากการกระทำ"}
                 {type === 6 && "เลือกคำตอบหลายคำตอบ"}
               </MenuItem>

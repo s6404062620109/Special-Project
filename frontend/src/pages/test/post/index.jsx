@@ -33,6 +33,22 @@ function ExpiredDialog({ open, onClose }) {
   );
 }
 
+function AlertDialog({ open, onClose, message }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>แจ้งเตือน</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {message}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary" autoFocus>ตกลง</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function PostTest() {
   const { courseId, enrollmentId } = useParams();
   const { userData } = useContext(AuthContext);
@@ -40,6 +56,7 @@ function PostTest() {
   const [ errorMessage, setErrorMessage ] = useState("");
   const [ selectedAnswers, setSelectedAnswers ] = useState({});
   const [ expiredDialogOpen, setExpiredDialogOpen ] = useState(false);
+  const [alertDialog, setAlertDialog] = useState({ open: false, message: "", redirect: null });
   const navigate = useNavigate();
   
   const checkLabCompletion = async () => {
@@ -56,16 +73,18 @@ function PostTest() {
         const labCompleted = labProgress.every((item) => item.is_completed === 1);
 
         if(!pretestCompleted && !labCompleted){
-          alert("กรุณาทำแบบทดสอบก่อนเรียน และปฎิบัติการทดสอบทั้งหมดก่อน");
-          navigate(-1);
+          setAlertDialog({
+            open: true,
+            message: "กรุณาทำแบบทดสอบก่อนเรียน และปฎิบัติการทดสอบทั้งหมดก่อน",
+            redirect: -1
+          });
           return;
         }
       }
     } catch (error) {
       console.log(error);
       if (
-        error?.response?.status === 404 ||
-        error?.response?.data?.message === "No courses found." ||
+        error?.response?.status === 403 ||
         error?.response?.data?.message === "คอร์สนี้หมดอายุการเรียนแล้ว"
       ) {
         setExpiredDialogOpen(true);
@@ -91,8 +110,11 @@ function PostTest() {
     } catch (error) {
       console.log(error);
       if(error.response.status === 404){
-        alert("Please enroll this course before posttest.");
-        navigate('/');
+        setAlertDialog({
+          open: true,
+          message: "กรุณาลงทะเบียนเรียนก่อนทำแบบทดสอบหลังเรียน",
+          redirect: `/course/${courseId}/null`
+        });
       }
     }
   };
@@ -100,8 +122,11 @@ function PostTest() {
   useEffect(() => {
     localStorage.removeItem("selector-question-type");
     if (userData.id === null) {
-      alert("Please login first.");
-      navigate('/');
+      setAlertDialog({
+        open: true,
+        message: "กรุณาเข้าสู่ระบบก่อน",
+        redirect: '/'
+      });
     }
     if (userData.id !== null) {
       checkLabCompletion();
@@ -152,6 +177,15 @@ function PostTest() {
       <ExpiredDialog
         open={expiredDialogOpen}
         onClose={() => navigate(`/course/${courseId}/${enrollmentId}`)}
+      />
+      <AlertDialog
+        open={alertDialog.open}
+        message={alertDialog.message}
+        onClose={() => {
+          const redirectUrl = alertDialog.redirect;
+          setAlertDialog({ open: false, message: "", redirect: null });
+          if (redirectUrl) navigate(redirectUrl);
+        }}
       />
 
       <form onSubmit={handleSubmit}>

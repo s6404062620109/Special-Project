@@ -154,6 +154,21 @@ function Labs({
           </Stack>
         );
 
+      case 4: // input answer text
+        return (
+          <Stack sx={{ width: "100%", margin: "8px auto" }} gap={2}>
+            <TextField
+              fullWidth
+              label="Answer"
+              disabled={isAnswered}
+              value={currentAnswer?.answer || ""}
+              onChange={(e) =>
+                handleLabAnswerChange(currentQuestion.id, 4, e.target.value)
+              }
+            />
+          </Stack>
+        );
+
       case 5: // HTML file + iframe
         return (
           <Stack sx={{ width: "100%", margin: "8px auto" }} gap={2}>

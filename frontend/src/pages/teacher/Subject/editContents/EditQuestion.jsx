@@ -33,7 +33,7 @@ function EditQuestion({
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
-    window.scrollTo(0, 0); // Scroll to top on page change
+    window.scrollTo(0, 0);
   };
  
   return (

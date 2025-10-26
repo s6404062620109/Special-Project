@@ -403,7 +403,11 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
             for (let i = 0; i < questionInput.length; i++) {
                 const item = questionInput[i];
                 if (item.content === "") {
-                    return `Question ${i + 1} content is required`;
+                    return `คำถามที่ ${i + 1} ต้องการเนื้อหาสำหรับคำถาม`;
+                }
+
+                if (!item.type) {
+                    return `กรุณาเลือกประเภทสำหรับคำถามที่ ${i + 1}`;
                 }
 
                 if (item.type === 3 || item.type === 6){
@@ -418,15 +422,16 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                     }
 
                     const correctChoices = item.choice.filter(choice => choice.isCorrect === 1);
-                    if (item.type === 6 && correctChoices.length === 1){
-                        return `ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 2 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
-                    }1
+                    if (item.type === 6 && correctChoices.length < 2){
+                        return `คำถามที่ ${i + 1} ประเภทคำตอบหลายคำตอบ ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 2 ตัวเลือก`;
+                    }
                     if (item.type === 3 && correctChoices.length !== 1) {
-                        return `ต้องการตัวเลือกที่ถูกต้อง 1 ตัวเลือกสำหรับคำถามที่ ${i + 1}`;
+                        return `คำถามที่ ${i + 1} ประเภทคำตอบเดียว ต้องการตัวเลือกที่ถูกต้อง 1 ตัวเลือกเท่านั้น`;
                     }
 
-                    const incorrectChoices = item.choice.filter(choice => choice.isCorrect === 0);
-                    if (incorrectChoices.length === 0) {
+                    const incorrectChoices = item.choice.filter(choice => choice.isCorrect === 0 || choice.isCorrect === false);
+                    
+                    if (incorrectChoices.length < 1) {
                         return `คำถามที่ ${i + 1} ต้องมีตัวเลือกที่ไม่ถูกต้องอย่างน้อย 1 ตัวเลือก`;
                     }
                 }
@@ -447,15 +452,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
                 }
 
                 if (item.type === 4) {
-                    if (item.Cmdfile === null) {
-                        return `ต้องการไฟล์ .sh สำหรับคำถามที่ ${i + 1}`;
-                    }
-
-                    if (item.Cmdfile) {
-                        if (!item.Cmdfile.name.endsWith(".sh")) {
-                            return `คำถามที่ ${i + 1} ต้องการไฟล์ .sh เท่านั้น`;
-                        }
-                    }
 
                     if(item.answer === ""){
                         return `คำถามที่ ${i + 1} ต้องการคำตอบ`;
@@ -465,8 +461,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         }
         
         return;
-    }
-
+    };
     return{
         questionType,
         setQuestionType,
@@ -627,7 +622,7 @@ function EditSubject() {
 
     useEffect(() => {
         if(questionInput.length > 0){
-            setQuestionType([ 3, 5, 6 ]);
+            setQuestionType([ 3, 4, 5, 6 ]);
         }
     }, [questionInput]);
 
@@ -726,7 +721,7 @@ function EditSubject() {
             let subjectValication = subjectValidation();
             let pdfValication = pdfValidation();
             let questionValication = questionValidation();
-
+            console.log(questionInput)
             if(editMode === "manual"){
                 if(subjectValication || questionValication){
                     const error = subjectValication || questionValication;
@@ -801,7 +796,7 @@ function EditSubject() {
                         backgroundColor: "rgb(25, 118, 210)",
                     },
                     }}
-                    onClick={() => navigate(-1)}
+                    onClick={() => handleBack()}
                 >
                     <ArrowLeftIcon />
                 </IconButton>
@@ -809,7 +804,7 @@ function EditSubject() {
                 <Button
                     variant="contained"
                     startIcon={<ArrowLeftIcon />}
-                    onClick={() => navigate(-1)}
+                    onClick={() => handleBack()}
                 >
                     ย้อนกลับ
                 </Button>
@@ -825,8 +820,9 @@ function EditSubject() {
                 <Alert 
                     onClose={() => setAlertOpen(false)} 
                     severity={
-                        (alertMessage === "Subject updated successfully.")
-                        ? "success" : "error"
+                        alertMessage === "Subject updated successfully." || alertMessage === "สร้างบทเรียนสำเร็จ"
+                        ? "success" 
+                        : "error"
                     }
                     variant="filled" 
                     sx={{ width: '100%' }}
@@ -1053,7 +1049,7 @@ function EditSubject() {
             )}
 
             <Dialog open={openImgUpload} onClose={handleCloseImgUpload}>
-                <DialogTitle>Question Image Upload</DialogTitle>
+                <DialogTitle>อัพโหลดรูปภาพสำหรับคำถามที่ {selectedImageIndex + 1}</DialogTitle>
                 <DialogContent>
                     <Box
                         onClick={() => questionImgInputRef.current?.click()}
@@ -1095,14 +1091,14 @@ function EditSubject() {
                                         mt: 1 
                                     }}
                                 >
-                                Image selected ✔
+                                เลือกรูปภาพที่ต้องการอัพโหลดแล้ว ✔
                                 </Typography>
                             </>
                         ) : (
                             <Stack justifyContent="center" alignItems="center">
                             <AddIcon sx={{ color: '#b3b3b3' }} />
                             <Typography variant="h6" sx={{ color: '#b3b3b3' }}>
-                                Upload Image here.
+                                อัพโหลดรูปภาพที่นี้
                             </Typography>
                             </Stack>
                         )}
@@ -1130,7 +1126,7 @@ function EditSubject() {
                             startIcon={<DeleteIcon />}
                             onClick={() => handleImageQuestionUpload(selectedImageIndex, { target: { files: [] } })}
                         >
-                            Clear
+                            ยกเลิก
                         </Button>
                     </Stack>
                 </DialogContent>

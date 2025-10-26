@@ -842,19 +842,6 @@ const addManualSubject = (req, res) => {
               );
             });
 
-            if (q.type === 4) {
-              const labFolderPath = path.join(subjectFolderPath, `lab${questionId}`);
-              createFolder(labFolderPath);
-
-              if (typeof q.Cmdfile === "string") {
-                const cmdFile = files.find(f => f.fieldname === q.Cmdfile);
-                if (cmdFile) {
-                  const cmdPath = path.join(labFolderPath, "run.sh");
-                  fs.writeFileSync(cmdPath, cmdFile.buffer);
-                }
-              }
-            }
-
             if (q.type === 5){
               const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
               createFolder(labFolder);
@@ -960,19 +947,6 @@ const addPdfSubject = (req, res) => {
               }
             );
           });
-
-          if (q.type === 4) {
-            const labFolderPath = path.join(subjectFolderPath, `lab${questionId}`);
-            createFolder(labFolderPath);
-
-            if (typeof q.Cmdfile === "string") {
-              const cmdFile = files.find(f => f.fieldname === q.Cmdfile);
-              if (cmdFile) {
-                const cmdPath = path.join(labFolderPath, "run.sh");
-                fs.writeFileSync(cmdPath, cmdFile.buffer);
-              }
-            }
-          }
 
           if (q.type === 5){
             const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
@@ -1102,19 +1076,6 @@ const editManualSubject = (req, res) => {
             db.query("INSERT INTO lab_answers (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
               if (err) console.log("Choice Insert Error:", err);
             });
-          }
-
-          if (qType === 4) {
-            const labFolder = path.join(subjectFolderPath, `lab${questionId}`);
-            createFolder(labFolder);
-
-            if (typeof Cmdfile === "string") {
-              const cmdFile = files.find(f => f.fieldname === Cmdfile);
-              if (cmdFile) {
-                const cmdPath = path.join(labFolder, "run.sh");
-                fs.writeFileSync(cmdPath, cmdFile.buffer);
-              }
-            }
           }
 
           if (qType === 5){
@@ -1274,19 +1235,6 @@ const editPdfSubject = (req, res) => {
             db.query("INSERT INTO lab_answers (questionId, content, type) VALUES (?, ?, ?)", [questionId, answer, 1], (err) => {
               if (err) console.log("Choice Insert Error:", err);
             });
-          }
-
-          if (qType === 4) {
-            const labFolder = path.join(courseFolder, `lab${questionId}`);
-            createFolder(labFolder);
-
-            if (typeof Cmdfile === "string") {
-              const cmdFile = files.find(f => f.fieldname === Cmdfile);
-              if (cmdFile) {
-                const cmdPath = path.join(labFolder, "run.sh");
-                fs.writeFileSync(cmdPath, cmdFile.buffer);
-              }
-            }
           }
 
           if (qType === 5){

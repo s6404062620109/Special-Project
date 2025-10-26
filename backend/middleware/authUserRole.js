@@ -291,7 +291,7 @@ const verifiedEnrollCourseExpired = (req, res, next) => {
   }
 
   try{
-    db.query("SELECT expires_at FROM enrollment WHERE id = ?", [enrollmentId], (error, result) => {
+    db.query("SELECT endat, expires_at FROM enrollment WHERE id = ? AND posttest_complete IN (0, 1, -1)", [enrollmentId], (error, result) => {
       if(error){
         console.log(error);
         return res.status(500).json({ message: "Database enrollment query error." });
@@ -302,8 +302,8 @@ const verifiedEnrollCourseExpired = (req, res, next) => {
       }
 
       const enroll = result[0];
-      if(enroll.expires_at && new Date(enroll.expires_at) < new Date()){
-        return res.status(404).json({ message: "คอร์สนี้หมดอายุการเรียนแล้ว"});
+      if( enroll.endat === null && enroll.expires_at && new Date(enroll.expires_at) < new Date()){
+        return res.status(403).json({ message: "คอร์สนี้หมดอายุการเรียนแล้ว"});
       } 
       else{
         next();

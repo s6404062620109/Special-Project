@@ -166,7 +166,10 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
           };
         } else if (questionType === 4 || questionType === 5) {
           // Short text or HTML answer
-          updatedAnswer = String(value);
+          updatedAnswer = {
+            ...item.answer,
+            content: String(value),
+          };
         } else if (questionType === 6) {
           // Multiple choice (multi-select)
           const prevArray = Array.isArray(item.answer) ? item.answer : [];
@@ -204,7 +207,7 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
       (answer.answer === null || answer.answer === "")
     ) {
       valid = false;
-      setErrorMessage(`ต้องเลือกคำตอบสำหรับคำถามที่ ${idx + 1}.`);
+      setErrorMessage(`ต้องตอบคำถามที่ ${idx + 1}.`);
     }
 
     if (
@@ -237,6 +240,7 @@ function useLabProgress(courseId, subjectId, enrollmentId) {
     if (!labValidations(questionId)) return;
 
     const answer = answers.find((a) => a.questionId === questionId);
+
     try {
       const response = await backend.put(`/labs/submitLabQuestions/${courseId}/${enrollmentId}`,
         { answer },
@@ -311,6 +315,7 @@ function Subject() {
   const [openNavSubject, setOpenNavSubject] = useState(false);
   const [activeTab, setActiveTab] = useState("lesson");
   const [expiredDialogOpen, setExpiredDialogOpen] = useState(false);
+  const [alertDialog, setAlertDialog] = useState({ open: false, message: "" });
 
   const {
     currentQuestionIndex,
@@ -387,8 +392,10 @@ function Subject() {
         );
 
         if (!pretestCompleted) {
-          alert("กรุณาทำแบบทดสอบก่อนเรียนให้เสร็จก่อนเข้าเรียน");
-          navigate(`/course/${courseId}/${enrollmentId}`);
+          setAlertDialog({
+            open: true,
+            message: "กรุณาทำแบบทดสอบก่อนเรียนให้เสร็จก่อนเข้าเรียน",
+          });
           return;
         }
       }
@@ -416,6 +423,11 @@ function Subject() {
       <ExpiredDialog
         open={expiredDialogOpen}
         onClose={() => navigate(`/course/${courseId}/${enrollmentId}`)}
+      />
+      <AlertDialog
+        open={alertDialog.open}
+        message={alertDialog.message}
+        onClose={() => { setAlertDialog({ open: false, message: "" }); navigate(`/course/${courseId}/${enrollmentId}`); }}
       />
 
       <Stack sx={{ width: "100%", mb: 2 }}>

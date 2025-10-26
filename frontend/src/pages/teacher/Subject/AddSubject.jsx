@@ -386,6 +386,10 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         return `คำถามที่ ${i + 1} ต้องการเนื้อหาสำหรับคำถาม`;
       }
 
+      if (!item.type) {
+        return `กรุณาเลือกประเภทสำหรับคำถามที่ ${i + 1}`;
+      }
+
       if (item.type === 3 || item.type === 6) {
         if (item.choice.length === 0) {
           return `ต้องการตัวเลือกอย่างน้อย 1 ตัวสำหรับคำถามที่ ${i + 1}`;
@@ -397,16 +401,16 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
           }
         }
 
-        const correctChoices = item.choice.filter((choice) => choice.isCorrect);
+        const correctChoices = item.choice.filter((choice) => choice.isCorrect === 1);
         if (item.type === 6 && correctChoices.length <= 1) {
           return `คำถามที่ ${i + 1} ประเภทคคำตอบหลายคำตอบ ต้องการตัวเลือกที่ถูกต้องมากกว่า 1 ตัวเลือก`;
         }
-        if (item.type === 3 && correctChoices.length < 1 ){
-          return `คำถามที่ ${i + 1} ประเภทคคำตอบเดียว ต้องการตัวเลือกที่ถูกต้องอย่างน้อย 1 ตัวเลือก`;
+        if (item.type === 3 && correctChoices.length !== 1 ){
+          return `คำถามที่ ${i + 1} ประเภทคำตอบเดียว ต้องการตัวเลือกที่ถูกต้อง 1 ตัวเลือกเท่านั้น`;
         }
 
         const incorrectChoices = item.choice.filter(
-          (choice) => !choice.isCorrect
+          (choice) => choice.isCorrect === 0
         );
         if (item.type === 6 && incorrectChoices.length < 1) {
           return `คำถามที่ ${i + 1} ประเภทคคำตอบหลายคำตอบ ต้องการตัวเลือกที่ผิดอย่างน้อย 1 ตัวเลือก`;
@@ -432,15 +436,6 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
       }
 
       if (item.type === 4) {
-        if (item.Cmdfile === null) {
-          return `กรุณาอัพโหลดไฟล์ Shell ณ คำถามที่ ${i + 1}`;
-        }
-
-        if (item.Cmdfile) {
-          if (!item.Cmdfile.name.endsWith(".sh")) {
-            return `คำถามที่ ${i + 1} ต้องการไฟล์ Shell เท่านั้น`;
-          }
-        }
 
         if (item.answer === "") {
           return `คำถามที่ ${i + 1} ต้องการคำตอบสำหรับคำถามนี้`;
@@ -550,7 +545,7 @@ function AddSubject() {
   } = useQuestionForm(setAlertMessage, setOpenSnackbar);
 
   useEffect(() => {
-    setQuestionType([ 3, 5, 6 ]);
+    setQuestionType([ 3, 4, 5, 6 ]);
   }, []);
 
   useEffect(() => {
@@ -562,8 +557,11 @@ function AddSubject() {
   useEffect(() => {
     const prevMode = localStorage.getItem("prevMode");
     if (prevMode !== "manual" && prevMode !== "pdf") {
-      alert(".Please selected add subject mode");
-      navigate(`/edit-course/${courseId}`);
+      setAlertMessage("กรุณาเลือกโหมดการเพิ่มบทเรียน");
+      setOpenSnackbar(true);
+      setTimeout(() => {
+        navigate(`/edit-course/${courseId}`);
+      }, 1500);
       return;
     }
     const checkInitialCondition = () => {
@@ -1122,18 +1120,31 @@ function AddSubject() {
                   transform: "translate(-50%, -50%)",
                 }}
               >
-                {questionInput[selectedImageIndex]?.img ? (
-                  <Typography variant="body1" sx={{ color: "#666", mt: 1 }}>
-                    เลือกรูปภาพที่ต้องการอัพโหลดแล้ว ✔
-                  </Typography>
-                ) : (
-                  <Stack justifyContent="center" alignItems="center">
-                    <AddIcon sx={{ color: "#b3b3b3" }} />
-                    <Typography variant="h6" sx={{ color: "#b3b3b3" }}>
-                      อัพโหลดรูปภาพที่นี้
-                    </Typography>
-                  </Stack>
-                )}
+                  {questionInput[selectedImageIndex]?.img ? (
+                    <>
+                      <img
+                        src={questionInput[selectedImageIndex].img}
+                        alt="Selected Image"
+                        style={{ width: '100%', height: '100%' }}
+                      />
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          color: '#666', 
+                          mt: 1 
+                        }}
+                      >
+                        เลือกรูปภาพที่ต้องการอัพโหลดแล้ว ✔
+                      </Typography>
+                    </>
+                  ) : (
+                    <Stack justifyContent="center" alignItems="center">
+                      <AddIcon sx={{ color: '#b3b3b3' }} />
+                      <Typography variant="h6" sx={{ color: '#b3b3b3' }}>
+                        อัพโหลดรูปภาพที่นี้
+                      </Typography>
+                    </Stack>
+                  )}
               </Stack>
 
               <VisuallyHiddenInput

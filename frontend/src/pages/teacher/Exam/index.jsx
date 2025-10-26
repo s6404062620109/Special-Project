@@ -169,6 +169,16 @@ const useQuestions = (courseId) => {
         };
       }
 
+      for (let j = 0; j < question.choices.length; j++) {
+        const choice = question.choices[j];
+        if (!choice.content) {
+          return {
+            isValid: false,
+            validMessage: `กรุณากรอกเนื้อหาสำหรับตัวเลือกที่ ${j + 1} ของคำถามที่ ${i + 1}`,
+          };
+        }
+      }
+
       let correctCount = 0;
       let incorrectCount = 0;
 
@@ -264,6 +274,17 @@ function Exam() {
   };
 
   const handleSubmitAdd = async () => {
+    const { isValid, validMessage } = validation();
+    if (!isValid) {
+      setMessage(validMessage);
+      setSnackBarState({ open: true, Transition: SlideTransition });
+      setTimeout(() => {
+        setSnackBarState({ open: false, Transition: SlideTransition });
+        setMessage("");
+      }, 3000);
+      return;
+    }
+
     try {
       const response = await backend.post(`/teacher/addQuestions/${courseId}`, { questions },
         { withCredentials: true }

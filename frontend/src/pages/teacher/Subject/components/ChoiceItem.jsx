@@ -14,7 +14,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
       onChange("content", content);
     }
   };
-
+  console.log(choice)
   return (
     <Stack
       sx={{
@@ -36,7 +36,7 @@ const ChoiceItem = ({ choice, choiceIndex, onChange, onDelete }) => {
         }}
       >
         <TextField
-          label="Content"
+          label="เนื้อหา"
           fullWidth
           value={content}
           onChange={(e) => setContent(e.target.value)}

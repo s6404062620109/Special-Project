@@ -3,11 +3,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
   Typography,
   Stack,
-  Divider,
   Chip,
   TextField
 } from '@mui/material';
@@ -18,7 +15,7 @@ function TestDialog({ open, onClose, testList, mode }) {
   }
   const totalScore = testList.reduce((acc, q) => acc + (q.score || 0), 0);
   const maxScore = testList.length;
-
+  console.log(testList)
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       {(mode === "pre" || mode === "post") && (
@@ -159,8 +156,14 @@ function TestDialog({ open, onClose, testList, mode }) {
                       <TextField
                         disabled
                         fullWidth
-                        label="Answer"
+                        label="คำตอบ"
                         value={question.user_answer || ''}
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'rgba(0, 0, 0, 1)',
+                            color: 'rgba(0, 0, 0, 1)',
+                          },
+                        }}
                       />
                     </Stack>
                   )}
@@ -208,6 +211,21 @@ function TestDialog({ open, onClose, testList, mode }) {
                         </Typography>
                       );
                     })}
+
+                    {question.type === 4 && (
+                      <TextField
+                        disabled
+                        fullWidth
+                        label="คำตอบ"
+                        value={question.user_answer || ''}
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'rgba(0, 0, 0, 1)',
+                            color: 'rgba(0, 0, 0, 1)',
+                          },
+                        }}
+                      />
+                    )}
                   </Stack>
 
                   <Typography

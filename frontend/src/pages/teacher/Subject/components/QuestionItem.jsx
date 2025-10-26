@@ -73,23 +73,24 @@ const QuestionItem = ({
 
       <Stack direction='row' alignItems='center' gap={2}>
         <TextField
-          label="Question Content"
+          label="เนื้อหา"
           fullWidth
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onBlur={handleBlurContent}
         />
         <FormControl sx={{ width: '40%' }}>
-          <InputLabel id={`question-type-label-${index}`}>Type</InputLabel>
+          <InputLabel id={`question-type-label-${index}`}>ประเภท</InputLabel>
           <Select
             labelId={`question-type-label-${index}`}
             value={question.type}
-            label="Type"
+            label="ประเภท"
             onChange={(e) => onTypeChange(index, e.target.value)}
           >
             {questionType.map((item) => (
               <MenuItem key={item} value={item}>
                 {item === 3 && "เลือกคำตอบเพียง 1 คำตอบ"}
+                {item === 4 && "เติมคำตอบด้วยตนเอง"}
                 {item === 5 && "เลือกคำตอบจากการกระทำ"}
                 {item === 6 && "เลือกคำตอบหลายคำตอบ"}
               </MenuItem>
@@ -166,21 +167,10 @@ const QuestionItem = ({
               </Button>
             )}
 
-            {question.type === 4 && (
-              <Button
-                variant="outlined"
-                color='secondary'
-                startIcon={<CloudUploadIcon />}
-                onClick={() => onUpload(index, "cmd")}
-                fullWidth
-              >
-                อัพโหลดไฟล์ Shell Script
-              </Button>
-            )}
           </Stack>
 
           <TextField
-            label="Answer"
+            label="คำตอบ"
             fullWidth
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}

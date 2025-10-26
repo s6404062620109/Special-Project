@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 25, 2025 at 12:44 PM
+-- Generation Time: Oct 26, 2025 at 12:02 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -49,7 +49,8 @@ CREATE TABLE `course` (
   `enable` tinyint(1) NOT NULL DEFAULT '0',
   `createat` datetime NOT NULL,
   `updateat` timestamp NULL DEFAULT NULL,
-  `announce_state` tinyint NOT NULL DEFAULT '0'
+  `announce_state` tinyint NOT NULL DEFAULT '0',
+  `duration_days` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -67,7 +68,8 @@ CREATE TABLE `enrollment` (
   `total_labs` int NOT NULL,
   `userId` int NOT NULL,
   `startat` datetime NOT NULL,
-  `endat` datetime DEFAULT NULL
+  `endat` datetime DEFAULT NULL,
+  `expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------

@@ -21,7 +21,7 @@ const enrollCourse = (req, res) => {
       FROM course c
       LEFT JOIN questions q ON q.courseId = c.id
       LEFT JOIN subject s ON s.courseId = c.id
-      LEFT JOIN labs l ON l.subjectId = s.id AND l.typeId IN (3, 5, 6)
+      LEFT JOIN labs l ON l.subjectId = s.id AND l.typeId IN (3, 4, 5, 6)
       WHERE c.id = ?
     `;
 
