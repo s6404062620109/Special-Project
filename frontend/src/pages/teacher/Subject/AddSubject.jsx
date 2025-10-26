@@ -401,7 +401,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
           }
         }
 
-        const correctChoices = item.choice.filter((choice) => choice.isCorrect === 1);
+        const correctChoices = item.choice.filter((choice) => choice.isCorrect === 1 || choice.isCorrect === true );
         if (item.type === 6 && correctChoices.length <= 1) {
           return `คำถามที่ ${i + 1} ประเภทคคำตอบหลายคำตอบ ต้องการตัวเลือกที่ถูกต้องมากกว่า 1 ตัวเลือก`;
         }
@@ -410,7 +410,7 @@ const useQuestionForm = (setAlertMessage, setOpenSnackbar) => {
         }
 
         const incorrectChoices = item.choice.filter(
-          (choice) => choice.isCorrect === 0
+          (choice) => choice.isCorrect === 0 || choice.isCorrect === false 
         );
         if (item.type === 6 && incorrectChoices.length < 1) {
           return `คำถามที่ ${i + 1} ประเภทคคำตอบหลายคำตอบ ต้องการตัวเลือกที่ผิดอย่างน้อย 1 ตัวเลือก`;

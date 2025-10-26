@@ -710,6 +710,13 @@ function EditSubject() {
 
     const handleSubmit = () => {
         if(mode === "manual"){
+            const error = subjectValidation();
+            if (error) {
+                setAlertMessage(error);
+                setAlertOpen(true);
+                return;
+            }
+            
             setMode("question");
             return;
         }
@@ -731,7 +738,7 @@ function EditSubject() {
                 }
                 setMode("submit");
                 return;
-                
+
             }
             else if(editMode === "pdf"){
                 if(pdfValication || questionValication){
@@ -772,6 +779,13 @@ function EditSubject() {
 
     const handlePreview = () => {
         if(mode === "manual"){
+            const error = subjectValidation();
+            if (error) {
+                setAlertMessage(error);
+                setAlertOpen(true);
+                return;
+            }
+
             setManualPreview(true);
             return;
         }
@@ -780,6 +794,13 @@ function EditSubject() {
             return;
         }
         else if(mode === "question"){
+            const error = questionValidation();
+            if (error) {
+                setAlertMessage(error);
+                setAlertOpen(true);
+                return;
+            }
+
             setQuestionPreview(true);
             return;
         }
