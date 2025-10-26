@@ -1100,6 +1100,7 @@ function CourseDetail() {
                     courseId={subject.courseId}
                     labProgress={labProgress}
                     enrollmentId={enrollmentId}
+                    setSnackbar={setSnackbar}
                   />
                 ))}
               </tbody>

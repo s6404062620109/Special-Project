@@ -7,7 +7,7 @@ import { Typography } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 
-function SubjectData({ id, name, courseId, labProgress, enrollmentId }) {
+function SubjectData({ id, name, courseId, labProgress, enrollmentId, setSnackbar }) {
   const { userData } = useContext(AuthContext);
   const navigate = useNavigate("");
 
@@ -17,8 +17,11 @@ function SubjectData({ id, name, courseId, labProgress, enrollmentId }) {
       return;
     }
     else{
-      alert('โปรดเข้าสู่ระบบก่อนเข้าเรียน');
-      navigate('/');
+      setSnackbar({
+        open: true,
+        message: 'โปรดเข้าสู่ระบบก่อนเข้าเรียน',
+        severity: 'warning'
+      });
       return;
     }
   }
