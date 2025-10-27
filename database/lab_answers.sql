@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 24, 2025 at 01:36 PM
+-- Generation Time: Oct 27, 2025 at 04:21 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -282,7 +282,13 @@ INSERT INTO `lab_answers` (`id`, `content`, `type`, `questionId`) VALUES
 (1917, 'อัปเดต OS และซอฟต์แวร์อย่างสม่ำเสมอ', 1, 635),
 (1918, 'ยอมรับไฟล์แนบและลิงก์ที่มาจากแหล่งไม่รู้จักเสมอ เพราะบางครั้งเป็นของจริง', 0, 635),
 (1919, 'ใช้รหัสผ่านดี ๆ และเปิด 2FA สำหรับบริการสำคัญ', 1, 635),
-(1920, 'ติดตั้งและใช้งาน endpoint protection ที่มีการอัปเดต signature/heuristics', 1, 635);
+(1920, 'ติดตั้งและใช้งาน endpoint protection ที่มีการอัปเดต signature/heuristics', 1, 635),
+(2045, 'sad', 1, 672),
+(2046, 'c1', 1, 673),
+(2047, 'c2', 0, 673),
+(2048, 'sad', 1, 674),
+(2049, 'zxc', 1, 674),
+(2050, 'qweer', 0, 674);
 
 --
 -- Indexes for dumped tables
@@ -303,7 +309,7 @@ ALTER TABLE `lab_answers`
 -- AUTO_INCREMENT for table `lab_answers`
 --
 ALTER TABLE `lab_answers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2038;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2051;
 
 --
 -- Constraints for dumped tables

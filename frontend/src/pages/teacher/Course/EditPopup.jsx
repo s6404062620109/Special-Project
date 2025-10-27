@@ -21,6 +21,7 @@ function SlideTransition(props) {
 function EditPopup({ courseInfo, onClose, onSave }) {
   const [courseData, setCourseData] = useState({
     name: courseInfo.name,
+    discription: courseInfo.discription,
     icon: courseInfo.icon,
     enable: courseInfo.enable,
     announcement: courseInfo.announce_state,
@@ -61,7 +62,8 @@ function EditPopup({ courseInfo, onClose, onSave }) {
       const response = await backend.put(`/teacher/update/${courseInfo.id}`,
         {
           name: courseData.name,
-          icon: courseData.icon
+          icon: courseData.icon,
+          discription: courseData.discription
         },
         { withCredentials: true }
       );
@@ -82,7 +84,7 @@ function EditPopup({ courseInfo, onClose, onSave }) {
 
   const handleAttemptSave = (e) => {
     e.preventDefault();
-    const hasChanges = courseData.name !== courseInfo.name || courseData.icon !== courseInfo.icon;
+    const hasChanges = courseData.name !== courseInfo.name || courseData.icon !== courseInfo.icon || courseData.discription !== courseInfo.discription;
     if (!hasChanges) {
       setSnackbar({ open: true, message: 'ไม่มีการเปลี่ยนแปลงข้อมูล', severity: 'info' });
     } else {
@@ -169,6 +171,29 @@ function EditPopup({ courseInfo, onClose, onSave }) {
               fullWidth
               required
             />
+          </div>
+
+          <div className={style.formGroup}>
+            <Stack>
+              <TextField
+                variant="outlined"
+                label="คำอธิบายคอร์ส"
+                type="text"
+                value={courseData.discription || ''}
+                onChange={(e) => setCourseData({ ...courseData, discription: e.target.value })}
+                multiline
+                rows={4}
+                fullWidth
+              />
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => setCourseData({ ...courseData, discription: null })}
+                sx={{ alignSelf: 'flex-end', mt: 0.5, color: 'text.secondary' }}
+              >
+                ล้าง
+              </Button>
+            </Stack>
           </div>
 
           <div className={style.buttonGroup}>

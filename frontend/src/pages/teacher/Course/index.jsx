@@ -233,23 +233,49 @@ function EditCourse() {
       <div className={style.container}>
         <div className={style.head}>
           <div className={style["info-wrapper"]}>
-            {data.courseInfo.icon ? (
-              <img
-                alt="course icon"
-                src={data.courseInfo.icon}
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  borderRadius: "8px",
+            <Stack
+              alignItems="center"
+              gap={1}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                gap={2}
+              >
+                {data.courseInfo.icon ? (
+                  <img
+                    alt="course icon"
+                    src={data.courseInfo.icon}
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      borderRadius: "8px",
+                    }}
+                  />
+                ):(
+                  <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                    <SchoolIcon />
+                  </Avatar>
+                )}            
+                <Typography variant="h5" fontWeight={600}>{data.courseInfo.name}</Typography>
+              </Stack>
+
+              <Typography 
+                variant="subtitle1"
+                title={data.courseInfo.discription}
+                sx={{
+                  wordBreak: 'break-word',
+                  display: '-webkit-box',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: 'vertical',
+                  maxWidth: '200px',
+                  color: 'text.secondary'
                 }}
-              />
-            ):(
-              <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
-                <SchoolIcon />
-              </Avatar>
-            )}
-            
-            <h2>{data.courseInfo.name}</h2>
+              >{data.courseInfo.discription ? data.courseInfo.discription : "ไม่มีคำอธิบาย"}</Typography>
+            </Stack>           
+           
             <IconButton onClick={() => setFixCoursePopup(true)}>
               <EditIcon />
             </IconButton>

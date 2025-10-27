@@ -161,10 +161,10 @@ const createCourse = (req, res) => {
 
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
-    const { name, icon } = req.body;
+    const { name, icon, discription } = req.body;
 
     if(!courseId || !name){
-      return res.status(400).send({ message: "Require courseid, name." })
+      return res.status(400).send({ message: "Require courseid, name." });
     }
 
     if( typeof courseId !== 'string' || 
@@ -177,11 +177,11 @@ const updateCourse = (req, res) => {
     }
 
     try{
-        db.query("UPDATE course SET name = ?, icon = ?, updateat = NOW() WHERE id = ?", 
-          [name, icon, courseId], (error) => {
+        db.query("UPDATE course SET name = ?, icon = ?, discription = ?, updateat = NOW() WHERE id = ?", 
+          [name, icon, discription, courseId], (error) => {
             if(error){
-                console.log(error);
-                return res.status(500).send({ message: "Database course query error." });
+              console.log(error);
+              return res.status(500).send({ message: "Database course query error." });
             }
 
             return res.status(200).send({ message: "อัพเดทคอร์สเรัยนเสร็จสิ้น."});
@@ -213,31 +213,35 @@ const updateSettingCourse = (req, res) => {
         return res.status(400).send({ message: "Invalid courseid, enable, announcement, pretest_rate, posttest_rate." });
     }
 
-    try{
-        db.query("UPDATE course SET pretest_rate = ?, posttest_rate = ?, enable = ?, updateat = NOW(), announce_state = ? , duration_days = ? WHERE id = ?", 
-          [pretest_rate, posttest_rate, enable, announcement, duration_days, courseId], (error) => {
+    try {
+        const effectiveDuration = (duration_days !== null && duration_days !== undefined) ? duration_days : 365;
+
+        const courseUpdateQuery = `
+            UPDATE course 
+            SET 
+                pretest_rate = ?, 
+                posttest_rate = ?, 
+                enable = ?, 
+                updateat = NOW(), 
+                announce_state = ?, 
+                duration_days = ? 
+            WHERE id = ?
+        `;
+        const courseParams = [pretest_rate, posttest_rate, enable, announcement, effectiveDuration, courseId];
+        db.query(courseUpdateQuery, courseParams, (error) => {
             if(error){
                 console.log(error);
                 return res.status(500).send({ message: "Database course query error." });
             }
-
-            if (duration_days !== null && duration_days !== undefined) {
-              db.query("UPDATE enrollment SET expires_at = DATE_ADD(startat, INTERVAL ? DAY) WHERE courseId = ?", [duration_days, courseId], (err) => {
+            const enrollmentUpdateQuery = "UPDATE enrollment SET expires_at = DATE_ADD(startat, INTERVAL ? DAY) WHERE courseId = ?";
+            db.query(enrollmentUpdateQuery, [effectiveDuration, courseId], (err) => {
                 if (err) {
-                  console.error(err);
-                  return res.status(500).json({message: "Database enrollment update error."});
+                    console.error(err);
+                    return res.status(500).json({message: "Database enrollment update error."});
                 }
-              });
-            } else{
-              db.query("UPDATE enrollment SET expires_at = null WHERE courseId = ?", [courseId], (err) => {
-                if (err) {
-                  console.error(err);
-                  return res.status(500).json({message: "Database enrollment update error."});
-                }
-              })
-            } 
 
-            return res.status(200).send({ message: "ตั้งค่าคอร์สเรัยนเสร็จสิ้น."});
+                return res.status(200).send({ message: "ตั้งค่าคอร์สเรียนเสร็จสิ้น."});
+            });
         });
 
     } catch(error){

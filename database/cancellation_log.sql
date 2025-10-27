@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 25, 2025 at 10:52 AM
+-- Generation Time: Oct 27, 2025 at 04:21 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -38,9 +38,12 @@ CREATE TABLE `cancellation_log` (
 --
 
 INSERT INTO `cancellation_log` (`id`, `reason`, `enrollmentId`) VALUES
-(1, 'test', 283),
-(2, '', 312),
-(3, '', 313);
+(4, 'ไม่มีเวลามากพอ', 283),
+(5, 'มีปัญหาเรื่องเวลาในการเรียน', 313),
+(6, '', 314),
+(7, '', 321),
+(8, '', 322),
+(9, '', 324);
 
 --
 -- Indexes for dumped tables
@@ -61,17 +64,7 @@ ALTER TABLE `cancellation_log`
 -- AUTO_INCREMENT for table `cancellation_log`
 --
 ALTER TABLE `cancellation_log`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `cancellation_log`
---
-ALTER TABLE `cancellation_log`
-  ADD CONSTRAINT `enroll_cancel` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

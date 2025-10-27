@@ -10,6 +10,7 @@ const getAll = (req, res) => {
       c.id AS courseId,
       c.name AS courseName,
       c.icon AS courseIcon,
+      c.discription,
       c.teacherId,
       c.enable,
       c.createat,
@@ -56,6 +57,7 @@ const getAll = (req, res) => {
         courseInfo: {
           id: course.courseId,
           name: course.courseName,
+          discription: course.discription,
           icon: course.courseIcon,
           teacherId: course.teacherId,
           enable: course.enable,

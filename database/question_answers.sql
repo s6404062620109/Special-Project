@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 24, 2025 at 01:36 PM
+-- Generation Time: Oct 27, 2025 at 04:22 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -636,7 +636,7 @@ ALTER TABLE `question_answers`
 -- AUTO_INCREMENT for table `question_answers`
 --
 ALTER TABLE `question_answers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=672;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=674;
 
 --
 -- Constraints for dumped tables
