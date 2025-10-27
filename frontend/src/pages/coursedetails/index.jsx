@@ -427,11 +427,11 @@ function CourseDetail() {
       }
     } catch (error) {
       console.log(error);
-      if (error.response.status === 403 || error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
-        setExpiredDialogOpen(true);
-      } else {
-        setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการเข้าเรียนต่อ', severity: 'error' });
-      }
+      // if (error.response.status === 403 || error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
+      //   setExpiredDialogOpen(true);
+      // } else {
+      //   setSnackbar({ open: true, message: 'เกิดข้อผิดพลาดในการเข้าเรียนต่อ', severity: 'error' });
+      // }
     }
   };
 
