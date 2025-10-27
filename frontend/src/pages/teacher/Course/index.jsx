@@ -168,24 +168,29 @@ function EditCourse() {
   const tabletQuery = useMediaQuery("(max-width:720px)");
 
   const filteredUsers = chartData?.users?.filter(user => {
+    if (!filter.startDate && !filter.endDate) {
+      return true; 
+    }
+
     const userStartDate = user.startat ? new Date(user.startat) : null;
     const userEndDate = user.endat ? new Date(user.endat) : null;
 
-    let startMatch = true;
-    if (filter.startDate) {
-      startMatch = userStartDate &&
-        userStartDate.getFullYear() === filter.startDate.getFullYear() &&
-        userStartDate.getMonth() === filter.startDate.getMonth();
+    // ตั้งค่าเวลาของตัวกรองให้เป็นจุดเริ่มต้นและสิ้นสุดของวัน
+    const filterStart = filter.startDate ? new Date(filter.startDate.getFullYear(), filter.startDate.getMonth(), 1) : null;
+    const filterEnd = filter.endDate ? new Date(filter.endDate.getFullYear(), filter.endDate.getMonth() + 1, 0, 23, 59, 59, 999) : null;
+
+    // ถ้ามีเฉพาะ filter.startDate ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) ตั้งแต่เดือนนั้นเป็นต้นไป
+    if (filterStart && !filterEnd) {
+      return (userStartDate && userStartDate >= filterStart) || (userEndDate && userEndDate >= filterStart);
+    } 
+
+    // ถ้ามีเฉพาะ filter.endDate ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) ก่อนเดือนนั้น
+    if (!filterStart && filterEnd) {
+      return (userStartDate && userStartDate <= filterEnd) || (userEndDate && userEndDate <= filterEnd);
     }
 
-    let endMatch = true;
-    if (filter.endDate) {
-      endMatch = userEndDate &&
-        userEndDate.getFullYear() === filter.endDate.getFullYear() &&
-        userEndDate.getMonth() === filter.endDate.getMonth();
-    }
-
-    return startMatch && endMatch;
+    // ถ้ามีทั้งคู่ ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) อยู่ภายในช่วงที่เลือก
+    return (userStartDate && userStartDate >= filterStart && userStartDate <= filterEnd) || (userEndDate && userEndDate >= filterStart && userEndDate <= filterEnd);
   }) || [];
 
   const lineChartData = filteredUsers.map((u, index) => {
