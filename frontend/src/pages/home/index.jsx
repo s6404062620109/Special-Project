@@ -1,19 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthProvider";
 import backend from "../../api/backend";
 import Login from "../authenticate/login";
-import UserBoard from "./UserBoard";
-import CourseBoard from "./CourseBoard";
+import CourseBoard from "./student/CourseBoard";
+import CourseCard from "../../components/CourseCard";
 
 import style from "./css/home.module.css";
-import { Button } from "@mui/material";
-import { ArrowBack, ArrowBackIos } from "@mui/icons-material";
-
+import { Button, Grid, Stack, Typography, useMediaQuery } from "@mui/material";
 
 function Home() {
   const { userData } = useContext(AuthContext);
-  const [ loginEnable, setLoginEnable ] = useState(false);
   const [ enrollment, setEnrollment ] = useState([]);
+  const [ publicCourses, setPublicCourses ] = useState([]);
+  const navigate = useNavigate();
 
   const fetchEnrollment = async () => {
     try {
@@ -21,10 +21,30 @@ function Home() {
         withCredentials: true,
       });
       if (response.status === 200) {
-        setEnrollment(response.data.results);
+        const latestEnrollmentsMap = new Map();
+        response.data.results.forEach(enrollment => {
+          const existing = latestEnrollmentsMap.get(enrollment.courseId);
+          if (!existing || enrollment.id > existing.id) {
+            latestEnrollmentsMap.set(enrollment.courseId, enrollment);
+          }
+        });
+
+        const uniqueLatestEnrollments = Array.from(latestEnrollmentsMap.values());
+        setEnrollment(uniqueLatestEnrollments);
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const fetchPublicCourses = async () => {
+    try {
+      const response = await backend.get('/courses/top');
+      if (response.status === 200) {
+        setPublicCourses(response.data.results);
+      }
+    } catch (error) {
+      console.log("Error fetching public courses:", error);
     }
   };
 
@@ -32,69 +52,160 @@ function Home() {
     if (userData.id && userData.role === "s") {
       fetchEnrollment();
     }
+
+    if (!userData.id) {
+      fetchPublicCourses();
+    }
   }, [userData.id]);
+
+  const isXs = useMediaQuery("(max-width:600px)"); 
 
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
+
         {!userData.id && (
           <div className={style["container-wrap"]}>
-            {loginEnable === true ? (
-              <div className={style["login-tablet"]}>
-                <Login />
-              </div>
-            ) : (
-              <div className={style.content}>
-                {userData.role === null && (
-                  <p className={style.title}>
-                    Security <br /> Awareness Training
-                  </p>
-                )}
-                {userData.role === null && (
-                  <p className={style["sub-title"]}>
-                    การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
-                    ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
-                  </p>
-                )}
-              </div>
-            )}
+            <div className={style.content}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  backgroundColor: "#fcfcfcff",
+                  gap: 2,
+                  p: { xs: "16px 0", md: 4 },
+                  borderRadius: 4,
+                  boxShadow: '4px 4px 6px rgba(0,0,0,0.08)',
+                  mb: 4,
+                  width: { xs: "100%", md: "90%" },
+                  margin: "0 auto"
+                }}
+              >
+                <img 
+                  alt='Logo Image' 
+                  src='/Navbar_Assets/Logo.svg'
+                  style={{
+                    width: 80,
+                    height: 80
+                  }}
+                />
 
-            {!userData.id && (
-              <div className={style["login-wrap"]}>
-                <Login />
-              </div>
-            )}
+                <Stack
+                  direction="column"
+                  gap={2}
+                  sx={{
+                    alignItems: { xs: "center", md: "flex-start" }
+                  }}
+                >
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    Security Awareness Training
+                  </Typography>
 
-            {!userData.id && (
-              <div className={style["login-nav"]}>
-                <p onClick={() => setLoginEnable(!loginEnable)}>
-                  {loginEnable === true ? (
-                    <Button
-                      variant="text"
-                      onClick={() => setLoginEnable(!loginEnable)}
-                      startIcon={<ArrowBackIos/>}
+                  {!isXs && (
+                    <Typography 
+                      variant="subtitle1" 
+                      color="text.secondary"
                     >
-                      ย้อนกลับ
-                    </Button>
-                  ) : (
-                    <>เข้าสู่ระบบ/สมัครสมาชิก</>
+                      การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
+                      ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+                    </Typography>
                   )}
-                </p>
-              </div>
-            )}
+                </Stack>
+                
+              </Stack>
+
+              {publicCourses.length > 0 && (
+                <Stack 
+                  spacing={2} 
+                  sx={{ 
+                    width: { xs: "100%", md: "80%" },
+                    margin: "0 auto" 
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                  >
+                    <Typography variant="h6">คอร์สยอดนิยม</Typography>
+                    <Button 
+                      variant="outlined" 
+                      onClick={() => navigate('/courses')}
+                      sx={{ alignSelf: 'flex-end' }}
+                    >
+                      ดูคอร์สทั้งหมด
+                    </Button>
+                  </Stack>
+                  
+                  <Stack 
+                    direction="column" 
+                    gap={2}
+                    sx={{ 
+                      margin: "0 auto" 
+                    }}
+                  >
+                    {publicCourses.slice(0, 3).map((course) => (
+                        <CourseCard
+                          course={course}
+                          onClick={() => navigate(`/course/${course.id}`)}
+                        />
+                    ))}
+                  </Stack>
+                </Stack>
+              )}
+            </div>
           </div>
         )}
 
         {userData.id && userData.role === "s" && (
           <div className={style["container-wrap"]}>
-            <UserBoard
-              email={userData.email}
-              sex={userData.sex}
-              name={userData.name}
-              surname={userData.surname}
-              role={userData.role}
-              profile_img={userData.profile_img}
-            />
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  backgroundColor: "#fcfcfcff",
+                  gap: 2,
+                  p: { xs: "16px 0", md: 4 },
+                  borderRadius: 4,
+                  boxShadow: '4px 4px 6px rgba(0,0,0,0.08)',
+                  mb: 4,
+                  width: { xs: "100%", md: "90%" },
+                  margin: "0 auto"
+                }}
+              >
+                <img 
+                  alt='Logo Image' 
+                  src='/Navbar_Assets/Logo.svg'
+                  style={{
+                    width: 80,
+                    height: 80
+                  }}
+                />
+
+                <Stack
+                  direction="column"
+                  gap={2}
+                  sx={{
+                    alignItems: { xs: "center", md: "flex-start" }
+                  }}
+                >
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    Security Awareness Training
+                  </Typography>
+
+                  {!isXs && (
+                    <Typography 
+                      variant="subtitle1" 
+                      color="text.secondary"
+                    >
+                      การอบรมเพื่อสร้างความรู้และความตระหนักรู้เกี่ยวกับความปลอดภัยทาง
+                      ไซเบอร์ให้กับบุคลากรในองค์กรโดยเน้นให้เข้าใจถึงภัยคุกคามที่อาจเกิดขึ้น
+                    </Typography>
+                  )}
+                </Stack>
+                
+              </Stack>
             <CourseBoard enrollment={enrollment} />
           </div>
         )}
@@ -102,9 +213,9 @@ function Home() {
         {userData.id && userData.role === "t" && (
           <div className={style["container-wrap"]}>
             <div className={style.content}>
-              <p className={style.title}>
+              <Typography variant="h1">
                 Security <br /> Awareness Training <br /> For Teacher.
-              </p>
+              </Typography>
             </div>
           </div>
         )}
@@ -112,9 +223,9 @@ function Home() {
         {userData.id && userData.role === "a" && (
           <div className={style["container-wrap"]}>
             <div className={style.content}>
-              <p className={style.title}>
+              <Typography variant="h1">
                 Security <br /> Awareness Training <br /> For Admin.
-              </p>
+              </Typography>
             </div>
           </div>
         )}

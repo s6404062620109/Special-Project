@@ -12,9 +12,8 @@
 
 .content {
     flex: 1;
-    background: #FFFFFF;
+    background: #f5faff; 
     overflow-y: auto;
-    /*radial-gradient(  #0F4DA9, #11245A, #0B0C1A)*/;
 }
 
 /* Footer */

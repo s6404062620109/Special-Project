@@ -9,6 +9,7 @@ import './App.css'
 import Navbar from './components/Navbar';
 import Home from './pages/home';
 import Courses from './pages/courses';
+import Login from './pages/authenticate/login';
 import Register from './pages/authenticate/register';
 import Reset from './pages/authenticate/reset';
 import CourseDetail from './pages/coursedetails';
@@ -35,6 +36,7 @@ import ManageCourses from './pages/admin/managecourse';
 /* */
 
 import Guide from './pages/guide';
+import ManageTags from './pages/admin/manageTags';
 
 function App() {
   const { userData } = useContext(AuthContext);
@@ -53,6 +55,7 @@ function App() {
             {userData.role === null &&(
               <Routes>
                 <Route path='/' element={<Home/>}/>
+                <Route path='/login' element={<Login/>}/>
                 <Route path='/register' element={<Register/>}/>
                 <Route path='/set-password' element={<SetPassword/>}/>
                 <Route path='/forgot-password' element={<Forgot/>}/>
@@ -65,8 +68,6 @@ function App() {
             {userData.role === 's' &&(
               <Routes>
                 <Route path='/' element={<Home/>}/>
-                <Route path='/forgot-password' element={<Forgot/>}/>
-                <Route path='/reset-password' element={<Reset/>}/>
                 <Route path='/profile' element={<Profile/>}/>
                 <Route path='/course/:courseId/:enrollmentId' element={<CourseDetail/>}/>
                 <Route path='/courses' element={<Courses/>}/>
@@ -97,6 +98,7 @@ function App() {
                 <Route path='/profile' element={<Profile/>}/>
                 <Route path='/manageUser' element={<ManageUser/>}/>
                 <Route path='/manageCourse' element={<ManageCourses/>}/>
+                <Route path='/managetags' element={<ManageTags/>}/>
                 <Route path='/my-courses' element={<MyCourses/>}/>
                 <Route path='/edit-course/:courseId' element={<EditCourse/>}/>
                 <Route path='/add-subject/:courseId/:mode' element={<AddSubject/>}/>

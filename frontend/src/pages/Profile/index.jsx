@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Typography, Snackbar, Alert } from "@mui/material";
+import { Typography, Snackbar, Alert, Stack, Box, IconButton } from "@mui/material";
 
 import backend from "../../api/backend";
 import { AuthContext } from "../../context/AuthProvider";
 import style from "./css/profile.module.css";
+import DeleteIcon from '@mui/icons-material/Delete';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 function Profile() {
   const { userData, setUserData } = useContext(AuthContext);
@@ -13,9 +15,7 @@ function Profile() {
 
   const toggleEditMode = () => {
     setEditMode(!editMode);
-    if (!editMode) {
-      setTempUserData({ ...userData });
-    }
+    setTempUserData({ ...userData });
   };
 
   const handleCloseSnackbar = (event, reason) => {
@@ -104,18 +104,43 @@ function Profile() {
     <div className={style["profile-container"]}>
       <div className={style.container}>
         <div className={style.head}>
-          <label htmlFor="profile-image-upload">
-            <img
-              alt="User Profile img"
-              src={
-                tempUserData.profile_img
-                  ? tempUserData.profile_img
-                  : "/Navbar_Assets/Profile.png"
-              }
-              style={{ cursor: "pointer" }}
-            />
-          </label>
+          <Box sx={{ position: 'relative', width: 120, height: 120 }}>
+            <label htmlFor={editMode ? "profile-image-upload" : undefined}>
+              <Box
+                component="img"
+                alt="User Profile img"
+                src={tempUserData.profile_img || "/Navbar_Assets/Profile.png"}
+                sx={{ 
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  cursor: editMode ? 'pointer' : 'default',
+                  transition: 'opacity 0.2s ease-in-out',
+                  '&:hover': {
+                    opacity: editMode ? 0.6 : 1,
+                  },
+                }}
+              />
+            </label>
 
+            {editMode && tempUserData.profile_img && (
+              <IconButton
+                aria-label="delete profile picture"
+                onClick={() => setTempUserData(prev => ({ ...prev, profile_img: null }))}
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.9)' }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
           <input
             id="profile-image-upload"
             type="file"
@@ -126,13 +151,34 @@ function Profile() {
           />
         </div>
 
+        <Stack direction="row" spacing={4} justifyContent="flex-start" sx={{ mb: 2, width: '100%' }}>
+          <Stack direction="row" alignItems="baseline" gap={1}>
+            <Typography variant="h6">เพศ</Typography>
+            <Typography variant="body1" color="text.secondary">
+              {tempUserData.sex === "m" && "ชาย"}
+              {tempUserData.sex === "f" && "หญิง"}
+              {tempUserData.sex === "n" && "ไม่ระบุ"}
+            </Typography>
+          </Stack>
+          <Stack direction="row" alignItems="baseline" gap={1}>
+            <Typography variant="h6">บทบาท</Typography>
+            <Typography variant="body1" color="text.secondary">
+              {tempUserData.role === "s" && "นักเรียน"}
+              {tempUserData.role === "t" && "อาจารย์"}
+              {tempUserData.role === "a" && "ผู้ดูแลระบบ"}
+            </Typography>
+          </Stack>
+        </Stack>
+
         <div className={style.body}>
+
           <div>
             <Typography variant="h6">ชื่อผู้ใช้</Typography>
             <input
               type="text"
               name="name"
               value={editMode ? tempUserData.name : userData.name}
+              className={editMode ? style.editableInput : ""}
               disabled={!editMode}
               onChange={handleInputChange}
             />
@@ -144,6 +190,7 @@ function Profile() {
               type="text"
               name="surname"
               value={editMode ? tempUserData.surname : userData.surname}
+              className={editMode ? style.editableInput : ""}
               disabled={!editMode}
               onChange={handleInputChange}
             />
@@ -155,6 +202,7 @@ function Profile() {
               type="text"
               name="email"
               value={editMode ? tempUserData.email : userData.email}
+              className={editMode ? style.editableInput : ""}
               disabled={!editMode}
               onChange={handleInputChange}
             />

@@ -32,12 +32,16 @@ nav{
 
 .functionsContainer{
     display: flex;
-    width: 40%;
+    width: 35%;
     justify-content: space-around;
+    gap: 8px;
     align-items: center;
     a{
         color: black;
         text-decoration: none;
+    }
+    a:hover{
+        border-bottom: 1px solid;
     }
 }
 

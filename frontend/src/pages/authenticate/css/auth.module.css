@@ -6,6 +6,9 @@
     border-radius: 15px;
     width: 480PX;
     margin: 36px auto;
+    background: #fff;
+    box-shadow: 4px 4px 6px rgba(0,0,0,0.08);
+    
 }
 
 .container p,

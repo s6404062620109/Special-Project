@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Chip,
   Snackbar,
   Alert,
   List,
@@ -297,6 +298,7 @@ function CourseDetail() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [expiredDialogOpen, setExpiredDialogOpen] = useState(false);
+  const [showAllTags, setShowAllTags] = useState(false);
   const navigate = useNavigate();
 
   const fetchCourseInfo = async () => {
@@ -311,6 +313,7 @@ function CourseDetail() {
           id: responseCourse.id,
           name: responseCourse.name,
           icon: responseCourse.icon,
+          tags: responseCourse.tags,
           createat: responseCourse.createat,
           updateat: responseCourse.updateat,
           announcement: responseCourse.announce_state,
@@ -705,6 +708,40 @@ function CourseDetail() {
           >
             <p>{courseInfo.name}</p>
 
+            {courseInfo.tags && courseInfo.tags.length > 0 && (
+              <Stack
+                direction="row"
+                spacing={0.5}
+                useFlexGap
+                flexWrap="wrap"
+                justifyContent="flex-staer"
+                alignItems="center"
+                sx={{ mt: 1 }}
+              >
+                {(showAllTags ? courseInfo.tags : courseInfo.tags.slice(0, 4)).map((tag) => (
+                  <Chip key={tag.id} label={tag.name} size="small" color="primary" />
+                ))}
+                {courseInfo.tags.length > 4 && (
+                  <Button
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAllTags(!showAllTags);
+                    }}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      p: '2px 4px',
+                      minWidth: 'auto',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {showAllTags ? 'ซ่อน' : `+${courseInfo.tags.length - 4} เพิ่มเติม`}
+                  </Button>
+                )}
+              </Stack>
+            )}
+
             <Typography variant="subtitle1" color="text.secondary">
               ️ผู้สอน: ️
               {(() => {
@@ -748,6 +785,8 @@ function CourseDetail() {
             </Typography>
           </Stack>
         </div>
+
+        
 
         {userData.id &&
           (history.length === 0 ||
@@ -815,7 +854,7 @@ function CourseDetail() {
             )}
           </Stack>
         )}
-
+  
       </div>
 
       <Tabs 
@@ -870,13 +909,19 @@ function CourseDetail() {
                       {postTestScore < preTestScore && (
                         <ListItem>
                           <ListItemIcon><ClearIcon color="error" /></ListItemIcon>
-                          <ListItemText primary="คะแนนแบบทดสอบหลังเรียนน้อยกว่าคะแนนแบบทดสอบก่อนเรียน" />
+                          <ListItemText 
+                            slotProps={{ primary: { sx: { fontSize: "1rem" } } }}
+                            primary="คะแนนแบบทดสอบหลังเรียนน้อยกว่าคะแนนแบบทดสอบก่อนเรียน" 
+                          />
                         </ListItem>
                       )}
                       {labProgress.length > 0 && (labScore / labProgress.length) * 100 < 60 && (
                         <ListItem>
                           <ListItemIcon><ClearIcon color="error" /></ListItemIcon>
-                          <ListItemText primary="คะแนนปฏิบัติการ (Lab) ไม่ถึง 60%" />
+                          <ListItemText 
+                            slotProps={{ primary: { sx: { fontSize: "1rem" } } }}
+                            primary="คะแนนปฏิบัติการ (Lab) ไม่ถึง 60%" 
+                          />
                         </ListItem>
                       )}
                     </List>
@@ -907,10 +952,16 @@ function CourseDetail() {
                 </Typography>
                 <List dense>
                   <ListItem>
-                    <ListItemText primary="1. คะแนนแบบทดสอบหลังเรียนต้องไม่น้อยกว่าคะแนนแบบทดสอบก่อนเรียน" />
+                    <ListItemText
+                      primary="1. คะแนนแบบทดสอบหลังเรียนต้องไม่น้อยกว่าคะแนนแบบทดสอบก่อนเรียน"
+                      slotProps={{ primary: { sx: { fontSize: "1rem" } } }}
+                    />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="2. คะแนนปฏิบัติการ (Lab) ต้องไม่ต่ำกว่า 60%" />
+                    <ListItemText 
+                      primary="2. คะแนนปฏิบัติการ (Lab) ต้องไม่ต่ำกว่า 60%" 
+                      slotProps={{ primary: { sx: { fontSize: "1rem" } } }}
+                    />
                   </ListItem>
                 </List>
               </Paper>

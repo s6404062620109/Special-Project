@@ -6,8 +6,10 @@
     border-radius: 15px;
     width: 80%;
     max-width: 400px;
-    margin: 0 auto;
+    margin: 36px auto;
     padding: 20px;
+    background: #fff;
+    box-shadow: 4px 4px 6px rgba(0,0,0,0.08);
 }
 
 .container p,

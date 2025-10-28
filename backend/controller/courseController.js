@@ -1,42 +1,105 @@
 const db = require("../database");
 
 const getCourses = (req, res) => {
-    try{
-        db.query("SELECT * FROM course WHERE enable = 1", (err, results) => {
+  try {
+    Promise.all([
+      new Promise((resolve, reject) => {
+        const coursesSql = `
+          SELECT 
+            c.*, 
+            COUNT(DISTINCT e.id) AS enrollmentCount,
+            GROUP_CONCAT(DISTINCT t.id) AS tagIds,
+            GROUP_CONCAT(DISTINCT t.name) AS tagNames
+          FROM course c
+          LEFT JOIN enrollment e ON c.id = e.courseId
+          LEFT JOIN course_tag ct ON c.id = ct.courseId
+          LEFT JOIN tags t ON ct.tagId = t.id
+          WHERE c.enable = 1
+          GROUP BY c.id
+        `;
+        db.query(coursesSql, (err, results) => {
+          if (err) return reject(err);
+          resolve(results);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        db.query('SELECT id, name FROM tags ORDER BY name ASC', (err, tags) => {
+          if (err) return reject(err);
+          resolve(tags);
+        });
+      })
+    ]).then(([courseResults, allTags]) => {
+      if (courseResults.length === 0) {
+        return res.status(404).send({ message: "No courses found" });
+      }
+
+      const dataFormat = courseResults.map(course => {
+        const tagIds = course.tagIds ? course.tagIds.split(',') : [];
+        const tagNames = course.tagNames ? course.tagNames.split(',') : [];
+        const tags = tagIds.map((id, index) => ({
+          id: parseInt(id, 10),
+          name: tagNames[index]
+        }));
+        delete course.tagIds;
+        delete course.tagNames;
+        return { ...course, tags };
+      });
+
+      return res.status(200).send({ 
+        results: dataFormat,
+        allTags: allTags 
+      });
+    }).catch(err => {
+      console.error("Database query error:", err);
+      return res.status(500).send({ message: "Database query error" });
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
+const getTopCourses = (req, res) => {
+    try {
+        const sql = `
+            SELECT 
+                c.*, 
+                COUNT(DISTINCT e.id) AS enrollmentCount,
+                GROUP_CONCAT(DISTINCT t.id) AS tagIds,
+                GROUP_CONCAT(DISTINCT t.name) AS tagNames
+            FROM course c
+            LEFT JOIN enrollment e ON c.id = e.courseId
+            LEFT JOIN course_tag ct ON c.id = ct.courseId
+            LEFT JOIN tags t ON ct.tagId = t.id
+            WHERE c.enable = 1
+            GROUP BY c.id
+            ORDER BY enrollmentCount DESC, c.id ASC
+            LIMIT 3
+        `;
+
+        db.query(sql, (err, results) => {
             if (err) {
-              return res.status(500).send({ message: "Database course query error" });
-            } 
-            
-            if (results.length === 0) {
-              return res.status(400).send({ message: "No courses found" });
+                console.error("Database query error:", err);
+                return res.status(500).send({ message: "Database course query error" });
             }
 
-            const courseIds = results.map(course => course.id);
+            const dataFormat = results.map(course => {
+                const tagIds = course.tagIds ? course.tagIds.split(',') : [];
+                const tagNames = course.tagNames ? course.tagNames.split(',') : [];
+                const tags = tagIds.map((id, index) => ({ id: parseInt(id, 10), name: tagNames[index] }));
 
-            db.query("SELECT id, courseId FROM enrollment WHERE courseId IN (?)", [courseIds], (err, enrollmentResults) => {
-              if (err) {
-                return res.status(500).send({ message: "Database enrollment query error" });
-              }
-
-              const dataFormat = results.map(course => {
-                const enrollmentCount = enrollmentResults.filter(enrollment => enrollment.courseId === course.id).length;
-                return {
-                  ...course,
-                  enrollmentCount
-                };
-              });
-
-
-              return res.status(200).send({ results: dataFormat});
+                delete course.tagIds;
+                delete course.tagNames;
+                return { ...course, tags };
             });
-          }
-        );
 
-    } catch(error){
-        console.log(error);
+            return res.status(200).send({ results: dataFormat });
+        });
+    } catch (error) {
+        console.error("Server error:", error);
         return res.status(500).json({ message: "Server error.", error });
     }
-}
+};
 
 const getEnrollmentCourses = (req, res) => {
     const { courseIds } = req.params;
@@ -47,16 +110,38 @@ const getEnrollmentCourses = (req, res) => {
 
     const courseIdsArray = courseIds.split(',').map(id => parseInt(id));
 
-    try{
-        db.query("SELECT id, name, icon FROM course WHERE id IN (?) AND enable = 1", [courseIdsArray], (err, results) => {
-            if (err) {
-                return res.status(500).send("Database query error");
-            }
-      
-            return res.status(200).send(results);
-        });
+    try {
+        const sql = `
+            SELECT 
+                c.*,
+                GROUP_CONCAT(DISTINCT t.id) AS tagIds,
+                GROUP_CONCAT(DISTINCT t.name) AS tagNames
+            FROM course c
+            LEFT JOIN course_tag ct ON c.id = ct.courseId
+            LEFT JOIN tags t ON ct.tagId = t.id
+            WHERE c.id IN (?) AND c.enable = 1
+            GROUP BY c.id
+        `;
 
-    } catch(error){
+        db.query(sql, [courseIdsArray], (err, results) => {
+            if (err) {
+                console.error("Database query error:", err);
+                return res.status(500).send({ message: "Database query error" });
+            }
+
+            const dataFormat = results.map(course => {
+                const tagIds = course.tagIds ? course.tagIds.split(',') : [];
+                const tagNames = course.tagNames ? course.tagNames.split(',') : [];
+                const tags = tagIds.map((id, index) => ({ id: parseInt(id, 10), name: tagNames[index] }));
+
+                delete course.tagIds;
+                delete course.tagNames;
+                return { ...course, tags };
+            });
+
+            return res.status(200).send(dataFormat);
+        });
+    } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Server error.", error });
     }
@@ -65,4 +150,5 @@ const getEnrollmentCourses = (req, res) => {
 module.exports = {
   getCourses,
   getEnrollmentCourses,
+  getTopCourses,
 }

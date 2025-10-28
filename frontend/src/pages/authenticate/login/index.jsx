@@ -41,7 +41,7 @@ function Login() {
       if (response.status === 200) {
         setStatusMessage(response.data.message);
         localStorage.setItem('email', dataInput.email);
-        setTimeout(() => window.location.reload(), 2000);
+        setTimeout(() => window.location.href = "/", 2000);
       } 
       else if(response.status === 401) {
         setStatusMessage(response.data.message);

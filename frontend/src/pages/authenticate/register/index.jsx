@@ -255,7 +255,7 @@ function Register() {
           </div>
 
           <div className={style.functions}>
-            <Link to='/'>คุณมีบัญชีผู้ใช้อยู่แล้ว ?</Link>
+            <Link to='/login'>คุณมีบัญชีผู้ใช้อยู่แล้ว ?</Link>
           </div>
         </div>
       </form>

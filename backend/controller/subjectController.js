@@ -27,8 +27,12 @@ const getAll = (req, res) => {
       u.email AS teacherEmail,
       u.profile_img AS teacherImg,
       COUNT(DISTINCT q.id) AS countQuestions,
-      COUNT(DISTINCT l.id) AS countLabs
+      COUNT(DISTINCT l.id) AS countLabs,
+      GROUP_CONCAT(DISTINCT t.id) AS tagIds,
+      GROUP_CONCAT(DISTINCT t.name) AS tagNames
     FROM course c
+    LEFT JOIN course_tag ct ON ct.courseId = c.id
+    LEFT JOIN tags t ON t.id = ct.tagId
     LEFT JOIN user u ON c.teacherId = u.id
     LEFT JOIN subject s ON s.courseId = c.id
     LEFT JOIN questions q ON q.courseId = c.id
@@ -46,43 +50,51 @@ const getAll = (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    db.query(`SELECT * FROM subject WHERE courseId = ?`, [courseId], (err, subjectResults) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Database subject query error" });
-      }
-
+    Promise.all([
+      new Promise((resolve, reject) => {
+        db.query(`SELECT * FROM subject WHERE courseId = ?`, [courseId], (err, subjectResults) => {
+          if (err) return reject(err);
+          resolve(subjectResults);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        db.query('SELECT id, name FROM tags ORDER BY name ASC', (err, tagResults) => {
+          if (err) return reject(err);
+          resolve(tagResults);
+        });
+      })
+    ]).then(([subjectResults, allTags]) => {
       const course = result[0];
+      const tagIds = course.tagIds ? course.tagIds.split(',') : [];
+      const tagNames = course.tagNames ? course.tagNames.split(',') : [];
+      const tags = tagIds.map((id, index) => ({
+        id: parseInt(id, 10), // Ensure id is a number
+        name: tagNames[index]
+      }));
+
       const response = {
         courseInfo: {
-          id: course.courseId,
-          name: course.courseName,
-          discription: course.discription,
-          icon: course.courseIcon,
-          teacherId: course.teacherId,
-          enable: course.enable,
-          createat: course.createat,
-          updateat: course.updateat,
-          announce_state: course.announce_state,
-          pretest_rate: course.pretest_rate,
-          posttest_rate: course.posttest_rate,
+          id: course.courseId, name: course.courseName, discription: course.discription,
+          icon: course.courseIcon, teacherId: course.teacherId, enable: course.enable,
+          createat: course.createat, updateat: course.updateat, announce_state: course.announce_state,
+          pretest_rate: course.pretest_rate, posttest_rate: course.posttest_rate,
           duration_days: course.duration_days,
+          tags: tags,
         },
         subject: subjectResults,
         teacherInfo: {
-          sex: course.teacherSex,
-          name: course.teacherName,
-          surname: course.teacherSurname,
-          email: course.teacherEmail,
-          profile_img: course.teacherImg,
+          sex: course.teacherSex, name: course.teacherName, surname: course.teacherSurname,
+          email: course.teacherEmail, profile_img: course.teacherImg,
         },
-        countQuestions: course.countQuestions,
-        countLabs: course.countLabs,
-        countEnrollments: course.countEnrollments,
-        countPosttestComplete: course.countPosttestComplete,
+        countQuestions: course.countQuestions, countLabs: course.countLabs,
+        countEnrollments: course.countEnrollments, countPosttestComplete: course.countPosttestComplete,
+        allTags: allTags
       };
 
       return res.status(200).json(response);
+    }).catch(promiseErr => {
+      console.error("Database query error in Promise.all:", promiseErr);
+      return res.status(500).json({ message: "Error fetching subjects or tags." });
     });
   });
 };
@@ -96,6 +108,7 @@ const getAllSubjectStudent = (req, res) => {
       c.name AS courseName,
       c.icon AS courseIcon,
       c.teacherId,
+      c.discription,
       c.enable,
       c.createat,
       c.updateat,
@@ -110,9 +123,13 @@ const getAllSubjectStudent = (req, res) => {
       u.email AS teacherEmail,
       u.profile_img AS teacherImg,
       COUNT(DISTINCT q.id) AS countQuestions,
-      COUNT(DISTINCT l.id) AS countLabs
+      COUNT(DISTINCT l.id) AS countLabs,
+      GROUP_CONCAT(DISTINCT t.id) AS tagIds,
+      GROUP_CONCAT(DISTINCT t.name) AS tagNames
     FROM course c 
     LEFT JOIN user u ON c.teacherId = u.id
+    LEFT JOIN course_tag ct ON ct.courseId = c.id
+    LEFT JOIN tags t ON t.id = ct.tagId
     LEFT JOIN subject s ON s.courseId = c.id
     LEFT JOIN questions q ON q.courseId = c.id
     LEFT JOIN labs l ON l.subjectId = s.id
@@ -136,16 +153,25 @@ const getAllSubjectStudent = (req, res) => {
       }
 
       const course = result[0];
+      const tagIds = course.tagIds ? course.tagIds.split(',') : [];
+      const tagNames = course.tagNames ? course.tagNames.split(',') : [];
+      const tags = tagIds.map((id, index) => ({
+        id: parseInt(id, 10),
+        name: tagNames[index]
+      }));
+
       const response = {
         courseInfo: {
           id: course.courseId,
           name: course.courseName,
           icon: course.courseIcon,
+          discription: course.discription,
           teacherId: course.teacherId,
           enable: course.enable,
           createat: course.createat,
           updateat: course.updateat,
           announce_state: course.announce_state,
+          tags: tags,
           pretest_rate: course.pretest_rate,
           posttest_rate: course.posttest_rate,
         },

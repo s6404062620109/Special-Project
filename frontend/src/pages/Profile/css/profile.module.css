@@ -40,6 +40,10 @@
     flex-direction: column;
     gap: 20px;
 
+    .Not-change-value{
+        flex-direction: row;
+    }
+    
     div{
         display: flex;
         flex-direction: column;

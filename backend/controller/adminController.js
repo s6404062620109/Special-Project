@@ -287,6 +287,74 @@ const downloadLabGuide = (req, res) => {
   }
 }
 
+const getAllTags = (req, res) => {
+  try {
+    db.query("SELECT * FROM tags ORDER BY name ASC", (error, tags) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Database tags query error." });
+      }
+      return res.status(200).send({ tags });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
+const createTag = (req, res) => {
+  const { name } = req.body;
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ message: "Tag name is required." });
+  }
+
+  try {
+    db.query("SELECT id FROM tags WHERE name = ?", [name.trim()], (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Database query error." });
+      }
+      if (results.length > 0) {
+        return res.status(409).json({ message: "มีแท็กนี้อยู่แล้ว" });
+      }
+
+      db.query("INSERT INTO tags (name) VALUES (?)", [name.trim()], (insertErr, insertResult) => {
+        if (insertErr) {
+          console.log(insertErr);
+          return res.status(500).json({ message: "Failed to create tag." });
+        }
+        return res.status(201).json({ message: "สร้างแท็กสำเร็จ", tagId: insertResult.insertId });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server error.", error });
+  }
+};
+
+const updateTag = (req, res) => {
+  const { tagId } = req.params;
+  const { name } = req.body;
+
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ message: "Tag name is required." });
+  }
+
+  db.query("UPDATE tags SET name = ? WHERE id = ?", [name.trim(), tagId], (err, result) => {
+    if (err) return res.status(500).json({ message: "Database query error." });
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Tag not found." });
+    return res.status(200).json({ message: "อัปเดตแท็กสำเร็จ" });
+  });
+};
+
+const deleteTag = (req, res) => {
+  const { tagId } = req.params;
+  db.query("DELETE FROM tags WHERE id = ?", [tagId], (err, result) => {
+    if (err) return res.status(500).json({ message: "Database query error." });
+    return res.status(200).json({ message: "ลบแท็กสำเร็จ" });
+  });
+};
+
 module.exports = {
   getUsers,
   addUser,
@@ -297,5 +365,9 @@ module.exports = {
   approveTeacherReq,
   getGuides,
   updateGuide,
-  downloadLabGuide
+  downloadLabGuide,
+  getAllTags,
+  createTag,
+  updateTag,
+  deleteTag
 };

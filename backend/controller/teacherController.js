@@ -161,13 +161,13 @@ const createCourse = (req, res) => {
 
 const updateCourse = (req, res) => {
     const { courseId } = req.params;
-    const { name, icon, discription } = req.body;
+    const { name, icon, discription, tags, deletedTags } = req.body;
 
     if(!courseId || !name){
-      return res.status(400).send({ message: "Require courseid, name." });
+      return res.status(400).send({ message: "Require courseid and name." });
     }
 
-    if( typeof courseId !== 'string' || 
+    if( typeof courseId !== 'string' ||
       typeof name !== 'string' ){
         return res.status(400).send({ message: "Invalid courseid, name." });
     }
@@ -176,16 +176,29 @@ const updateCourse = (req, res) => {
       return res.status(400).json({ message: "Invalid icon format. It must be a string or null." });
     }
 
-    try{
-        db.query("UPDATE course SET name = ?, icon = ?, discription = ?, updateat = NOW() WHERE id = ?", 
-          [name, icon, discription, courseId], (error) => {
-            if(error){
-              console.log(error);
-              return res.status(500).send({ message: "Database course query error." });
-            }
+    const query = (sql, params) => new Promise((resolve, reject) => {
+      db.query(sql, params, (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
 
-            return res.status(200).send({ message: "อัพเดทคอร์สเรัยนเสร็จสิ้น."});
-        });
+    try{
+        (async () => {
+          await query("UPDATE course SET name = ?, icon = ?, discription = ?, updateat = NOW() WHERE id = ?", 
+            [name, icon, discription, courseId]);
+
+          if (deletedTags && deletedTags.length > 0) {
+            await query("DELETE FROM course_tag WHERE courseId = ? AND tagId IN (?)", [courseId, deletedTags]);
+          }
+
+          if (tags && tags.length > 0) {
+            const tagValues = tags.map(tagId => [courseId, tagId]);
+            await query("INSERT IGNORE INTO course_tag (courseId, tagId) VALUES ?", [tagValues]);
+          }
+
+          return res.status(200).send({ message: "อัพเดทคอร์สเรียนเสร็จสิ้น."});
+        })();
 
     } catch(error){
         console.log(error);

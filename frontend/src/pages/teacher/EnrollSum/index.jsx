@@ -38,9 +38,9 @@ import {
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
+import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MuiAlert from '@mui/material/Alert';
-import SchoolIcon from '@mui/icons-material/School';
 
 function GroupedProgressRow({ progress, pretestScore, posttestScore, labtestScore }) {
   const [openPre, setOpenPre] = useState(false);
@@ -226,7 +226,7 @@ function AttemptRow({ attemptData, attemptNumber, handleDeleteEnrollment }) {
               default:
                 return <Stack direction="row" gap={1} color="text.secondary">
                   <Typography variant="body2">กำลังเรียนอยู่</Typography> 
-                  <SchoolIcon fontSize="small" />
+                  <LocalLibraryIcon fontSize="small" />
                 </Stack>;
             }
           })()}
@@ -305,7 +305,7 @@ function UserRow({ userGroup, handleDeleteStudentEnrollments, handleDeleteEnroll
       default:
         return <Stack direction="row" gap={1} color="text.secondary" justifyContent="center">
             <Typography variant="body2" fontWeight={600}>กำลังเรียนอยู่</Typography>
-            <SchoolIcon fontSize="small" />
+            <LocalLibraryIcon fontSize="small" />
           </Stack>;
     }
   };

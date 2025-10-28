@@ -1,0 +1,21 @@
+.CourseBoard{
+    height: 95%;
+    width: 80%;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.head{
+    display: flex;
+    justify-content: space-between;
+            align-items: center;
+}
+
+@media screen and (max-width: 768px) {
+    .CourseBoard{
+        width: 100%;
+        height: 90%;
+        padding: 10px;
+    }
+}
+

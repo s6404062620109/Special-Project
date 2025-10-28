@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import backend from "../../../api/backend";
 import { AuthContext } from "../../../context/AuthProvider";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SchoolIcon from '@mui/icons-material/School';
+import SchoolIcon from "@mui/icons-material/School";
 import {
   Avatar,
   Button,
@@ -26,48 +26,75 @@ import {
   Typography,
   Snackbar,
   Alert,
+  Chip,
   useMediaQuery,
+  Box,
 } from "@mui/material";
 
 import style from "./css/editcourse.module.css";
 import EditPopup from "./EditPopup";
 import { BarChart } from "@mui/x-charts/BarChart";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import TestPopup from "./TestPopup";
 import SettingPopup from "./SettingPopup";
+import { da } from "date-fns/locale";
 
 function EditCourse() {
   const { courseId } = useParams();
   const { userData } = useContext(AuthContext);
-  const [ data, setData ] = useState({
+  const [data, setData] = useState({
     courseInfo: {},
+    allTags: [],
     subject: [],
     countQuestions: 0,
     countLabs: 0,
   });
-  const [ chartData, setChartData ] = useState(null);
-  const [ editPopupOpen, setEditPopupOpen ] = useState(false);
-  const [ fixCoursePopup, setFixCoursePopup ] = useState(false);
-  const [ subjectPopupOpen, setSubjectPopupOpen ] = useState(false);
-  const [ examDialogOpen, setExamOpenDialog ] = useState(false);
+  const [chartData, setChartData] = useState(null);
+  const [editPopupOpen, setEditPopupOpen] = useState(false);
+  const [fixCoursePopup, setFixCoursePopup] = useState(false);
+  const [subjectPopupOpen, setSubjectPopupOpen] = useState(false);
+  const [examDialogOpen, setExamOpenDialog] = useState(false);
   const navigate = useNavigate();
-  const [ deleteDialogOpen, setDeleteDialogOpen ] = useState(false);
-  const [ subjectToDelete, setSubjectToDelete ] = useState(null);
-  const [ snackbar, setSnackbar ] = useState({ open: false, message: "", severity: "info" });
-  const [filter, setFilter ] = useState({
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+  const [filter, setFilter] = useState({
     startDate: null,
     endDate: null,
   });
+  const [showAllTags, setShowAllTags] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [isDescriptionOverflowing, setIsDescriptionOverflowing] = useState(false);
+  const descriptionRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const element = descriptionRef.current;
+    if (element) {
+      if (element.scrollHeight > element.clientHeight) {
+        setIsDescriptionOverflowing(true);
+      } else {
+        setIsDescriptionOverflowing(false);
+      }
+    }
+  }, [data.courseInfo.discription]);
 
   const fetchSubjects = async () => {
     try {
-      const response = await backend.get(`/subjects/getAllSubject/${courseId}`, { withCredentials: true });
+      const response = await backend.get(
+        `/subjects/getAllSubject/${courseId}`,
+        { withCredentials: true }
+      );
 
       if (response.status === 200) {
         setData({
           courseInfo: response.data.courseInfo,
+          allTags: response.data.allTags,
           subject: response.data.subject,
           countQuestions: response.data.countQuestions,
           countLabs: response.data.countLabs,
@@ -77,14 +104,12 @@ function EditCourse() {
       console.log(error);
     }
   };
-  
+
   const fetchProgressAnalysis = async () => {
     try {
-      const response = await backend.get(`/teacher/testAnalysis/${courseId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await backend.get(`/teacher/testAnalysis/${courseId}`, {
+        withCredentials: true,
+      });
 
       if (response.status === 200) {
         setChartData(response.data);
@@ -128,7 +153,11 @@ function EditCourse() {
         }
       );
       if (response.status === 200) {
-        setSnackbar({ open: true, message: response.data.message, severity: "success" });
+        setSnackbar({
+          open: true,
+          message: response.data.message,
+          severity: "success",
+        });
         setData((prevData) => ({
           ...prevData,
           subject: prevData.subject.filter(
@@ -156,7 +185,7 @@ function EditCourse() {
   const handleSettingCourse = () => {
     setEditPopupOpen(false);
     fetchSubjects();
-  }
+  };
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -167,37 +196,67 @@ function EditCourse() {
 
   const tabletQuery = useMediaQuery("(max-width:720px)");
 
-  const filteredUsers = chartData?.users?.filter(user => {
-    if (!filter.startDate && !filter.endDate) {
-      return true; 
-    }
+  const filteredUsers =
+    chartData?.users?.filter((user) => {
+      if (!filter.startDate && !filter.endDate) {
+        return true;
+      }
 
-    const userStartDate = user.startat ? new Date(user.startat) : null;
-    const userEndDate = user.endat ? new Date(user.endat) : null;
+      const userStartDate = user.startat ? new Date(user.startat) : null;
+      const userEndDate = user.endat ? new Date(user.endat) : null;
 
-    // ตั้งค่าเวลาของตัวกรองให้เป็นจุดเริ่มต้นและสิ้นสุดของวัน
-    const filterStart = filter.startDate ? new Date(filter.startDate.getFullYear(), filter.startDate.getMonth(), 1) : null;
-    const filterEnd = filter.endDate ? new Date(filter.endDate.getFullYear(), filter.endDate.getMonth() + 1, 0, 23, 59, 59, 999) : null;
+      // ตั้งค่าเวลาของตัวกรองให้เป็นจุดเริ่มต้นและสิ้นสุดของวัน
+      const filterStart = filter.startDate
+        ? new Date(
+            filter.startDate.getFullYear(),
+            filter.startDate.getMonth(),
+            1
+          )
+        : null;
+      const filterEnd = filter.endDate
+        ? new Date(
+            filter.endDate.getFullYear(),
+            filter.endDate.getMonth() + 1,
+            0,
+            23,
+            59,
+            59,
+            999
+          )
+        : null;
 
-    // ถ้ามีเฉพาะ filter.startDate ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) ตั้งแต่เดือนนั้นเป็นต้นไป
-    if (filterStart && !filterEnd) {
-      return (userStartDate && userStartDate >= filterStart) || (userEndDate && userEndDate >= filterStart);
-    } 
+      // ถ้ามีเฉพาะ filter.startDate ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) ตั้งแต่เดือนนั้นเป็นต้นไป
+      if (filterStart && !filterEnd) {
+        return (
+          (userStartDate && userStartDate >= filterStart) ||
+          (userEndDate && userEndDate >= filterStart)
+        );
+      }
 
-    // ถ้ามีเฉพาะ filter.endDate ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) ก่อนเดือนนั้น
-    if (!filterStart && filterEnd) {
-      return (userStartDate && userStartDate <= filterEnd) || (userEndDate && userEndDate <= filterEnd);
-    }
+      // ถ้ามีเฉพาะ filter.endDate ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) ก่อนเดือนนั้น
+      if (!filterStart && filterEnd) {
+        return (
+          (userStartDate && userStartDate <= filterEnd) ||
+          (userEndDate && userEndDate <= filterEnd)
+        );
+      }
 
-    // ถ้ามีทั้งคู่ ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) อยู่ภายในช่วงที่เลือก
-    return (userStartDate && userStartDate >= filterStart && userStartDate <= filterEnd) || (userEndDate && userEndDate >= filterStart && userEndDate <= filterEnd);
-  }) || [];
+      // ถ้ามีทั้งคู่ ให้กรองผู้เรียนที่เริ่มเรียน (startat) หรือเรียนจบ (endat) อยู่ภายในช่วงที่เลือก
+      return (
+        (userStartDate &&
+          userStartDate >= filterStart &&
+          userStartDate <= filterEnd) ||
+        (userEndDate && userEndDate >= filterStart && userEndDate <= filterEnd)
+      );
+    }) || [];
 
   const lineChartData = filteredUsers.map((u, index) => {
     const fullName = u.name;
 
     // ตรวจสอบว่ามีชื่อจริง (firstName) ซ้ำกันในกลุ่มข้อมูลทั้งหมดหรือไม่
-    const usersWithSameName = filteredUsers.filter(user => user.name === fullName);
+    const usersWithSameName = filteredUsers.filter(
+      (user) => user.name === fullName
+    );
     const duplicateCount = usersWithSameName.length;
 
     let xAxisLabel = fullName;
@@ -206,7 +265,7 @@ function EditCourse() {
       // หากมีชื่อซ้ำ ให้หาว่าเป็นชื่อที่ซ้ำกันลำดับที่เท่าไหร่
       const occurrenceIndex = filteredUsers
         .slice(0, index + 1)
-        .filter(user => user.name === fullName).length;
+        .filter((user) => user.name === fullName).length;
       xAxisLabel = `${fullName} (${occurrenceIndex})`;
     }
 
@@ -225,7 +284,7 @@ function EditCourse() {
 
   const maxX = Math.max(
     chartData?.pretestMax || 0,
-    chartData?.posttestMax || 0,
+    chartData?.posttestMax || 0
   );
 
   return (
@@ -233,15 +292,8 @@ function EditCourse() {
       <div className={style.container}>
         <div className={style.head}>
           <div className={style["info-wrapper"]}>
-            <Stack
-              alignItems="center"
-              gap={1}
-            >
-              <Stack
-                direction="row"
-                alignItems="center"
-                gap={2}
-              >
+            <Stack alignItems="center" gap={1}>
+              <Stack direction="row" alignItems="center" gap={1}>
                 {data.courseInfo.icon ? (
                   <img
                     alt="course icon"
@@ -252,87 +304,171 @@ function EditCourse() {
                       borderRadius: "8px",
                     }}
                   />
-                ):(
-                  <Avatar sx={{ width: 50, height: 50, marginRight: "10px", bgcolor: "#1976d2" }}>
+                ) : (
+                  <Avatar
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      marginRight: "10px",
+                      bgcolor: "#1976d2",
+                    }}
+                  >
                     <SchoolIcon />
                   </Avatar>
-                )}            
-                <Typography variant="h5" fontWeight={600}>{data.courseInfo.name}</Typography>
+                )}
+                <Typography variant="h5" fontWeight={600}>
+                  {data.courseInfo.name}
+                </Typography>
+                <IconButton
+                  onClick={() => setFixCoursePopup(true)}
+                  size="small"
+                >
+                  <EditIcon fontSize="inherit" />
+                </IconButton>
               </Stack>
 
-              <Typography 
+              <Typography
+                ref={descriptionRef}
                 variant="subtitle1"
                 title={data.courseInfo.discription}
                 sx={{
-                  wordBreak: 'break-word',
-                  display: '-webkit-box',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  WebkitLineClamp: 1,
-                  WebkitBoxOrient: 'vertical',
-                  maxWidth: '200px',
-                  color: 'text.secondary'
+                  wordBreak: "break-word",
+                  display: showFullDescription ? 'block' : '-webkit-box',
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  WebkitLineClamp: showFullDescription ? 'none' : 1,
+                  WebkitBoxOrient: showFullDescription ? 'unset' : 'vertical',
+                  maxWidth: "350px",
+                  color: "text.secondary",
                 }}
-              >{data.courseInfo.discription ? data.courseInfo.discription : "ไม่มีคำอธิบาย"}</Typography>
-            </Stack>           
-           
-            <IconButton onClick={() => setFixCoursePopup(true)}>
-              <EditIcon />
-            </IconButton>
+              >
+                {data.courseInfo.discription
+                  ? data.courseInfo.discription
+                  : "ไม่มีคำอธิบาย"}
+              </Typography>
+              {isDescriptionOverflowing && (
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowFullDescription(!showFullDescription);
+                  }}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.8rem',
+                    p: '2px 4px',
+                    minWidth: 'auto',
+                    lineHeight: 1.2,
+                    alignSelf: 'flex-start',
+                    mt: -1,
+                    ml: -0.5
+                  }}
+                >
+                  {showFullDescription ? 'ซ่อน' : 'แสดงเพิ่มเติม'}
+                </Button>
+              )}
+
+
+              {data.courseInfo.tags?.length > 0 && (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  flexWrap="wrap"
+                  justifyContent="center"
+                  alignItems="center"
+                  sx={{
+                    mt: 1,
+                    maxWidth: "350px",
+                    rowGap: 1,
+                  }}
+                >
+                  {(showAllTags ? data.courseInfo.tags : data.courseInfo.tags.slice(0, 4)).map((tag) => (
+                    <Chip
+                      key={tag.id}
+                      label={tag.name}
+                      color="primary"
+                      size="small"
+                      sx={{
+                        borderRadius: "6px",
+                        fontSize: "0.85rem",
+                        fontWeight: 500,
+                      }}
+                    />
+                  ))}
+                  {data.courseInfo.tags.length > 4 && (
+                    <Button
+                      size="small"
+                      onClick={() => setShowAllTags(!showAllTags)}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.8rem',
+                        p: '2px 4px',
+                        minWidth: 'auto',
+                        lineHeight: 1.2
+                      }}
+                    >
+                      {showAllTags ? 'ซ่อน' : `+${data.courseInfo.tags.length - 4} เพิ่มเติม`}
+                    </Button>
+                  )}
+                </Stack>
+              )}
+
+            </Stack>
+
           </div>
 
           <Stack
             justifyContent="center"
             alignItems="center"
-            direction={{ xs: "column", sm: "row", md: "column"}}
+            direction={{ xs: "column", sm: "row", md: "column" }}
             sx={{
-              width: { xs: "100%", md:"30%"},
-              gap: 2
+              width: { xs: "100%", md: "30%" },
+              gap: 2,
             }}
           >
-              <Button
-                variant="contained"
-                sx={{
-                  width: { xs: "100%", sm: "50%" },
-                  backgroundColor: "#2e9b33ff",
-                }}
-                onClick={() => navigate(`/enrollment-summary/${courseId}`)}
-              >
-                รายชื่อผู้เรียน
-              </Button>
+            <Button
+              variant="contained"
+              sx={{
+                width: { xs: "100%", sm: "50%" },
+                backgroundColor: "#2e9b33ff",
+              }}
+              onClick={() => navigate(`/enrollment-summary/${courseId}`)}
+            >
+              รายชื่อผู้เรียน
+            </Button>
 
-              <Button
-                variant="contained"
-                sx={{
-                  width: { xs: "100%", sm: "50%" },
-                }}
-                onClick={() => setExamOpenDialog(true)}
-              >
-                คลังข้อสอบ
-              </Button>
+            <Button
+              variant="contained"
+              sx={{
+                width: { xs: "100%", sm: "50%" },
+              }}
+              onClick={() => setExamOpenDialog(true)}
+            >
+              คลังข้อสอบ
+            </Button>
 
-              <Button
-                variant="contained"
-                sx={{
-                  width: { xs: "100%", sm: "50%" },
-                  backgroundColor: "#868686ff",
-                }}
-                onClick={() => setEditPopupOpen(true)}
-              >
-                ตั้งค่าคอร์ส
-              </Button>
+            <Button
+              variant="contained"
+              sx={{
+                width: { xs: "100%", sm: "50%" },
+                backgroundColor: "#868686ff",
+              }}
+              onClick={() => setEditPopupOpen(true)}
+            >
+              ตั้งค่าคอร์ส
+            </Button>
           </Stack>
-          
         </div>
 
         <div className={style.body}>
-
           <div className={style.tableWrapper}>
             <table className={style.subjectTable}>
               <thead>
                 <tr>
                   <th>
-                    <Typography variant="body1" fontWeight={600}>บทเรียน</Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      บทเรียน
+                    </Typography>
                   </th>
                   <th colSpan={3}></th>
                 </tr>
@@ -343,7 +479,7 @@ function EditCourse() {
                     <tr key={subject.id}>
                       <td>
                         <Typography variant="body2">
-                            {index+1}. {subject.name}
+                          {index + 1}. {subject.name}
                         </Typography>
                       </td>
                       <td>
@@ -415,42 +551,45 @@ function EditCourse() {
 
             <Stack
               sx={{
-                flexDirection: { xs: "column", md: "row"},
+                flexDirection: { xs: "column", md: "row" },
                 justifyContent: "center",
                 alignItems: "center",
                 gap: 2,
                 p: 2,
-                width: "100%"
+                width: "100%",
               }}
             >
               <Stack
                 sx={{
-                  flexDirection: { xs: "column", md: "row"},
+                  flexDirection: { xs: "column", md: "row" },
                   width: { xs: "100%", md: "60%" },
                   gap: 2,
                 }}
               >
                 <DatePicker
                   label="เดือน/ปี ที่เริ่มเรียน"
-                  views={['year', 'month']}
+                  views={["year", "month"]}
                   value={filter.startDate}
-                  onChange={(newValue) => setFilter(prev => ({ ...prev, startDate: newValue }))}
-                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                  onChange={(newValue) =>
+                    setFilter((prev) => ({ ...prev, startDate: newValue }))
+                  }
+                  slotProps={{ textField: { size: "small", fullWidth: true } }}
                 />
                 <DatePicker
                   label="เดือน/ปี ที่จบการเรียน"
-                  views={['year', 'month']}
+                  views={["year", "month"]}
                   value={filter.endDate}
-                  onChange={(newValue) => setFilter(prev => ({ ...prev, endDate: newValue }))}
-                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                  onChange={(newValue) =>
+                    setFilter((prev) => ({ ...prev, endDate: newValue }))
+                  }
+                  slotProps={{ textField: { size: "small", fullWidth: true } }}
                 />
               </Stack>
-              
 
               <Button
                 variant="outlined"
                 onClick={handleResetFilter}
-                sx={{ 
+                sx={{
                   height: "100%",
                   width: { xs: "100%", md: "25%" },
                 }}
@@ -460,91 +599,139 @@ function EditCourse() {
             </Stack>
 
             {lineChartData.length === 0 && (
-              <Paper sx={{ p: 2, textAlign: 'center', mt: 2 }}>
+              <Paper sx={{ p: 2, textAlign: "center", mt: 2 }}>
                 <Typography>
                   {chartData?.users?.length > 0
                     ? "ไม่พบข้อมูลตามตัวกรองที่เลือก"
-                    : "ยังไม่มีข้อมูลคะแนนของผู้เรียน"
-                  }
+                    : "ยังไม่มีข้อมูลคะแนนของผู้เรียน"}
                 </Typography>
               </Paper>
             )}
 
             {lineChartData.length > 0 && (
-            <>
-            <BarChart
-              dataset={lineChartData}
-              layout="horizontal"
-              yAxis={[
-                {
-                  scaleType: 'band',
-                  dataKey: 'x',
-                  width: 140,
-                },
-              ]}
-              xAxis={[
-                {
-                  scaleType: 'linear',
-                  position: 'top',
-                  min: 0,
-                  tickNumber: maxX,
-                  max: maxX,
-                },
-              ]}
-              series={[
-                {
-                  dataKey: 'pretest',
-                  label: "แบบทดสอบก่อนเรียน",
-                  valueFormatter: (value) => `${value}`,
-                },
-                {
-                  dataKey: 'posttest',
-                  label: "แบบทดสอบหลังเรียน",
-                  valueFormatter: (value) => `${value}`,
-                },
-              ]}
-              height={lineChartData.length * 60 + 100}
-            />
+              <>
+                <BarChart
+                  dataset={lineChartData}
+                  layout="horizontal"
+                  yAxis={[
+                    {
+                      scaleType: "band",
+                      dataKey: "x",
+                      width: 140,
+                    },
+                  ]}
+                  xAxis={[
+                    {
+                      scaleType: "linear",
+                      position: "top",
+                      min: 0,
+                      tickNumber: maxX,
+                      max: maxX,
+                    },
+                  ]}
+                  series={[
+                    {
+                      dataKey: "pretest",
+                      label: "แบบทดสอบก่อนเรียน",
+                      valueFormatter: (value) => `${value}`,
+                    },
+                    {
+                      dataKey: "posttest",
+                      label: "แบบทดสอบหลังเรียน",
+                      valueFormatter: (value) => `${value}`,
+                    },
+                  ]}
+                  height={lineChartData.length * 60 + 100}
+                />
 
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
-              <Table sx={{ minWidth: 650 }} aria-label="score summary table">
-              {(() => {
-                const maxPre = Math.max(...lineChartData.map((d) => d.pretest));
-                const maxPreUser = lineChartData.find((d) => d.pretest === maxPre)?.x;
-                const maxPost = Math.max(...lineChartData.map((d) => d.posttest));
-                const maxPostUser = lineChartData.find((d) => d.posttest === maxPost)?.x;
-                const minPre = Math.min(...lineChartData.map((d) => d.pretest));
-                const minPreUser = lineChartData.find((d) => d.pretest === minPre)?.x;
-                const minPost = Math.min(...lineChartData.map((d) => d.posttest));
-                const minPostUser = lineChartData.find((d) => d.posttest === minPost)?.x;
+                <TableContainer component={Paper} sx={{ mt: 2 }}>
+                  <Table
+                    sx={{ minWidth: 650 }}
+                    aria-label="score summary table"
+                  >
+                    {(() => {
+                      const maxPre = Math.max(
+                        ...lineChartData.map((d) => d.pretest)
+                      );
+                      const maxPreUser = lineChartData.find(
+                        (d) => d.pretest === maxPre
+                      )?.x;
+                      const maxPost = Math.max(
+                        ...lineChartData.map((d) => d.posttest)
+                      );
+                      const maxPostUser = lineChartData.find(
+                        (d) => d.posttest === maxPost
+                      )?.x;
+                      const minPre = Math.min(
+                        ...lineChartData.map((d) => d.pretest)
+                      );
+                      const minPreUser = lineChartData.find(
+                        (d) => d.pretest === minPre
+                      )?.x;
+                      const minPost = Math.min(
+                        ...lineChartData.map((d) => d.posttest)
+                      );
+                      const minPostUser = lineChartData.find(
+                        (d) => d.posttest === minPost
+                      )?.x;
 
-                return (
-                  <>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell />
-                        <TableCell align="left" sx={{ fontWeight: 'bold', color: '#1976d2' }}>แบบทดสอบก่อนเรียน</TableCell>
-                        <TableCell align="left" sx={{ fontWeight: 'bold', color: '#2e7d32' }}>แบบทดสอบหลังเรียน</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>คะแนนสูงสุด</TableCell>
-                        <TableCell align="left">{maxPreUser} ({maxPre} คะแนน)</TableCell>
-                        <TableCell align="left">{maxPostUser} ({maxPost} คะแนน)</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>คะแนนต่ำสุด</TableCell>
-                        <TableCell align="left">{minPreUser} ({minPre} คะแนน)</TableCell>
-                        <TableCell align="left">{minPostUser} ({minPost} คะแนน)</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </>
-                );
-              })()}
-              </Table>
-            </TableContainer>
-            </>
+                      return (
+                        <>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell />
+                              <TableCell
+                                align="left"
+                                sx={{ fontWeight: "bold", color: "#1976d2" }}
+                              >
+                                แบบทดสอบก่อนเรียน
+                              </TableCell>
+                              <TableCell
+                                align="left"
+                                sx={{ fontWeight: "bold", color: "#2e7d32" }}
+                              >
+                                แบบทดสอบหลังเรียน
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            <TableRow>
+                              <TableCell
+                                component="th"
+                                scope="row"
+                                sx={{ fontWeight: "bold" }}
+                              >
+                                คะแนนสูงสุด
+                              </TableCell>
+                              <TableCell align="left">
+                                {maxPreUser} ({maxPre} คะแนน)
+                              </TableCell>
+                              <TableCell align="left">
+                                {maxPostUser} ({maxPost} คะแนน)
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell
+                                component="th"
+                                scope="row"
+                                sx={{ fontWeight: "bold" }}
+                              >
+                                คะแนนต่ำสุด
+                              </TableCell>
+                              <TableCell align="left">
+                                {minPreUser} ({minPre} คะแนน)
+                              </TableCell>
+                              <TableCell align="left">
+                                {minPostUser} ({minPost} คะแนน)
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </>
+                      );
+                    })()}
+                  </Table>
+                </TableContainer>
+              </>
             )}
           </div>
         )}
@@ -603,6 +790,7 @@ function EditCourse() {
       {fixCoursePopup && (
         <EditPopup
           courseInfo={data.courseInfo}
+          allTags={data.allTags}
           onClose={() => setFixCoursePopup(false)}
           onSave={handleSaveCourse}
         />
@@ -648,8 +836,18 @@ function EditCourse() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

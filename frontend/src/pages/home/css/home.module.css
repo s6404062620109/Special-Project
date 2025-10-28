@@ -1,44 +1,37 @@
 .pageWrapper {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
   
 .container {
-  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
+  margin: 20px auto;
 }
   
 .container-wrap {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
   width: 80%;
-  height: 100%;
   gap: 20px;
+  min-height: calc(100vh - 64px);
 }
   
 .content {
-  width: 50%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
   
 .content > p {
   margin: 0;
   font-family: 'Kdam Thmor', sans-serif;
   color: black;
-}
-  
-.content > .title {
-  font-size: 64px;
-}
-  
-.content > .sub-title {
-  font-size: 24px;
-  opacity: 0.5;
 }
   
 .login-wrap {
@@ -48,9 +41,6 @@
   justify-content: center;
 }
   
-.login-nav, .login-tablet {
-  display: none;
-}
   
 /* Tablet responsive */
 @media screen and (max-width: 1024px) {

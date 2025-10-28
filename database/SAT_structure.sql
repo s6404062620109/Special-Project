@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 26, 2025 at 12:02 PM
+-- Generation Time: Oct 28, 2025 at 12:24 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -42,6 +42,7 @@ CREATE TABLE `cancellation_log` (
 CREATE TABLE `course` (
   `id` int NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `discription` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
   `icon` mediumtext CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
   `pretest_rate` int NOT NULL DEFAULT '0',
   `posttest_rate` int NOT NULL DEFAULT '0',
@@ -51,6 +52,17 @@ CREATE TABLE `course` (
   `updateat` timestamp NULL DEFAULT NULL,
   `announce_state` tinyint NOT NULL DEFAULT '0',
   `duration_days` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `course_tag`
+--
+
+CREATE TABLE `course_tag` (
+  `courseId` int NOT NULL,
+  `tagId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -195,6 +207,17 @@ CREATE TABLE `subject` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tags`
+--
+
+CREATE TABLE `tags` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user`
 --
 
@@ -229,6 +252,13 @@ ALTER TABLE `cancellation_log`
 ALTER TABLE `course`
   ADD PRIMARY KEY (`id`),
   ADD KEY `teach_course` (`teacherId`);
+
+--
+-- Indexes for table `course_tag`
+--
+ALTER TABLE `course_tag`
+  ADD PRIMARY KEY (`courseId`,`tagId`),
+  ADD KEY `fk_course_tag_tag` (`tagId`);
 
 --
 -- Indexes for table `enrollment`
@@ -302,6 +332,12 @@ ALTER TABLE `question_progress`
 ALTER TABLE `subject`
   ADD PRIMARY KEY (`id`),
   ADD KEY `in_course` (`courseId`);
+
+--
+-- Indexes for table `tags`
+--
+ALTER TABLE `tags`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `user`
@@ -386,6 +422,12 @@ ALTER TABLE `subject`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `tags`
+--
+ALTER TABLE `tags`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
@@ -400,6 +442,13 @@ ALTER TABLE `user`
 --
 ALTER TABLE `course`
   ADD CONSTRAINT `teach_course` FOREIGN KEY (`teacherId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `course_tag`
+--
+ALTER TABLE `course_tag`
+  ADD CONSTRAINT `fk_course_tag_course` FOREIGN KEY (`courseId`) REFERENCES `course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_course_tag_tag` FOREIGN KEY (`tagId`) REFERENCES `tags` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `enrollment`
@@ -450,19 +499,6 @@ ALTER TABLE `question_answers`
 --
 ALTER TABLE `question_logs`
   ADD CONSTRAINT `question_record` FOREIGN KEY (`progressId`) REFERENCES `question_progress` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `question_progress`
---
-ALTER TABLE `question_progress`
-  ADD CONSTRAINT `question_enroll` FOREIGN KEY (`enrollmentId`) REFERENCES `enrollment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `questionp_id` FOREIGN KEY (`questionId`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `subject`
---
-ALTER TABLE `subject`
-  ADD CONSTRAINT `in_course` FOREIGN KEY (`courseId`) REFERENCES `course` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

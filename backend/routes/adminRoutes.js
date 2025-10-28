@@ -47,4 +47,14 @@ router.get("/downloadLabGuide", adminController.downloadLabGuide);
 
 router.post("/updateGuide", authUserRole.checkAdminRole, Upload.any(), adminController.updateGuide);
 
+// Tags Management
+router.get("/getAllTags", authUserRole.checkAdminRole, adminController.getAllTags);
+
+router.post("/createTag", authUserRole.checkAdminRole, adminController.createTag);
+
+router.put("/updateTag/:tagId", authUserRole.checkAdminRole, adminController.updateTag);
+
+router.delete("/deleteTag/:tagId", authUserRole.checkAdminRole, adminController.deleteTag);
+
+
 module.exports = router;
