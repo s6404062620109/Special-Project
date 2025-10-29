@@ -31,7 +31,7 @@ const addUser = (req, res) => {
   }
 
   try {
-    db.query("SELECT * FROM user WHERE email = ?", 
+    db.query("SELECT * FROM user WHERE email = ? OR name = ?", 
       [email], async (err, results) => {
         if (err) {
           console.log(err);
@@ -39,7 +39,7 @@ const addUser = (req, res) => {
         }
 
         if (results.length > 0) {
-          return res.status(400).json({ message: "Email already registered." });
+          return res.status(400).json({ message: "มีอีเมลหรือชื่อผู้ใช้นี้อยู่แล้วในระบบ." });
         }
 
         const saltRounds = 10;
@@ -55,7 +55,7 @@ const addUser = (req, res) => {
                 console.log(insertErr);
                 return res.status(500).json({ message: "Failed to add user." });
               }
-              return res.status(201).json({ message: "User added successfully." });
+              return res.status(201).json({ message: "สร้างผู้ใช้ใหม่สำเร็จ" });
             }
           );
         });
