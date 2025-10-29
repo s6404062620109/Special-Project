@@ -428,19 +428,33 @@ const updateProfile = (req, res) => {
   }
 
   try{
-    db.query("UPDATE user SET name = ?, surname = ?, email = ?, profile_img = ? WHERE id = ?",  
-      [ name, surname, email, profile_img, id ], (error, results) => {
-      if (error) {
-        console.error("Database error:", error);
-        return res.status(500).json({ message: "Database error." });
-      }
+    db.query("SELECT id FROM user WHERE (email = ? OR name = ?) AND id != ?",
+      [email, name, id], (checkErr, checkResults) => {
+        if (checkErr) {
+          console.log(checkErr);
+          return res.status(500).json({ message: "Database check for duplicates query error." });
+        }
 
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ message: "User not found." });
-      }
+        if (checkResults.length > 0) {
+          return res.status(409).json({ message: "มีอีเมลหรือชื่อผู้ใช้นี้อยู่แล้วในระบบ." });
+        }
 
-      res.status(200).json({ message: "Profile updated successfully!" });
-    });
+        db.query("UPDATE user SET name = ?, surname = ?, email = ?, profile_img = ? WHERE id = ?",
+          [name, surname, email, profile_img, id], (updateErr, updateResult) => {
+            if (updateErr) {
+              console.error("Database error:", updateErr);
+              return res.status(500).json({ message: "Database error." });
+            }
+
+            if (updateResult.affectedRows === 0) {
+              return res.status(404).json({ message: "User not found." });
+            }
+
+            res.status(200).json({ message: "Profile updated successfully!" });
+          }
+        );
+      }
+    );
   } catch(error){
     console.log(error);
     return res.status(500).json({ message: "Server error.", error });

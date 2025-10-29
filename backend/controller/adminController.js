@@ -94,20 +94,31 @@ const updateUser = (req, res) => {
   }
 
   try {
-    db.query("UPDATE user SET name = ?, surname = ?, sex = ?, email = ?, role = ?, profile_img = ? WHERE id = ?",
-      [name, surname, sex, email, role, profile_img, userId], (error, result) => {
-        if (error) {
-          console.log(error);
-          return res
-            .status(500)
-            .send({ message: "Database user query error." });
+    db.query("SELECT id FROM user WHERE (email = ? OR name = ?) AND id != ?",
+      [email, name, userId], (checkErr, checkResults) => {
+        if (checkErr) {
+          console.log(checkErr);
+          return res.status(500).json({ message: "Database check for duplicates query error." });
         }
 
-        if (result.affectedRows === 0) {
-          return res.status(404).send({ message: "User not found." });
+        if (checkResults.length > 0) {
+          return res.status(409).json({ message: "มีอีเมลหรือชื่อผู้ใช้นี้อยู่แล้วในระบบ." });
         }
 
-        return res.status(200).send({ message: "User updated successfully." });
+        db.query("UPDATE user SET name = ?, surname = ?, sex = ?, email = ?, role = ?, profile_img = ? WHERE id = ?",
+          [name, surname, sex, email, role, profile_img, userId], (updateErr, updateResult) => {
+            if (updateErr) {
+              console.log(updateErr);
+              return res.status(500).send({ message: "Database user update query error." });
+            }
+
+            if (updateResult.affectedRows === 0) {
+              return res.status(404).send({ message: "User not found." });
+            }
+
+            return res.status(200).send({ message: "อัพเดตข้อมูลผู้ใช้สำเร็จ" });
+          }
+        );
       }
     );
   } catch (error) {
