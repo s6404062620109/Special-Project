@@ -89,7 +89,7 @@ function Navbar() {
               <div onClick={() => navigate('/my-courses')}>คอร์สของฉัน</div>
               <div onClick={() => navigate('/manageUser')}>จัดการบัญชีผู้ใช้</div>
               <div onClick={() => navigate('/manageCourse')}>จัดการคอร์ส</div>
-              <div onClick={() => navigate('/managetags')}>จัดการคอร์ส</div>
+              <div onClick={() => navigate('/managetags')}>จัดการแท็ก</div>
               <div onClick={() => navigate('/guide')}>คู่มือการใช้งาน</div>
             </>
           )}
