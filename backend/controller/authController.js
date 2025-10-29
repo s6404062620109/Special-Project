@@ -15,7 +15,7 @@ const register = (req, res) => {
   const isTeacherRequest = teacher_request || false;
 
   try {
-    db.query("SELECT * FROM user WHERE email = ? AND name = ?", [email, name], async (err, results) => {
+    db.query("SELECT * FROM user WHERE email = ? OR name = ?", [email, name], async (err, results) => {
       if (err) {
         console.log(err);
         return res.status(500).json({ message: "Database user query error." });
