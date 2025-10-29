@@ -35,6 +35,28 @@ function Profile() {
 
   const handleSave = async () => {
     try {
+      if (!tempUserData.name.trim() || !tempUserData.surname.trim() || !tempUserData.email.trim()) {
+        setSnackbar({ open: true, message: "กรุณากรอกชื่อ, นามสกุล, และอีเมลให้ครบถ้วน", severity: 'warning' });
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(tempUserData.email)) {
+        setSnackbar({ open: true, message: "รูปแบบอีเมลไม่ถูกต้อง ตัวอย่าง example@email.com", severity: 'error' });
+        return;
+      }
+
+      const nameRegex = /^[a-zA-Zก-๏\s]+$/;
+      if (!nameRegex.test(tempUserData.name) || !nameRegex.test(tempUserData.surname)) {
+        setSnackbar({ open: true, message: "ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น", severity: 'error' });
+        return;
+      }
+
+      if (JSON.stringify(tempUserData) === JSON.stringify(userData)) {
+        setEditMode(false);
+        return;
+      }
+
       const response = await backend.put(`/auth/updateProfile/${userData.id}`,
         tempUserData, { withCredentials: true }
       );
@@ -46,7 +68,7 @@ function Profile() {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setSnackbar({ open: true, message: "ไม่สามารถอัปเดตโปรไฟล์ได้", severity: 'error' });
+      setSnackbar({ open: true, message: error.response?.data?.message || "ไม่สามารถอัปเดตโปรไฟล์ได้", severity: 'error' });
     }
   };
 

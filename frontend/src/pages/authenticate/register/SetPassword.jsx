@@ -32,9 +32,17 @@ function SetPassword() {
 
     const handleSubmit = async (e) =>{
       e.preventDefault();
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(data.password)) {
+        setStatusMessage(
+          'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษรประกอบด้วย \nตัวพิมพ์ใหญ่, ตัวพิมพ์เล็ก, ตัวเลข และอักขระพิเศษ(@, $, !, %, *, &)'
+        );
+        return;
+      }
       
       if(data.password !== data.cpassword){
-        setStatusMessage("Password not matching confirm password.");
+        setStatusMessage("รหัสผ่านไม่ตรงกัน");
         return;
       }
 
