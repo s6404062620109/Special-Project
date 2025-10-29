@@ -166,9 +166,9 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                                 ต้องดำเนินการให้ครบตามเงื่อนไขก่อนจึงจะสามารถตั้งค่าได้:
                             </Typography>
                             <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
-                                {subject.length < 1 && <li><Typography variant="caption" color="warning.dark">ต้องมีบทเรียนอย่างน้อย 1 บทเรียน</Typography></li>}
-                                {count_questions < 5 && <li><Typography variant="caption" color="warning.dark">ต้องมีข้อสอบในคลังอย่างน้อย 5 ข้อ</Typography></li>}
-                                {count_labs < 1 && <li><Typography variant="caption" color="warning.dark">ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 1 ข้อ</Typography></li>}
+                                {subject.length < 1 && <li><Typography variant="caption" color="warning.dark" fontSize="16px">ต้องมีบทเรียนอย่างน้อย 1 บทเรียน</Typography></li>}
+                                {count_questions < 5 && <li><Typography variant="caption" color="warning.dark" fontSize="16px">ต้องมีข้อสอบในคลังอย่างน้อย 5 ข้อ</Typography></li>}
+                                {count_labs < 1 && <li><Typography variant="caption" color="warning.dark" fontSize="16px">ต้องมีปฏิบัติการในบทเรียนอย่างน้อย 1 ข้อ</Typography></li>}
                             </ul>
                         </Stack>
                     )}
