@@ -32,12 +32,20 @@ function Reset() {
       e.preventDefault();
 
       if (!token) {
-          setStatusMessage('Token is missing.');
+          setStatusMessage('ไม่พบโทเค็น');
           return;
       }
 
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(password.rpassword)) {
+        setStatusMessage(
+          'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษรประกอบด้วย \nตัวพิมพ์ใหญ่, ตัวพิมพ์เล็ก, ตัวเลข และอักขระพิเศษ(@, $, !, %, *, ?, &)'
+        );
+        return;
+      }
+
       if (password.rpassword !== password.cpassword) {
-          setStatusMessage('Passwords do not match.');
+          setStatusMessage('รหัสผ่านไม่ตรงกัน');
           return;
       }
 
@@ -47,10 +55,12 @@ function Reset() {
             newPassword: password.rpassword,
           });
 
-          if (response.status === 200) {
-            setStatusMessage(response.data.message);
-            setTimeout(() => navigate('/'), 2000);
-          }
+        if (response.status === 200) {
+          setStatusMessage(response.data.message);
+          setTimeout(() => navigate('/login'), 2000);
+        } else {
+          setStatusMessage(response.data.message);
+        }
       } catch (error) {
           setStatusMessage(error.response?.data?.message || 'Failed to reset password.');
       }
@@ -129,7 +139,7 @@ function Reset() {
   
           <div className={style.footer}>
             <div className={style.status}>
-              {statusMessage === "Password updated successfully." ? (
+              {statusMessage === "Password updated successfully." || statusMessage === "อัปเดตพาสเวิร์ดสำเร็จ" ? (
                 <p style={{color: 'green'}}>{statusMessage}</p>
               ):(
                 <p style={{color: 'red'}}>{statusMessage}</p>
