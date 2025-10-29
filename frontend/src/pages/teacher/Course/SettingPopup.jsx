@@ -162,7 +162,7 @@ function SettingPopup({ courseInfo, subject, count_questions, count_labs, onClos
                 <form onSubmit={handleAttemptSave} className={style.formWrapper}>
                     {!isReadyForSettings && (
                         <Stack sx={{ mb: 2, p: 2, border: '1px solid #ffa726', borderRadius: '4px', bgcolor: '#fff3e0' }}>
-                            <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 'bold' }}>
+                            <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 'bold', fontSize: "20px" }}>
                                 ต้องดำเนินการให้ครบตามเงื่อนไขก่อนจึงจะสามารถตั้งค่าได้:
                             </Typography>
                             <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
