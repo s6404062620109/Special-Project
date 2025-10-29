@@ -32,7 +32,7 @@ const addUser = (req, res) => {
 
   try {
     db.query("SELECT * FROM user WHERE email = ? OR name = ?", 
-      [email], async (err, results) => {
+      [email, name], async (err, results) => {
         if (err) {
           console.log(err);
           return res.status(500).json({ message: "Database user query error." });
