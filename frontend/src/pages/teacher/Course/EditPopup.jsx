@@ -287,7 +287,7 @@ function EditPopup({ courseInfo, allTags = [], onClose, onSave }) {
                   size="small"
                 />
               ))}
-              {unselectedTags.length > 0 && (
+              {unselectedTags.length > 0 ? (
                 <Chip
                   icon={<AddIcon />}
                   label="เพิ่มแท็ก"
@@ -296,6 +296,8 @@ function EditPopup({ courseInfo, allTags = [], onClose, onSave }) {
                   size="small"
                   clickable
                 />
+              ) : (
+                <Typography variant='subtitle1'>ไม่มีแท็กในระบบ</Typography>
               )}
             </Stack>
             <Menu
