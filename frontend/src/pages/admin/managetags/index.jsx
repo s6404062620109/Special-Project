@@ -147,19 +147,9 @@ function ManageTags() {
                 ))}
 
                 {tags.length === 0 && (
-                  <Stack
-                    justifyContent='center'
-                    alignItems='center'
-                    sx={{
-                      width: '100%',
-                      height: '200px',
-                      backgroundColor: '#f8f7f7ff',
-                      borderRadius: '8px',
-                      margin: '16px auto'
-                    }}
-                  >
-                    <Typography variant='h4' color='error'>ไม่พบแท็กในระบบ</Typography>
-                  </Stack>
+                  <TableRow>
+                    <Typography variant='h4' color='error' textAlign='center'>ไม่พบแท็กในระบบ</Typography>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>
