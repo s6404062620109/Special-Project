@@ -148,7 +148,9 @@ function ManageTags() {
 
                 {tags.length === 0 && (
                   <TableRow>
-                    <Typography variant='h4' color='error' textAlign='center'>ไม่พบแท็กในระบบ</Typography>
+                    <TableCell colSpan={3} rowSpan={3}>
+                      <Typography variant='h4' color='error' textAlign='center'>ไม่พบแท็กในระบบ</Typography>
+                    </TableCell>
                   </TableRow>
                 )}
               </TableBody>
