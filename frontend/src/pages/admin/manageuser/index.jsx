@@ -545,7 +545,7 @@ function ManageUser() {
                 )}
                 {filteredUsers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} rowSpan={3}>
+                    <TableCell colSpan={7} rowSpan={3}>
                       <Typography variant="h4" color="error" textAlign='center'>ไม่พบบัญชีผู้ใช้ในระบบ</Typography>
                     </TableCell>
                   </TableRow>
