@@ -195,9 +195,9 @@ function ManageCourses() {
                 ))}
                 {courses.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} rowSpan={3} align="center">
-                      <Typography variant="h6" color="error">ไม่พบคอร์สในระบบ</Typography>
-                    </TableCell>
+                    <TableCell colSpan={3} rowSpan={3}>
+                      <Typography variant="h4" color="error" textAlign='center'>ไม่พบคอร์สในระบบ</Typography>
+                    </TableCell> 
                   </TableRow>
                 )}
               </TableBody>
