@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import backend from '../../../api/backend';
 import {
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton,
+  TableHead, TableRow, Paper, IconButton, TableSortLabel,
   Typography, Stack, Button, TextField,
   Dialog, DialogActions, DialogContent, DialogTitle,
   Snackbar, Alert
@@ -21,6 +21,7 @@ function ManageTags() {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [tagToDelete, setTagToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
   const fetchTags = async () => {
     try {
@@ -106,6 +107,31 @@ function ManageTags() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleRequestSort = (property) => {
+    const isAsc = sortConfig.key === property && sortConfig.direction === 'asc';
+    setSortConfig({ key: property, direction: isAsc ? 'desc' : 'asc' });
+  };
+
+  const sortedTags = React.useMemo(() => {
+    let sortableItems = [...tags];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        // Handle numeric sorting for 'id'
+        const valA = sortConfig.key === 'id' ? parseInt(a[sortConfig.key], 10) : a[sortConfig.key];
+        const valB = sortConfig.key === 'id' ? parseInt(b[sortConfig.key], 10) : b[sortConfig.key];
+
+        if (valB < valA) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        if (valB > valA) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [tags, sortConfig]);
+
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
@@ -125,13 +151,35 @@ function ManageTags() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>รหัสประจำแท็ก</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>ชื่อแท็ก</TableCell>
+                  <TableCell
+                    sortDirection={sortConfig.key === 'id' ? sortConfig.direction : false}
+                    sx={{ fontWeight: 'bold' }}
+                  >
+                    <TableSortLabel
+                      active={sortConfig.key === 'id'}
+                      direction={sortConfig.key === 'id' ? sortConfig.direction : 'asc'}
+                      onClick={() => handleRequestSort('id')}
+                    >
+                      รหัสประจำแท็ก
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell
+                    sortDirection={sortConfig.key === 'name' ? sortConfig.direction : false}
+                    sx={{ fontWeight: 'bold' }}
+                  >
+                    <TableSortLabel
+                      active={sortConfig.key === 'name'}
+                      direction={sortConfig.key === 'name' ? sortConfig.direction : 'asc'}
+                      onClick={() => handleRequestSort('name')}
+                    >
+                      ชื่อแท็ก
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold' }}>จัดการ</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {tags.map((tag) => (
+                {sortedTags.map((tag) => (
                   <TableRow key={tag.id}>
                     <TableCell>{tag.id}</TableCell>
                     <TableCell>{tag.name}</TableCell>
@@ -146,7 +194,7 @@ function ManageTags() {
                   </TableRow>
                 ))}
 
-                {tags.length === 0 && (
+                {sortedTags.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={3} rowSpan={3}>
                       <Typography variant='h4' color='error' textAlign='center'>ไม่พบแท็กในระบบ</Typography>
@@ -159,7 +207,6 @@ function ManageTags() {
         </div>
       </div>
 
-      {/* Add/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
         <DialogTitle>{dialogMode === 'add' ? 'เพิ่มแท็กใหม่' : 'แก้ไขแท็ก'}</DialogTitle>
         <DialogContent>
@@ -181,7 +228,6 @@ function ManageTags() {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialog} onClose={handleCloseDeleteDialog}>
         <DialogTitle>ยืนยันการลบ</DialogTitle>
         <DialogContent>
@@ -193,7 +239,6 @@ function ManageTags() {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar for notifications */}
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert onClose={handleSnackbarClose} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
           {snackbar.message}

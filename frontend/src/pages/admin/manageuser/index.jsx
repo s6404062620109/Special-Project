@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Typography,
   TableSortLabel,
   Button,
   useMediaQuery,
@@ -541,6 +542,13 @@ function ManageUser() {
                       </TableCell>
                     </TableRow>
                   )
+                )}
+                {filteredUsers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} rowSpan={3} align="center">
+                      <Typography variant="h6" color="error">ไม่พบบัญชีผู้ใช้ในระบบ</Typography>
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>

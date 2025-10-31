@@ -183,7 +183,7 @@ function ManageCourses() {
                     </TableCell>
                     <TableCell>
                         {
-                            course.teacherName
+                          course.teacherName
                         }
                     </TableCell>
                     <TableCell>
@@ -193,6 +193,13 @@ function ManageCourses() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {courses.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} rowSpan={3} align="center">
+                      <Typography variant="h6" color="error">ไม่พบคอร์สในระบบ</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
