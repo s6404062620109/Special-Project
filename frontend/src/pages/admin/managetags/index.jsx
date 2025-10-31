@@ -145,6 +145,10 @@ function ManageTags() {
                     </TableCell>
                   </TableRow>
                 ))}
+
+                {tags.length === 0 && (
+                  <Typography variant='h4' color='error'>ไม่มีแท็กในระบบ</Typography>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
