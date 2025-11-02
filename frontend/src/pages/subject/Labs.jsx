@@ -159,7 +159,7 @@ function Labs({
           <Stack sx={{ width: "100%", margin: "8px auto" }} gap={2}>
             <TextField
               fullWidth
-              label="Answer"
+              label="คำตอบ"
               disabled={isAnswered}
               value={currentAnswer?.answer || ""}
               onChange={(e) =>
@@ -180,7 +180,7 @@ function Labs({
             <TextField
               disabled
               fullWidth
-              label="Answer"
+              label="คำตอบ"
               value={currentAnswer?.answer?.content || ""}
             />
           </Stack>
@@ -203,12 +203,16 @@ function Labs({
           alignItems="center"
           justifyContent="center"
           gap={2}
-          sx={{ width: "80%", margin: "16px auto" }}
+          sx={{ 
+            width: "80%",
+            margin: "16px auto" 
+          }}
         >
           <FormControl
             sx={{
               width: "100%",
               border: "1px solid #b3b3b3",
+                          backgroundColor: '#fff', 
               padding: "16px",
               borderRadius: "8px",
             }}
