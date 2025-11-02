@@ -81,9 +81,9 @@ function Labs({
       if (event.data?.source === "react-devtools-bridge") return;
       if (typeof event.data !== "object") return;
 
-      const { answer } = event.data;
-      if (typeof answer === "string" && currentQuestion?.type === 5) {
-        handleLabAnswerChange(currentQuestion.id, 5, answer);
+      const messageData = event.data;
+      if (messageData && typeof messageData.answer === "string" && currentQuestion?.type === 5) {
+        handleLabAnswerChange(currentQuestion.id, 5, messageData.answer);
       }
     };
 
@@ -181,7 +181,7 @@ function Labs({
               disabled
               fullWidth
               label="Answer"
-              value={currentAnswer?.answer || ""}
+              value={currentAnswer?.answer?.content || ""}
             />
           </Stack>
         );

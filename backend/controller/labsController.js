@@ -503,7 +503,7 @@ const submitLabQuestions = async (req, res) => {
                   return res.status(500).send({ message: "Database enrollment update error" });
                 }
 
-                db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer, progressId], (error) => {
+                db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer.content, progressId], (error) => {
                   if (error) {
                     console.log(error);
                     return res.status(500).send({ message: "Database progress_answer insert error" });
@@ -526,7 +526,7 @@ const submitLabQuestions = async (req, res) => {
                   return res.status(500).send({ message: "Database enrollment update error" });
                 }
 
-                db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer, progressId], (error) => {
+                db.query(`INSERT INTO lab_logs (user_answer, progressId) VALUES (?, ?)`, [userAnswer.content, progressId], (error) => {
                   if (error) {
                     console.log(error);
                     return res.status(500).send({ message: "Database progress_answer insert error" });
