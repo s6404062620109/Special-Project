@@ -455,7 +455,9 @@ function Subject() {
           centered
         >
           <Tab label="บทเรียน" value="lesson" />
-          <Tab label="ปฏิบัติการทดสอบ" value="lab" />
+          {questions.length > 0 &&(
+            <Tab label="ปฏิบัติการทดสอบ" value="lab" />
+          )}
         </Tabs>
       </Stack>
 
