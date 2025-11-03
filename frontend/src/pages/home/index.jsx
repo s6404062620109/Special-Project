@@ -170,7 +170,7 @@ function Home() {
                   borderRadius: 4,
                   boxShadow: '4px 4px 6px rgba(0,0,0,0.08)',
                   mb: 4,
-                  width: { xs: "100%", md: "90%" },
+                  width: { xs: "100%", md: "80%" },
                   margin: "0 auto"
                 }}
               >
