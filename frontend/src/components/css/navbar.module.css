@@ -121,7 +121,7 @@ nav{
     padding: .625rem;
     display: flex;
     flex-direction: column;
-    width: 80%;
+    width: 100%;
 }  
 .functions > ul {
     list-style: none;
@@ -182,7 +182,7 @@ nav{
 /* mobile screen */
 @media screen and (max-width: 600px) {
     .userAuth{
-        width: 300px;
+        width: 200px;
     }
     .userInfo div > label{
         display: none;

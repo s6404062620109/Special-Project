@@ -46,9 +46,25 @@ function Profile() {
         return;
       }
 
-      const nameRegex = /^[a-zA-Zก-๏\s]+$/;
-      if (!nameRegex.test(tempUserData.name) || !nameRegex.test(tempUserData.surname)) {
-        setSnackbar({ open: true, message: "ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น", severity: 'error' });
+      const thaiRegex = /^[ก-๏\s]+$/;
+      const engRegex = /^[a-zA-Z\s]+$/;
+
+      const isNameThai = thaiRegex.test(tempUserData.name);
+      const isNameEng = engRegex.test(tempUserData.name);
+      const isSurnameThai = thaiRegex.test(tempUserData.surname);
+      const isSurnameEng = engRegex.test(tempUserData.surname);
+
+      if (!isNameThai && !isNameEng) {
+        setSnackbar({ open: true, message: "ชื่อต้องเป็นภาษาไทยหรือภาษาอังกฤษเท่านั้น และห้ามมีตัวอักษรพิเศษ", severity: 'error' });
+        return;
+      }
+      if (!isSurnameThai && !isSurnameEng) {
+        setSnackbar({ open: true, message: "นามสกุลต้องเป็นภาษาไทยหรือภาษาอังกฤษเท่านั้น และห้ามมีตัวอักษรพิเศษ", severity: 'error' });
+        return;
+      }
+
+      if (isNameThai !== isSurnameThai || isNameEng !== isSurnameEng) {
+        setSnackbar({ open: true, message: "ชื่อและนามสกุลต้องเป็นภาษาเดียวกัน", severity: 'error' });
         return;
       }
 

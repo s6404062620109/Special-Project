@@ -42,9 +42,21 @@ function Register() {
       return;
     }
 
-    const nameRegex = /^[a-zA-Zก-๏\s]+$/;
-    if (!nameRegex.test(data.name) || !nameRegex.test(data.surname)) {
-      setStatusMessage('ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น');
+    const thaiRegex = /^[ก-๏\s]+$/;
+    const engRegex = /^[a-zA-Z\s]+$/;
+
+    const isNameThai = thaiRegex.test(data.name);
+    const isNameEng = engRegex.test(data.name);
+    const isSurnameThai = thaiRegex.test(data.surname);
+    const isSurnameEng = engRegex.test(data.surname);
+
+    if ((!isNameThai && !isNameEng) || (!isSurnameThai && !isSurnameEng)) {
+      setStatusMessage("ชื่อและนามสกุลต้องเป็นภาษาไทยหรือภาษาอังกฤษเท่านั้น และห้ามมีตัวอักษรพิเศษ");
+      return;
+    }
+
+    if (isNameThai !== isSurnameThai || isNameEng !== isSurnameEng) {
+      setStatusMessage("ชื่อและนามสกุลต้องเป็นภาษาเดียวกัน");
       return;
     }
 
