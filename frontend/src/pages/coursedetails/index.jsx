@@ -714,7 +714,7 @@ function CourseDetail() {
                 spacing={0.5}
                 useFlexGap
                 flexWrap="wrap"
-                justifyContent="flex-staer"
+                justifyContent="center"
                 alignItems="center"
                 sx={{ mt: 1 }}
               >
