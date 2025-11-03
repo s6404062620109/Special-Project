@@ -489,7 +489,7 @@ const submitLabQuestions = async (req, res) => {
         }
 
         else if(answer.lab_type === 5){
-          const correctAnswer = userAnswer === answerResult[0].content;
+          const correctAnswer = userAnswer.content === answerResult[0].content;
           if(correctAnswer){
             db.query("UPDATE lab_progress SET is_completed = 1, score = 1 WHERE id = ?", [progressId], (error) => {
               if (error) {
