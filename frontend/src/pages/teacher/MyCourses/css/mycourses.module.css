@@ -7,7 +7,7 @@
 .container {
     width: 60%;
     height: auto;
-    min-height: 800px;
+    min-height: 750px;
     border-radius: 12px;
     margin: 50px auto;
     background: white;
@@ -32,7 +32,7 @@
 
 .body {
     width: 100%;
-    max-height: 500px;
+    max-height: 700px;
     overflow-y: auto;
     overflow-x: auto;
 }
