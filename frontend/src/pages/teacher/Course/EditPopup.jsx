@@ -259,23 +259,34 @@ function EditPopup({ courseInfo, allTags = [], onClose, onSave }) {
               multiline
               rows={4}
               fullWidth
-              helperText={`${(courseData.discription || '').length}/255`}
-              slotProps={{
-                input: {
-                  maxLength: 255,
-                  endAdornment: courseData.discription && (
-                    <InputAdornment position="end" sx={{ position: 'absolute', top: 16, right: 30 }}>
-                      <IconButton
-                        aria-label="clear description"
-                        onClick={() => setCourseData({ ...courseData, discription: null })}
-                        edge="end"
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }
+              slotProps={{ 
+                maxLength: 255 
               }}
+              helperText={(
+                <Stack
+                  flexDirection='row'
+                  justifyContent='space-between'
+                  alignItems='center'
+                >
+                  <Typography variant='subtitle2'>{`${(courseData.discription || '').length}/255`}</Typography>
+                  {courseData.discription && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      startIcon={<ClearIcon />}
+                      onClick={() => setCourseData({ ...courseData, discription: '' })}
+                      sx={{
+                        textTransform: 'none',
+                        alignSelf: 'flex-end',
+                        mt: 0.5,
+                        color: 'text.secondary'
+                      }}
+                    >
+                      ล้างข้อความ
+                    </Button>
+                  )}
+                </Stack>
+              )}
             />
           </div>
 
