@@ -84,6 +84,7 @@
     }
     
     .headWrap{
+        flex-direction: column;
         justify-content: center;
     }
 
