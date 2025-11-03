@@ -18,7 +18,7 @@
   align-items: center;
   width: 80%;
   gap: 20px;
-  min-height: calc(100vh - 64px);
+  min-height: calc(80vh - 64px);
 }
   
 .content {

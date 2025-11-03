@@ -11,10 +11,10 @@ import CourseCard from '../../../components/CourseCard';
 
 function CourseBoard({ enrollment }) {
     const [ courses, setCourses ] = useState([]);
+    const [ publicCourses, setPublicCourses ] = useState([]);
     const [ currentPage, setCurrentPage ] = useState(1);
-    const { userData } = useContext(AuthContext);
     const navigate = useNavigate();
-
+    
     const fetchCourses = async () => {
         if (enrollment.length > 0) {
             const courseIds = enrollment.map((enroll) => enroll.courseId);
@@ -40,8 +40,23 @@ function CourseBoard({ enrollment }) {
         }
     };
 
+    const fetchPublicCourses = async () => {
+        try {
+          const response = await backend.get('/courses/top');
+          if (response.status === 200) {
+            setPublicCourses(response.data.results);
+          }
+        } catch (error) {
+          console.log("Error fetching public courses:", error);
+        }
+    };
+
     useEffect(() => {
-        fetchCourses();
+        if (enrollment.length > 0) {
+            fetchCourses();
+        } else {
+            fetchPublicCourses();
+        }
     }, [enrollment]);
 
     // กรองคอร์สที่ยังเรียนไม่จบ (กำลังเรียนอยู่ หรือ เรียนไม่ผ่าน)
@@ -68,7 +83,7 @@ function CourseBoard({ enrollment }) {
     return (
         <div className={style.CourseBoard}>
             <div className={style.head}>
-                <Typography variant='h6'>คอร์สที่เรียนอยู่</Typography>
+                <Typography variant='h6'>{courses.length > 0 ? 'คอร์สที่เรียนอยู่' : 'คอร์สยอดนิยม'}</Typography>
                 <Button 
                     variant="outlined" 
                     onClick={() => navigate('/courses')}
@@ -113,7 +128,21 @@ function CourseBoard({ enrollment }) {
                 </Stack>
             ) : (
                 <>
-                    <Typography variant='body1'>ไม่มีคอร์สที่เรียนอยู่</Typography>
+                    {publicCourses.length > 0 ? (
+                        <Stack 
+                            gap={2}
+                            sx={{
+                                width: "100%",
+                                margin: "16px auto",
+                            }}
+                        >
+                            {publicCourses.map((course, index) => (
+                                <CourseCard key={index} course={course} onClick={() => navigate(`/course/${course.id}/null`)} />
+                            ))}
+                        </Stack>
+                    ) : (
+                        <Typography variant='body1'>ไม่มีคอร์สแนะนำในขณะนี้</Typography>
+                    )}
                 </>
             )}
         </div>
