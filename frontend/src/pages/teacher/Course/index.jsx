@@ -329,7 +329,7 @@ function EditCourse() {
 
               <Typography
                 ref={descriptionRef}
-                variant="subtitle1"
+                variant="subtitle2"
                 title={data.courseInfo.discription}
                 sx={{
                   wordBreak: "break-word",

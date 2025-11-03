@@ -251,14 +251,20 @@ function EditPopup({ courseInfo, allTags = [], onClose, onSave }) {
               label="คำอธิบายคอร์ส"
               type="text"
               value={courseData.discription || ''}
-              onChange={(e) => setCourseData({ ...courseData, discription: e.target.value })}
+              onChange={(e) => {
+                if (e.target.value.length <= 255) {
+                  setCourseData({ ...courseData, discription: e.target.value });
+                }
+              }}
               multiline
               rows={4}
               fullWidth
+              helperText={`${(courseData.discription || '').length}/255`}
               slotProps={{
                 input: {
+                  maxLength: 255,
                   endAdornment: courseData.discription && (
-                    <InputAdornment position="end" sx={{ position: 'absolute', top: 16, right: 16 }}>
+                    <InputAdornment position="end" sx={{ position: 'absolute', top: 16, right: 30 }}>
                       <IconButton
                         aria-label="clear description"
                         onClick={() => setCourseData({ ...courseData, discription: null })}
