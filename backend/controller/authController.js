@@ -274,7 +274,7 @@ const forgot_password = (req, res) => {
       }
 
       if (results.length === 0) {
-          return res.status(400).send({ message: "Email not found." });
+          return res.status(400).send({ message: "ไม่พบอีเมลนี้ในระบบ." });
       }
 
       const resetToken = crypto.randomBytes(32).toString("hex"); 
