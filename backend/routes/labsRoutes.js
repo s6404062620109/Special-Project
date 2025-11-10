@@ -8,10 +8,6 @@ router.get("/getLabQuestions/:courseId/:subjectId", authUserRole.verifiedStudent
 
 router.get("/getAllLabQuestion/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.getAllLabQuestion);
 
-router.post("/startLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.startLabSession);
-
-router.post("/clearLabSession/:courseId", authUserRole.verifiedStudentEnrollCourse, labsController.clearLabSession);
-
 router.put("/submitLabQuestions/:courseId/:enrollmentId", authUserRole.verifiedStudentEnrollCourse, labsController.submitLabQuestions);
 
 module.exports = router;

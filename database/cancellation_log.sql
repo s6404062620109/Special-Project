@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 27, 2025 at 04:21 PM
+-- Generation Time: Nov 10, 2025 at 03:10 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -43,7 +43,12 @@ INSERT INTO `cancellation_log` (`id`, `reason`, `enrollmentId`) VALUES
 (6, '', 314),
 (7, '', 321),
 (8, '', 322),
-(9, '', 324);
+(9, '', 324),
+(10, '', 328),
+(11, '', 326),
+(12, '', 334),
+(13, '', 255),
+(14, '', 335);
 
 --
 -- Indexes for dumped tables
@@ -64,7 +69,7 @@ ALTER TABLE `cancellation_log`
 -- AUTO_INCREMENT for table `cancellation_log`
 --
 ALTER TABLE `cancellation_log`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,12 +1,7 @@
-const WebSocket = require("ws");
 const fs = require("fs-extra");
-const { exec } = require("child_process");
 const path = require("path");
 const db = require("../database");
-const labSessions  = require("./labState");
 require("dotenv").config();
-
-const wss = new WebSocket.Server({ port: 8080 });
 
 const getLabQuestions = (req, res) => {
     const { courseId, subjectId } = req.params;
@@ -220,140 +215,6 @@ const getAllLabQuestion = (req, res) => {
         return res.status(500).send({ message: "Server error.", error });
     }
 }
-
-function updateSessionActivity(userId) {
-  const session = labSessions.find(s => s.userId === userId);
-  if (session) {
-    session.lastActive = Date.now();
-    console.log(`✅ Activity updated for user ${userId} at ${new Date().toISOString()}`);
-  }
-}
-
-function clearLabSessionByUser(userId, res = null) {
-  const index = labSessions.findIndex((s) => s.userId === userId);
-  if (index === -1) {
-    if (res) res.status(404).json({ message: "Session not found" });
-    return;
-  }
-
-  const session = labSessions[index];
-
-  const cleanupCommand = `docker exec -u 0 ${session.container} sh -c "rm -rf /usr/src/app/* /usr/src/app/.[!.]* /usr/src/app/..?* /tmp/*"`;
-
-  exec(cleanupCommand, (err) => {
-    clearTimeout(session.timeout);
-
-    labSessions[index] = {
-      ...session,
-      inUse: false,
-      userId: null,
-      timeout: null,
-      lastActive: null,
-    };
-
-    if (res) {
-      if (err) {
-        console.error("❌ Volume cleanup failed:", err.message);
-        return res.status(500).json({ message: "Failed to clean up lab volume." });
-      }
-      console.log(labSessions)
-      return res.status(200).send("Lab cleaned and session released.");
-    }
-  });
-}
-
-setInterval(() => {
-  const now = Date.now();
-  const idleLimit = 15*60*1000;
-
-  labSessions.forEach(session => {
-    if (session.inUse && session.lastActive && now - session.lastActive > idleLimit) {
-      console.log(`⏰ User ${session.userId} idle > 15 mins. Clearing session...`);
-      clearLabSessionByUser(session.userId);
-    }
-  });
-}, 60*1000);
-
-wss.on('connection', (ws, req) => {
-  const params = new URLSearchParams(req.url.replace('/', ''));
-  const userId = params.get('userId');
-
-  console.log(`🔌 User ${userId} connected via WebSocket`);
-
-  ws.on('message', (msg) => {
-    console.log(`⌨️  User ${userId} typed: ${msg}`);
-    updateSessionActivity(userId);
-  });
-
-  ws.on('close', () => {
-    console.log(`❌ User ${userId} disconnected`);
-  });
-});
-
-const startLabSession = async (req, res) => {
-  const { courseId } = req.params;
-  const { subjectId, questionId, userId } = req.body;
-
-  const availableSession = labSessions.find((s) => !s.inUse);
-  if (!availableSession) {
-    return res.status(423).json({ message: "All terminals are in use." });
-  }
-
-  const sessionIndex = labSessions.indexOf(availableSession);
-  const container = availableSession.container;
-  const port = availableSession.port;
-
-  const hostSourcePath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}/lab${questionId}`);
-  const hostTargetPath = path.join(__dirname, `../lab-session-data/user${sessionIndex + 1}`);
-
-  try {
-    await fs.emptyDir(hostTargetPath);
-
-    const copyCommand = `docker cp "${hostSourcePath}/." ${container}:/usr/src/app`;
-    exec(copyCommand, (copyErr) => {
-      if (copyErr) {
-        console.error("❌ Failed to copy files:", copyErr);
-        return res.status(500).json({ message: "File copy failed" });
-      }
-
-      const runCommand = `docker exec -u root ${container} bash /usr/src/app/run.sh`;
-      exec(runCommand, (runErr, stdout, stderr) => {
-        if (runErr) {
-          console.error("❌ Failed to run run.sh:", runErr);
-          return res.status(500).json({ message: "Failed to execute run.sh" });
-        }
-        if (stderr) console.warn("⚠️ run.sh stderr:", stderr);
-
-        labSessions[sessionIndex] = {
-          ...availableSession,
-          inUse: true,
-          userId,
-          timeout: setTimeout(() => clearLabSessionByUser(userId), 60*60*1000),
-          lastActive: Date.now(),
-        };
-
-        console.log(labSessions)
-        return res.status(200).json({
-          message: "Lab started",
-          terminalUrl: `http://${process.env.DEV_URL}:${port}`,
-        });
-      });
-    });
-  } catch (err) {
-    console.error("❌ Lab file setup failed:", err.message);
-    return res.status(500).json({ message: "Failed to prepare lab files." });
-  }
-};
-
-const clearLabSession = (req, res) => {
-  const { userId } = req.body;
-  const session = labSessions.find((s) => s.userId === userId);
-  if (!session) {
-    return res.status(403).json({ message: "No active lab session for this user." });
-  }
-
-  clearLabSessionByUser(userId, res);
-};
 
 const submitLabQuestions = async (req, res) => {
   const { enrollmentId } = req.params;
@@ -627,7 +488,5 @@ const submitLabQuestions = async (req, res) => {
 module.exports = {
     getLabQuestions,
     getAllLabQuestion,
-    startLabSession,
-    clearLabSession,
     submitLabQuestions
 }

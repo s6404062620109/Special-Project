@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Oct 28, 2025 at 06:40 PM
+-- Generation Time: Nov 10, 2025 at 03:12 PM
 -- Server version: 9.4.0
 -- PHP Version: 8.2.27
 
@@ -37,16 +37,18 @@ CREATE TABLE `tags` (
 --
 
 INSERT INTO `tags` (`id`, `name`) VALUES
-(1, 'web'),
-(2, 'email'),
-(3, 'sql injection'),
-(4, 'database'),
-(5, 'clound'),
-(6, 'network'),
-(7, 'firewall'),
-(8, 'social media'),
-(10, '15+'),
-(11, 'New');
+(21, 'Cybersecurity'),
+(22, 'Beginner'),
+(23, 'User Security'),
+(24, 'Network Security'),
+(25, 'Attack Types'),
+(26, 'Social Engineering'),
+(27, 'Malware'),
+(28, 'DDoS'),
+(29, 'MITM'),
+(30, 'Password'),
+(31, 'Law'),
+(32, 'Compliance');
 
 --
 -- Indexes for dumped tables
@@ -66,7 +68,7 @@ ALTER TABLE `tags`
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
