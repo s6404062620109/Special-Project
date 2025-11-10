@@ -40,16 +40,24 @@
 
     ```.env
     # Server Configuration
-    PORT=3002
+    # Ip public address
+    DEV_URL=public_address
+
+    # Frontend port
+    FRONTEND_PORT=3003
+    # Backend port
+    BACKEND_PORT=3002
     
     # Database Connection
-    DB_HOST=db
-    DB_USER=root
-    DB_PASSWORD=password_1234
-    DB_DATABASE=SAT
-    
-    # JWT Secret for Token
-    JWT_SECRET=your_jwt_secret_key
+    DATABASE_HOST=db
+    DATABASE_USER=root
+    DATABASE_PASSWORD=password_1234
+    DATABASE_NAME=SAT
+    DATABASE_PORT=3306
+
+    # Email for auto send auth.
+    EMAIL_USER=email@address.com
+    EMAIL_PASS=auth_app_pass
     ```
 
 3.  **Start Services ด้วย Docker Compose**
