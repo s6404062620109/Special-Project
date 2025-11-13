@@ -39,7 +39,6 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import TestPopup from "./TestPopup";
 import SettingPopup from "./SettingPopup";
-import { da } from "date-fns/locale";
 
 function EditCourse() {
   const { courseId } = useParams();
@@ -50,6 +49,7 @@ function EditCourse() {
     subject: [],
     countQuestions: 0,
     countLabs: 0,
+    countInProgressEnrollments: 0,
   });
   const [chartData, setChartData] = useState(null);
   const [editPopupOpen, setEditPopupOpen] = useState(false);
@@ -98,6 +98,7 @@ function EditCourse() {
           subject: response.data.subject,
           countQuestions: response.data.countQuestions,
           countLabs: response.data.countLabs,
+          countInProgressEnrollments: response.data.countInProgressEnrollments,
         });
       }
     } catch (error) {
@@ -166,7 +167,6 @@ function EditCourse() {
         }));
       }
     } catch (error) {
-      console.log(error);
       setSnackbar({
         open: true,
         message: error.response?.data?.message || "Error deleting subject",
@@ -286,7 +286,7 @@ function EditCourse() {
     chartData?.pretestMax || 0,
     chartData?.posttestMax || 0
   );
-
+  console.log(data)
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <div className={style.container}>
@@ -825,7 +825,9 @@ function EditCourse() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้ไม่สามารถกู้คืนได้
+            {data.subject === 1
+              ? `คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้จะลบประวัติการลงทะเบียนเรียนทั้งหมดและไม่สามารถกู้คืนได้` 
+              : "คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้ไม่สามารถกู้คืนได้"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

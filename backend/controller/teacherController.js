@@ -1016,7 +1016,7 @@ const handleInProgressEnrollments = (courseId) => {
       return reject(new Error("Course ID is required for handling enrollments."));
     }
 
-    db.query("SELECT id FROM enrollment WHERE courseId = ? AND posttest_complete = 0", [courseId], (err, enrollments) => {
+    db.query("SELECT id FROM enrollment WHERE courseId = ?", [courseId], (err, enrollments) => {
       if (err) {
         return reject(err);
       }
@@ -1388,43 +1388,77 @@ const deleteSubject = (req, res) => {
         return res.status(404).json({ message: "Course not found or you do not have permission." });
       }
 
-      handleInProgressEnrollments(courseId).then(() => {
-        if(result.length > 0){
-          db.query("SELECT id FROM subject WHERE id = ? AND courseId = ?", 
-            [subjectId, courseId], (error, result) => {
-              if(error){
-                console.log(error);
-                return res.status(500).json({ message: "Database subject query error." });
-              }
-        
-              if(result.length === 0){
-                return res.status(404).json({ message: "Subject not found or you do not have permission to delete this subject." });
-              }
-        
-              if(result.length > 0){
-      
-                db.query("DELETE FROM subject WHERE id = ? AND courseId = ?",
-                  [subjectId, courseId], (error) => {
-                    if(error){
-                      console.log(error);
-                      return res.status(500).json({ message: "Delete subject from database error." });
-                    }
-        
-                    const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
-                    deleteFolderRecursive(subjectFolderPath);
-  
-                    return res.status(200).json({ message: "Subject deleted successfully." });
-                  }
-                );
-              }
-            }
-          );
+      db.query("SELECT COUNT(*) as count FROM subject WHERE courseId = ?", [courseId], (countErr, countResult) => {
+        if (countErr) {
+          console.log(countErr);
+          return res.status(500).json({ message: "Database subject count query error." });
         }
-      }).catch(err => {
-        console.error("Error handling in-progress enrollments:", err);
-        return res.status(500).send({ message: "Failed to handle in-progress enrollments.", error: err });
-      });
 
+        const isLastSubject = countResult[0].count === 1;
+
+        const preDeleteTasks = (callback) => {
+          if (isLastSubject) {
+            db.query("UPDATE course SET enable = 0 WHERE id = ?", [courseId], (updateErr) => {
+              if (updateErr) return callback(updateErr);
+              
+              db.query("DELETE FROM enrollment WHERE courseId = ?", [courseId], (deleteEnrollErr) => {
+                if (deleteEnrollErr) {
+                  console.log(deleteEnrollErr);
+                  return callback(deleteEnrollErr);
+                }
+                console.log(`Cleared all enrollments for course ${courseId} as it has no subjects left.`);
+                callback();
+              });
+            });
+          } else {
+            db.query("SELECT id FROM labs WHERE subjectId = ?", [subjectId], (labError, labResults) => {
+              if(labError){
+                console.log(labError);
+                return res.status(500).json({ message: "Database labs query error." });
+              }
+
+              const labids = labResults.map(l => l.id);
+              const labCount = labids.length;
+
+              db.query("DELETE FROM lab_progress WHERE questionId IN (?)", [labids], (labProgressError, labProgressResults) => {
+                if(labProgressError){
+                  console.log(labProgressError);
+                  return res.status(500).json({ message: "Database lab_progress query error." });
+                }
+                
+                db.query(`UPDATE enrollment SET total_labs = total_labs-${labCount} WHERE courseId = ?`, [courseId], (updateEnrollmentErr) => {
+                  if (updateEnrollmentErr) {
+                    console.log(updateEnrollmentErr);
+                    return res.status(500).json({ message: "Database enrollment update error." });
+                  }
+                  callback();
+                });
+              });
+              
+          });
+          }
+          
+        };
+
+        preDeleteTasks((err) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({ message: "Error during pre-delete tasks." });
+          }
+
+          db.query("DELETE FROM subject WHERE id = ? AND courseId = ?", [subjectId, courseId], (deleteErr) => {
+            if (deleteErr) {
+              console.log(deleteErr);
+              return res.status(500).json({ message: "Delete subject from database error." });
+            }
+
+            const subjectFolderPath = path.join(__dirname, `../courses/c${courseId}/s${subjectId}`);
+            deleteFolderRecursive(subjectFolderPath);
+
+            return res.status(200).json({ message: "Subject deleted successfully." });
+          });
+        });
+      });
     });
   } catch(error){
     console.log(error);

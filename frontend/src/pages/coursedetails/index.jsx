@@ -472,6 +472,7 @@ function CourseDetail() {
         navigate(`/course/${courseId}/${response.data.inProgress}`);
       }
     } catch (error) {
+      console.log(error)
       if (error.response && error.response.status === 403 && error.response.data.message === "คอร์สนี้หมดอายุการเรียนแล้ว") {
         setExpiredDialogOpen(true);
         return;

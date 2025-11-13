@@ -21,6 +21,7 @@ const getAll = (req, res) => {
       c.duration_days,
       (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id) AS countEnrollments,
       (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id AND posttest_complete = 1) AS countPosttestComplete,
+      (SELECT COUNT(*) FROM enrollment WHERE courseId = c.id AND posttest_complete = 0) AS countInProgressEnrollments,
       u.sex AS teacherSex,
       u.name AS teacherName,
       u.surname AS teacherSurname,
@@ -88,6 +89,7 @@ const getAll = (req, res) => {
         },
         countQuestions: course.countQuestions, countLabs: course.countLabs,
         countEnrollments: course.countEnrollments, countPosttestComplete: course.countPosttestComplete,
+        countInProgressEnrollments: course.countInProgressEnrollments,
         allTags: allTags
       };
 
