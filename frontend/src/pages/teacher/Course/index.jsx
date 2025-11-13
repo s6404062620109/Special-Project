@@ -825,8 +825,8 @@ function EditCourse() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {data.subject === 1
-              ? `คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้จะลบประวัติการลงทะเบียนเรียนทั้งหมดและไม่สามารถกู้คืนได้` 
+            {data.subject.length === 1
+              ? `คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้จะส่งผลกับผู้เรียนที่ยังเรียนไม่จบจำนวน ${data.countInProgressEnrollments} คน และจะลบประวัติการลงทะเบียนเรียนทั้งหมด` 
               : "คุณแน่ใจหรือไม่ว่าต้องการลบบทเรียนนี้? การกระทำนี้ไม่สามารถกู้คืนได้"}
           </DialogContentText>
         </DialogContent>
