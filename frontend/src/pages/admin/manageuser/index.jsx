@@ -587,13 +587,13 @@ function ManageUser() {
         message={message}
       />
 
-      <button
+      {/* <button
         className={style["add-button"]}
         onClick={() => setShowPopup(true)}
       >
         <img src="/My_Coursesp/Add.svg" alt="Add button" />
         <p>Add New User</p>
-      </button>
+      </button> */}
 
       <Dialog
         open={deleteDialogOpen}
